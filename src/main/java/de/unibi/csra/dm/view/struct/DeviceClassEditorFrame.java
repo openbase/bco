@@ -11,6 +11,7 @@ import de.unibi.csra.dm.struct.DeviceClass;
 import de.unibi.csra.dm.view.components.DataStreamSelectionTable;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JComboBox;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -23,6 +24,7 @@ public class DeviceClassEditorFrame extends AbstractEditorFrame<DeviceClass> {
 	private final JTextField name, productNumber;
 	private final DataStreamSelectionTable dataStreams;
 	private final JTextArea description;
+	private final JComboBox category;
 
 	protected final static Map<String, DeviceClassEditorFrame> editorInstances = new HashMap<String, DeviceClassEditorFrame>();
 
@@ -42,9 +44,11 @@ public class DeviceClassEditorFrame extends AbstractEditorFrame<DeviceClass> {
 		this.productNumber = new JTextField();
 		this.dataStreams = new DataStreamSelectionTable();
 		this.description = new JTextArea();
+		this.category = new JComboBox(DeviceClass.Category.values());
 
 		addContextElement("Name", name);
 		addContextElement("ProductNumber", productNumber);
+		addContextElement("Category", category);
 		addContextElement("SupportedDataStreams", dataStreams);
 		addContextElement("Description", description);
 		pack();
@@ -79,6 +83,7 @@ public class DeviceClassEditorFrame extends AbstractEditorFrame<DeviceClass> {
 		name.setText(context.getName());
 		productNumber.setText(context.getProductNumber());
 		description.setText(context.getDescription());
+		category.setSelectedItem(context.getCategory());
 		dataStreams.load(context.getSupportedDataStreams(), deviceManager.getDataStreamMap().keySet());
 	}
 
@@ -87,6 +92,7 @@ public class DeviceClassEditorFrame extends AbstractEditorFrame<DeviceClass> {
 		context.setName(name.getText());
 		context.setProductNumber(productNumber.getText());
 		context.setDescription(description.getText());
+		context.setCategory((DeviceClass.Category) category.getSelectedItem());
 		context.setSupportedDataStreams(dataStreams.getDataStreamSelectionList());
 		context.updateID();
 		deviceManager.addDeviceClass(context);

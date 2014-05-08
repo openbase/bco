@@ -149,7 +149,7 @@ public class DataStreamEditorFrame extends AbstractEditorFrame<DataStream> {
 		context.setRst_type((DataStream.RST_Type) rstType.getSelectedItem());
 		context.setDescription(description.getText());
 		context.setMetaAttributeMap(metaAttributeMap.getDataPairs());
-		context.generateName();
+		context.setName(context.generateName());
 		context.updateID();
 		deviceManager.addDataStream(context);
 	}

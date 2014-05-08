@@ -18,44 +18,22 @@ import java.util.List;
  */
 public class DeviceClass extends AbstractDeviceStruct<DeviceClass> {
 
-//	private String id;
-//	private String name;
-//	private String description;
+	public enum Category {Other, CamRGB, CamDepth};
+	
 	private String productNumber;
+	private Category category;
 	private final List<String> supportedDataStreams;
 
 	public DeviceClass() {
-		this("", "", "", "", new ArrayList<String>());
+		this("", "", "", "", Category.Other, new ArrayList<String>());
 	}
 
-	public DeviceClass(String id, String name, String description, String productNumber, List<String> supportedDataStreams) {
-//		this.id = id;
-//		this.name = name;
-//		this.description = description;
+	public DeviceClass(String id, String name, String description, String productNumber, Category category, List<String> supportedDataStreams) {
 		super(id, name, description);
 		this.productNumber = productNumber;
+		this.category = category;
 		this.supportedDataStreams = supportedDataStreams;
 	}
-//
-//	public String getId() {
-//		return id;
-//	}
-//
-//	public String getName() {
-//		return name;
-//	}
-//
-//	public void setName(String name) {
-//		this.name = name;
-//	}
-//
-//	public String getDescription() {
-//		return description;
-//	}
-//
-//	public void setDescription(String description) {
-//		this.description = description;
-//	}
 
 	public String getProductNumber() {
 		return productNumber;
@@ -71,6 +49,14 @@ public class DeviceClass extends AbstractDeviceStruct<DeviceClass> {
 	
 	public void removeSupportedDataStream(final DataStream dataStream) {
 		supportedDataStreams.remove(dataStream.getId());
+	}
+
+	public Category getCategory() {
+		return category;
+	}
+
+	public void setCategory(Category category) {
+		this.category = category;
 	}
 
 	public synchronized void setSupportedDataStreams(final List<String> supportedDataStreams) {

@@ -55,7 +55,7 @@ public class DeviceClassOverviewPanel extends AbstractOverviewPanel<DeviceClass>
 
 	@Override
 	protected String[] getContextLables() {
-		String[] contextLables = {"ID","Name", "ProductNumber", "Description"};
+		String[] contextLables = {"ID","Name", "ProductNumber", "Category", "Description"};
 		return contextLables;
 	}
 
@@ -64,7 +64,8 @@ public class DeviceClassOverviewPanel extends AbstractOverviewPanel<DeviceClass>
 		contextData[0] = context.getId();
 		contextData[1] = context.getName();
 		contextData[2] = context.getProductNumber();
-		contextData[3] = context.getDescription();
+		contextData[3] = context.getCategory();
+		contextData[4] = context.getDescription();
 	}
 
 	@Override
