@@ -227,7 +227,7 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-		try {
+		try {                       
 			edit(getSelection(contextTable));
 		} catch (NotAvailableException ex) {
 			System.err.println("Could not edit selection! Content does not exist!");

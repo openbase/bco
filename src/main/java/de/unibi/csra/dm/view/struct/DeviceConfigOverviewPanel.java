@@ -86,6 +86,6 @@ public class DeviceConfigOverviewPanel extends AbstractOverviewPanel<DeviceConfi
 
 	@Override
 	protected DeviceConfig getSelection(final JTable contextTable) throws NotAvailableException {
-		return deviceManager.getDeviceConfig((String) contextTable.getModel().getValueAt(contextTable.getSelectedRow(), 0));
+		return deviceManager.getDeviceConfig((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
 	}
 }

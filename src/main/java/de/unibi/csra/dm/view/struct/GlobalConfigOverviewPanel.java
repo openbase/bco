@@ -85,6 +85,6 @@ public class GlobalConfigOverviewPanel extends AbstractOverviewPanel<GlobalConfi
 
 	@Override
 	protected GlobalConfig getSelection(final JTable contextTable) throws NotAvailableException {
-		return deviceManager.getGlobalConfig((String) contextTable.getModel().getValueAt(contextTable.getSelectedRow(), 0));
+		return deviceManager.getGlobalConfig((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
 	}
 }

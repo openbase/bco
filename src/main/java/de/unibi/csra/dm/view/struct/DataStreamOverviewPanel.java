@@ -88,6 +88,6 @@ public class DataStreamOverviewPanel extends AbstractOverviewPanel<DataStream> {
 
 	@Override
 	protected DataStream getSelection(final JTable contextTable) throws NotAvailableException {
-		return deviceManager.getDataStream((String) contextTable.getModel().getValueAt(contextTable.getSelectedRow(), 0));
+		return deviceManager.getDataStream((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
 	}
 }
