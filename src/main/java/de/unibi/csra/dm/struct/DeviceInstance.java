@@ -17,7 +17,7 @@ public class DeviceInstance extends AbstractDeviceStruct<DeviceInstance> {
 
 	public enum DeviceStatus {
 
-		Available, Ordered, Lost, Unknown
+		Available, Ordered, Lost, Borrowed, Installed, Unknown
 	}
 
 	private String deviceClass;
