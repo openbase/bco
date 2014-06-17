@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class DeviceClass extends AbstractDeviceStruct<DeviceClass> {
 
-	public enum Category {Other, CamRGB, CamDepth};
+	public enum Category {Other, HomeAutomation, WearableComputing, VisualSensing, VisualDisplay, AcousticSensing, AuditoryDisplay, Infrastructure, CamRGB, CamDepth};
 	
 	private String productNumber;
 	private Category category;

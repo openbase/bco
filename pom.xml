@@ -63,12 +63,8 @@
             <artifactId>CLParser</artifactId>
             <version>3.0.3-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-            <type>jar</type>
-        </dependency>
+        
+		<!-- can be removed if jps is used instead of CLParser -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
