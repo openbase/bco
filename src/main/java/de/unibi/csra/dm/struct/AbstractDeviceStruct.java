@@ -7,7 +7,7 @@ package de.unibi.csra.dm.struct;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.citec.jps.core.JPService;
-import de.unibi.agai.clparser.command.CLGlobalConfigDirectory;
+import de.unibi.agai.clparser.command.JPGlobalConfigDirectory;
 import de.unibi.csra.dm.tools.Manageable;
 import java.io.File;
 

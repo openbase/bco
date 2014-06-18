@@ -15,7 +15,7 @@ import java.io.File;
  *
  * @author mpohling
  */
-public class CLDeviceInstanceDirectory extends AbstractJPDirectory {
+public class JPDeviceInstanceDirectory extends AbstractJPDirectory {
 
 	public final static String[] COMMAND_IDENTIFIERS = {"--deviceInstanceDirectory"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
@@ -23,13 +23,13 @@ public class CLDeviceInstanceDirectory extends AbstractJPDirectory {
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
 	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 	
-	public CLDeviceInstanceDirectory() {
+	public JPDeviceInstanceDirectory() {
 		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
 	}
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getAttribute(CLDeviceManagerConfigPath.class).getValue(), "device-instance");
+		return new File(JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue(), "device-instance");
 	}
 
 	@Override

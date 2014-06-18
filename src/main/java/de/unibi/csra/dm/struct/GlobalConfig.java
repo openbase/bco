@@ -6,7 +6,7 @@
 package de.unibi.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.unibi.agai.clparser.command.CLGlobalConfigDirectory;
+import de.unibi.agai.clparser.command.JPGlobalConfigDirectory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +50,6 @@ public class GlobalConfig extends AbstractDeviceStruct<GlobalConfig> {
 
 	@Override
 	public File getParentDirectory() {
-		return JPService.getAttribute(CLGlobalConfigDirectory.class).getValue();
+		return JPService.getAttribute(JPGlobalConfigDirectory.class).getValue();
 	}
 }

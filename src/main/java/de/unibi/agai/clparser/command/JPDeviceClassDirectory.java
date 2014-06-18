@@ -15,25 +15,25 @@ import java.io.File;
  *
  * @author mpohling
  */
-public class CLDataStreamDirectory extends AbstractJPDirectory {
+public class JPDeviceClassDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--dataStreamDirectory"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--deviceClassDirectory"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
 
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
 	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 	
-	public CLDataStreamDirectory() {
+	public JPDeviceClassDirectory() {
 		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
 	}
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getAttribute(CLDeviceManagerConfigPath.class).getValue(), "data-stream");
+		return new File(JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue(), "device-class");
 	}
 
 	@Override
 	public String getDescription() {
-		return "Specifies the DataStream directory name.";
+		return "Specifies the DeviceClass directory name.";
 	}
 }

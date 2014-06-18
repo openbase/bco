@@ -6,7 +6,7 @@
 package de.unibi.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.unibi.agai.clparser.command.CLDeviceInstanceDirectory;
+import de.unibi.agai.clparser.command.JPDeviceInstanceDirectory;
 import java.io.File;
 
 /**
@@ -74,7 +74,7 @@ public class DeviceInstance extends AbstractDeviceStruct<DeviceInstance> {
 		String fileName = "";
 		String fileNamePrefix = deviceClass + "_";
 
-		for (File file : JPService.getAttribute(CLDeviceInstanceDirectory.class).getValue().listFiles()) {
+		for (File file : JPService.getAttribute(JPDeviceInstanceDirectory.class).getValue().listFiles()) {
 			try {
 				fileName = file.getName();
 				if (fileName.startsWith(fileNamePrefix)) {
@@ -90,6 +90,6 @@ public class DeviceInstance extends AbstractDeviceStruct<DeviceInstance> {
 
 	@Override
 	public File getParentDirectory() {
-		return JPService.getAttribute(CLDeviceInstanceDirectory.class).getValue();
+		return JPService.getAttribute(JPDeviceInstanceDirectory.class).getValue();
 	}
 }
