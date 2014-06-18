@@ -5,7 +5,7 @@
  */
 package de.unibi.csra.dm.struct;
 
-import de.unibi.agai.clparser.CLParser;
+import de.citec.jps.core.JPService;
 import de.unibi.agai.clparser.command.CLDeviceClassDirectory;
 import java.io.File;
 import java.util.ArrayList;
@@ -70,6 +70,6 @@ public class DeviceClass extends AbstractDeviceStruct<DeviceClass> {
 	
 	@Override
 	public File getParentDirectory() {
-		return CLParser.getAttribute(CLDeviceClassDirectory.class).getValue();
+		return JPService.getAttribute(CLDeviceClassDirectory.class).getValue();
 	}
 }

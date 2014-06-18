@@ -5,7 +5,7 @@
  */
 package de.unibi.csra.dm.struct;
 
-import de.unibi.agai.clparser.CLParser;
+import de.citec.jps.core.JPService;
 import de.unibi.agai.clparser.command.CLDataStreamDirectory;
 import static de.unibi.csra.dm.struct.DataStream.RST_Type.unknown;
 import java.io.File;
@@ -91,6 +91,6 @@ public class DataStream extends AbstractDeviceStruct<DataStream> {
 
 	@Override
 	public File getParentDirectory() {
-		return CLParser.getAttribute(CLDataStreamDirectory.class).getValue();
+		return JPService.getAttribute(CLDataStreamDirectory.class).getValue();
 	}
 }

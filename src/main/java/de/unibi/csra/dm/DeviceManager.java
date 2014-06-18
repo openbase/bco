@@ -11,14 +11,14 @@ import de.unibi.csra.dm.struct.GlobalConfig;
 import de.unibi.csra.dm.struct.DeviceClass;
 import de.unibi.csra.dm.struct.DeviceInstance;
 import de.unibi.csra.dm.tools.Serializer;
-import de.unibi.agai.clparser.CLParser;
+import de.citec.jps.core.JPService;
 import de.unibi.agai.clparser.command.CLDataStreamDirectory;
 import de.unibi.agai.clparser.command.CLDeviceClassDirectory;
 import de.unibi.agai.clparser.command.CLDeviceConfigDirectory;
 import de.unibi.agai.clparser.command.CLDeviceInstanceDirectory;
 import de.unibi.agai.clparser.command.CLDeviceManagerConfigPath;
 import de.unibi.agai.clparser.command.CLGlobalConfigDirectory;
-import de.unibi.agai.clparser.command.ShowGUIFlag;
+import de.citec.jps.preset.JPShowGUI;
 import de.unibi.csra.dm.exception.InvalidOperationException;
 import de.unibi.csra.dm.exception.NotAvailableException;
 import de.unibi.csra.dm.tools.Manageable;
@@ -69,17 +69,17 @@ public class DeviceManager {
 	public static void main(String args[]) {
 
 		/* Setup CLParser */
-		CLParser.setProgramName("DeviceManager");
-		CLParser.registerCommand(CLDeviceManagerConfigPath.class);
-		CLParser.registerCommand(CLDataStreamDirectory.class);
-		CLParser.registerCommand(CLDeviceClassDirectory.class);
-		CLParser.registerCommand(CLDeviceConfigDirectory.class);
-		CLParser.registerCommand(CLDeviceInstanceDirectory.class);
-		CLParser.registerCommand(CLGlobalConfigDirectory.class);
-		CLParser.registerCommand(ShowGUIFlag.class, true);
-		CLParser.analyseAndExitOnError(args);
+		JPService.setApplicationName("DeviceManager");
+		JPService.registerCommand(CLDeviceManagerConfigPath.class);
+		JPService.registerCommand(CLDataStreamDirectory.class);
+		JPService.registerCommand(CLDeviceClassDirectory.class);
+		JPService.registerCommand(CLDeviceConfigDirectory.class);
+		JPService.registerCommand(CLDeviceInstanceDirectory.class);
+		JPService.registerCommand(CLGlobalConfigDirectory.class);
+		JPService.registerCommand(JPShowGUI.class, true);
+		JPService.parseAndExitOnError(args);
 
-		if (CLParser.getAttribute(ShowGUIFlag.class).getValue()) {
+		if (JPService.getAttribute(JPShowGUI.class).getValue()) {
 			DevieManagerGUI.main(args);
 		}
 		getInstance();
@@ -205,7 +205,7 @@ public class DeviceManager {
 			}
 		};
 		
-		for (File file : CLParser.getAttribute(CLDeviceClassDirectory.class).getValue().listFiles(fileFilter)) {
+		for (File file : JPService.getAttribute(CLDeviceClassDirectory.class).getValue().listFiles(fileFilter)) {
 			try {
 				addDeviceClass(serializer.deserialize(file, DeviceClass.class));
 			} catch (InvalidOperationException | IOException ex) {
@@ -213,7 +213,7 @@ public class DeviceManager {
 			}
 		}
 
-		for (File file : CLParser.getAttribute(CLDeviceInstanceDirectory.class).getValue().listFiles(fileFilter)) {
+		for (File file : JPService.getAttribute(CLDeviceInstanceDirectory.class).getValue().listFiles(fileFilter)) {
 			try {
 				addDeviceInstance(serializer.deserialize(file, DeviceInstance.class));
 			} catch (InvalidOperationException | IOException ex) {
@@ -221,7 +221,7 @@ public class DeviceManager {
 			}
 		}
 
-		for (File file : CLParser.getAttribute(CLDeviceConfigDirectory.class).getValue().listFiles(fileFilter)) {
+		for (File file : JPService.getAttribute(CLDeviceConfigDirectory.class).getValue().listFiles(fileFilter)) {
 			try {
 				addDeviceConfig(serializer.deserialize(file, DeviceConfig.class));
 			} catch (InvalidOperationException | IOException ex) {
@@ -229,7 +229,7 @@ public class DeviceManager {
 			}
 		}
 
-		for (File file : CLParser.getAttribute(CLDataStreamDirectory.class).getValue().listFiles(fileFilter)) {
+		for (File file : JPService.getAttribute(CLDataStreamDirectory.class).getValue().listFiles(fileFilter)) {
 			try {
 				addDataStream(serializer.deserialize(file, DataStream.class));
 			} catch (InvalidOperationException | IOException ex) {
@@ -237,7 +237,7 @@ public class DeviceManager {
 			}
 		}
 
-		for (File file : CLParser.getAttribute(CLGlobalConfigDirectory.class).getValue().listFiles(fileFilter)) {
+		for (File file : JPService.getAttribute(CLGlobalConfigDirectory.class).getValue().listFiles(fileFilter)) {
 			try {
 				addGlobalConfig(serializer.deserialize(file, GlobalConfig.class));
 			} catch (InvalidOperationException | IOException ex) {

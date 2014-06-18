@@ -6,15 +6,16 @@
 
 package de.unibi.agai.clparser.command;
 
-import de.unibi.agai.clparser.CLParser;
-import de.unibi.agai.tools.FileHandler;
+import de.citec.jps.preset.AbstractJPDirectory;
+import de.citec.jps.core.JPService;
+import de.citec.jps.tools.FileHandler;
 import java.io.File;
 
 /**
  *
  * @author mpohling
  */
-public class CLDeviceClassDirectory extends AbstractCLDirectory {
+public class CLDeviceClassDirectory extends AbstractJPDirectory {
 
 	public final static String[] COMMAND_IDENTIFIERS = {"--deviceClassDirectory"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
@@ -27,8 +28,8 @@ public class CLDeviceClassDirectory extends AbstractCLDirectory {
 	}
 
 	@Override
-	protected File getCommandDefaultValue() {
-		return new File(CLParser.getAttribute(CLDeviceManagerConfigPath.class).getValue(), "device-class");
+	protected File getPropertyDefaultValue() {
+		return new File(JPService.getAttribute(CLDeviceManagerConfigPath.class).getValue(), "device-class");
 	}
 
 	@Override
