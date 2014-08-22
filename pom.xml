@@ -23,9 +23,8 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
-                <version>1.2</version>
+                <version>1.8.1</version>
                 <configuration>
-                    <repositoryName>share/repository</repositoryName>
                     <programs>
                         <program>
                             <mainClass>de.unibi.csra.config</mainClass>
@@ -39,14 +38,6 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <id>eclipselink</id>
-            <layout>default</layout>
-            <name>Repository for library EclipseLink (JPA 2.1)</name>
-        </repository>
-    </repositories>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
