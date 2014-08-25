@@ -27,7 +27,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.csra.dm</mainClass>
+                            <mainClass>de.citec.csra.dm.DeviceManager</mainClass>
                             <name>device-manager</name>
                             <platforms>
                                 <platform>unix</platform>
