@@ -16,7 +16,10 @@ import java.io.File;
  */
 public class JPDeviceManagerConfigPath extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--configPath"};
+    public final static String ENV_VARIABLE_PREFIX = "prefix";
+    public final static String DEFAULT_VOL_LOCATION = "etc/device-data";
+    
+	public final static String[] COMMAND_IDENTIFIERS = {"--device-data", "-d"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
 
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
@@ -28,11 +31,24 @@ public class JPDeviceManagerConfigPath extends AbstractJPDirectory {
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File("/tmp/lsp-csra/device-management/src");
+        File defaultLocation;
+        try {
+            defaultLocation = new File(System.getenv(ENV_VARIABLE_PREFIX) + File.pathSeparatorChar + DEFAULT_VOL_LOCATION);
+            if(defaultLocation.exists()) { 
+                logger.info("Found $"+ENV_VARIABLE_PREFIX+" and use it as config path.");
+                return defaultLocation;
+                
+            }
+        } catch (Exception ex) {
+            logger.debug("Could not resolve $"+ENV_VARIABLE_PREFIX, ex);
+        }
+        
+        
+		return new File("/tmp/csra/device-data");
 	}
 
 	@Override
 	public String getDescription() {
-		return "Setups the device management source directory.";
+		return "Setups the device data source directory.";
 	}
 }
