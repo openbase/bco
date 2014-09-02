@@ -32,14 +32,14 @@ public class JPDeviceManagerConfigPath extends AbstractJPDirectory {
     protected File getPropertyDefaultValue() {
         File defaultLocation;
         try {
-            defaultLocation = new File(System.getenv(ENV_VARIABLE_PREFIX) + File.pathSeparatorChar + DEFAULT_VOL_LOCATION);
+            defaultLocation = new File(System.getenv(ENV_VARIABLE_PREFIX) + File.separator + DEFAULT_VOL_LOCATION);
             if (defaultLocation.exists()) {
                 logger.info("Found $" + ENV_VARIABLE_PREFIX + " and use it as config path.");
                 return defaultLocation;
 
             }
         } catch (Exception ex) {
-            logger.debug("Could not resolve $" + ENV_VARIABLE_PREFIX, ex);
+            logger.debug("Could not find $" + ENV_VARIABLE_PREFIX, ex);
         }
 
         return new File("/tmp/csra/device-data");

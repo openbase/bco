@@ -8,6 +8,9 @@ package de.citec.csra.dm.view.struct;
 import de.citec.csra.dm.DeviceManager;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
+import de.citec.jps.core.JPService;
+import de.citec.jps.properties.JPReadOnly;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -44,10 +47,17 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
 		removeButton.setEnabled(false);
 		contextTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				editButton.setEnabled(contextTable.getSelectedColumn() >= 0);
-				removeButton.setEnabled(contextTable.getSelectedColumn() >= 0);
+                    editButton.setEnabled(contextTable.getSelectedColumn() >= 0);
+                    removeButton.setEnabled(contextTable.getSelectedColumn() >= 0 && !JPService.getAttribute(JPReadOnly.class).getValue());
 			}
 		});
+        addButton.setEnabled(!JPService.getAttribute(JPReadOnly.class).getValue());
+        removeButton.setEnabled(!JPService.getAttribute(JPReadOnly.class).getValue());
+        if(JPService.getAttribute(JPReadOnly.class).getValue()) {
+            editButton.setText("Show");
+            readOnlyLabel.setText("Read Only Mode");
+            readOnlyLabel.setForeground(Color.ORANGE.darker());
+        }
 	}
 
 	protected final void updateDynamicComponents() {
@@ -104,6 +114,7 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
         editButton = new javax.swing.JButton();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        readOnlyLabel = new javax.swing.JLabel();
 
         contextTable.setAutoCreateRowSorter(true);
         contextTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -168,13 +179,19 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
             }
         });
 
+        readOnlyLabel.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
+        readOnlyLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        readOnlyLabel.setToolTipText("");
+
         javax.swing.GroupLayout contextMenuPanelLayout = new javax.swing.GroupLayout(contextMenuPanel);
         contextMenuPanel.setLayout(contextMenuPanelLayout);
         contextMenuPanelLayout.setHorizontalGroup(
             contextMenuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, contextMenuPanelLayout.createSequentialGroup()
                 .addComponent(removeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(readOnlyLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(editButton, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -184,7 +201,8 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
             .addGroup(contextMenuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(editButton)
                 .addComponent(addButton)
-                .addComponent(removeButton))
+                .addComponent(removeButton)
+                .addComponent(readOnlyLabel))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -235,7 +253,7 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-		add();
+            add();
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void contextTableVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_contextTableVetoableChange
@@ -259,6 +277,7 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
     private javax.swing.JScrollPane contextScrollPane;
     private javax.swing.JTable contextTable;
     private javax.swing.JButton editButton;
+    private javax.swing.JLabel readOnlyLabel;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 }

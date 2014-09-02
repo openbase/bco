@@ -12,6 +12,8 @@ import de.citec.csra.dm.view.struct.DataStreamOverviewPanel;
 import de.citec.csra.dm.view.struct.DeviceConfigOverviewPanel;
 import de.citec.csra.dm.view.struct.DeviceInstanceOverviewPanel;
 import de.citec.csra.dm.view.struct.GlobalConfigOverviewPanel;
+import de.citec.jps.core.JPService;
+import de.citec.jps.properties.JPReadOnly;
 
 /**
  *
@@ -38,6 +40,7 @@ public class DevieManagerGUI extends javax.swing.JFrame {
 		contentTabbedPanel.addTab("DeviceConfig", new DeviceConfigOverviewPanel());
 		contentTabbedPanel.addTab("DataStream", new DataStreamOverviewPanel());
 		contentTabbedPanel.addTab("GlobalConfig", new GlobalConfigOverviewPanel());
+        saveMenuItem.setEnabled(!JPService.getAttribute(JPReadOnly.class).getValue());
 	}
 
 	/**
