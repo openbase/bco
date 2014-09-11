@@ -38,9 +38,15 @@
             </plugin>
         </plugins>
     </build>
+	
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+	
+	<scm>
+		<developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
+		<url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
+	</scm>
 
     <dependencies>
         <dependency>
