@@ -23,6 +23,7 @@ import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
 import de.citec.csra.dm.view.DevieManagerGUI;
+import de.citec.jps.properties.JPReadOnly;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -33,7 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,6 +76,7 @@ public class DeviceManager {
 		JPService.registerProperty(JPDeviceConfigDirectory.class);
 		JPService.registerProperty(JPDeviceInstanceDirectory.class);
 		JPService.registerProperty(JPGlobalConfigDirectory.class);
+        JPService.registerProperty(JPReadOnly.class);
 		JPService.registerProperty(JPShowGUI.class, true);
 		JPService.parseAndExitOnError(args);
 
