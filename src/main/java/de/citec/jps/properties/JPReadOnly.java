@@ -28,7 +28,7 @@ public class JPReadOnly extends AbstractJPBoolean {
     @Override
     public void validate() throws Exception {
         super.validate();
-        if (getValueType().equals((ValueType.PropertyDefault))) {
+        if (!getValueType().equals((ValueType.PropertyDefault))) {
             logger.warn("Started in read only mode!");
         }
     }
