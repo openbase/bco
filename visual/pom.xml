@@ -34,8 +34,8 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass></mainClass>
-                            <name></name>
+                            <mainClass>de.citec.dal.Controller</mainClass>
+                            <name>rsb-color-control</name>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
