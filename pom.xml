@@ -34,13 +34,28 @@
         <dependency>
             <groupId>de.cit-ec</groupId>
             <artifactId>jps</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rsb</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rst</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rst-sandbox</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.citec.csra.rsbbindingtester.view;
+package de.citec.dal.view;
 
 /**
  *

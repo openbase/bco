@@ -77,9 +77,6 @@
             <Property name="text" type="java.lang.String" value="/home/kitchen/ambientlight/000/ctrl"/>
             <Property name="toolTipText" type="java.lang.String" value=""/>
           </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="none"/>
-          </Events>
         </Component>
         <Component class="javax.swing.JColorChooser" name="colorChooser">
         </Component>

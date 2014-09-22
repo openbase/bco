@@ -1,6 +1,6 @@
-package de.citec.csra.rsbbindingtester;
+package de.citec.dal;
 
-import de.citec.csra.rsbbindingtester.view.GUI;
+import de.citec.dal.view.GUI;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.concurrent.ExecutionException;
@@ -72,11 +72,11 @@ public class Controller implements Handler {
 
     }
 
-
-    public<T extends Object> void callMethod(String methodName, T type, final String scope, boolean async) {
+    public <T extends Object> void callMethod(String methodName, T type, final String scope, boolean async) {
         callMethod(methodName, type, new Scope(scope), async);
     }
-    public<T extends Object> void callMethod(String methodName, T type, final Scope scope, boolean async) {
+
+    public <T extends Object> void callMethod(String methodName, T type, final Scope scope, boolean async) {
         try {
             System.out.println("Calling method [" + methodName + "] on scope: " + scope.toString());
             server = Factory.getInstance().createRemoteServer(scope);
@@ -85,7 +85,7 @@ public class Controller implements Handler {
             } catch (RSBException ex) {
                 System.out.println("Server could not be activated on scope [" + scope.toString() + "] !");
             }
-            if(async) {
+            if (async) {
                 server.callAsync(methodName, type);
             } else {
                 server.call(methodName, type);

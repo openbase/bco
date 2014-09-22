@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.rsbbindingtester.view;
+package de.citec.dal.view;
 
-import de.citec.csra.rsbbindingtester.Controller;
+import de.citec.dal.Controller;
 import java.awt.Color;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -70,11 +70,6 @@ public class GUI extends javax.swing.JFrame {
 
         scopeTextField.setText("/home/kitchen/ambientlight/000/ctrl");
         scopeTextField.setToolTipText("");
-        scopeTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                none(evt);
-            }
-        });
 
         javax.swing.GroupLayout ambientLightPanelLayout = new javax.swing.GroupLayout(ambientLightPanel);
         ambientLightPanel.setLayout(ambientLightPanelLayout);
@@ -109,10 +104,6 @@ public class GUI extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void none(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_none
-        // TODO add your handling code here:
-    }//GEN-LAST:event_none
 
     /**
      * @param args the command line arguments

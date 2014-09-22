@@ -3,8 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-package de.citec.csra.rsbbindingtester.view;
+package de.citec.dal.view;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,33 +22,33 @@ import rsb.Scope;
 public abstract class AbstractSensorPanel extends javax.swing.JPanel implements Handler {
 
     private Listener listener;
-    
+
     private static final int NO = 0;
     private static final int YES = 1;
     private static final int UNKNOWN = 2;
-    
+
     public AbstractSensorPanel() {
         initComponents();
-        
+
         addConverter();
     }
-    
+
     protected abstract void addConverter();
-                
+
     @Override
     public abstract void internalNotify(Event event);
-    
+
     protected void setState(int i) {
-        
+
     }
-        
+
     public void activateListener(Scope scope) {
         try {
             listener = Factory.getInstance().createListener(scope);
             listener.activate();
             listener.addHandler(this, true);
         } catch (InitializeException ex) {
-            System.out.println("Could not create Listener on scope ["+scope.toString()+"]!");
+            System.out.println("Could not create Listener on scope [" + scope.toString() + "]!");
             Logger.getLogger(AbstractSensorPanel.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RSBException ex) {
             System.out.println("Could not activate Listener!");
@@ -59,7 +58,7 @@ public abstract class AbstractSensorPanel extends javax.swing.JPanel implements 
             Logger.getLogger(AbstractSensorPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public void deacivateListener() {
         try {
             listener.deactivate();

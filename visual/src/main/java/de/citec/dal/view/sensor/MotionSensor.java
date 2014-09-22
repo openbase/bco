@@ -4,9 +4,9 @@
  * and open the template in the editor.
  */
 
-package de.citec.csra.rsbbindingtester.view.sensor;
+package de.citec.dal.view.sensor;
 
-import de.citec.csra.rsbbindingtester.view.AbstractSensorPanel;
+import de.citec.dal.view.AbstractSensorPanel;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
