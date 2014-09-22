@@ -76,7 +76,7 @@ public class DeviceManager {
 		JPService.registerProperty(JPDeviceConfigDirectory.class);
 		JPService.registerProperty(JPDeviceInstanceDirectory.class);
 		JPService.registerProperty(JPGlobalConfigDirectory.class);
-                JPService.registerProperty(JPReadOnly.class);
+                JPService.registerProperty(JPReadOnly.class, !JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue().canWrite());
 		JPService.registerProperty(JPShowGUI.class, true);
 		JPService.parseAndExitOnError(args);
 
