@@ -99,6 +99,7 @@ public class DeviceManager {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
+                            if(!JPService.getAttribute(JPReadOnly.class).getValue())
 				save();
 			}
 		});
