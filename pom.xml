@@ -26,7 +26,7 @@
     
     <modules>
         <module>remote</module>
-        <module>services</module>
+        <module>service</module>
         <module>visual</module>
     </modules>
     
