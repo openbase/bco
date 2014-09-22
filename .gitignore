@@ -2,3 +2,4 @@
 *.swp
 build
 /visual/target/
+/service/target/
