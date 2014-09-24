@@ -6,6 +6,8 @@
 package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.RSBBindingConnection;
+import de.citec.dal.RSBBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
@@ -25,7 +27,7 @@ public abstract class AbstractHALController<M extends GeneratedMessage, MB exten
     protected final String id;
     private final HardwareUnit relatedHardwareUnit;
 
-    protected RSBBinding rsbBinding = RSBBinding.getInstance();
+    protected RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
 
     public AbstractHALController(String id, HardwareUnit relatedHardwareUnit, MB builder) throws RSBBindingException {
         super(generateScope(id, relatedHardwareUnit), builder);
