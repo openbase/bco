@@ -63,4 +63,21 @@ public class PowerPlugController extends AbstractHALController<PowerPlug, PowerP
             }
         }
     }
+    
+    public void getPowerConsumption() {
+        notifyChange();
+    }
+    public class GetPowerConsumptionCallback extends EventCallback {
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                PowerPlugController.this.getPowerConsumption();
+                return new Event(String.class, "Ok");
+            } catch (Exception ex) {
+                logger.warn("Could not invoke method for ["+PowerPlugController.this.getId()+"}",ex);
+                return new Event(String.class, "Failed");
+            }
+        }
+    }
 }
