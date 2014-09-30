@@ -9,6 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedTiltedStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.al.BatteryStateController;
 import de.citec.dal.hal.al.HandleSensorController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -26,26 +27,34 @@ public class HM_RotaryHandleSensorController extends AbstractHardwareController<
                 new ProtocolBufferConverter<>(HM_RotaryHandleSensorType.HM_RotaryHandleSensor.getDefaultInstance()));
     }
     
-	private final HandleSensorController handleSensor;
-
-	public HM_RotaryHandleSensorController(final String id, final Location location) throws RSBBindingException {
-		super(id, location, HM_RotaryHandleSensor.newBuilder());
+    private final HandleSensorController handleSensor;
+    private final BatteryStateController batteryState;
+    
+    public HM_RotaryHandleSensorController(final String id, final Location location) throws RSBBindingException {
+        super(id, location, HM_RotaryHandleSensor.newBuilder());
         
         builder.setId(id);
-		this.handleSensor = new HandleSensorController("HandleSensor", this, builder.getHandleSensorBuilder());
+        this.handleSensor = new HandleSensorController("HandleSensor", this, builder.getHandleSensorBuilder());
+        this.batteryState = new BatteryStateController("BatteryState", this, builder.getBatterystateBuilder());
         this.register(handleSensor);
-	}
-
-	@Override
-	protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-		halFunctionMapping.put("HandleSensor", getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
-	}
-
-	public void updateHandleSensor(org.openhab.core.library.types.StringType type) {
+        this.register(batteryState);
+    }
+    
+    @Override
+    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
+        halFunctionMapping.put("HandleSensor", getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
+        halFunctionMapping.put("HandleSensor", getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
+    }
+    
+    public void updateHandleSensor(org.openhab.core.library.types.StringType type) {
         try {
             handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
             logger.error("Not able to transform from StringType to OpenClosedTiltedState!", ex);
         }
-	}
+    }
+    
+    public void updateBatteryState(org.openhab.core.library.types.DecimalType value) {
+        batteryState.updateBatteryLevel(value.floatValue());
+    }
 }
