@@ -7,11 +7,14 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractHALController;
+import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rsb.patterns.EventCallback;
 import rst.homeautomation.MotionSensorType;
 import rst.homeautomation.MotionSensorType.MotionSensor;
 import rst.homeautomation.states.MotionType;
+import rst.homeautomation.states.MotionType.Motion.MotionState;
 
 /**
  *
@@ -23,13 +26,31 @@ public class MotionSensorController extends AbstractHALController<MotionSensor, 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
-    
-	public MotionSensorController(String id, HardwareUnit hardwareUnit, MotionSensor.Builder builder) throws RSBBindingException {
-		super(id, hardwareUnit, builder);
-	}
 
-	public void updateMotionState(final MotionType.Motion.MotionState state) {
-		builder.getStateBuilder().setState(state);
-		notifyChange();
-	}
+    public MotionSensorController(String id, HardwareUnit hardwareUnit, MotionSensor.Builder builder) throws RSBBindingException {
+        super(id, hardwareUnit, builder);
+    }
+
+    public void updateMotionState(final MotionType.Motion.MotionState state) {
+        builder.getStateBuilder().setState(state);
+        notifyChange();
+    }
+
+    public MotionState getMotionState() {
+        logger.debug("Getting [" + id + "] State: [" + builder.getState() + "]");
+        return builder.getState().getState();
+    }
+
+    public class GetReedSwitchState extends EventCallback {
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                return new Event(MotionState.class, MotionSensorController.this.getMotionState());
+            } catch (Exception ex) {
+                logger.warn("Could not invoke method for [" + MotionSensorController.this.getId() + "}", ex);
+                return new Event(String.class, "Failed");
+            }
+        }
+    }
 }

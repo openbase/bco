@@ -48,7 +48,7 @@ public class PW_PowerPlugController extends AbstractHardwareController<PW_PowerP
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put(COMPONENT_POWER_PLUG, getClass().getMethod("updatePowerPlug", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR, getClass().getMethod("getPowerConsumption"));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR, getClass().getMethod("updatePowerConsumption"));
     }
 
     public void updatePowerPlug(OnOffType type) throws RSBBindingException {
@@ -58,7 +58,7 @@ public class PW_PowerPlugController extends AbstractHardwareController<PW_PowerP
             logger.error("Not able to transform from OnOffType to PowerState!", ex);
         }
     }
-    
+
     public void updatePowerConsumptionSensor(DecimalType value) {
         powerConsumptionSensor.updatePowerConsumption(value.floatValue());
     }

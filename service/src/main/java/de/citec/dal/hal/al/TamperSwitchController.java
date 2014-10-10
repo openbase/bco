@@ -23,7 +23,7 @@ public class TamperSwitchController extends AbstractHALController<TamperSwitch, 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
-    
+
     public TamperSwitchController(String id, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws RSBBindingException {
         super(id, hardwareUnit, builder);
     }

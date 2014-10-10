@@ -58,7 +58,7 @@ public class PowerPlugController extends AbstractHALController<PowerPlug, PowerP
                 PowerPlugController.this.setPowerState(((PowerType.Power) request.getData()).getState());
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for ["+PowerPlugController.this.getId()+"}",ex);
+                logger.warn("Could not invoke method for [" + PowerPlugController.this.getId() + "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

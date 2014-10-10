@@ -26,7 +26,7 @@ public class HandleSensorController extends AbstractHALController<HandleSensor, 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
-    
+
     public HandleSensorController(String id, HardwareUnit hardwareUnit, HandleSensor.Builder builder) throws RSBBindingException {
         super(id, hardwareUnit, builder);
     }
@@ -48,7 +48,7 @@ public class HandleSensorController extends AbstractHALController<HandleSensor, 
             try {
                 return new Event(OpenClosedTiltedState.class, HandleSensorController.this.getRotaryHandleState());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for ["+HandleSensorController.this.getId()+"}",ex);
+                logger.warn("Could not invoke method for [" + HandleSensorController.this.getId() + "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

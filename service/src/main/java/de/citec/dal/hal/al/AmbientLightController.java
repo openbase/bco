@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.HSVColorTransformer;
@@ -43,9 +42,9 @@ public class AmbientLightController extends AbstractHALController<AmbientLightTy
     public void registerMethods(final LocalServer server) throws RSBException {
         server.addMethod("setColor", new SetColorCallback());
         server.addMethod("setPowerState", new SetPowerStateCallback());
-        
+
     }
-    
+
     public void updatePowerState(final PowerType.Power.PowerState state) {
         builder.getStateBuilder().setState(state);
         notifyChange();
@@ -64,19 +63,19 @@ public class AmbientLightController extends AbstractHALController<AmbientLightTy
                 AmbientLightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for ["+AmbientLightController.this.getId()+"]",ex);
+                logger.warn("Could not invoke method for [" + AmbientLightController.this.getId() + "]", ex);
                 return new Event(String.class, "Failed");
             }
         }
     }
-    
+
     public void updateColor(final HSVColor color) {
         builder.setColor(color);
         notifyChange();
     }
 
     public void setColor(final HSVColor color) throws RSBBindingException {
-        logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation()+ "|" + color.getValue()+"]");
+        logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
         sendCommand(HSVColorTransformer.transform(color));
     }
 
@@ -88,7 +87,7 @@ public class AmbientLightController extends AbstractHALController<AmbientLightTy
                 AmbientLightController.this.setColor(((HSVColor) request.getData()));
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for "+AmbientLightController.this, ex);
+                logger.warn("Could not invoke method for " + AmbientLightController.this, ex);
                 return new Event(String.class, "Failed");
             }
         }

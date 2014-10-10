@@ -54,7 +54,7 @@ public class PowerConsumptionSensorController extends AbstractHALController<Powe
             try {
                 return new Event(Float.class, PowerConsumptionSensorController.this.getPowerConsumption());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for ["+PowerConsumptionSensorController.this.getId()+"}",ex);
+                logger.warn("Could not invoke method for [" + PowerConsumptionSensorController.this.getId() + "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

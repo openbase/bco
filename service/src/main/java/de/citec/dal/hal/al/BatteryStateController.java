@@ -26,17 +26,17 @@ public class BatteryStateController extends AbstractHALController<BatteryState, 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(BatteryStateType.BatteryState.getDefaultInstance()));
     }
-    
+
     public BatteryStateController(String id, HardwareUnit hardwareUnit, BatteryState.Builder builder) throws RSBBindingException {
         super(id, hardwareUnit, builder);
     }
-    
+
     public void updateBatteryLevel(final float batteryState) {
         builder.setChargeLevel(batteryState);
         notifyChange();
     }
 
-        @Override
+    @Override
     public void registerMethods(final LocalServer server) throws RSBException {
         server.addMethod("getBatteryLevel", new GetBatteryLevelCallback());
     }
@@ -53,7 +53,7 @@ public class BatteryStateController extends AbstractHALController<BatteryState, 
             try {
                 return new Event(Float.class, BatteryStateController.this.getBatteryLevel());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for ["+BatteryStateController.this.getId()+"}",ex);
+                logger.warn("Could not invoke method for [" + BatteryStateController.this.getId() + "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

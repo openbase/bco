@@ -21,31 +21,31 @@ import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
  * @author thuxohl
  */
 public class HM_RotaryHandleSensorController extends AbstractHardwareController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(HM_RotaryHandleSensorType.HM_RotaryHandleSensor.getDefaultInstance()));
     }
-    
+
     private final HandleSensorController handleSensor;
     private final BatteryStateController batteryState;
-    
+
     public HM_RotaryHandleSensorController(final String id, final Location location) throws RSBBindingException {
         super(id, location, HM_RotaryHandleSensor.newBuilder());
-        
+
         builder.setId(id);
         this.handleSensor = new HandleSensorController("HandleSensor", this, builder.getHandleSensorBuilder());
         this.batteryState = new BatteryStateController("BatteryState", this, builder.getBatterystateBuilder());
         this.register(handleSensor);
         this.register(batteryState);
     }
-    
+
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put("HandleSensor", getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
-        halFunctionMapping.put("HandleSensor", getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
+        halFunctionMapping.put("BatteryState", getClass().getMethod("updateBatteryState", org.openhab.core.library.types.DecimalType.class));
     }
-    
+
     public void updateHandleSensor(org.openhab.core.library.types.StringType type) {
         try {
             handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
@@ -53,7 +53,7 @@ public class HM_RotaryHandleSensorController extends AbstractHardwareController<
             logger.error("Not able to transform from StringType to OpenClosedTiltedState!", ex);
         }
     }
-    
+
     public void updateBatteryState(org.openhab.core.library.types.DecimalType value) {
         batteryState.updateBatteryLevel(value.floatValue());
     }
