@@ -7,11 +7,14 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractHALController;
+import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rsb.patterns.EventCallback;
 import rst.homeautomation.ReedSwitchType;
 import rst.homeautomation.ReedSwitchType.ReedSwitch;
 import rst.homeautomation.states.OpenClosedType;
+import rst.homeautomation.states.OpenClosedType.OpenClosed.OpenClosedState;
 
 /**
  *
@@ -23,7 +26,7 @@ public class ReedSwitchController extends AbstractHALController<ReedSwitch, Reed
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
-    
+
     public ReedSwitchController(String id, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws RSBBindingException {
         super(id, hardwareUnit, builder);
     }
@@ -31,6 +34,24 @@ public class ReedSwitchController extends AbstractHALController<ReedSwitch, Reed
     public void updateOpenClosedState(final OpenClosedType.OpenClosed.OpenClosedState state) {
         builder.getStateBuilder().setState(state);
         notifyChange();
+    }
+
+    public OpenClosedState getReedSwitchState() {
+        logger.debug("Getting [" + id + "] State: [" + builder.getState() + "]");
+        return builder.getState().getState();
+    }
+
+    public class GetReedSwitchState extends EventCallback {
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                return new Event(OpenClosedState.class, ReedSwitchController.this.getReedSwitchState());
+            } catch (Exception ex) {
+                logger.warn("Could not invoke method for [" + ReedSwitchController.this.getId() + "}", ex);
+                return new Event(String.class, "Failed");
+            }
+        }
     }
 
 }
