@@ -6,6 +6,7 @@
 package de.citec.jps.properties;
 
 import de.citec.jps.core.AbstractJavaProperty.ValueType;
+import de.citec.jps.core.JPService;
 import de.citec.jps.preset.AbstractJPBoolean;
 
 /**
@@ -22,7 +23,7 @@ public class JPReadOnly extends AbstractJPBoolean {
     
     @Override
     protected Boolean getPropertyDefaultValue() {
-        return false;
+        return !JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue().canWrite();
     }
 
     @Override

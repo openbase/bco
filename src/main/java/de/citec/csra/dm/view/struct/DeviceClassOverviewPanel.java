@@ -9,6 +9,7 @@ import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.struct.DeviceClass;
 import java.util.List;
 import javax.swing.JTable;
+import javax.swing.table.TableModel;
 
 /**
  *

@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
@@ -26,85 +27,102 @@ import javax.swing.table.TableModel;
  */
 public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.swing.JPanel {
 
-	protected final DeviceManager deviceManager = DeviceManager.getInstance();
-	protected List<T> contextList;
+    protected final DeviceManager deviceManager = DeviceManager.getInstance();
+    protected List<T> contextList;
 
-	/**
-	 * Creates new form DeviceClassOverview
-	 */
-	public AbstractOverviewPanel() {
-		initComponents();
-		updateDynamicComponents();
-		deviceManager.addPropertyChangeListener(new PropertyChangeListener() {
+    /**
+     * Creates new form DeviceClassOverview
+     */
+    public AbstractOverviewPanel() {
+        initComponents();
+        updateDynamicComponents();
+        deviceManager.addPropertyChangeListener(new PropertyChangeListener() {
 
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals(DeviceManager.DATA_UPDATE)) {
-					updateDynamicComponents();
-				}
-			}
-		});
-		editButton.setEnabled(false);
-		removeButton.setEnabled(false);
-		contextTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-                    editButton.setEnabled(contextTable.getSelectedColumn() >= 0);
-                    removeButton.setEnabled(contextTable.getSelectedColumn() >= 0 && !JPService.getAttribute(JPReadOnly.class).getValue());
-			}
-		});
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(DeviceManager.DATA_UPDATE)) {
+                    updateDynamicComponents();
+                }
+            }
+        });
+        editButton.setEnabled(false);
+        removeButton.setEnabled(false);
+        contextTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                editButton.setEnabled(contextTable.getSelectedColumn() >= 0);
+                removeButton.setEnabled(contextTable.getSelectedColumn() >= 0 && !JPService.getAttribute(JPReadOnly.class).getValue());
+            }
+        });
         addButton.setEnabled(!JPService.getAttribute(JPReadOnly.class).getValue());
         removeButton.setEnabled(!JPService.getAttribute(JPReadOnly.class).getValue());
-        if(JPService.getAttribute(JPReadOnly.class).getValue()) {
+        if (JPService.getAttribute(JPReadOnly.class).getValue()) {
             editButton.setText("Show");
             readOnlyLabel.setText("Read Only Mode");
             readOnlyLabel.setForeground(Color.ORANGE.darker());
         }
-	}
+    }
 
-	protected final void updateDynamicComponents() {
-		contextList = getContextList();
-		contextTable.setModel(generateTableModel());
-		contextTable.addColumnSelectionInterval(0, 0);
-	}
+    protected final void updateDynamicComponents() {
+        List<? extends RowSorter.SortKey> sortKeys = contextTable.getRowSorter().getSortKeys();
+        int selectedColumn = 0;
+        int selectedRow = -1;
+        if ((contextTable.getSelectedColumn() != 0) && (contextTable.getSelectedRow() != -1)) {
+            selectedColumn = contextTable.convertColumnIndexToModel(contextTable.getSelectedColumn());
+            selectedRow = contextTable.convertRowIndexToModel(contextTable.getSelectedRow());
+        }
+        contextList = getContextList();
+        contextTable.setModel(generateTableModel());
+        contextTable.addColumnSelectionInterval(0, 0);
+        contextTable.changeSelection(selectedRow, selectedColumn, false, false);
+        contextTable.getRowSorter().setSortKeys(sortKeys);
+    }
 
-	private TableModel generateTableModel() {
-		String[] lables = getContextLables();
-		Object[] contextData = new Object[lables.length];
-		int contextCounter = contextList.size();
+    private TableModel generateTableModel() {
+        String[] lables = getContextLables();
+        Object[] contextData = new Object[lables.length];
+        int contextCounter = contextList.size();
 
-		Object[][] tableData = new Object[contextCounter][lables.length];
-		T context;
-		for (int i = 0; i < contextCounter; i++) {
-			context = contextList.get(i);
-			updateContextData(context, contextData);
-			System.arraycopy(contextData, 0, tableData[i], 0, contextData.length);
-		}
-		return new javax.swing.table.DefaultTableModel(
-				tableData,
-				lables
-		) {
+        Object[][] tableData = new Object[contextCounter][lables.length];
+        T context;
+        for (int i = 0; i < contextCounter; i++) {
+            context = contextList.get(i);
+            updateContextData(context, contextData);
+            System.arraycopy(contextData, 0, tableData[i], 0, contextData.length);
+        }
+        return new javax.swing.table.DefaultTableModel(
+                tableData,
+                lables
+        ) {
 
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
 
-		};
-	}
+        };
+    }
 
-	protected abstract List<T> getContextList();
+    private void edit() {
+        try {
+            edit(getSelection(contextTable));
+        } catch (NotAvailableException ex) {
+            System.err.println("Could not edit selection! Content does not exist!");
+        }
+    }
+    
+    protected abstract List<T> getContextList();
 
-	protected abstract String[] getContextLables();
+    protected abstract String[] getContextLables();
 
-	protected abstract T getSelection(JTable contextTable) throws NotAvailableException;
+    protected abstract T getSelection(JTable contextTable) throws NotAvailableException;
 
-	protected abstract void updateContextData(T context, Object[] contextData);
+    protected abstract void updateContextData(T context, Object[] contextData);
 
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
-	@SuppressWarnings("unchecked")
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -130,13 +148,6 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
         ));
         contextTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN);
         contextTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        contextTable.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-                contextTableCaretPositionChanged(evt);
-            }
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-            }
-        });
         contextTable.addAncestorListener(new javax.swing.event.AncestorListener() {
             public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
             }
@@ -146,14 +157,24 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
             public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
             }
         });
+        contextTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                contextTableMouseClicked(evt);
+            }
+        });
+        contextTable.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+                contextTableCaretPositionChanged(evt);
+            }
+        });
         contextTable.addVetoableChangeListener(new java.beans.VetoableChangeListener() {
             public void vetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {
                 contextTableVetoableChange(evt);
             }
         });
         contextScrollPane.setViewportView(contextTable);
-
-        contextMenuPanel.setBorder(null);
 
         editButton.setMnemonic('e');
         editButton.setText("Edit");
@@ -228,32 +249,28 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-		T selection = null;
-		try {
-			selection = getSelection(contextTable);
-		} catch (NotAvailableException ex) {
-			System.err.println("Could not remove selection! Content does not exist!");
-			return;
-		}
+        T selection = null;
+        try {
+            selection = getSelection(contextTable);
+        } catch (NotAvailableException ex) {
+            System.err.println("Could not remove selection! Content does not exist!");
+            return;
+        }
 
-		if (JOptionPane.showConfirmDialog(this,
-				"Do you realy want to delete " + selection.getId() + "?",
-				"Confirm deletion",
-				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-			remove(selection);
-		}
+        if (JOptionPane.showConfirmDialog(this,
+                "Do you realy want to delete " + selection.getId() + "?",
+                "Confirm deletion",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            remove(selection);
+        }
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-		try {                       
-			edit(getSelection(contextTable));
-		} catch (NotAvailableException ex) {
-			System.err.println("Could not edit selection! Content does not exist!");
-		}
+        edit();
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-            add();
+        add();
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void contextTableVetoableChange(java.beans.PropertyChangeEvent evt)throws java.beans.PropertyVetoException {//GEN-FIRST:event_contextTableVetoableChange
@@ -265,11 +282,17 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
     private void contextTableAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_contextTableAncestorAdded
     }//GEN-LAST:event_contextTableAncestorAdded
 
-	protected abstract void remove(T type);
+    private void contextTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_contextTableMouseClicked
+        if( evt.getClickCount() == 2 ) {
+            edit();
+        }
+    }//GEN-LAST:event_contextTableMouseClicked
 
-	protected abstract void edit(T type);
+    protected abstract void remove(T type);
 
-	protected abstract void add();
+    protected abstract void edit(T type);
+
+    protected abstract void add();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;

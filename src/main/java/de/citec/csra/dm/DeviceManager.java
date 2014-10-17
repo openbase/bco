@@ -43,316 +43,317 @@ import java.util.logging.Logger;
  */
 public class DeviceManager {
 
-	public final static String DATA_UPDATE = "DataUpdate";
+    public final static String DATA_UPDATE = "DataUpdate";
 
-	private static DeviceManager instance;
+    private static DeviceManager instance;
 
-	private final Serializer serializer;
-	private final PropertyChangeSupport changes;
+    private final Serializer serializer;
+    private final PropertyChangeSupport changes;
 
-	private final Map<String, DeviceClass> deviceClassMap;
-	private final Map<String, DeviceInstance> deviceInstanceMap;
-	private final Map<String, DeviceConfig> deviceConfigMap;
-	private final Map<String, DataStream> dataStreamMap;
-	private final Map<String, GlobalConfig> globalConfigMap;
+    private final Map<String, DeviceClass> deviceClassMap;
+    private final Map<String, DeviceInstance> deviceInstanceMap;
+    private final Map<String, DeviceConfig> deviceConfigMap;
+    private final Map<String, DataStream> dataStreamMap;
+    private final Map<String, GlobalConfig> globalConfigMap;
 
-	public static final synchronized DeviceManager getInstance() {
-		if (instance == null) {
-			instance = new DeviceManager();
-		}
-		return instance;
-	}
+    public static final synchronized DeviceManager getInstance() {
+        if (instance == null) {
+            instance = new DeviceManager();
+        }
+        return instance;
+    }
 
-	/**
-	 * @param args the command line arguments
-	 */
-	public static void main(String args[]) {
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
 
-		/* Setup CLParser */
-		JPService.setApplicationName("DeviceManager");
-		JPService.registerProperty(JPDeviceManagerConfigPath.class);
-		JPService.registerProperty(JPDataStreamDirectory.class);
-		JPService.registerProperty(JPDeviceClassDirectory.class);
-		JPService.registerProperty(JPDeviceConfigDirectory.class);
-		JPService.registerProperty(JPDeviceInstanceDirectory.class);
-		JPService.registerProperty(JPGlobalConfigDirectory.class);
-                JPService.registerProperty(JPReadOnly.class, !JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue().canWrite());
-		JPService.registerProperty(JPShowGUI.class, true);
-		JPService.parseAndExitOnError(args);
+        /* Setup CLParser */
+        JPService.setApplicationName("DeviceManager");
+        JPService.registerProperty(JPDeviceManagerConfigPath.class);
+        JPService.registerProperty(JPDataStreamDirectory.class);
+        JPService.registerProperty(JPDeviceClassDirectory.class);
+        JPService.registerProperty(JPDeviceConfigDirectory.class);
+        JPService.registerProperty(JPDeviceInstanceDirectory.class);
+        JPService.registerProperty(JPGlobalConfigDirectory.class);
+        JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPShowGUI.class, true);
+        JPService.parseAndExitOnError(args);
 
-		if (JPService.getAttribute(JPShowGUI.class).getValue()) {
-			DevieManagerGUI.main(args);
-		}
-		getInstance();
-	}
+        if (JPService.getAttribute(JPShowGUI.class).getValue()) {
+            DevieManagerGUI.main(args);
+        }
+        getInstance();
+    }
 
-	private DeviceManager() {
-		this.deviceClassMap = new HashMap<>();
-		this.deviceInstanceMap = new HashMap<>();
-		this.deviceConfigMap = new HashMap<>();
-		this.dataStreamMap = new HashMap<>();
-		this.globalConfigMap = new HashMap<>();
-		this.serializer = new Serializer();
-		this.changes = new PropertyChangeSupport(this);
-		this.load();
+    private DeviceManager() {
+        this.deviceClassMap = new HashMap<>();
+        this.deviceInstanceMap = new HashMap<>();
+        this.deviceConfigMap = new HashMap<>();
+        this.dataStreamMap = new HashMap<>();
+        this.globalConfigMap = new HashMap<>();
+        this.serializer = new Serializer();
+        this.changes = new PropertyChangeSupport(this);
+        this.load();
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-                            if(!JPService.getAttribute(JPReadOnly.class).getValue())
-				save();
-			}
-		});
-	}
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                if (!JPService.getAttribute(JPReadOnly.class).getValue()) {
+                    save();
+                }
+            }
+        });
+    }
 
-	public void addDeviceInstance(final DeviceInstance device) throws InvalidOperationException {
-		checkID(device);
-		deviceInstanceMap.put(device.getId(), device);
-		notifyDataUpdate();
-	}
+    public void addDeviceInstance(final DeviceInstance device) throws InvalidOperationException {
+        checkID(device);
+        deviceInstanceMap.put(device.getId(), device);
+        notifyDataUpdate();
+    }
 
-	public void addDeviceClass(final DeviceClass deviceClass) throws InvalidOperationException {
-		checkID(deviceClass);
-		deviceClassMap.put(deviceClass.getId(), deviceClass);
-		notifyDataUpdate();
-	}
+    public void addDeviceClass(final DeviceClass deviceClass) throws InvalidOperationException {
+        checkID(deviceClass);
+        deviceClassMap.put(deviceClass.getId(), deviceClass);
+        notifyDataUpdate();
+    }
 
-	public void addDeviceConfig(final DeviceConfig deviceConfig) throws InvalidOperationException {
-		checkID(deviceConfig);
-		deviceConfigMap.put(deviceConfig.getId(), deviceConfig);
-		notifyDataUpdate();
-	}
+    public void addDeviceConfig(final DeviceConfig deviceConfig) throws InvalidOperationException {
+        checkID(deviceConfig);
+        deviceConfigMap.put(deviceConfig.getId(), deviceConfig);
+        notifyDataUpdate();
+    }
 
-	public void addDataStream(final DataStream dataStream) throws InvalidOperationException {
-		checkID(dataStream);
-		dataStreamMap.put(dataStream.getId(), dataStream);
-		notifyDataUpdate();
-	}
+    public void addDataStream(final DataStream dataStream) throws InvalidOperationException {
+        checkID(dataStream);
+        dataStreamMap.put(dataStream.getId(), dataStream);
+        notifyDataUpdate();
+    }
 
-	public void addGlobalConfig(final GlobalConfig globalConfig) throws InvalidOperationException {
-		checkID(globalConfig);
-		globalConfigMap.put(globalConfig.getId(), globalConfig);
-		notifyDataUpdate();
-	}
+    public void addGlobalConfig(final GlobalConfig globalConfig) throws InvalidOperationException {
+        checkID(globalConfig);
+        globalConfigMap.put(globalConfig.getId(), globalConfig);
+        notifyDataUpdate();
+    }
 
-	public final void notifyDataUpdate() {
-		changes.firePropertyChange(DATA_UPDATE, null, null);
-	}
-	
-	private void checkID(Manageable context) throws InvalidOperationException {
-		String id = context.getId();
-		
-		if(id.equals("")) {
-			throw new InvalidOperationException("Invalid ID");
-		}
-	}
+    public final void notifyDataUpdate() {
+        changes.firePropertyChange(DATA_UPDATE, null, null);
+    }
 
-	public final void save() {
+    private void checkID(Manageable context) throws InvalidOperationException {
+        String id = context.getId();
 
-		for (DeviceClass deviceClass : deviceClassMap.values()) {
-			try {
-				serializer.serialize(deviceClass, deviceClass.getFile(), DeviceClass.class);
-			} catch (IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + deviceClass, ex);
-			}
-		}
+        if (id.equals("")) {
+            throw new InvalidOperationException("Invalid ID");
+        }
+    }
 
-		for (DeviceInstance deviceInstance : deviceInstanceMap.values()) {
-			try {
-				serializer.serialize(deviceInstance, deviceInstance.getFile(), DeviceInstance.class);
-			} catch (IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + deviceInstance, ex);
-			}
-		}
+    public final void save() {
 
-		for (DeviceConfig deviceConfig : deviceConfigMap.values()) {
-			try {
-				serializer.serialize(deviceConfig, deviceConfig.getFile(), DeviceConfig.class);
-			} catch (IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + deviceConfig, ex);
-			}
-		}
+        for (DeviceClass deviceClass : deviceClassMap.values()) {
+            try {
+                serializer.serialize(deviceClass, deviceClass.getFile(), DeviceClass.class);
+            } catch (IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + deviceClass, ex);
+            }
+        }
 
-		for (DataStream dataStream : dataStreamMap.values()) {
-			try {
-				serializer.serialize(dataStream, dataStream.getFile(), DataStream.class);
-			} catch (IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + dataStream, ex);
-			}
-		}
+        for (DeviceInstance deviceInstance : deviceInstanceMap.values()) {
+            try {
+                serializer.serialize(deviceInstance, deviceInstance.getFile(), DeviceInstance.class);
+            } catch (IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + deviceInstance, ex);
+            }
+        }
 
-		for (GlobalConfig globalConfig : globalConfigMap.values()) {
-			try {
-				serializer.serialize(globalConfig, globalConfig.getFile(), GlobalConfig.class);
-			} catch (IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + globalConfig, ex);
-			}
-		}
-	}
+        for (DeviceConfig deviceConfig : deviceConfigMap.values()) {
+            try {
+                serializer.serialize(deviceConfig, deviceConfig.getFile(), DeviceConfig.class);
+            } catch (IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + deviceConfig, ex);
+            }
+        }
 
-	public final void load() {
-		
-		//TODO display warning in case of changes which will not be saved.
-		deviceClassMap.clear();
-		deviceInstanceMap.clear();
-		deviceConfigMap.clear();
-		dataStreamMap.clear();
-		globalConfigMap.clear();
-		
-		FileFilter fileFilter = new FileFilter() {
+        for (DataStream dataStream : dataStreamMap.values()) {
+            try {
+                serializer.serialize(dataStream, dataStream.getFile(), DataStream.class);
+            } catch (IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + dataStream, ex);
+            }
+        }
 
-			@Override
-			public boolean accept(File file) {
-				return (!file.isHidden()) && file.isFile();
-			}
-		};
-		
-		for (File file : JPService.getAttribute(JPDeviceClassDirectory.class).getValue().listFiles(fileFilter)) {
-			try {
-				addDeviceClass(serializer.deserialize(file, DeviceClass.class));
-			} catch (InvalidOperationException | IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
-			}
-		}
+        for (GlobalConfig globalConfig : globalConfigMap.values()) {
+            try {
+                serializer.serialize(globalConfig, globalConfig.getFile(), GlobalConfig.class);
+            } catch (IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not save " + globalConfig, ex);
+            }
+        }
+    }
 
-		for (File file : JPService.getAttribute(JPDeviceInstanceDirectory.class).getValue().listFiles(fileFilter)) {
-			try {
-				addDeviceInstance(serializer.deserialize(file, DeviceInstance.class));
-			} catch (InvalidOperationException | IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
-			}
-		}
+    public final void load() {
 
-		for (File file : JPService.getAttribute(JPDeviceConfigDirectory.class).getValue().listFiles(fileFilter)) {
-			try {
-				addDeviceConfig(serializer.deserialize(file, DeviceConfig.class));
-			} catch (InvalidOperationException | IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
-			}
-		}
+        //TODO display warning in case of changes which will not be saved.
+        deviceClassMap.clear();
+        deviceInstanceMap.clear();
+        deviceConfigMap.clear();
+        dataStreamMap.clear();
+        globalConfigMap.clear();
 
-		for (File file : JPService.getAttribute(JPDataStreamDirectory.class).getValue().listFiles(fileFilter)) {
-			try {
-				addDataStream(serializer.deserialize(file, DataStream.class));
-			} catch (InvalidOperationException | IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
-			}
-		}
+        FileFilter fileFilter = new FileFilter() {
 
-		for (File file : JPService.getAttribute(JPGlobalConfigDirectory.class).getValue().listFiles(fileFilter)) {
-			try {
-				addGlobalConfig(serializer.deserialize(file, GlobalConfig.class));
-			} catch (InvalidOperationException | IOException ex) {
-				Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
-			}
-		}
-	}
+            @Override
+            public boolean accept(File file) {
+                return (!file.isHidden()) && file.isFile();
+            }
+        };
 
-	public Map<String, DeviceClass> getDeviceClassMap() {
-		return Collections.unmodifiableMap(deviceClassMap);
-	}
+        for (File file : JPService.getAttribute(JPDeviceClassDirectory.class).getValue().listFiles(fileFilter)) {
+            try {
+                addDeviceClass(serializer.deserialize(file, DeviceClass.class));
+            } catch (InvalidOperationException | IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
+            }
+        }
 
-	public Map<String, DeviceInstance> getDeviceInstanceMap() {
-		return Collections.unmodifiableMap(deviceInstanceMap);
-	}
+        for (File file : JPService.getAttribute(JPDeviceInstanceDirectory.class).getValue().listFiles(fileFilter)) {
+            try {
+                addDeviceInstance(serializer.deserialize(file, DeviceInstance.class));
+            } catch (InvalidOperationException | IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
+            }
+        }
 
-	public Map<String, DeviceConfig> getDeviceConfigMap() {
-		return Collections.unmodifiableMap(deviceConfigMap);
-	}
+        for (File file : JPService.getAttribute(JPDeviceConfigDirectory.class).getValue().listFiles(fileFilter)) {
+            try {
+                addDeviceConfig(serializer.deserialize(file, DeviceConfig.class));
+            } catch (InvalidOperationException | IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
+            }
+        }
 
-	public Map<String, DataStream> getDataStreamMap() {
-		return Collections.unmodifiableMap(dataStreamMap);
-	}
+        for (File file : JPService.getAttribute(JPDataStreamDirectory.class).getValue().listFiles(fileFilter)) {
+            try {
+                addDataStream(serializer.deserialize(file, DataStream.class));
+            } catch (InvalidOperationException | IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
+            }
+        }
 
-	public Map<String, GlobalConfig> getGlobalConfigMap() {
-		return Collections.unmodifiableMap(globalConfigMap);
-	}
+        for (File file : JPService.getAttribute(JPGlobalConfigDirectory.class).getValue().listFiles(fileFilter)) {
+            try {
+                addGlobalConfig(serializer.deserialize(file, GlobalConfig.class));
+            } catch (InvalidOperationException | IOException ex) {
+                Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, "Could not load " + file, ex);
+            }
+        }
+    }
 
-	public List<DeviceInstance> getDeviceInstanceList() {
-		return new ArrayList(deviceInstanceMap.values());
-	}
+    public Map<String, DeviceClass> getDeviceClassMap() {
+        return Collections.unmodifiableMap(deviceClassMap);
+    }
 
-	public List<DeviceClass> getDeviceClassList() {
-		return new ArrayList(deviceClassMap.values());
-	}
+    public Map<String, DeviceInstance> getDeviceInstanceMap() {
+        return Collections.unmodifiableMap(deviceInstanceMap);
+    }
 
-	public List<DeviceConfig> getDeviceConfigList() {
-		return new ArrayList(deviceConfigMap.values());
-	}
+    public Map<String, DeviceConfig> getDeviceConfigMap() {
+        return Collections.unmodifiableMap(deviceConfigMap);
+    }
 
-	public List<DataStream> getDataStreamList() {
-		return new ArrayList(dataStreamMap.values());
-	}
+    public Map<String, DataStream> getDataStreamMap() {
+        return Collections.unmodifiableMap(dataStreamMap);
+    }
 
-	public List<GlobalConfig> getGlobalConfigList() {
-		return new ArrayList(globalConfigMap.values());
-	}
+    public Map<String, GlobalConfig> getGlobalConfigMap() {
+        return Collections.unmodifiableMap(globalConfigMap);
+    }
 
-	public DeviceInstance getDeviceInstance(final String id) throws NotAvailableException {
-		if(!deviceInstanceMap.containsKey(id)) {
-			throw new NotAvailableException(id);
-		}
-		return deviceInstanceMap.get(id);
-	}
+    public List<DeviceInstance> getDeviceInstanceList() {
+        return new ArrayList(deviceInstanceMap.values());
+    }
 
-	public DeviceClass getDeviceClass(final String id) throws NotAvailableException {
-		if(!deviceClassMap.containsKey(id)) {
-			throw new NotAvailableException(id);
-		}
-		return deviceClassMap.get(id);
-	}
+    public List<DeviceClass> getDeviceClassList() {
+        return new ArrayList(deviceClassMap.values());
+    }
 
-	public DeviceConfig getDeviceConfig(final String id) throws NotAvailableException {
-		if(!deviceConfigMap.containsKey(id)) {
-			throw new NotAvailableException(id);
-		}
-		return deviceConfigMap.get(id);
-	}
+    public List<DeviceConfig> getDeviceConfigList() {
+        return new ArrayList(deviceConfigMap.values());
+    }
 
-	public DataStream getDataStream(final String id) throws NotAvailableException {
-		if(!dataStreamMap.containsKey(id)) {
-			throw new NotAvailableException(id);
-		}
-		return dataStreamMap.get(id);
-	}
+    public List<DataStream> getDataStreamList() {
+        return new ArrayList(dataStreamMap.values());
+    }
 
-	public GlobalConfig getGlobalConfig(final String id) throws NotAvailableException {
-		if(!globalConfigMap.containsKey(id)) {
-			throw new NotAvailableException(id);
-		}
-		return globalConfigMap.get(id);
-	}
-	
-	public void removeDeviceInstance(final String id) {
-		deviceInstanceMap.remove(id).getFile().delete();
-		notifyDataUpdate();
-	}
+    public List<GlobalConfig> getGlobalConfigList() {
+        return new ArrayList(globalConfigMap.values());
+    }
 
-	public void removeDeviceClass(final String id) {
-		deviceClassMap.remove(id).getFile().delete();
-		notifyDataUpdate();
-	}
+    public DeviceInstance getDeviceInstance(final String id) throws NotAvailableException {
+        if (!deviceInstanceMap.containsKey(id)) {
+            throw new NotAvailableException(id);
+        }
+        return deviceInstanceMap.get(id);
+    }
 
-	public void removeDeviceConfig(final String id) {
-		deviceConfigMap.get(id).getFile().delete();
-		notifyDataUpdate();
-	}
+    public DeviceClass getDeviceClass(final String id) throws NotAvailableException {
+        if (!deviceClassMap.containsKey(id)) {
+            throw new NotAvailableException(id);
+        }
+        return deviceClassMap.get(id);
+    }
 
-	public void removeDataStream(final String id) {
-		dataStreamMap.remove(id).getFile().delete();
-		notifyDataUpdate();
-	}
+    public DeviceConfig getDeviceConfig(final String id) throws NotAvailableException {
+        if (!deviceConfigMap.containsKey(id)) {
+            throw new NotAvailableException(id);
+        }
+        return deviceConfigMap.get(id);
+    }
 
-	public void removeGlobalConfig(final String id) {
-		globalConfigMap.remove(id).getFile().delete();
-		notifyDataUpdate();
-	}
-	
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		changes.addPropertyChangeListener(listener);
-	}
+    public DataStream getDataStream(final String id) throws NotAvailableException {
+        if (!dataStreamMap.containsKey(id)) {
+            throw new NotAvailableException(id);
+        }
+        return dataStreamMap.get(id);
+    }
 
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		changes.removePropertyChangeListener(listener);
-	}
+    public GlobalConfig getGlobalConfig(final String id) throws NotAvailableException {
+        if (!globalConfigMap.containsKey(id)) {
+            throw new NotAvailableException(id);
+        }
+        return globalConfigMap.get(id);
+    }
+
+    public void removeDeviceInstance(final String id) {
+        deviceInstanceMap.remove(id).getFile().delete();
+        notifyDataUpdate();
+    }
+
+    public void removeDeviceClass(final String id) {
+        deviceClassMap.remove(id).getFile().delete();
+        notifyDataUpdate();
+    }
+
+    public void removeDeviceConfig(final String id) {
+        deviceConfigMap.get(id).getFile().delete();
+        notifyDataUpdate();
+    }
+
+    public void removeDataStream(final String id) {
+        dataStreamMap.remove(id).getFile().delete();
+        notifyDataUpdate();
+    }
+
+    public void removeGlobalConfig(final String id) {
+        globalConfigMap.remove(id).getFile().delete();
+        notifyDataUpdate();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changes.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changes.removePropertyChangeListener(listener);
+    }
 }
