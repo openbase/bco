@@ -22,6 +22,9 @@ import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
  */
 public class HM_RotaryHandleSensorController extends AbstractHardwareController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
 
+    private final static String COMPONENT_HANDLE_SENSOR = "HandleSensor";
+    private final static String COMPONENT_BATTERY_STATE = "BatteryState";
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(HM_RotaryHandleSensorType.HM_RotaryHandleSensor.getDefaultInstance()));
@@ -34,16 +37,16 @@ public class HM_RotaryHandleSensorController extends AbstractHardwareController<
         super(id, location, HM_RotaryHandleSensor.newBuilder());
 
         builder.setId(id);
-        this.handleSensor = new HandleSensorController("HandleSensor", this, builder.getHandleSensorBuilder());
-        this.batteryState = new BatteryStateController("BatteryState", this, builder.getBatterystateBuilder());
+        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, this, builder.getHandleSensorBuilder());
+        this.batteryState = new BatteryStateController(COMPONENT_BATTERY_STATE, this, builder.getBatterystateBuilder());
         this.register(handleSensor);
         this.register(batteryState);
     }
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put("HandleSensor", getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
-        halFunctionMapping.put("BatteryState", getClass().getMethod("updateBatteryState", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY_STATE, getClass().getMethod("updateBatteryState", org.openhab.core.library.types.DecimalType.class));
     }
 
     public void updateHandleSensor(org.openhab.core.library.types.StringType type) {

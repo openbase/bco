@@ -22,6 +22,9 @@ import rst.devices.homematic.HM_ReedSwitchType.HM_ReedSwitch;
  */
 public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedSwitch, HM_ReedSwitch.Builder> {
 
+    private final static String COMPONENT_REED_SWITCH = "ReedSwitch";
+    private final static String COMPONENT_BATTERY_STATE = "BatteryState";
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(HM_ReedSwitchType.HM_ReedSwitch.getDefaultInstance()));
@@ -34,16 +37,16 @@ public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedS
         super(id, location, HM_ReedSwitch.newBuilder());
 
         builder.setId(id);
-        this.reedSwitch = new ReedSwitchController("ReedSwitch", this, builder.getReedSwitchBuilder());
-        this.batteryState = new BatteryStateController("BatteryState", this, builder.getBatteryStateBuilder());
+        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, this, builder.getReedSwitchBuilder());
+        this.batteryState = new BatteryStateController(COMPONENT_BATTERY_STATE, this, builder.getBatteryStateBuilder());
         this.register(reedSwitch);
         this.register(batteryState);
     }
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put("ReedSwitch", getClass().getMethod("updateReedSwitch", org.openhab.core.library.types.OpenClosedType.class));
-        halFunctionMapping.put("BatteryState", getClass().getMethod("updateBatteryState", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_REED_SWITCH, getClass().getMethod("updateReedSwitch", org.openhab.core.library.types.OpenClosedType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY_STATE, getClass().getMethod("updateBatteryState", org.openhab.core.library.types.DecimalType.class));
     }
 
     public void updateReedSwitch(org.openhab.core.library.types.OpenClosedType type) {

@@ -27,6 +27,12 @@ import rst.devices.fibaro.F_MotionSensorType.F_MotionSensor;
  */
 public class F_MotionSensorController extends AbstractHardwareController<F_MotionSensor, F_MotionSensor.Builder> {   
     
+    private final static String COMPONENT_MOTION_SENSOR = "MotionSensor";
+    private final static String COMPONENT_TEMPERATURE_SENSOR = "TemperatureSensor";
+    private final static String COMPONENT_BRIGHTNESS_SENSOR = "BrightnessSensor";
+    private final static String COMPONENT_TAMPER_SWITCH = "TamperSwitch";
+    private final static String COMPONENT_BATTERY_STATE = "BatteryState";
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
@@ -40,11 +46,13 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
     
     public F_MotionSensorController(final String id, final Location location) throws RSBBindingException {
         super(id, location, F_MotionSensor.newBuilder());
-        this.motionSensor = new MotionSensorController("MotionSensor", this, builder.getMotionSensorBuilder());
-        this.temperatureSensor = new TemperatureSensorController("TemperatureSensor", this, builder.getTemperatureSensorBuilder());
-        this.brightnessSensor = new BrightnessSensorController("BrightnessSensor", this, builder.getBrightnessSensorBuilder());
-        this.tamperSwitch = new TamperSwitchController("TamperSwitch", this, builder.getTamperSwitchBuilder());
-        this.batteryState = new BatteryStateController("BatteryState", this, builder.getBatteryStateBuilder());
+        
+        builder.setId(id);
+        this.motionSensor = new MotionSensorController(COMPONENT_MOTION_SENSOR, this, builder.getMotionSensorBuilder());
+        this.temperatureSensor = new TemperatureSensorController(COMPONENT_TEMPERATURE_SENSOR, this, builder.getTemperatureSensorBuilder());
+        this.brightnessSensor = new BrightnessSensorController(COMPONENT_BRIGHTNESS_SENSOR, this, builder.getBrightnessSensorBuilder());
+        this.tamperSwitch = new TamperSwitchController(COMPONENT_TAMPER_SWITCH, this, builder.getTamperSwitchBuilder());
+        this.batteryState = new BatteryStateController(COMPONENT_BATTERY_STATE, this, builder.getBatteryStateBuilder());
         this.register(motionSensor);
         this.register(temperatureSensor);
         this.register(brightnessSensor);
@@ -54,11 +62,11 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
     
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put("MotionSensor", getClass().getMethod("updateMotionSensor", DecimalType.class));
-        halFunctionMapping.put("TemperatureSensor", getClass().getMethod("updateTemperature", DecimalType.class));
-        halFunctionMapping.put("BrightnessSensor", getClass().getMethod("updateBrightness", DecimalType.class));
-        halFunctionMapping.put("TamperSwitch", getClass().getMethod("updateTamperSwitch", DecimalType.class));
-        halFunctionMapping.put("BatteryState", getClass().getMethod("updateBatteryState", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_MOTION_SENSOR, getClass().getMethod("updateMotionSensor", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY_STATE, getClass().getMethod("updateBatteryState", DecimalType.class));
     }
     
     public void updateMotionSensor(DecimalType type) {
