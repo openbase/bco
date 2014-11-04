@@ -7,15 +7,18 @@ package de.citec.dal.view;
 
 import de.citec.dal.Controller;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
  * @author nuc
  */
-public class GUI extends javax.swing.JFrame {
+public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
 
     /**
      * Creates new form GUI
@@ -32,7 +35,7 @@ public class GUI extends javax.swing.JFrame {
         }
 
         this.setLocationRelativeTo(null);
-        
+
         colorChooser.getSelectionModel().addChangeListener(
                 new ChangeListener() {
                     public void stateChanged(ChangeEvent e) {
@@ -45,7 +48,7 @@ public class GUI extends javax.swing.JFrame {
     public void setColor() {
         float[] hsb = new float[3];
         Color.RGBtoHSB(colorChooser.getColor().getRed(), colorChooser.getColor().getGreen(), colorChooser.getColor().getBlue(), hsb);
-        controller.callMethod("setColor", HSVColor.newBuilder().setHue(hsb[0]*360).setSaturation(hsb[1]*100).setValue(hsb[2]*100).build(), scopeTextField.getText(), true);
+        controller.callMethod("setColor", HSVColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setValue(hsb[2] * 100).build(), scopeTextField.getText(), true);
     }
 
     /**
@@ -61,6 +64,12 @@ public class GUI extends javax.swing.JFrame {
         scopeLabel = new javax.swing.JLabel();
         scopeTextField = new javax.swing.JTextField();
         colorChooser = new javax.swing.JColorChooser();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        scopeLabel2 = new javax.swing.JLabel();
+        scopeTextField2 = new javax.swing.JTextField();
+        powerState = new javax.swing.JLabel();
+        powerSwitch = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -79,7 +88,11 @@ public class GUI extends javax.swing.JFrame {
                 .addComponent(scopeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scopeTextField))
-            .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 685, Short.MAX_VALUE)
+            .addGroup(ambientLightPanelLayout.createSequentialGroup()
+                .addGap(112, 112, 112)
+                .addComponent(jLabel1)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         ambientLightPanelLayout.setVerticalGroup(
             ambientLightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -88,22 +101,89 @@ public class GUI extends javax.swing.JFrame {
                     .addComponent(scopeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(scopeLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 285, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addGap(91, 91, 91))
+        );
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("PowerSwitch"));
+
+        scopeLabel2.setText("Scope:");
+
+        scopeTextField2.setText("/home/controlroom/powerplug000/ctrl");
+
+        powerState.setText("PowerState:");
+
+        powerSwitch.setText("Unknown");
+        powerSwitch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                powerSwitchActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(scopeLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scopeTextField2))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(powerState)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(powerSwitch, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(scopeLabel2)
+                    .addComponent(scopeTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(powerState)
+                    .addComponent(powerSwitch))
+                .addGap(0, 11, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ambientLightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(ambientLightPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ambientLightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(ambientLightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void powerSwitchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerSwitchActionPerformed
+        switch (powerSwitch.getText()) {
+            case "On":
+                controller.callMethod("setPowerState", PowerType.Power.PowerState.OFF, scopeTextField2.getText(), true);
+                break;
+            case "Off":
+                controller.callMethod("setPowerState", PowerType.Power.PowerState.ON, scopeTextField2.getText(), true);
+                break;
+            default:
+                System.out.println("Power State unknown! Calling Power State ON");
+                controller.callMethod("setPowerState", PowerType.Power.PowerState.ON, scopeTextField2.getText(), true);
+                break;
+        }
+        
+    }//GEN-LAST:event_powerSwitchActionPerformed
 
     /**
      * @param args the command line arguments
@@ -135,7 +215,7 @@ public class GUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
- //               new GUI().setVisible(true);
+                //               new GUI().setVisible(true);
             }
         });
     }
@@ -147,7 +227,28 @@ public class GUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ambientLightPanel;
     private javax.swing.JColorChooser colorChooser;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel powerState;
+    private javax.swing.JButton powerSwitch;
     private javax.swing.JLabel scopeLabel;
+    private javax.swing.JLabel scopeLabel2;
     private javax.swing.JTextField scopeTextField;
+    private javax.swing.JTextField scopeTextField2;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        switch (evt.getPropertyName()) {
+            case "ON":
+                powerSwitch.setText("On");
+                break;
+            case "OFF":
+                powerSwitch.setText("Off");
+                break;
+            case "PP_UNKNOWN":
+                powerSwitch.setText("Unknown");
+                break;
+        }
+    }
 }

@@ -25,7 +25,6 @@ import rst.homeautomation.ReedSwitchType.ReedSwitch;
 import static rst.homeautomation.states.MotionType.Motion.MotionState.MOVEMENT;
 import static rst.homeautomation.states.MotionType.Motion.MotionState.NO_MOVEMENT;
 import rst.homeautomation.states.PowerType;
-import static rst.homeautomation.states.PowerType.Power.*;
 import rst.homeautomation.states.PowerType.Power.PowerState;
 import rst.vision.HSVColorType;
 
@@ -39,7 +38,7 @@ public class Controller implements Handler {
     public Controller() {
         pcs = new PropertyChangeSupport(this);
 
-        listener_scope = new Scope("/home/kitchen/powerplug/000/status");
+        listener_scope = new Scope("/home/controlroom/ha_tya606e/000/status");
 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
@@ -122,7 +121,7 @@ public class Controller implements Handler {
             lastPowerState = pp.getState().getState();
             switch (pp.getState().getState()) {
                 case ON:
-                    pcs.firePropertyChange("ON", null, null);
+                    pcs.firePropertyChange("ON", 0, 1);
                     break;
                 case OFF:
                     pcs.firePropertyChange("OFF", 0, 1);
