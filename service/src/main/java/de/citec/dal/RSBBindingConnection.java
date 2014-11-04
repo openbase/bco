@@ -9,6 +9,7 @@ package de.citec.dal;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.devices.fibaro.F_MotionSensorController;
+import de.citec.dal.hal.devices.hager.HA_TYA606EController;
 import de.citec.dal.hal.devices.homematic.HM_ReedSwitchController;
 import de.citec.dal.hal.devices.homematic.HM_RotaryHandleSensorController;
 import de.citec.dal.hal.devices.philips.PH_Hue_E27Controller;
@@ -114,6 +115,18 @@ public class RSBBindingConnection implements RSBBindingInterface {
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_005", bath));
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_006", bath));
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_007", bath));
+            
+            registry.register(new HA_TYA606EController("HA_TYA606E_000", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_001", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_002", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_003", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_004", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_005", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_006", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_007", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_008", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_009", controlroom));
+            registry.register(new HA_TYA606EController("HA_TYA606E_010", controlroom));
         } catch (RSBBindingException ex) {
             logger.warn("Could not initialize devices!", ex);
         }
