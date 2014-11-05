@@ -172,53 +172,18 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
     private void powerSwitchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerSwitchActionPerformed
         switch (powerSwitch.getText()) {
             case "On":
-                controller.callMethod("setPowerState", PowerType.Power.PowerState.OFF, scopeTextField2.getText(), true);
+                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.OFF).build(), scopeTextField2.getText(), true);
                 break;
             case "Off":
-                controller.callMethod("setPowerState", PowerType.Power.PowerState.ON, scopeTextField2.getText(), true);
+                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build(), scopeTextField2.getText(), true);
                 break;
             default:
                 System.out.println("Power State unknown! Calling Power State ON");
-                controller.callMethod("setPowerState", PowerType.Power.PowerState.ON, scopeTextField2.getText(), true);
+                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build(), scopeTextField2.getText(), true);
                 break;
         }
-        
     }//GEN-LAST:event_powerSwitchActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                //               new GUI().setVisible(true);
-            }
-        });
-    }
 
     public static void initGui(Controller controller) {
         new GUI(controller).setVisible(true);

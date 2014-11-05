@@ -39,7 +39,10 @@ public class Controller implements Handler {
         pcs = new PropertyChangeSupport(this);
 
         listener_scope = new Scope("/home/controlroom/ha_tya606e/000/status");
-
+        
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
+                new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
