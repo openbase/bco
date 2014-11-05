@@ -41,6 +41,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 		this.logger = LoggerFactory.getLogger(getClass());
 		this.scope = new Scope(scope.toString().toLowerCase());
 		this.builder = builder;
+                logger.debug("Init RSBCommunicationService for component "+this+" on "+scope+".");
 	}
     
     protected void init() throws RSBException {        
