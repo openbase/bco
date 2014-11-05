@@ -41,7 +41,7 @@ public class MotionSensorController extends AbstractHALController<MotionSensor, 
         return builder.getState().getState();
     }
 
-    public class GetReedSwitchState extends EventCallback {
+    public class GetMotionState extends EventCallback {
 
         @Override
         public Event invoke(final Event request) throws Throwable {
