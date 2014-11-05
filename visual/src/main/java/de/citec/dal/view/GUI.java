@@ -11,6 +11,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import rsb.Scope;
 import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -43,12 +44,17 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
                     }
                 }
         );
+        controller.activateListener(controller.createStatusScope(scopeTextField2.getText()), controller.getPowerPlugListener());
+        controller.activateListener(controller.createStatusScope(scopeTextField3.getText()), controller.getButtonListener());
+        ScopeActionListener scopeActionListener = new ScopeActionListener(controller, scopeTextField2, scopeTextField3);
+        scopeTextField2.addActionListener(scopeActionListener);
+        scopeTextField3.addActionListener(scopeActionListener);
     }
 
     public void setColor() {
         float[] hsb = new float[3];
         Color.RGBtoHSB(colorChooser.getColor().getRed(), colorChooser.getColor().getGreen(), colorChooser.getColor().getBlue(), hsb);
-        controller.callMethod("setColor", HSVColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setValue(hsb[2] * 100).build(), scopeTextField.getText(), true);
+        controller.callMethod("setColor", HSVColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setValue(hsb[2] * 100).build(), controller.createCTRLScope(scopeTextField.getText()), true);
     }
 
     /**
@@ -65,11 +71,17 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
         scopeTextField = new javax.swing.JTextField();
         colorChooser = new javax.swing.JColorChooser();
         jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
+        powerSwitchPanel = new javax.swing.JPanel();
         scopeLabel2 = new javax.swing.JLabel();
         scopeTextField2 = new javax.swing.JTextField();
         powerState = new javax.swing.JLabel();
         powerSwitch = new javax.swing.JButton();
+        buttonPanel = new javax.swing.JPanel();
+        buttonPressedLabel = new javax.swing.JLabel();
+        buttonPressedPanel = new javax.swing.JPanel();
+        buttonRevieverLabel = new javax.swing.JLabel();
+        scopeLabel3 = new javax.swing.JLabel();
+        scopeTextField3 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -77,7 +89,7 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
 
         scopeLabel.setText("Scope:");
 
-        scopeTextField.setText("/home/kitchen/ambientlight/000/ctrl");
+        scopeTextField.setText("/home/kitchen/ambientlight/000");
         scopeTextField.setToolTipText("");
 
         javax.swing.GroupLayout ambientLightPanelLayout = new javax.swing.GroupLayout(ambientLightPanel);
@@ -88,7 +100,7 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
                 .addComponent(scopeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scopeTextField))
-            .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 685, Short.MAX_VALUE)
+            .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 664, Short.MAX_VALUE)
             .addGroup(ambientLightPanelLayout.createSequentialGroup()
                 .addGap(112, 112, 112)
                 .addComponent(jLabel1)
@@ -107,14 +119,15 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
                 .addGap(91, 91, 91))
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("PowerSwitch"));
+        powerSwitchPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("PowerSwitch"));
 
         scopeLabel2.setText("Scope:");
 
-        scopeTextField2.setText("/home/controlroom/powerplug000/ctrl");
+        scopeTextField2.setText("/home/controlroom/powerplug000");
 
         powerState.setText("PowerState:");
 
+        powerSwitch.setBackground(new java.awt.Color(255, 204, 0));
         powerSwitch.setText("Unknown");
         powerSwitch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -122,64 +135,125 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout powerSwitchPanelLayout = new javax.swing.GroupLayout(powerSwitchPanel);
+        powerSwitchPanel.setLayout(powerSwitchPanelLayout);
+        powerSwitchPanelLayout.setHorizontalGroup(
+            powerSwitchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(powerSwitchPanelLayout.createSequentialGroup()
                 .addComponent(scopeLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scopeTextField2))
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(powerSwitchPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(powerState)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(powerSwitch, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        powerSwitchPanelLayout.setVerticalGroup(
+            powerSwitchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(powerSwitchPanelLayout.createSequentialGroup()
+                .addGroup(powerSwitchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(scopeLabel2)
                     .addComponent(scopeTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(powerSwitchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(powerState)
                     .addComponent(powerSwitch))
-                .addGap(0, 11, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        buttonPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("ButtonPressed"));
+
+        buttonPressedLabel.setText("Button:");
+
+        buttonPressedPanel.setBackground(new java.awt.Color(255, 204, 0));
+        buttonPressedPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        buttonRevieverLabel.setText("Unknown");
+
+        javax.swing.GroupLayout buttonPressedPanelLayout = new javax.swing.GroupLayout(buttonPressedPanel);
+        buttonPressedPanel.setLayout(buttonPressedPanelLayout);
+        buttonPressedPanelLayout.setHorizontalGroup(
+            buttonPressedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPressedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(buttonRevieverLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        buttonPressedPanelLayout.setVerticalGroup(
+            buttonPressedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(buttonRevieverLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+        );
+
+        scopeLabel3.setText("Scope:");
+
+        scopeTextField3.setText("/home/sportsroom/button000");
+
+        javax.swing.GroupLayout buttonPanelLayout = new javax.swing.GroupLayout(buttonPanel);
+        buttonPanel.setLayout(buttonPanelLayout);
+        buttonPanelLayout.setHorizontalGroup(
+            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPanelLayout.createSequentialGroup()
+                .addGap(2, 2, 2)
+                .addComponent(scopeLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scopeTextField3))
+            .addGroup(buttonPanelLayout.createSequentialGroup()
+                .addComponent(buttonPressedLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonPressedPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        buttonPanelLayout.setVerticalGroup(
+            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPanelLayout.createSequentialGroup()
+                .addGroup(buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(scopeLabel3)
+                    .addComponent(scopeTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(buttonPressedLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(buttonPressedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(powerSwitchPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(ambientLightPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(buttonPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(ambientLightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(powerSwitchPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void powerSwitchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerSwitchActionPerformed
-        switch (powerSwitch.getText()) {
-            case "On":
-                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.OFF).build(), scopeTextField2.getText(), true);
+        Scope controlScope = controller.createCTRLScope(scopeTextField2.getText());
+        switch (controller.getLastPowerState()) {
+            case ON:
+                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.OFF).build(), controlScope, true);
+                powerSwitch.setBackground(Color.blue.darker().darker());
                 break;
-            case "Off":
-                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build(), scopeTextField2.getText(), true);
+            case OFF:
+                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build(), controlScope, true);
+                powerSwitch.setBackground(Color.green.darker().darker());
                 break;
             default:
                 System.out.println("Power State unknown! Calling Power State ON");
-                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build(), scopeTextField2.getText(), true);
+                controller.callMethod("setPowerState", PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build(), controlScope, true);
+                powerSwitch.setBackground(Color.green.darker().darker());
                 break;
         }
     }//GEN-LAST:event_powerSwitchActionPerformed
@@ -191,15 +265,21 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ambientLightPanel;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JLabel buttonPressedLabel;
+    private javax.swing.JPanel buttonPressedPanel;
+    private javax.swing.JLabel buttonRevieverLabel;
     private javax.swing.JColorChooser colorChooser;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel powerState;
     private javax.swing.JButton powerSwitch;
+    private javax.swing.JPanel powerSwitchPanel;
     private javax.swing.JLabel scopeLabel;
     private javax.swing.JLabel scopeLabel2;
+    private javax.swing.JLabel scopeLabel3;
     private javax.swing.JTextField scopeTextField;
     private javax.swing.JTextField scopeTextField2;
+    private javax.swing.JTextField scopeTextField3;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -207,12 +287,34 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
         switch (evt.getPropertyName()) {
             case "ON":
                 powerSwitch.setText("On");
+                powerSwitch.setBackground(Color.green);
                 break;
             case "OFF":
                 powerSwitch.setText("Off");
+                powerSwitch.setBackground(Color.blue);
                 break;
             case "PP_UNKNOWN":
                 powerSwitch.setText("Unknown");
+                powerSwitch.setBackground(Color.orange);
+                break;
+            case "CLICK":
+                buttonRevieverLabel.setText("Clicked");
+                buttonPressedPanel.setBackground(Color.green);
+                break;
+            case "DCLICK":
+                buttonRevieverLabel.setText("Double Clicked");
+                buttonPressedPanel.setBackground(Color.green.darker().darker().darker());
+                break;
+            case "RELEASE":
+                buttonRevieverLabel.setText("Released");
+                buttonPressedPanel.setBackground(Color.blue);
+                break;
+            case "B_UNKNOWN":
+                buttonRevieverLabel.setText("Unkown");
+                buttonPressedPanel.setBackground(Color.orange);
+                break;
+            default:
+                System.out.println("Revieced unknown property event ["+evt.getPropertyName()+"]");
                 break;
         }
     }
