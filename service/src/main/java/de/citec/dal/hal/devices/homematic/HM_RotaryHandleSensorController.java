@@ -46,7 +46,7 @@ public class HM_RotaryHandleSensorController extends AbstractHardwareController<
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBattery", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", org.openhab.core.library.types.DecimalType.class));
     }
 
     public void updateHandleSensor(org.openhab.core.library.types.StringType type) {
@@ -57,7 +57,7 @@ public class HM_RotaryHandleSensorController extends AbstractHardwareController<
         }
     }
 
-    public void updateBattery(org.openhab.core.library.types.DecimalType value) {
+    public void updateBatteryLevel(org.openhab.core.library.types.DecimalType value) {
         battery.updateBatteryLevel(value.floatValue());
     }
 }

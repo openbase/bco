@@ -66,7 +66,7 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
         halFunctionMapping.put(COMPONENT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", DecimalType.class));
         halFunctionMapping.put(COMPONENT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", DecimalType.class));
         halFunctionMapping.put(COMPONENT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBattery", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", DecimalType.class));
     }
     
     public void updateMotionSensor(DecimalType type) {
@@ -93,7 +93,7 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
         }
     }
     
-    public void updateBatteryState(DecimalType value) {
+    public void updateBatteryLevel(DecimalType value) {
         battery.updateBatteryLevel(value.doubleValue());
     }
 }

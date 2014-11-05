@@ -46,7 +46,7 @@ public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedS
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put(COMPONENT_REED_SWITCH, getClass().getMethod("updateReedSwitch", org.openhab.core.library.types.OpenClosedType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBattery", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", org.openhab.core.library.types.DecimalType.class));
     }
 
     public void updateReedSwitch(org.openhab.core.library.types.OpenClosedType type) {
@@ -57,7 +57,7 @@ public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedS
         }
     }
 
-    public void updateBattery(org.openhab.core.library.types.DecimalType value) {
+    public void updateBatteryLevel(org.openhab.core.library.types.DecimalType value) {
         battery.updateBatteryLevel(value.doubleValue());
     }
 }
