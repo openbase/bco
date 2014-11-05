@@ -13,26 +13,26 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
-import rst.devices.generic.BatteryStateType;
-import rst.devices.generic.BatteryStateType.BatteryState;
+import rst.homeautomation.BatteryType;
+import rst.homeautomation.BatteryType.Battery;
 
 /**
  *
  * @author thuxohl
  */
-public class BatteryStateController extends AbstractHALController<BatteryState, BatteryState.Builder> {
+public class BatteryController extends AbstractHALController<Battery, Battery.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(BatteryStateType.BatteryState.getDefaultInstance()));
+                new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryStateController(String id, HardwareUnit hardwareUnit, BatteryState.Builder builder) throws RSBBindingException {
+    public BatteryController(String id, HardwareUnit hardwareUnit, Battery.Builder builder) throws RSBBindingException {
         super(id, hardwareUnit, builder);
     }
 
-    public void updateBatteryLevel(final float batteryState) {
-        builder.setChargeLevel(batteryState);
+    public void updateBatteryLevel(final double batteryState) {
+        builder.setState(builder.getStateBuilder().setLevel(batteryState));
         notifyChange();
     }
 
@@ -41,9 +41,9 @@ public class BatteryStateController extends AbstractHALController<BatteryState, 
         server.addMethod("getBatteryLevel", new GetBatteryLevelCallback());
     }
 
-    public float getBatteryLevel() {
-        logger.debug("Getting [" + id + "] BatteryChargeLevel: [" + builder.getChargeLevel() + "]");
-        return builder.getChargeLevel();
+    public double getBatteryLevel() {
+        logger.debug("Getting [" + id + "] BatteryChargeLevel: [" + builder.getState().getLevel() + "]");
+        return builder.getState().getLevel();
     }
 
     public class GetBatteryLevelCallback extends EventCallback {
@@ -51,9 +51,9 @@ public class BatteryStateController extends AbstractHALController<BatteryState, 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(Float.class, BatteryStateController.this.getBatteryLevel());
+                return new Event(Float.class, BatteryController.this.getBatteryLevel());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + BatteryStateController.this.getId() + "}", ex);
+                logger.warn("Could not invoke method for [" + BatteryController.this.getId() + "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

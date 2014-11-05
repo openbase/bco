@@ -9,7 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractHardwareController;
-import de.citec.dal.hal.al.BatteryStateController;
+import de.citec.dal.hal.al.BatteryController;
 import de.citec.dal.hal.al.ReedSwitchController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -23,7 +23,7 @@ import rst.devices.homematic.HM_ReedSwitchType.HM_ReedSwitch;
 public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedSwitch, HM_ReedSwitch.Builder> {
 
     private final static String COMPONENT_REED_SWITCH = "ReedSwitch";
-    private final static String COMPONENT_BATTERY_STATE = "BatteryState";
+    private final static String COMPONENT_BATTERY = "Battery";
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -31,22 +31,22 @@ public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedS
     }
 
     private final ReedSwitchController reedSwitch;
-    private final BatteryStateController batteryState;
+    private final BatteryController battery;
 
     public HM_ReedSwitchController(final String id, final Location location) throws RSBBindingException {
         super(id, location, HM_ReedSwitch.newBuilder());
 
         builder.setId(id);
         this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, this, builder.getReedSwitchBuilder());
-        this.batteryState = new BatteryStateController(COMPONENT_BATTERY_STATE, this, builder.getBatteryStateBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, this, builder.getBatteryBuilder());
         this.register(reedSwitch);
-        this.register(batteryState);
+        this.register(battery);
     }
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put(COMPONENT_REED_SWITCH, getClass().getMethod("updateReedSwitch", org.openhab.core.library.types.OpenClosedType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY_STATE, getClass().getMethod("updateBatteryState", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBattery", org.openhab.core.library.types.DecimalType.class));
     }
 
     public void updateReedSwitch(org.openhab.core.library.types.OpenClosedType type) {
@@ -57,7 +57,7 @@ public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedS
         }
     }
 
-    public void updateBatteryState(org.openhab.core.library.types.DecimalType value) {
-        batteryState.updateBatteryLevel(value.floatValue());
+    public void updateBattery(org.openhab.core.library.types.DecimalType value) {
+        battery.updateBatteryLevel(value.doubleValue());
     }
 }

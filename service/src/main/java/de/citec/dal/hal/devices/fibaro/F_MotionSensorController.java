@@ -10,7 +10,7 @@ import de.citec.dal.data.transform.MotionStateTransformer;
 import de.citec.dal.data.transform.TamperStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractHardwareController;
-import de.citec.dal.hal.al.BatteryStateController;
+import de.citec.dal.hal.al.BatteryController;
 import de.citec.dal.hal.al.BrightnessSensorController;
 import de.citec.dal.hal.al.MotionSensorController;
 import de.citec.dal.hal.al.TamperSwitchController;
@@ -31,7 +31,7 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
     private final static String COMPONENT_TEMPERATURE_SENSOR = "TemperatureSensor";
     private final static String COMPONENT_BRIGHTNESS_SENSOR = "BrightnessSensor";
     private final static String COMPONENT_TAMPER_SWITCH = "TamperSwitch";
-    private final static String COMPONENT_BATTERY_STATE = "BatteryState";
+    private final static String COMPONENT_BATTERY = "Battery";
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -42,7 +42,7 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
     private final TemperatureSensorController temperatureSensor;
     private final BrightnessSensorController brightnessSensor;
     private final TamperSwitchController tamperSwitch;
-    private final BatteryStateController batteryState;
+    private final BatteryController battery;
     
     public F_MotionSensorController(final String id, final Location location) throws RSBBindingException {
         super(id, location, F_MotionSensor.newBuilder());
@@ -52,12 +52,12 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
         this.temperatureSensor = new TemperatureSensorController(COMPONENT_TEMPERATURE_SENSOR, this, builder.getTemperatureSensorBuilder());
         this.brightnessSensor = new BrightnessSensorController(COMPONENT_BRIGHTNESS_SENSOR, this, builder.getBrightnessSensorBuilder());
         this.tamperSwitch = new TamperSwitchController(COMPONENT_TAMPER_SWITCH, this, builder.getTamperSwitchBuilder());
-        this.batteryState = new BatteryStateController(COMPONENT_BATTERY_STATE, this, builder.getBatteryStateBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, this, builder.getBatteryBuilder());
         this.register(motionSensor);
         this.register(temperatureSensor);
         this.register(brightnessSensor);
         this.register(tamperSwitch);
-        this.register(batteryState);
+        this.register(battery);
     }
     
     @Override
@@ -66,7 +66,7 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
         halFunctionMapping.put(COMPONENT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", DecimalType.class));
         halFunctionMapping.put(COMPONENT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", DecimalType.class));
         halFunctionMapping.put(COMPONENT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY_STATE, getClass().getMethod("updateBatteryState", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBattery", DecimalType.class));
     }
     
     public void updateMotionSensor(DecimalType type) {
@@ -94,6 +94,6 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
     }
     
     public void updateBatteryState(DecimalType value) {
-        batteryState.updateBatteryLevel(value.floatValue());
+        battery.updateBatteryLevel(value.doubleValue());
     }
 }
