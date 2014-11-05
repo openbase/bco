@@ -33,16 +33,16 @@ public class PW_PowerPlugController extends AbstractHardwareController<PW_PowerP
     }
 
     private final PowerPlugController powerPlug;
-    private final PowerConsumptionSensorController powerConsumptionSensor;
+    private final PowerConsumptionSensorController powerConsumption;
 
     public PW_PowerPlugController(final String id, final Location location) throws RSBBindingException {
         super(id, location, PW_PowerPlug.newBuilder());
 
         builder.setId(id);
         this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, this, builder.getPowerPlugBuilder());
-        this.powerConsumptionSensor = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR, this, builder.getPowerConsumptionSensorBuilder());
+        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR, this, builder.getPowerConsumptionSensorBuilder());
         this.register(powerPlug);
-        this.register(powerConsumptionSensor);
+        this.register(powerConsumption);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class PW_PowerPlugController extends AbstractHardwareController<PW_PowerP
         }
     }
 
-    public void updatePowerConsumptionSensor(DecimalType value) {
-        powerConsumptionSensor.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption(DecimalType value) {
+        powerConsumption.updatePowerConsumption(value.floatValue());
     }
 }
