@@ -84,6 +84,7 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
         scopeTextField3 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("ColorChooser");
 
         ambientLightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Ambient Light"));
 
