@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.TamperSwitchType;
@@ -17,15 +17,15 @@ import rst.homeautomation.states.TamperType;
  *
  * @author thuxohl
  */
-public class TamperSwitchController extends AbstractHALController<TamperSwitch, TamperSwitch.Builder> {
+public class TamperSwitchController extends AbstractUnitController<TamperSwitch, TamperSwitch.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(String id, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public TamperSwitchController(String id, final String lable, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateTamperState(final TamperType.Tamper.TamperState state) {

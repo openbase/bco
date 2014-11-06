@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.ButtonType;
@@ -18,7 +18,7 @@ import rst.homeautomation.states.ClickType.Click.ClickState;
  *
  * @author mpohling
  */
-public class ButtonController extends AbstractHALController<Button, Button.Builder> {
+public class ButtonController extends AbstractUnitController<Button, Button.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -27,8 +27,8 @@ public class ButtonController extends AbstractHALController<Button, Button.Build
                 new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(String id, HardwareUnit hardwareUnit, Button.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public ButtonController(String id, final String lable, HardwareUnit hardwareUnit, Button.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateButtonState(final ClickType.Click.ClickState state) {

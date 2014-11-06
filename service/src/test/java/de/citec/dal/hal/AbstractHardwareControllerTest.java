@@ -6,7 +6,6 @@
 
 package de.citec.dal.hal;
 
-import de.citec.dal.hal.AbstractHardwareController;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -47,9 +46,9 @@ public class AbstractHardwareControllerTest {
     public void testParseHardwareId() throws Exception {
         System.out.println("parseHardwareId");
         String id = "PW_PowerPlug_014";
-        Class<? extends AbstractHardwareController> hardware = PW_PowerPlugController.class;
+        Class<? extends AbstractDeviceController> hardware = PW_PowerPlugController.class;
         String expResult = "PW_PowerPlug";
-        String result = AbstractHardwareController.parseHardwareId(id, hardware);
+        String result = AbstractDeviceController.parseHardwareId(id, hardware);
         assertEquals(expResult, result);
     }
 
@@ -61,7 +60,7 @@ public class AbstractHardwareControllerTest {
         System.out.println("parseInstanceId");
         String id = "PW_PowerPlug_014";
         String expResult = "014";
-        String result = AbstractHardwareController.parseInstanceId(id);
+        String result = AbstractDeviceController.parseInstanceId(id);
         assertEquals(expResult, result);
     }
 
@@ -225,10 +224,10 @@ public class AbstractHardwareControllerTest {
 //        fail("The test case is a prototype.");
     }
 
-    public class AbstractHardwareControllerImpl extends AbstractHardwareController {
+    public class AbstractHardwareControllerImpl extends AbstractDeviceController {
 
         public AbstractHardwareControllerImpl() throws Exception {
-            super("", null, null);
+            super("", null, null, null);
         }
 
         public void initHardwareMapping() throws NoSuchMethodException, SecurityException {

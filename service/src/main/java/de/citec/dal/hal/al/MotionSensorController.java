@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -20,15 +20,15 @@ import rst.homeautomation.states.MotionType.Motion.MotionState;
  *
  * @author mpohling
  */
-public class MotionSensorController extends AbstractHALController<MotionSensor, MotionSensor.Builder> {
+public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(String id, HardwareUnit hardwareUnit, MotionSensor.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public MotionSensorController(final String id, final String lable, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateMotionState(final MotionType.Motion.MotionState state) {

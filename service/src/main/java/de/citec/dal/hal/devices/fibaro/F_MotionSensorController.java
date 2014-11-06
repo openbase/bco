@@ -9,7 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.MotionStateTransformer;
 import de.citec.dal.data.transform.TamperStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.BatteryController;
 import de.citec.dal.hal.al.BrightnessSensorController;
 import de.citec.dal.hal.al.MotionSensorController;
@@ -25,50 +25,50 @@ import rst.devices.fibaro.F_MotionSensorType.F_MotionSensor;
  *
  * @author mpohling
  */
-public class F_MotionSensorController extends AbstractHardwareController<F_MotionSensor, F_MotionSensor.Builder> {   
-    
-    private final static String COMPONENT_MOTION_SENSOR = "MotionSensor";
-    private final static String COMPONENT_TEMPERATURE_SENSOR = "TemperatureSensor";
-    private final static String COMPONENT_BRIGHTNESS_SENSOR = "BrightnessSensor";
-    private final static String COMPONENT_TAMPER_SWITCH = "TamperSwitch";
-    private final static String COMPONENT_BATTERY = "Battery";
-    
+public class F_MotionSensorController extends AbstractDeviceController<F_MotionSensor, F_MotionSensor.Builder> {
+
+    private final static String UNIT_MOTION_SENSOR = "MotionSensor";
+    private final static String UNIT_TEMPERATURE_SENSOR = "TemperatureSensor";
+    private final static String UNIT_BRIGHTNESS_SENSOR = "BrightnessSensor";
+    private final static String UNIT_TAMPER_SWITCH = "TamperSwitch";
+    private final static String UNIT_BATTERY = "Battery";
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
     }
-    
+
     private final MotionSensorController motionSensor;
     private final TemperatureSensorController temperatureSensor;
     private final BrightnessSensorController brightnessSensor;
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
-    
-    public F_MotionSensorController(final String id, final Location location) throws RSBBindingException {
-        super(id, location, F_MotionSensor.newBuilder());
-        
+
+    public F_MotionSensorController(final String id, String lable, final Location location) throws RSBBindingException {
+        super(id, lable, location, F_MotionSensor.newBuilder());
+
         builder.setId(id);
-        this.motionSensor = new MotionSensorController(COMPONENT_MOTION_SENSOR, this, builder.getMotionSensorBuilder());
-        this.temperatureSensor = new TemperatureSensorController(COMPONENT_TEMPERATURE_SENSOR, this, builder.getTemperatureSensorBuilder());
-        this.brightnessSensor = new BrightnessSensorController(COMPONENT_BRIGHTNESS_SENSOR, this, builder.getBrightnessSensorBuilder());
-        this.tamperSwitch = new TamperSwitchController(COMPONENT_TAMPER_SWITCH, this, builder.getTamperSwitchBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, this, builder.getBatteryBuilder());
+        this.motionSensor = new MotionSensorController(UNIT_MOTION_SENSOR, lable, this, builder.getMotionSensorBuilder());
+        this.temperatureSensor = new TemperatureSensorController(UNIT_TEMPERATURE_SENSOR, lable, this, builder.getTemperatureSensorBuilder());
+        this.brightnessSensor = new BrightnessSensorController(UNIT_BRIGHTNESS_SENSOR, lable, this, builder.getBrightnessSensorBuilder());
+        this.tamperSwitch = new TamperSwitchController(UNIT_TAMPER_SWITCH, lable, this, builder.getTamperSwitchBuilder());
+        this.battery = new BatteryController(UNIT_BATTERY, lable, this, builder.getBatteryBuilder());
         this.register(motionSensor);
         this.register(temperatureSensor);
         this.register(brightnessSensor);
         this.register(tamperSwitch);
         this.register(battery);
     }
-    
+
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_MOTION_SENSOR, getClass().getMethod("updateMotionSensor", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", DecimalType.class));
+        halFunctionMapping.put(UNIT_MOTION_SENSOR, getClass().getMethod("updateMotionSensor", DecimalType.class));
+        halFunctionMapping.put(UNIT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", DecimalType.class));
+        halFunctionMapping.put(UNIT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", DecimalType.class));
+        halFunctionMapping.put(UNIT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", DecimalType.class));
+        halFunctionMapping.put(UNIT_BATTERY, getClass().getMethod("updateBatteryLevel", DecimalType.class));
     }
-    
+
     public void updateMotionSensor(DecimalType type) {
         try {
             motionSensor.updateMotionState(MotionStateTransformer.transform(type));
@@ -76,15 +76,15 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
             logger.error("Not able to transform from DecimalType to MotionState!", ex);
         }
     }
-    
+
     public void updateTemperature(DecimalType type) {
         temperatureSensor.updateTemperature(type.floatValue());
     }
-    
+
     public void updateBrightness(DecimalType type) {
         brightnessSensor.updateBrightness(type.floatValue());
     }
-    
+
     public void updateTamperSwitch(DecimalType type) {
         try {
             tamperSwitch.updateTamperState(TamperStateTransformer.transform(type));
@@ -92,7 +92,7 @@ public class F_MotionSensorController extends AbstractHardwareController<F_Motio
             logger.error("Not able to transform from DecimalType to TamperState!", ex);
         }
     }
-    
+
     public void updateBatteryLevel(DecimalType value) {
         battery.updateBatteryLevel(value.doubleValue());
     }

@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -20,15 +20,15 @@ import rst.homeautomation.states.OpenClosedType.OpenClosed.OpenClosedState;
  *
  * @author thuxohl
  */
-public class ReedSwitchController extends AbstractHALController<ReedSwitch, ReedSwitch.Builder> {
+public class ReedSwitchController extends AbstractUnitController<ReedSwitch, ReedSwitch.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(String id, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public ReedSwitchController(String id, final String lable, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateOpenClosedState(final OpenClosedType.OpenClosed.OpenClosedState state) {

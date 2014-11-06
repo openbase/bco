@@ -6,12 +6,11 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.TemperatureControllerType.TemperatureController;
 import rst.homeautomation.TemperatureSensorType;
 import rst.homeautomation.TemperatureSensorType.TemperatureSensor;
 
@@ -19,15 +18,15 @@ import rst.homeautomation.TemperatureSensorType.TemperatureSensor;
  *
  * @author thuxohl
  */
-public class TemperatureSensorController extends AbstractHALController<TemperatureSensor, TemperatureSensor.Builder> {
+public class TemperatureSensorController extends AbstractUnitController<TemperatureSensor, TemperatureSensor.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(String id, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public TemperatureSensorController(String id, final String lable, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateTemperature(final float temperature) {

@@ -27,26 +27,28 @@ import rsb.patterns.LocalServer;
  * @author Divine <DivineThreepwood@gmail.com>
  * @param <B>
  */
-public abstract class AbstractHardwareController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements HardwareUnit {
+public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements HardwareUnit {
 
     public final static String ID_SEPERATOR = "_";
     
     protected final String id;
+    protected final String lable;
     protected final String hardware_id;
     protected final String instance_id;
     protected final Location location;
     protected final Map<String, Method> halFunctionMapping;
-    protected final Map<String, AbstractHALController> hardwareMap;
+    protected final Map<String, AbstractUnitController> unitMap;
 
     protected RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
 
-    public AbstractHardwareController(final String id, final Location location, final MB builder) throws RSBBindingException {
+    public AbstractDeviceController(final String id, final String lable, final Location location, final MB builder) throws RSBBindingException {
         super(generateScope(id, location), builder);
         this.id = id;
+        this.lable = lable;
         this.hardware_id = parseHardwareId(id, getClass());
         this.instance_id = parseInstanceId(id);
         this.location = location;
-        this.hardwareMap = new HashMap<>();
+        this.unitMap = new HashMap<>();
         this.halFunctionMapping = new HashMap<>();
         super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), id);
         
@@ -63,7 +65,7 @@ public abstract class AbstractHardwareController<M extends GeneratedMessage, MB 
         }
     }
     
-    public final static String parseHardwareId(String id, Class<? extends AbstractHardwareController> hardware) throws VerificatioinFailedException {
+    public final static String parseHardwareId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificatioinFailedException {
         assert id != null;
         assert hardware != null;
         String hardwareId = hardware.getSimpleName().replace("Controller", "");
@@ -95,8 +97,8 @@ public abstract class AbstractHardwareController<M extends GeneratedMessage, MB 
         return instanceId;
     }
 
-    protected void register(final AbstractHALController hardware) {
-        hardwareMap.put(hardware.getId(), hardware);
+    protected void register(final AbstractUnitController hardware) {
+        unitMap.put(hardware.getId(), hardware);
     }
 
     @Override
@@ -133,12 +135,16 @@ public abstract class AbstractHardwareController<M extends GeneratedMessage, MB 
         return id;
     }
 
+    public String getLable() {
+        return lable;
+    }
+    
     @Override
     public void activate() throws RSBBindingException {
         try {
             super.activate();
 
-            for (AbstractHALController controller : hardwareMap.values()) {
+            for (AbstractUnitController controller : unitMap.values()) {
                 controller.activate();
             }
         } catch (Exception ex) {
@@ -151,7 +157,7 @@ public abstract class AbstractHardwareController<M extends GeneratedMessage, MB 
         try {
             super.deactivate();
 
-            for (AbstractHALController controller : hardwareMap.values()) {
+            for (AbstractUnitController controller : unitMap.values()) {
                 controller.deactivate();
             }
         } catch (Exception ex) {

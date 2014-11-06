@@ -7,7 +7,7 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -22,7 +22,7 @@ import rst.homeautomation.states.PowerType;
  *
  * @author mpohling
  */
-public class PowerPlugController extends AbstractHALController<PowerPlug, PowerPlug.Builder> {
+public class PowerPlugController extends AbstractUnitController<PowerPlug, PowerPlug.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -31,8 +31,8 @@ public class PowerPlugController extends AbstractHALController<PowerPlug, PowerP
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public PowerPlugController(String id, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public PowerPlugController(String id, final String lable, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     @Override

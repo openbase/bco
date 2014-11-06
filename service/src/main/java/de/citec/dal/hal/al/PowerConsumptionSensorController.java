@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import org.openhab.core.library.types.DecimalType;
 import rsb.Event;
 import rsb.RSBException;
@@ -21,15 +21,15 @@ import rst.homeautomation.PowerConsumptionSensorType.PowerConsumptionSensor;
  *
  * @author mpohling
  */
-public class PowerConsumptionSensorController extends AbstractHALController<PowerConsumptionSensor, PowerConsumptionSensor.Builder> {
+public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensor, PowerConsumptionSensor.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(String id, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public PowerConsumptionSensorController(String id, final String lable, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     @Override

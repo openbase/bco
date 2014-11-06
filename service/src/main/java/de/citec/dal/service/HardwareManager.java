@@ -7,7 +7,7 @@ package de.citec.dal.service;
 
 import java.util.Map;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class HardwareManager {
     public void activate() {
         synchronized (SYNC_LOCK) {
             active = true;
-            for (AbstractHardwareController hardware : registry.getHardwareCollection()) {
+            for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
                 try {
                     hardware.activate();
                 } catch (RSBBindingException ex) {
@@ -49,7 +49,7 @@ public class HardwareManager {
     public void deactivate() {
         synchronized (SYNC_LOCK) {
             active = false;
-            for (AbstractHardwareController hardware : registry.getHardwareCollection()) {
+            for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
                 try {
                     hardware.deactivate();
                 } catch (RSBBindingException ex) {
@@ -65,9 +65,9 @@ public class HardwareManager {
             logger.warn("Skip internal update: RSBBinding not activated!");
             return;
         }
-        AbstractHardwareController hardware;
+        AbstractDeviceController hardware;
         synchronized (SYNC_LOCK) {
-            Map.Entry<String, AbstractHardwareController> floorEntry = registry.getHardwareMap().floorEntry(itemName);
+            Map.Entry<String, AbstractDeviceController> floorEntry = registry.getHardwareMap().floorEntry(itemName);
             hardware = floorEntry.getValue();
         }
         if (!itemName.startsWith(hardware.getId())) {

@@ -8,7 +8,7 @@ package de.citec.dal.service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeMap;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 
 /**
  *
@@ -25,21 +25,21 @@ public class HardwareRegistry {
         return InstanceHolder.INSTANCE;
     }
 
-    private final TreeMap<String, AbstractHardwareController> registry;
+    private final TreeMap<String, AbstractDeviceController> registry;
 
     private HardwareRegistry() {
         this.registry = new TreeMap<>();
     }
 
-    public void register(AbstractHardwareController hardware) {
+    public void register(AbstractDeviceController hardware) {
         registry.put(hardware.getId(), hardware);
     }
 
-    public Collection<AbstractHardwareController> getHardwareCollection() {
+    public Collection<AbstractDeviceController> getHardwareCollection() {
         return Collections.unmodifiableCollection(registry.values());
     }
 
-    TreeMap<String, AbstractHardwareController> getHardwareMap() {
+    TreeMap<String, AbstractDeviceController> getHardwareMap() {
         return registry;
     }
 }

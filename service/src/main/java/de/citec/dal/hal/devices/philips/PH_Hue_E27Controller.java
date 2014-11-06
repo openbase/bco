@@ -9,7 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.AmbientLightController;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.OnOffType;
@@ -22,7 +22,7 @@ import rst.devices.philips.PH_Hue_GU10Type.PH_Hue_GU10;
  *
  * @author mpohling
  */
-public class PH_Hue_E27Controller extends AbstractHardwareController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
+public class PH_Hue_E27Controller extends AbstractDeviceController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
 
     private final static String COMPONENT_AMBIENT_LIGHT = "AmbientLight";
     private final static String COMPONENT_POWER_SWITCH = "PowerSwitch";
@@ -34,10 +34,10 @@ public class PH_Hue_E27Controller extends AbstractHardwareController<PH_Hue_GU10
 
     private final AmbientLightController ambientLight;
 
-    public PH_Hue_E27Controller(final String id, final Location location) throws RSBBindingException {
-        super(id, location, PH_Hue_GU10.newBuilder());
+    public PH_Hue_E27Controller(final String id, final String lable, final Location location) throws RSBBindingException {
+        super(id, lable, location, PH_Hue_GU10.newBuilder());
         super.builder.setId(id);
-        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, this, builder.getAmbientLightBuilder());
+        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, lable, this, builder.getAmbientLightBuilder());
         this.register(ambientLight);
     }
 

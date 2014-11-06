@@ -8,7 +8,7 @@ package de.citec.dal.hal.devices.homematic;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.BatteryController;
 import de.citec.dal.hal.al.ReedSwitchController;
 import rsb.converter.DefaultConverterRepository;
@@ -20,11 +20,11 @@ import rst.devices.homematic.HM_ReedSwitchType.HM_ReedSwitch;
  *
  * @author mpohling
  */
-public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedSwitch, HM_ReedSwitch.Builder> {
+public class HM_ReedSwitchController extends AbstractDeviceController<HM_ReedSwitch, HM_ReedSwitch.Builder> {
 
     private final static String COMPONENT_REED_SWITCH = "ReedSwitch";
     private final static String COMPONENT_BATTERY = "Battery";
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(HM_ReedSwitchType.HM_ReedSwitch.getDefaultInstance()));
@@ -33,12 +33,12 @@ public class HM_ReedSwitchController extends AbstractHardwareController<HM_ReedS
     private final ReedSwitchController reedSwitch;
     private final BatteryController battery;
 
-    public HM_ReedSwitchController(final String id, final Location location) throws RSBBindingException {
-        super(id, location, HM_ReedSwitch.newBuilder());
+    public HM_ReedSwitchController(final String id, final String lable, final Location location) throws RSBBindingException {
+        super(id, lable, location, HM_ReedSwitch.newBuilder());
 
         builder.setId(id);
-        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, this, builder.getReedSwitchBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, this, builder.getBatteryBuilder());
+        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, lable, this, builder.getReedSwitchBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, lable, this, builder.getBatteryBuilder());
         this.register(reedSwitch);
         this.register(battery);
     }

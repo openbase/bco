@@ -8,7 +8,7 @@ package de.citec.dal.hal.al;
 import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -23,7 +23,7 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author nuc
  */
-public class AmbientLightController extends AbstractHALController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> {
+public class AmbientLightController extends AbstractUnitController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -34,8 +34,8 @@ public class AmbientLightController extends AbstractHALController<AmbientLightTy
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public AmbientLightController(String id, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public AmbientLightController(String id, final String lable, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     @Override

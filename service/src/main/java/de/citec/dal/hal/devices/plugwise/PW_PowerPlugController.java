@@ -8,7 +8,7 @@ package de.citec.dal.hal.devices.plugwise;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.PowerConsumptionSensorController;
 import de.citec.dal.hal.al.PowerPlugController;
 import org.openhab.core.library.types.DecimalType;
@@ -18,12 +18,11 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.devices.plugwise.PW_PowerPlugType;
 import rst.devices.plugwise.PW_PowerPlugType.PW_PowerPlug;
 
-
 /**
  *
  * @author mpohling
  */
-public class PW_PowerPlugController extends AbstractHardwareController<PW_PowerPlug, PW_PowerPlug.Builder> {
+public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlug, PW_PowerPlug.Builder> {
 
     private final static String COMPONENT_POWER_PLUG = "PowerPlug";
     private final static String COMPONENT_POWER_CONSUMPTION = "PowerConsumption";
@@ -36,11 +35,11 @@ public class PW_PowerPlugController extends AbstractHardwareController<PW_PowerP
     private final PowerPlugController powerPlug;
     private final PowerConsumptionSensorController powerConsumption;
 
-    public PW_PowerPlugController(final String id, final Location location) throws RSBBindingException {
-        super(id, location, PW_PowerPlug.newBuilder());
-        builder.setId(id);
-        this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, this, builder.getPowerPlugBuilder());
-        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, this, builder.getPowerConsumptionBuilder());
+    public PW_PowerPlugController(final String id, final String lable, final Location location) throws RSBBindingException {
+        super(id, lable, location, PW_PowerPlug.newBuilder());
+//        builder.setId(id); //TODO still useful or already setuped in super class?
+        this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, lable, this, builder.getPowerPlugBuilder());
+        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, lable, this, builder.getPowerConsumptionBuilder());
         this.register(powerPlug);
         this.register(powerConsumption);
     }

@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -20,15 +20,15 @@ import rst.homeautomation.BatteryType.Battery;
  *
  * @author thuxohl
  */
-public class BatteryController extends AbstractHALController<Battery, Battery.Builder> {
+public class BatteryController extends AbstractUnitController<Battery, Battery.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(String id, HardwareUnit hardwareUnit, Battery.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public BatteryController(String id, final String lable, HardwareUnit hardwareUnit, Battery.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateBatteryLevel(final double batteryState) {

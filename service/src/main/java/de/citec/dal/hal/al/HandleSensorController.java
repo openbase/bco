@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHALController;
+import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -20,15 +20,15 @@ import rst.homeautomation.states.OpenClosedTiltedType.OpenClosedTilted.OpenClose
  *
  * @author thuxohl
  */
-public class HandleSensorController extends AbstractHALController<HandleSensor, HandleSensor.Builder> {
+public class HandleSensorController extends AbstractUnitController<HandleSensor, HandleSensor.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(String id, HardwareUnit hardwareUnit, HandleSensor.Builder builder) throws RSBBindingException {
-        super(id, hardwareUnit, builder);
+    public HandleSensorController(String id, final String lable, HardwareUnit hardwareUnit, HandleSensor.Builder builder) throws RSBBindingException {
+        super(id, lable, hardwareUnit, builder);
     }
 
     public void updateOpenClosedTiltedState(final OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state) {

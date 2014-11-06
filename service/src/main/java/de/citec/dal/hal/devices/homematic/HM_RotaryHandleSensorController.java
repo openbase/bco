@@ -8,7 +8,7 @@ package de.citec.dal.hal.devices.homematic;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedTiltedStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.BatteryController;
 import de.citec.dal.hal.al.HandleSensorController;
 import rsb.converter.DefaultConverterRepository;
@@ -20,7 +20,7 @@ import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
  *
  * @author thuxohl
  */
-public class HM_RotaryHandleSensorController extends AbstractHardwareController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
+public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
 
     private final static String COMPONENT_HANDLE_SENSOR = "HandleSensor";
     private final static String COMPONENT_BATTERY = "Battery";
@@ -33,12 +33,12 @@ public class HM_RotaryHandleSensorController extends AbstractHardwareController<
     private final HandleSensorController handleSensor;
     private final BatteryController battery;
 
-    public HM_RotaryHandleSensorController(final String id, final Location location) throws RSBBindingException {
-        super(id, location, HM_RotaryHandleSensor.newBuilder());
+    public HM_RotaryHandleSensorController(final String id, final String lable, final Location location) throws RSBBindingException {
+        super(id, lable, location, HM_RotaryHandleSensor.newBuilder());
 
         builder.setId(id);
-        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, this, builder.getHandleSensorBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, this, builder.getBatteryBuilder());
+        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, lable, this, builder.getHandleSensorBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, lable, this, builder.getBatteryBuilder());
         this.register(handleSensor);
         this.register(battery);
     }

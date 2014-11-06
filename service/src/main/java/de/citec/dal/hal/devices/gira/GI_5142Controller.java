@@ -8,7 +8,7 @@ package de.citec.dal.hal.devices.gira;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.ButtonStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractHardwareController;
+import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.ButtonController;
 import org.openhab.core.library.types.OnOffType;
 import rsb.converter.DefaultConverterRepository;
@@ -19,7 +19,7 @@ import rst.devices.gira.GI_5133Type;
  *
  * @author mpohling
  */
-public class GI_5142Controller extends AbstractHardwareController<GI_5133Type.GI_5133, GI_5133Type.GI_5133.Builder> {
+public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5133, GI_5133Type.GI_5133.Builder> {
 
     private final static String COMPONENT_BUTTON_0 = "Button_0";
     private final static String COMPONENT_BUTTON_1 = "Button_1";
@@ -36,14 +36,14 @@ public class GI_5142Controller extends AbstractHardwareController<GI_5133Type.GI
     private final ButtonController button_2;
     private final ButtonController button_3;
 
-    public GI_5142Controller(final String id, final Location location) throws RSBBindingException {
-        super(id, location, GI_5133Type.GI_5133.newBuilder());
+    public GI_5142Controller(final String id, final String lable, final Location location) throws RSBBindingException {
+        super(id, lable, location, GI_5133Type.GI_5133.newBuilder());
 
         builder.setId(id);
-        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, this, builder.getButton0Builder());
-        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, this, builder.getButton1Builder());
-        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, this, builder.getButton2Builder());
-        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, this, builder.getButton3Builder());
+        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, lable, this, builder.getButton0Builder());
+        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, lable, this, builder.getButton1Builder());
+        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, lable, this, builder.getButton2Builder());
+        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, lable, this, builder.getButton3Builder());
         this.register(button_0);
         this.register(button_1);
         this.register(button_2);
