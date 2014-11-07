@@ -118,6 +118,14 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         }
     }
 
+    protected final void setField(String name, Object value) {
+        try {
+            builder.setField(builder.getDescriptorForType().findFieldByName(name), value);
+        } catch (Exception ex) {
+            logger.warn("Could not set field [" + name + "=" + value + "] for " + this);
+        }
+    }
+
     public static Scope generateScope(final String id, final Location location) {
         return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id));
     }
