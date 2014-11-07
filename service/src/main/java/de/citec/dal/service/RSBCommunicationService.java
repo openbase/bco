@@ -10,9 +10,9 @@ import com.google.protobuf.GeneratedMessage.Builder;
 import de.citec.dal.data.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Event;
 import rsb.Factory;
 import rsb.Informer;
+import rsb.InitializeException;
 import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;
@@ -29,20 +29,9 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     protected final Logger logger;
 
     protected final MB builder;
-    protected static Informer informer;
-
-    static { //TODO mpohling: REDESIGN HACK
-        Logger LOGGER = LoggerFactory.getLogger(RSBCommunicationService.class);
-        try {
-            LOGGER.info("Init informer service...");
-            informer = Factory.getInstance().createInformer("/");
-        } catch (Exception ex) {
-            LOGGER.error("Could not init RSBInformer!", new RSBException("Could not init informer.", ex));
-        }
-    }
-
+    protected Informer<M> informer;
     protected LocalServer server;
-    protected Scope scope, informerScope, serverScope;
+    protected Scope scope;
 
     public RSBCommunicationService(final String id, final Location location, final MB builder) {
         this(generateScope(id, location), builder);
@@ -51,18 +40,22 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     public RSBCommunicationService(final Scope scope, final MB builder) {
         this.logger = LoggerFactory.getLogger(getClass());
         this.scope = new Scope(scope.toString().toLowerCase());
-        this.informerScope = scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_INFORMER));
-        this.serverScope = scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_RPC));
-
         this.builder = builder;
         logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + scope + ".");
     }
 
     protected void init() throws RSBException {
         try {
+            logger.info("Init informer service...");
+            this.informer = Factory.getInstance().createInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_INFORMER)));
+        } catch (Exception ex) {
+            throw new RSBException("Could not init informer.", ex);
+        }
+
+        try {
             logger.info("Init rpc server...");
             // Get local server object which allows to expose remotely callable methods.
-            server = Factory.getInstance().createLocalServer(serverScope);
+            server = Factory.getInstance().createLocalServer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_RPC)));
 
             // register rpc methods.
             registerMethods(server);
@@ -74,15 +67,12 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
     public void activate() throws Exception {
         logger.debug("Activate RSBCommunicationService for: " + this);
-//        try {
-//            informer.activate();
-//        } catch (InitializeException exx) {
-//            throw new RSBException("Could not activate informer.", exx);
-//        }
-        if(!informer.isActive()) { //TODO mpohling: REDESIGN HACK
+        try {
             informer.activate();
+        } catch (InitializeException exx) {
+            throw new RSBException("Could not activate informer.", exx);
         }
-        
+
         try {
             server.activate();
         } catch (RSBException ex) {
@@ -91,24 +81,16 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     }
 
     public void deactivate() throws Exception {
-//        try {
-//            informer.deactivate();
-//        } catch (Exception ex) {
-//            throw new RSBException("Could not deactivate informer.", ex);
-//        }
+        try {
+            informer.deactivate();
+        } catch (Exception ex) {
+            throw new RSBException("Could not deactivate informer.", ex);
+        }
 
         try {
             server.deactivate();
         } catch (Exception ex) {
             throw new RSBException("Could not deactivate rpc server.", ex);
-        }
-    }
-
-    protected final void setField(String name, Object value) {
-        try {
-            builder.setField(builder.getDescriptorForType().findFieldByName(name), value);
-        } catch (Exception ex) {
-            logger.warn("Could not set field [" + name + "=" + value+ "] for "+this);
         }
     }
 
@@ -130,8 +112,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
     public void notifyChange() {
         try {
-            M message = getMessage();
-            informer.send(new Event(informerScope, message.getClass(), message));
+            informer.send(getMessage());
         } catch (Exception ex) {
             logger.error("Could not notify update", ex);
         }
