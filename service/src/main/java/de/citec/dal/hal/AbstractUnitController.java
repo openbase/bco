@@ -70,10 +70,19 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     public void sendCommand(Command command) throws RSBBindingException {
+        if(command == null) {
+            throw new RSBBindingException("Skip sending empty command!", new NullPointerException("Argument command is null!"));
+        }
+        
+        if(rsbBinding == null) {
+            throw new RSBBindingException("Skip sending command, binding not ready!", new NullPointerException("Argument rsbBinding is null!"));
+        }
+        
+        if(generateHardwareId() == null) {
+            throw new RSBBindingException("Skip sending command, could not generate id!", new NullPointerException("Argument id is null!"));
+        }
+        
         logger.debug("Send command: Setting item ["+generateHardwareId()+"] to ["+command.toString()+"]");
-        assert command != null;
-        assert rsbBinding != null;
-        assert generateHardwareId() != null;
         rsbBinding.sendCommand(generateHardwareId(), command);
     }
 
