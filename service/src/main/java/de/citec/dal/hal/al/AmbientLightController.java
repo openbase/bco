@@ -63,7 +63,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
                 AmbientLightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + AmbientLightController.this.getId() + "]", ex);
+                logger.warn("Could not invoke method [setPowerState] for [" + AmbientLightController.this.getId() + "]", ex);
                 return new Event(String.class, "Failed");
             }
         }
@@ -87,7 +87,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
                 AmbientLightController.this.setColor(((HSVColor) request.getData()));
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for " + AmbientLightController.this, ex);
+                logger.warn("Could not invoke method [setColer] for " + AmbientLightController.this, ex);
                 return new Event(String.class, "Failed");
             }
         }
