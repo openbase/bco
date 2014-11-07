@@ -50,7 +50,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.location = location;
         this.unitMap = new HashMap<>();
         this.halFunctionMapping = new HashMap<>();
-         setField("id", id);
+        setField("id", id);
 //        super.builder.setField(builder.getDescriptorForType().findFieldByName("label"), label); //TODO: Activate after rst integration
         
         try {

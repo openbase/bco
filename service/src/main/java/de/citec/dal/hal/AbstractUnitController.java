@@ -35,7 +35,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         this.id = id;
         this.label = label;
         this.relatedHardwareUnit = relatedHardwareUnit;
-        super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), relatedHardwareUnit.getInstance_id());
         setField("id", generateHardwareId());
         setField("label", label);
 

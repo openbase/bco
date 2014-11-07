@@ -143,27 +143,27 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerConsumptionSensor_0(DecimalType value) {
+    public void updatePowerConsumption_0(DecimalType value) {
         powerConsumptionSensor_0.updatePowerConsumption(value.floatValue());
     }
 
-    public void updatePowerConsumptionSensor_1(DecimalType value) {
+    public void updatePowerConsumption_1(DecimalType value) {
         powerConsumptionSensor_1.updatePowerConsumption(value.floatValue());
     }
 
-    public void updatePowerConsumptionSensor_2(DecimalType value) {
+    public void updatePowerConsumption_2(DecimalType value) {
         powerConsumptionSensor_2.updatePowerConsumption(value.floatValue());
     }
 
-    public void updatePowerConsumptionSensor_3(DecimalType value) {
+    public void updatePowerConsumption_3(DecimalType value) {
         powerConsumptionSensor_3.updatePowerConsumption(value.floatValue());
     }
 
-    public void updatePowerConsumptionSensor_4(DecimalType value) {
+    public void updatePowerConsumption_4(DecimalType value) {
         powerConsumptionSensor_4.updatePowerConsumption(value.floatValue());
     }
 
-    public void updatePowerConsumptionSensor_5(DecimalType value) {
+    public void updatePowerConsumption_5(DecimalType value) {
         powerConsumptionSensor_5.updatePowerConsumption(value.floatValue());
     }
 }
