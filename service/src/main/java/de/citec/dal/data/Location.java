@@ -30,8 +30,6 @@ public class Location {
             this.parent = this;
             this.children = new ArrayList<>();
         }
-
-        
         
         public Location(String name) {
 		this.name = name;

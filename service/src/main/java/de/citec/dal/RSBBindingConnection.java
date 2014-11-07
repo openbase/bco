@@ -46,6 +46,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
     
     private void initDevices() {
         logger.info("Init devices...");
+        Location outdoor = new Location("Outdoor");
         Location kitchen = new Location("kitchen");
         Location wardrobe = new Location("wardrobe");
         Location living = new Location("living");
@@ -55,10 +56,10 @@ public class RSBBindingConnection implements RSBBindingInterface {
         
         try {
             registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));
-            registry.register(new PW_PowerPlugController("PW_PowerPlug_001", "", control));
-            registry.register(new PW_PowerPlugController("PW_PowerPlug_002", "", control));
-            registry.register(new PW_PowerPlugController("PW_PowerPlug_003", "", control));
-            registry.register(new PW_PowerPlugController("PW_PowerPlug_004", "", control));
+            registry.register(new PW_PowerPlugController("PW_PowerPlug_001", "USBCharger_2", control));
+            registry.register(new PW_PowerPlugController("PW_PowerPlug_002", "USBCharger_3", control));
+            registry.register(new PW_PowerPlugController("PW_PowerPlug_003", "USBCharger_4", control));
+            registry.register(new PW_PowerPlugController("PW_PowerPlug_004", "Fan", control));
             registry.register(new PW_PowerPlugController("PW_PowerPlug_005", "", control));
             registry.register(new PW_PowerPlugController("PW_PowerPlug_006", "", control));
             registry.register(new PW_PowerPlugController("PW_PowerPlug_007", "", control));
@@ -84,7 +85,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
             registry.register(new F_MotionSensorController("F_MotionSensor_003", "Media", living));
             registry.register(new F_MotionSensorController("F_MotionSensor_004", "Table", living));
             registry.register(new F_MotionSensorController("F_MotionSensor_005", "Control", living));
-            registry.register(new F_MotionSensorController("F_MotionSensor_006", "Glibal", kitchen));
+            registry.register(new F_MotionSensorController("F_MotionSensor_006", "Global", kitchen));
             registry.register(new F_MotionSensorController("F_MotionSensor_007", "Global", bath));
             registry.register(new F_MotionSensorController("F_MotionSensor_008", "Entrance", bath));
             registry.register(new F_MotionSensorController("F_MotionSensor_009", "Shower", bath));
@@ -93,7 +94,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
             registry.register(new F_MotionSensorController("F_MotionSensor_012", "Pathway", sports));
             registry.register(new F_MotionSensorController("F_MotionSensor_013", "Entrance", control));
             registry.register(new F_MotionSensorController("F_MotionSensor_014", "TestUnit_1", control));
-            registry.register(new F_MotionSensorController("F_MotionSensor_015", "Outdoor", wardrobe));
+            registry.register(new F_MotionSensorController("F_MotionSensor_015", "Entrance", outdoor));
             
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", "1", wardrobe));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_001", "2", living));
