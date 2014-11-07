@@ -83,9 +83,6 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
         @Override
         public Event invoke(final Event request) throws Throwable {
-            HSVColor test = (HSVColor) request.getData();
-            System.out.println("Recieved values: Hue["+test.getHue()+"], Sat"+test.getSaturation()+", Val["+test.getValue());
-            System.out.println("Id: "+AmbientLightController.this.id+" Label"+AmbientLightController.this.label);
             try {
                 AmbientLightController.this.setColor(((HSVColor) request.getData()));
                 return new Event(String.class, "Ok");
