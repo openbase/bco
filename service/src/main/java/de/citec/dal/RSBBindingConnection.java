@@ -93,7 +93,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
             registry.register(new F_MotionSensorController("F_MotionSensor_012", "Pathway", sports));
             registry.register(new F_MotionSensorController("F_MotionSensor_013", "Entrance", control));
             registry.register(new F_MotionSensorController("F_MotionSensor_014", "TestUnit_1", control));
-            registry.register(new F_MotionSensorController("F_MotionSensor_015", "TestUnit_2", control));
+            registry.register(new F_MotionSensorController("F_MotionSensor_015", "Outdoor", wardrobe));
             
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", "1", wardrobe));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_001", "2", living));
