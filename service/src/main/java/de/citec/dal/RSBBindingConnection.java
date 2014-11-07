@@ -19,6 +19,7 @@ import de.citec.dal.hal.devices.philips.PH_Hue_GU10Controller;
 import de.citec.dal.hal.devices.plugwise.PW_PowerPlugController;
 import de.citec.dal.service.HardwareManager;
 import de.citec.dal.service.HardwareRegistry;
+import java.util.logging.Level;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.slf4j.Logger;
@@ -40,10 +41,11 @@ public class RSBBindingConnection implements RSBBindingInterface {
 
     public RSBBindingConnection(RSBBindingInterface binding) {
         this.binding = binding;
+        this.instance = this;
         this.registry = HardwareRegistry.getInstance();
         this.hardwareManager = HardwareManager.getInstance();
         this.initDevices();
-        this.instance = this;
+        
     }
     
     private void initDevices() {
@@ -183,9 +185,14 @@ public class RSBBindingConnection implements RSBBindingInterface {
     }
     
     public static RSBBindingInterface getInstance() {
+        while(instance == null) {
+           logger.warn("WARN: Binding not ready yet!");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                java.util.logging.Logger.getLogger(RSBBindingConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } 
         return instance;
     }
-
-    
-    
 }
