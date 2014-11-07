@@ -106,7 +106,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
     protected final void setField(String name, Object value) {
         try {
-            builder.setField(builder.getDescriptorForType().findFieldByName("name"), value);
+            builder.setField(builder.getDescriptorForType().findFieldByName(name), value);
         } catch (Exception ex) {
             logger.warn("Could not set field [" + name + "=" + value+ "] for "+this);
         }

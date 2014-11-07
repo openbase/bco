@@ -29,6 +29,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     public MotionSensorController(final String id, final String label, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws RSBBindingException {
         super(id, label, hardwareUnit, builder);
+        
     }
 
     public void updateMotionState(final MotionType.Motion.MotionState state) {
