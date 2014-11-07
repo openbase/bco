@@ -34,10 +34,10 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
 
     private final AmbientLightController ambientLight;
 
-    public PH_Hue_GU10Controller(final String id, final String lable,final Location location) throws RSBBindingException {
-        super(id, lable,location, PH_Hue_GU10.newBuilder());
+    public PH_Hue_GU10Controller(final String id, final String label,final Location location) throws RSBBindingException {
+        super(id, label,location, PH_Hue_GU10.newBuilder());
         super.builder.setId(id);
-        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, lable,this, builder.getAmbientLightBuilder());
+        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label,this, builder.getAmbientLightBuilder());
         this.register(ambientLight);
     }
 

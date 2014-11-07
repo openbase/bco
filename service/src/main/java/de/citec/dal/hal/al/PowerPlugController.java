@@ -31,8 +31,8 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public PowerPlugController(String id, final String lable, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public PowerPlugController(String id, final String label, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     @Override

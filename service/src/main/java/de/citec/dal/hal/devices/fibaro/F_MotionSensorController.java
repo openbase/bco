@@ -44,15 +44,15 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
 
-    public F_MotionSensorController(final String id, String lable, final Location location) throws RSBBindingException {
-        super(id, lable, location, F_MotionSensor.newBuilder());
+    public F_MotionSensorController(final String id, String label, final Location location) throws RSBBindingException {
+        super(id, label, location, F_MotionSensor.newBuilder());
 
         builder.setId(id);
-        this.motionSensor = new MotionSensorController(UNIT_MOTION_SENSOR, lable, this, builder.getMotionSensorBuilder());
-        this.temperatureSensor = new TemperatureSensorController(UNIT_TEMPERATURE_SENSOR, lable, this, builder.getTemperatureSensorBuilder());
-        this.brightnessSensor = new BrightnessSensorController(UNIT_BRIGHTNESS_SENSOR, lable, this, builder.getBrightnessSensorBuilder());
-        this.tamperSwitch = new TamperSwitchController(UNIT_TAMPER_SWITCH, lable, this, builder.getTamperSwitchBuilder());
-        this.battery = new BatteryController(UNIT_BATTERY, lable, this, builder.getBatteryBuilder());
+        this.motionSensor = new MotionSensorController(UNIT_MOTION_SENSOR, label, this, builder.getMotionSensorBuilder());
+        this.temperatureSensor = new TemperatureSensorController(UNIT_TEMPERATURE_SENSOR, label, this, builder.getTemperatureSensorBuilder());
+        this.brightnessSensor = new BrightnessSensorController(UNIT_BRIGHTNESS_SENSOR, label, this, builder.getBrightnessSensorBuilder());
+        this.tamperSwitch = new TamperSwitchController(UNIT_TAMPER_SWITCH, label, this, builder.getTamperSwitchBuilder());
+        this.battery = new BatteryController(UNIT_BATTERY, label, this, builder.getBatteryBuilder());
         this.register(motionSensor);
         this.register(temperatureSensor);
         this.register(brightnessSensor);

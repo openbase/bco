@@ -33,12 +33,12 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
     private final HandleSensorController handleSensor;
     private final BatteryController battery;
 
-    public HM_RotaryHandleSensorController(final String id, final String lable, final Location location) throws RSBBindingException {
-        super(id, lable, location, HM_RotaryHandleSensor.newBuilder());
+    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws RSBBindingException {
+        super(id, label, location, HM_RotaryHandleSensor.newBuilder());
 
         builder.setId(id);
-        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, lable, this, builder.getHandleSensorBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, lable, this, builder.getBatteryBuilder());
+        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, label, this, builder.getHandleSensorBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, builder.getBatteryBuilder());
         this.register(handleSensor);
         this.register(battery);
     }

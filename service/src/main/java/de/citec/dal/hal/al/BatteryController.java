@@ -27,8 +27,8 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
                 new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(String id, final String lable, HardwareUnit hardwareUnit, Battery.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public BatteryController(String id, final String label, HardwareUnit hardwareUnit, Battery.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     public void updateBatteryLevel(final double batteryState) {

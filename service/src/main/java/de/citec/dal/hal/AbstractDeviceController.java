@@ -32,7 +32,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     public final static String ID_SEPERATOR = "_";
     
     protected final String id;
-    protected final String lable;
+    protected final String label;
     protected final String hardware_id;
     protected final String instance_id;
     protected final Location location;
@@ -41,17 +41,17 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
     protected RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
 
-    public AbstractDeviceController(final String id, final String lable, final Location location, final MB builder) throws RSBBindingException {
+    public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws RSBBindingException {
         super(generateScope(id, location), builder);
         this.id = id;
-        this.lable = lable;
+        this.label = label;
         this.hardware_id = parseHardwareId(id, getClass());
         this.instance_id = parseInstanceId(id);
         this.location = location;
         this.unitMap = new HashMap<>();
         this.halFunctionMapping = new HashMap<>();
         super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), id);
-//        super.builder.setField(builder.getDescriptorForType().findFieldByName("lable"), lable); //TODO: Activate after rst integration
+//        super.builder.setField(builder.getDescriptorForType().findFieldByName("label"), label); //TODO: Activate after rst integration
         
         try {
             init();
@@ -137,7 +137,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     public String getLable() {
-        return lable;
+        return label;
     }
     
     @Override

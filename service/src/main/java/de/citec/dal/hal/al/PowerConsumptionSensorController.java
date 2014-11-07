@@ -28,8 +28,8 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
                 new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(String id, final String lable, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public PowerConsumptionSensorController(String id, final String label, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     @Override

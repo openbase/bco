@@ -27,8 +27,8 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
                 new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(String id, final String lable, HardwareUnit hardwareUnit, HandleSensor.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public HandleSensorController(String id, final String label, HardwareUnit hardwareUnit, HandleSensor.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     public void updateOpenClosedTiltedState(final OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state) {

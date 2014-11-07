@@ -25,8 +25,8 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
                 new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(String id, final String lable, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public TemperatureSensorController(String id, final String label, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     public void updateTemperature(final float temperature) {

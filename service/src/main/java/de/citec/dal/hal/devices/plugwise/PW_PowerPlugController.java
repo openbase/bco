@@ -35,11 +35,11 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
     private final PowerPlugController powerPlug;
     private final PowerConsumptionSensorController powerConsumption;
 
-    public PW_PowerPlugController(final String id, final String lable, final Location location) throws RSBBindingException {
-        super(id, lable, location, PW_PowerPlug.newBuilder());
+    public PW_PowerPlugController(final String id, final String label, final Location location) throws RSBBindingException {
+        super(id, label, location, PW_PowerPlug.newBuilder());
 //        builder.setId(id); //TODO still useful or already setuped in super class?
-        this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, lable, this, builder.getPowerPlugBuilder());
-        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, lable, this, builder.getPowerConsumptionBuilder());
+        this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, label, this, builder.getPowerPlugBuilder());
+        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, label, this, builder.getPowerConsumptionBuilder());
         this.register(powerPlug);
         this.register(powerConsumption);
     }

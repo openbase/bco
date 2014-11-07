@@ -27,8 +27,8 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
                 new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(final String id, final String lable, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public MotionSensorController(final String id, final String label, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     public void updateMotionState(final MotionType.Motion.MotionState state) {

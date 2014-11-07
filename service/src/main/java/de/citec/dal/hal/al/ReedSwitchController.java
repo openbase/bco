@@ -27,8 +27,8 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
                 new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(String id, final String lable, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public ReedSwitchController(String id, final String label, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     public void updateOpenClosedState(final OpenClosedType.OpenClosed.OpenClosedState state) {

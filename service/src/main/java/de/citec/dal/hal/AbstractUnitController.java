@@ -25,19 +25,19 @@ import rsb.patterns.LocalServer;
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> {
 
     protected final String id;
-    protected final String lable;
+    protected final String label;
     private final HardwareUnit relatedHardwareUnit;
 
     protected final RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
 
-    public AbstractUnitController(final String id, final String lable, final HardwareUnit relatedHardwareUnit, final MB builder) throws RSBBindingException {
-        super(generateScope(id, lable, relatedHardwareUnit), builder);
+    public AbstractUnitController(final String id, final String label, final HardwareUnit relatedHardwareUnit, final MB builder) throws RSBBindingException {
+        super(generateScope(id, label, relatedHardwareUnit), builder);
         this.id = id;
-        this.lable = lable;
+        this.label = label;
         this.relatedHardwareUnit = relatedHardwareUnit;
 //        super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), relatedHardwareUnit.getInstance_id());
         super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), id);
-        super.builder.setField(builder.getDescriptorForType().findFieldByName("lable"), lable);
+        super.builder.setField(builder.getDescriptorForType().findFieldByName("label"), label);
         
 
         try {
@@ -52,7 +52,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     public String getLable() {
-        return lable;
+        return label;
     }
     
     public HardwareUnit getRelatedHardwareUnit() {
@@ -79,12 +79,12 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         rsbBinding.sendCommand(generateHardwareId(), command);
     }
 
-    public static Scope generateScope(final String id, final String lable, final HardwareUnit hardware) {
-        return hardware.getLocation().getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id).concat(new Scope(Location.COMPONENT_SEPERATOR + lable)));
+    public static Scope generateScope(final String id, final String label, final HardwareUnit hardware) {
+        return hardware.getLocation().getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id).concat(new Scope(Location.COMPONENT_SEPERATOR + label)));
     }
     
     @Override
     public String toString() {
-        return getClass().getSimpleName()+"["+id+"["+lable+"]]";
+        return getClass().getSimpleName()+"["+id+"["+label+"]]";
     }
 }

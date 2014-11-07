@@ -33,12 +33,12 @@ public class HM_ReedSwitchController extends AbstractDeviceController<HM_ReedSwi
     private final ReedSwitchController reedSwitch;
     private final BatteryController battery;
 
-    public HM_ReedSwitchController(final String id, final String lable, final Location location) throws RSBBindingException {
-        super(id, lable, location, HM_ReedSwitch.newBuilder());
+    public HM_ReedSwitchController(final String id, final String label, final Location location) throws RSBBindingException {
+        super(id, label, location, HM_ReedSwitch.newBuilder());
 
         builder.setId(id);
-        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, lable, this, builder.getReedSwitchBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, lable, this, builder.getBatteryBuilder());
+        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, label, this, builder.getReedSwitchBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, builder.getBatteryBuilder());
         this.register(reedSwitch);
         this.register(battery);
     }

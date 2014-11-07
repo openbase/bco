@@ -40,16 +40,16 @@ public class GI_5133Controller extends AbstractDeviceController<GI_5133Type.GI_5
     private final ButtonController button_4;
     private final ButtonController button_5;
 
-    public GI_5133Controller(final String id, final String lable, final Location location) throws RSBBindingException {
-        super(id, lable, location, GI_5133Type.GI_5133.newBuilder());
+    public GI_5133Controller(final String id, final String label, final Location location) throws RSBBindingException {
+        super(id, label, location, GI_5133Type.GI_5133.newBuilder());
 
         builder.setId(id);
-        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, lable, this, builder.getButton0Builder());
-        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, lable, this, builder.getButton1Builder());
-        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, lable, this, builder.getButton2Builder());
-        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, lable, this, builder.getButton3Builder());
-        this.button_4 = new ButtonController(COMPONENT_BUTTON_4, lable, this, builder.getButton4Builder());
-        this.button_5 = new ButtonController(COMPONENT_BUTTON_5, lable, this, builder.getButton5Builder());
+        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, label, this, builder.getButton0Builder());
+        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, label, this, builder.getButton1Builder());
+        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, label, this, builder.getButton2Builder());
+        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, label, this, builder.getButton3Builder());
+        this.button_4 = new ButtonController(COMPONENT_BUTTON_4, label, this, builder.getButton4Builder());
+        this.button_5 = new ButtonController(COMPONENT_BUTTON_5, label, this, builder.getButton5Builder());
         this.register(button_0);
         this.register(button_1);
         this.register(button_2);

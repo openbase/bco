@@ -34,8 +34,8 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public AmbientLightController(String id, final String lable, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public AmbientLightController(String id, final String label, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         public Event invoke(final Event request) throws Throwable {
             HSVColor test = (HSVColor) request.getData();
             System.out.println("Recieved values: Hue["+test.getHue()+"], Sat"+test.getSaturation()+", Val["+test.getValue());
-            System.out.println("Id: "+AmbientLightController.this.id+" Label"+AmbientLightController.this.lable);
+            System.out.println("Id: "+AmbientLightController.this.id+" Label"+AmbientLightController.this.label);
             try {
                 AmbientLightController.this.setColor(((HSVColor) request.getData()));
                 return new Event(String.class, "Ok");

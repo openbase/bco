@@ -24,8 +24,8 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
                 new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(String id, final String lable, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws RSBBindingException {
-        super(id, lable, hardwareUnit, builder);
+    public TamperSwitchController(String id, final String label, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws RSBBindingException {
+        super(id, label, hardwareUnit, builder);
     }
 
     public void updateTamperState(final TamperType.Tamper.TamperState state) {
