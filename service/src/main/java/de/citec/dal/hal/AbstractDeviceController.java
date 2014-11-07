@@ -51,6 +51,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.unitMap = new HashMap<>();
         this.halFunctionMapping = new HashMap<>();
         super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), id);
+        super.builder.setField(builder.getDescriptorForType().findFieldByName("lable"), lable);
         
         try {
             init();

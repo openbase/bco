@@ -28,14 +28,17 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     protected final String lable;
     private final HardwareUnit relatedHardwareUnit;
 
-    protected RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
+    protected final RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
 
     public AbstractUnitController(final String id, final String lable, final HardwareUnit relatedHardwareUnit, final MB builder) throws RSBBindingException {
         super(generateScope(id, lable, relatedHardwareUnit), builder);
         this.id = id;
         this.lable = lable;
         this.relatedHardwareUnit = relatedHardwareUnit;
-        super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), relatedHardwareUnit.getInstance_id());
+//        super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), relatedHardwareUnit.getInstance_id());
+        super.builder.setField(builder.getDescriptorForType().findFieldByName("id"), id);
+        super.builder.setField(builder.getDescriptorForType().findFieldByName("lable"), lable);
+        
 
         try {
             init();
@@ -70,6 +73,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     public void sendCommand(Command command) throws RSBBindingException {
         logger.debug("Send command: Setting item ["+generateHardwareId()+"] to ["+command.toString()+"]");
+        assert command != null;
+        assert rsbBinding != null;
+        assert generateHardwareId() != null;
         rsbBinding.sendCommand(generateHardwareId(), command);
     }
 
