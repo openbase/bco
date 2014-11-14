@@ -111,6 +111,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     }
 
     public void notifyChange() {
+        logger.debug("Notify change of "+this);
         try {
             informer.send(getMessage());
         } catch (Exception ex) {
@@ -131,4 +132,9 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     }
 
     public abstract void registerMethods(final LocalServer server) throws RSBException;
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()+"["+scope+"]";
+    }
 }

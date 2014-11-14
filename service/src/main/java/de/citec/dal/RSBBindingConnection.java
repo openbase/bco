@@ -165,11 +165,13 @@ public class RSBBindingConnection implements RSBBindingInterface {
     
     @Override
     public void internalReceiveCommand(String itemName, Command command) {
+        logger.debug("Incomming Item[" + itemName + "] Command[" + command.toString() + "].");
         hardwareManager.internalReceiveCommand(itemName, command);
     }
 
     @Override
     public void internalReceiveUpdate(String itemName, State newState) {
+        logger.debug("Incomming Item[" + itemName + "] State[" + newState.toString() + "].");
         hardwareManager.internalReceiveUpdate(itemName, newState);
     }
 
