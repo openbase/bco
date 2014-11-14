@@ -1,0 +1,111 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package de.citec.dal.hal.devices.hager;
+
+import de.citec.dal.data.Location;
+import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.al.RollershutterController;
+import org.openhab.core.library.types.DecimalType;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.devices.hager.HA_TYA628CType;
+
+/**
+ *
+ * @author mpohling
+ */
+public class HA_TYA628CController extends AbstractDeviceController<HA_TYA628CType.HA_TYA628C, HA_TYA628CType.HA_TYA628C.Builder> {
+
+    private final static String COMPONENT_ROLLERSHUTTER_0 = "Rollershutter_0";
+    private final static String COMPONENT_ROLLERSHUTTER_1 = "Rollershutter_1";
+    private final static String COMPONENT_ROLLERSHUTTER_2 = "Rollershutter_2";
+    private final static String COMPONENT_ROLLERSHUTTER_3 = "Rollershutter_3";
+    private final static String COMPONENT_ROLLERSHUTTER_4 = "Rollershutter_4";
+    private final static String COMPONENT_ROLLERSHUTTER_5 = "Rollershutter_5";
+    private final static String COMPONENT_ROLLERSHUTTER_6 = "Rollershutter_6";
+    private final static String COMPONENT_ROLLERSHUTTER_7 = "Rollershutter_7";
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
+                new ProtocolBufferConverter<>(HA_TYA628CType.HA_TYA628C.getDefaultInstance()));
+    }
+
+    private final RollershutterController rollershutter_0;
+    private final RollershutterController rollershutter_1;
+    private final RollershutterController rollershutter_2;
+    private final RollershutterController rollershutter_3;
+    private final RollershutterController rollershutter_4;
+    private final RollershutterController rollershutter_5;
+    private final RollershutterController rollershutter_6;
+    private final RollershutterController rollershutter_7;
+
+    public HA_TYA628CController(final String id, final String label, final Location location) throws RSBBindingException {
+        super(id, label, location, HA_TYA628CType.HA_TYA628C.newBuilder());
+
+        builder.setId(id);
+        this.rollershutter_0 = new RollershutterController(COMPONENT_ROLLERSHUTTER_0, label, this, builder.getRollershutter0Builder());
+        this.rollershutter_1 = new RollershutterController(COMPONENT_ROLLERSHUTTER_1, label, this, builder.getRollershutter1Builder());
+        this.rollershutter_2 = new RollershutterController(COMPONENT_ROLLERSHUTTER_2, label, this, builder.getRollershutter2Builder());
+        this.rollershutter_3 = new RollershutterController(COMPONENT_ROLLERSHUTTER_3, label, this, builder.getRollershutter3Builder());
+        this.rollershutter_4 = new RollershutterController(COMPONENT_ROLLERSHUTTER_4, label, this, builder.getRollershutter4Builder());
+        this.rollershutter_5 = new RollershutterController(COMPONENT_ROLLERSHUTTER_5, label, this, builder.getRollershutter5Builder());
+        this.rollershutter_6 = new RollershutterController(COMPONENT_ROLLERSHUTTER_6, label, this, builder.getRollershutter6Builder());
+        this.rollershutter_7 = new RollershutterController(COMPONENT_ROLLERSHUTTER_7, label, this, builder.getRollershutter7Builder());
+        this.register(rollershutter_0);
+        this.register(rollershutter_1);
+        this.register(rollershutter_2);
+        this.register(rollershutter_3);
+        this.register(rollershutter_4);
+        this.register(rollershutter_5);
+        this.register(rollershutter_6);
+        this.register(rollershutter_7);
+    }
+
+    @Override
+    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_0, getClass().getMethod("updateRollershutter_0", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_1, getClass().getMethod("updateRollershutter_1", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_2, getClass().getMethod("updateRollershutter_2", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_3, getClass().getMethod("updateRollershutter_3", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_4, getClass().getMethod("updateRollershutter_4", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_5, getClass().getMethod("updateRollershutter_5", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_6, getClass().getMethod("updateRollershutter_6", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_7, getClass().getMethod("updateRollershutter_7", DecimalType.class));
+    }
+
+    public void updateRollershutter_0(DecimalType type) throws RSBBindingException {
+        rollershutter_0.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_1(DecimalType type) throws RSBBindingException {
+        rollershutter_1.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_2(DecimalType type) throws RSBBindingException {
+        rollershutter_2.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_3(DecimalType type) throws RSBBindingException {
+        rollershutter_3.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_4(DecimalType type) throws RSBBindingException {
+        rollershutter_4.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_5(DecimalType type) throws RSBBindingException {
+        rollershutter_5.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_6(DecimalType type) throws RSBBindingException {
+        rollershutter_6.updatePosition(type.floatValue());
+    }
+
+    public void updateRollershutter_7(DecimalType type) throws RSBBindingException {
+        rollershutter_7.updatePosition(type.floatValue());
+    }
+}

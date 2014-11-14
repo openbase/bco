@@ -70,6 +70,7 @@ public class GI_5133Controller extends AbstractDeviceController<GI_5133Type.GI_5
 
     public void updateButton_0(OnOffType type) throws RSBBindingException {
         try {
+            logger.debug("Try to update button 0");
             button_0.updateButtonState(ButtonStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
             logger.error("Could not update button 0.", ex);

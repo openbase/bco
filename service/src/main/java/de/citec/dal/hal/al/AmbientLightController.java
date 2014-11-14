@@ -42,7 +42,6 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     public void registerMethods(final LocalServer server) throws RSBException {
         server.addMethod("setColor", new SetColorCallback());
         server.addMethod("setPowerState", new SetPowerStateCallback());
-
     }
 
     public void updatePowerState(final PowerType.Power.PowerState state) {
