@@ -130,6 +130,10 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             logger.error("Fatal invokation error!", ex);
         }
     }
+    
+    public void internalReceiveCommand(String id, Command newCommand) {
+        notifyChange(); // TODO: mpohling validate!
+    }
 
     @Override
     public String getId() {

@@ -45,7 +45,6 @@ public class RSBBindingConnection implements RSBBindingInterface {
         this.registry = HardwareRegistry.getInstance();
         this.hardwareManager = HardwareManager.getInstance();
         this.initDevices();
-        
     }
     
     private void initDevices() {
@@ -108,8 +107,8 @@ public class RSBBindingConnection implements RSBBindingInterface {
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_005", "Media", living));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_006", "Interaction_0", sports));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_007", "Interaction_1", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "Test_Unit_0", control));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "Test_Unit_1", control));
+            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "TestUnit_0", control));
+            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "TestUnit_1", control));
             
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_000", "Global_0", kitchen));
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_001", "Global_1", kitchen));
@@ -166,7 +165,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
     
     @Override
     public void internalReceiveCommand(String itemName, Command command) {
-//        hardwareManager.internalReceiveCommand(itemName, command);
+        hardwareManager.internalReceiveCommand(itemName, command);
     }
 
     @Override
