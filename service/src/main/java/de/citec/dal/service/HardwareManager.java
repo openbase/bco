@@ -78,21 +78,4 @@ public class HardwareManager {
         hardware.internalReceiveUpdate(itemName, newState);
 
     }
-
-    public void internalReceiveCommand(String itemName, Command command) {
-        if (!active) {
-            logger.warn("Skip internal command: RSBBinding not activated!");
-            return;
-        }
-        AbstractDeviceController device;
-        synchronized (SYNC_LOCK) {
-            Map.Entry<String, AbstractDeviceController> floorEntry = registry.getHardwareMap().floorEntry(itemName);
-            device = floorEntry.getValue();
-        }
-        if (!itemName.startsWith(device.getId())) {
-            logger.debug("Skip item command [" + itemName + "=" + command + "] because item is not registered.");
-            return;
-        }
-        device.internalReceiveCommand(device.getId(), command);
-    }
 }

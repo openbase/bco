@@ -19,6 +19,7 @@ import de.citec.dal.hal.devices.philips.PH_Hue_GU10Controller;
 import de.citec.dal.hal.devices.plugwise.PW_PowerPlugController;
 import de.citec.dal.service.HardwareManager;
 import de.citec.dal.service.HardwareRegistry;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
@@ -190,12 +191,6 @@ public class RSBBindingConnection implements RSBBindingInterface {
         logger.info("Deactivate " + getClass().getSimpleName() + "...");
         hardwareManager.deactivate();
     }
-    
-    @Override
-    public void internalReceiveCommand(String itemName, Command command) {
-        logger.debug("Incomming Item[" + itemName + "] Command[" + command.toString() + "].");
-        hardwareManager.internalReceiveCommand(itemName, command);
-    }
 
     @Override
     public void internalReceiveUpdate(String itemName, State newState) {
@@ -204,13 +199,8 @@ public class RSBBindingConnection implements RSBBindingInterface {
     }
 
     @Override
-    public void postCommand(String itemName, Command command) throws RSBBindingException {
-        binding.postCommand(itemName, command);
-    }
-
-    @Override
-    public void sendCommand(String itemName, Command command) throws RSBBindingException {
-        binding.sendCommand(itemName, command);
+    public Future executeCommand(String itemName, Command command, ExecutionType type) throws RSBBindingException {
+        return binding.executeCommand(itemName, command, type);
     }
     
     public static RSBBindingInterface getInstance() {

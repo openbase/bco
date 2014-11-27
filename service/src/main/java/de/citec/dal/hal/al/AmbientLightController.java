@@ -51,7 +51,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
-        sendCommand(PowerStateTransformer.transform(state));
+        executeCommand(PowerStateTransformer.transform(state));
     }
 
     public class SetPowerStateCallback extends EventCallback {
@@ -75,7 +75,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     public void setColor(final HSVColor color) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
-        sendCommand(HSVColorTransformer.transform(color));
+        executeCommand(HSVColorTransformer.transform(color));
     }
 
     public class SetColorCallback extends EventCallback {

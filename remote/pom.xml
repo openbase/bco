@@ -10,10 +10,10 @@
     <name>DeviceRemoteControl</name>
     
     <parent>
-		<groupId>de.citec</groupId>
-		<artifactId>dal</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
-	</parent>    
+        <groupId>de.citec</groupId>
+        <artifactId>dal</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>    
     
     <url>http://maven.apache.org</url>
     <build>
@@ -49,4 +49,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>de.citec.dal</groupId>
+            <artifactId>service</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -8,10 +8,12 @@ package de.citec.dal.hal;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.RSBBindingConnection;
 import de.citec.dal.RSBBindingInterface;
+import de.citec.dal.RSBBindingInterface.ExecutionType;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.RSBCommunicationService;
+import java.util.concurrent.Future;
 import org.openhab.core.types.Command;
 import rsb.RSBException;
 import rsb.Scope;
@@ -64,12 +66,12 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public void registerMethods(LocalServer server) throws RSBException {
     }
-
-    public void postCommand(Command command) throws RSBBindingException {
-        rsbBinding.postCommand(generateHardwareId(), command);
+    
+    public Future executeCommand(final Command command) throws RSBBindingException {
+        return executeCommand(generateHardwareId(), command, ExecutionType.SYNCHRONOUS);
     }
-
-    public void sendCommand(Command command) throws RSBBindingException {
+    
+    public Future executeCommand(final String itemName, final Command command, final ExecutionType type) throws RSBBindingException {
         if(command == null) {
             throw new RSBBindingException("Skip sending empty command!", new NullPointerException("Argument command is null!"));
         }
@@ -82,8 +84,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             throw new RSBBindingException("Skip sending command, could not generate id!", new NullPointerException("Argument id is null!"));
         }
         
-        logger.debug("Send command: Setting item ["+generateHardwareId()+"] to ["+command.toString()+"]");
-        rsbBinding.sendCommand(generateHardwareId(), command);
+        logger.debug("Execute command: Setting item ["+generateHardwareId()+"] to ["+command.toString()+"]");
+        return rsbBinding.executeCommand(itemName, command, type);
     }
 
     public static Scope generateScope(final String id, final String label, final HardwareUnit hardware) {

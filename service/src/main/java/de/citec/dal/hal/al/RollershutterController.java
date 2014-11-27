@@ -52,7 +52,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setUpDownState(final UpDownType.UpDown.UpDownState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to UpDownState [" + state.name() + "]");
-        sendCommand(UpDownStateTransformer.transform(state));
+        executeCommand(UpDownStateTransformer.transform(state));
     }
 
     public class SetUpDownStateCallback extends EventCallback {
@@ -76,7 +76,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to StopMove[" + state.name() + "]");
-        sendCommand(StopMoveStateTransformer.transform(state));
+        executeCommand(StopMoveStateTransformer.transform(state));
     }
 
     public class SetStopMoveStateCallback extends EventCallback {
@@ -100,7 +100,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setPosition(final float position) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to Position [" + position + "]");
-        sendCommand(new DecimalType(position));
+        executeCommand(new DecimalType(position));
     }
 
     public class SetPositionCallback extends EventCallback {

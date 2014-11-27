@@ -47,7 +47,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
-        sendCommand(PowerStateTransformer.transform(state));
+        executeCommand(PowerStateTransformer.transform(state));
     }
 
     public class SetPowerStateCallback extends EventCallback {

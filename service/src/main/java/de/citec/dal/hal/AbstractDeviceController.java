@@ -8,6 +8,7 @@ package de.citec.dal.hal;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.RSBBindingConnection;
 import de.citec.dal.RSBBindingInterface;
+import de.citec.dal.RSBBindingInterface.ExecutionType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.VerificatioinFailedException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.RSBCommunicationService;
+import java.util.concurrent.Future;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import rsb.RSBException;
@@ -30,7 +32,7 @@ import rsb.patterns.LocalServer;
 public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements HardwareUnit {
 
     public final static String ID_SEPERATOR = "_";
-    
+
     protected final String id;
     protected final String label;
     protected final String hardware_id;
@@ -52,7 +54,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.halFunctionMapping = new HashMap<>();
         setField("id", id);
 //        super.builder.setField(builder.getDescriptorForType().findFieldByName("label"), label); //TODO: Activate after rst integration
-        
+
         try {
             init();
         } catch (RSBException ex) {
@@ -65,36 +67,36 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             throw new RSBBindingException("Could not apply hardware mapping for " + getClass().getSimpleName() + "!", ex);
         }
     }
-    
+
     public final static String parseHardwareId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificatioinFailedException {
         assert id != null;
         assert hardware != null;
         String hardwareId = hardware.getSimpleName().replace("Controller", "");
-        
+
         /* verify given id */
-        if(!id.startsWith(hardwareId)) {
-            throw new VerificatioinFailedException("Given id ["+id+"] does not start with prefix ["+hardwareId+"]!");
+        if (!id.startsWith(hardwareId)) {
+            throw new VerificatioinFailedException("Given id [" + id + "] does not start with prefix [" + hardwareId + "]!");
         }
-        
+
         return hardwareId;
     }
-    
+
     public final static String parseInstanceId(String id) throws VerificatioinFailedException {
         String[] split = id.split(ID_SEPERATOR);
         String instanceId;
-                
+
         try {
-            instanceId = split[split.length-1];
+            instanceId = split[split.length - 1];
         } catch (IndexOutOfBoundsException ex) {
-            throw new VerificatioinFailedException("Given id ["+id+"] does not contain saperator ["+ID_SEPERATOR+"]");
+            throw new VerificatioinFailedException("Given id [" + id + "] does not contain saperator [" + ID_SEPERATOR + "]");
         }
-        
+
         /* verify instance id */
         try {
             Integer.parseInt(instanceId);
         } catch (NumberFormatException ex) {
-            throw new VerificatioinFailedException("Given id ["+id+"] does not end with a instance nubmer!");
-        }        
+            throw new VerificatioinFailedException("Given id [" + id + "] does not end with a instance nubmer!");
+        }
         return instanceId;
     }
 
@@ -108,8 +110,8 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     public void internalReceiveUpdate(String itemName, State newState) {
-        logger.debug("internalReceiveUpdate ["+itemName+"="+newState+"]");
-        
+        logger.debug("internalReceiveUpdate [" + itemName + "=" + newState + "]");
+
         String id_suffix = itemName.replaceFirst(id + "_", "");
         Method relatedMethod = halFunctionMapping.get(id_suffix);
 
@@ -117,22 +119,19 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             logger.warn("Could not apply update: Related Method unknown!");
             return;
         }
+        
         try {
             relatedMethod.invoke(this, newState);
         } catch (IllegalAccessException ex) {
             logger.error("Cannot acces related Method [" + relatedMethod.getName() + "]", ex);
         } catch (IllegalArgumentException ex) {
-            logger.error("The given argument is [" +newState.getClass().getName() + "]!");
-            logger.error("Does not match [" +relatedMethod.getParameterTypes()[0].getName()+ "] which is needed by [" + relatedMethod.getName() + "]!", ex);
+            logger.error("The given argument is [" + newState.getClass().getName() + "]!");
+            logger.error("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
         } catch (InvocationTargetException ex) {
-            logger.error("The related method [" +relatedMethod.getName()+ "] throws an exceptioin!", ex);
+            logger.error("The related method [" + relatedMethod.getName() + "] throws an exceptioin!", ex);
         } catch (Exception ex) {
             logger.error("Fatal invokation error!", ex);
         }
-    }
-    
-    public void internalReceiveCommand(String id, Command newCommand) {
-        notifyChange(); // TODO: mpohling validate!
     }
 
     @Override
@@ -143,7 +142,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     public String getLable() {
         return label;
     }
-    
+
     @Override
     public void activate() throws RSBBindingException {
         try {
@@ -175,14 +174,10 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         // dummy construct: For registering methods overwrite this method.
     }
 
-    public void postCommand(String itemName, Command command) throws RSBBindingException {
-        rsbBinding.postCommand(itemName, command);
+    public Future executeCommand(final String itemName, final Command command, final ExecutionType type) throws RSBBindingException {
+        return rsbBinding.executeCommand(itemName, command, type);
     }
 
-    public void sendCommand(String itemName, Command command) throws RSBBindingException {
-        rsbBinding.sendCommand(itemName, command);
-    }
-    
     @Override
     public String getHardware_id() {
         return hardware_id;
@@ -194,9 +189,9 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     protected abstract void initHardwareMapping() throws NoSuchMethodException, SecurityException;
-    
+
     @Override
     public String toString() {
-        return getClass().getSimpleName()+"[id:"+id+"|scope:"+getLocation().getScope()+"]";
+        return getClass().getSimpleName() + "[id:" + id + "|scope:" + getLocation().getScope() + "]";
     }
 }

@@ -6,6 +6,7 @@
 package de.citec.dal;
 
 import de.citec.dal.exception.RSBBindingException;
+import java.util.concurrent.Future;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 
@@ -15,11 +16,10 @@ import org.openhab.core.types.State;
  */
 public interface RSBBindingInterface {
     
-    void internalReceiveCommand(String itemName, Command command);
-
+    
+    enum ExecutionType {SYNCHRONOUS, ASYNCHRONOUS};
+            
     void internalReceiveUpdate(String itemName, State newState);
-
-    void postCommand(String itemName, Command command) throws RSBBindingException;
-
-    void sendCommand(String itemName, Command command) throws RSBBindingException;
+    
+    Future executeCommand(String itemName, Command command, ExecutionType type) throws RSBBindingException;
 }

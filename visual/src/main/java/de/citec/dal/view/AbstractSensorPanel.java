@@ -23,25 +23,11 @@ public abstract class AbstractSensorPanel extends javax.swing.JPanel implements 
 
     private Listener listener;
 
-    private static final int NO = 0;
-    private static final int YES = 1;
-    private static final int UNKNOWN = 2;
-
     public AbstractSensorPanel() {
         initComponents();
 
         addConverter();
     }
-
-    protected abstract void addConverter();
-
-    @Override
-    public abstract void internalNotify(Event event);
-
-    protected void setState(int i) {
-
-    }
-
     public void activateListener(Scope scope) {
         try {
             listener = Factory.getInstance().createListener(scope);
@@ -67,6 +53,13 @@ public abstract class AbstractSensorPanel extends javax.swing.JPanel implements 
             Logger.getLogger(AbstractSensorPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    
+    protected abstract void addConverter();
+
+    @Override
+    public abstract void internalNotify(Event event);
+
 
     /**
      * This method is called from within the constructor to initialize the form.
