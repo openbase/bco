@@ -11,7 +11,6 @@ import de.citec.dal.data.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Factory;
-import rsb.Informer;
 import rsb.InitializeException;
 import rsb.RSBException;
 import rsb.Scope;
@@ -23,15 +22,18 @@ import rsb.patterns.LocalServer;
  */
 public abstract class RSBCommunicationService<M extends GeneratedMessage, MB extends Builder> {
 
+    public enum ConnectionState {Online, Offline};
+    
     public final static String SCOPE_SUFFIX_RPC = "ctrl";
     public final static String SCOPE_SUFFIX_INFORMER = "status";
 
     protected final Logger logger;
 
     protected final MB builder;
-    protected Informer<M> informer;
+    protected DistributedInformer<M> informer;
     protected LocalServer server;
     protected Scope scope;
+    private ConnectionState state;
 
     public RSBCommunicationService(final String id, final Location location, final MB builder) {
         this(generateScope(id, location), builder);
@@ -46,8 +48,8 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
     protected void init() throws RSBException {
         try {
-            logger.info("Init informer service...");
-            this.informer = Factory.getInstance().createInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_INFORMER)));
+            logger.info("Init informer service...");            
+            this.informer = new DistributedInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_INFORMER)), detectMessageClass());
         } catch (Exception ex) {
             throw new RSBException("Could not init informer.", ex);
         }
@@ -64,9 +66,14 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
             throw new RSBException("Could not init rpc server.", ex);
         }
     }
+    
+    private Class<? extends M> detectMessageClass() {
+        return (Class<? extends M>) ((M) builder.clone().buildPartial()).getClass();
+    } 
 
     public void activate() throws Exception {
         logger.debug("Activate RSBCommunicationService for: " + this);
+        
         try {
             informer.activate();
         } catch (InitializeException exx) {
@@ -78,9 +85,12 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         } catch (RSBException ex) {
             throw new RSBException("Could not activate rpc server.", ex);
         }
+        
+        state = ConnectionState.Online;
     }
 
     public void deactivate() throws Exception {
+        
         try {
             informer.deactivate();
         } catch (Exception ex) {
@@ -92,6 +102,8 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         } catch (Exception ex) {
             throw new RSBException("Could not deactivate rpc server.", ex);
         }
+        
+        state = ConnectionState.Offline;
     }
 
     public M getMessage() throws RSBException {
@@ -131,6 +143,10 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id));
     }
 
+    public ConnectionState getState() {
+        return state;
+    }
+    
     public abstract void registerMethods(final LocalServer server) throws RSBException;
 
     @Override

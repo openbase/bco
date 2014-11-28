@@ -59,8 +59,11 @@ public class RSBBindingConnection implements RSBBindingInterface {
         this.registry = HardwareRegistry.getInstance();
         this.hardwareManager = HardwareManager.getInstance();
         this.initDevices();
+
         this.remoteServer = Factory.getInstance().createRemoteServer(remoteServerScope);
         this.localServer = Factory.getInstance().createLocalServer(localServerScope);
+
+        this.hardwareManager.activate();
     }
 
     private void initDevices() {
@@ -195,16 +198,6 @@ public class RSBBindingConnection implements RSBBindingInterface {
         } catch (RSBBindingException ex) {
             logger.warn("Could not initialize devices!", ex);
         }
-    }
-
-    public void activate() {
-        logger.info("Activate " + getClass().getSimpleName() + "...");
-        hardwareManager.activate();
-    }
-
-    public void deactivate() {
-        logger.info("Deactivate " + getClass().getSimpleName() + "...");
-        hardwareManager.deactivate();
     }
 
     @Override

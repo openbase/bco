@@ -8,7 +8,6 @@ package de.citec.dal.service;
 import java.util.Map;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
-import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +43,7 @@ public class HardwareManager {
                     logger.error("Could not activate: " + hardware, ex);
                 }
             }
+            RSBInformerPool.getInstance().activate();
         }
     }
 
