@@ -16,6 +16,7 @@ import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.PowerPlugType;
 import rst.homeautomation.PowerPlugType.PowerPlug;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.states.PowerType;
 
 /**
@@ -47,7 +48,9 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
-        executeCommand(PowerStateTransformer.transform(state));
+        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
+        executeCommand(newBuilder);
     }
 
     public class SetPowerStateCallback extends EventCallback {

@@ -8,7 +8,6 @@ package de.citec.dal.hal;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.RSBBindingConnection;
 import de.citec.dal.RSBBindingInterface;
-import de.citec.dal.RSBBindingInterface.ExecutionType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -23,6 +22,8 @@ import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
+import rst.homeautomation.openhab.OpenhabCommandType;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionType;
 
 /**
  *
@@ -174,8 +175,9 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         // dummy construct: For registering methods overwrite this method.
     }
 
-    public Future executeCommand(final String itemName, final Command command, final ExecutionType type) throws RSBBindingException {
-        return rsbBinding.executeCommand(itemName, command, type);
+    public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder commandBuilder, final ExecutionType type) throws RSBBindingException {
+        commandBuilder.setItem(itemName).setExecutionType(type);
+        return rsbBinding.executeCommand(commandBuilder.build());
     }
 
     @Override

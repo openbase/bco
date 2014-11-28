@@ -8,7 +8,6 @@ package de.citec.dal.hal;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.RSBBindingConnection;
 import de.citec.dal.RSBBindingInterface;
-import de.citec.dal.RSBBindingInterface.ExecutionType;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
@@ -18,6 +17,8 @@ import org.openhab.core.types.Command;
 import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionType;
 
 /**
  *
@@ -67,12 +68,12 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public void registerMethods(LocalServer server) throws RSBException {
     }
     
-    public Future executeCommand(final Command command) throws RSBBindingException {
-        return executeCommand(generateHardwareId(), command, ExecutionType.SYNCHRONOUS);
+    public Future executeCommand(final OpenhabCommand.Builder commandBuilder) throws RSBBindingException {
+        return executeCommand(generateHardwareId(), commandBuilder, ExecutionType.SYNCHRONOUS);
     }
     
-    public Future executeCommand(final String itemName, final Command command, final ExecutionType type) throws RSBBindingException {
-        if(command == null) {
+    public Future executeCommand(final String itemName, final OpenhabCommand.Builder commandBuilder, final ExecutionType type) throws RSBBindingException {
+        if(commandBuilder == null) {
             throw new RSBBindingException("Skip sending empty command!", new NullPointerException("Argument command is null!"));
         }
         
@@ -84,8 +85,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             throw new RSBBindingException("Skip sending command, could not generate id!", new NullPointerException("Argument id is null!"));
         }
         
-        logger.debug("Execute command: Setting item ["+generateHardwareId()+"] to ["+command.toString()+"]");
-        return rsbBinding.executeCommand(itemName, command, type);
+        logger.debug("Execute command: Setting item ["+generateHardwareId()+"] to ["+commandBuilder.getType().toString()+"]");
+        commandBuilder.setItem(itemName).setExecutionType(type);
+        return rsbBinding.executeCommand(commandBuilder.build());
     }
 
     public static Scope generateScope(final String id, final String label, final HardwareUnit hardware) {

@@ -8,6 +8,7 @@ package de.citec.dal.data.transform;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
 import rst.homeautomation.states.OpenClosedType;
+import rst.homeautomation.openhab.OpenClosedHolderType;
 
 /**
  *
@@ -15,25 +16,25 @@ import rst.homeautomation.states.OpenClosedType;
  */
 public class OpenClosedStateTransformer {
 
-	public static OpenClosedType.OpenClosed.OpenClosedState transform(org.openhab.core.library.types.OpenClosedType openClosedType) throws RSBBindingException {
+	public static OpenClosedType.OpenClosed.OpenClosedState transform(OpenClosedHolderType.OpenClosedHolder.OpenClosed openClosedType) throws RSBBindingException {
 		switch (openClosedType) {
 			case CLOSED:
 				return OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
 			case OPEN:
 				return OpenClosedType.OpenClosed.OpenClosedState.OPEN;
 			default:
-				throw new RSBBindingException("Could not transform " + org.openhab.core.library.types.OpenClosedType.class.getName() + "! " + org.openhab.core.library.types.OpenClosedType.class.getSimpleName() + "[" + openClosedType.name() + "] is unknown!");
+				throw new RSBBindingException("Could not transform " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getName() + "! " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getSimpleName() + "[" + openClosedType.name() + "] is unknown!");
 		}
 	}
 
-	public static org.openhab.core.library.types.OpenClosedType transform(OpenClosedType.OpenClosed.OpenClosedState openClosedState) throws TypeNotSupportedException, RSBBindingException {
+	public static OpenClosedHolderType.OpenClosedHolder transform(OpenClosedType.OpenClosed.OpenClosedState openClosedState) throws TypeNotSupportedException, RSBBindingException {
 		switch (openClosedState) {
 			case CLOSED:
-				return org.openhab.core.library.types.OpenClosedType.CLOSED;
+				return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.CLOSED).build();
 			case OPEN:
-				return org.openhab.core.library.types.OpenClosedType.OPEN;
+				return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.OPEN).build();
 			case UNKNOWN:
-				throw new TypeNotSupportedException(openClosedState, org.openhab.core.library.types.OpenClosedType.class);
+				throw new TypeNotSupportedException(openClosedState, OpenClosedHolderType.OpenClosedHolder.OpenClosed.class);
 			default:
 				throw new RSBBindingException("Could not transform " + OpenClosedType.OpenClosed.OpenClosedState.class.getName() + "! " + OpenClosedType.OpenClosed.OpenClosedState.class.getSimpleName() + "[" + openClosedState.name() + "] is unknown!");
 		}

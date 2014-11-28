@@ -7,8 +7,8 @@ package de.citec.dal.data.transform;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
-import org.openhab.core.library.types.OnOffType;
 import rst.homeautomation.states.PowerType;
+import rst.homeautomation.openhab.OnOffHolderType;
 
 /**
  *
@@ -16,25 +16,25 @@ import rst.homeautomation.states.PowerType;
  */
 public class PowerStateTransformer {
 
-	public static PowerType.Power.PowerState transform(OnOffType onOffType) throws RSBBindingException {
+	public static PowerType.Power.PowerState transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws RSBBindingException {
 		switch (onOffType) {
 			case OFF:
 				return PowerType.Power.PowerState.OFF;
 			case ON:
 				return PowerType.Power.PowerState.ON;
 			default:
-				throw new RSBBindingException("Could not transform " + OnOffType.class.getName() + "! " + OnOffType.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
+				throw new RSBBindingException("Could not transform " + OnOffHolderType.OnOffHolder.OnOff.class.getName() + "! " + OnOffHolderType.OnOffHolder.OnOff.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
 		}
 	}
 
-	public static OnOffType transform(PowerType.Power.PowerState powerState) throws TypeNotSupportedException, RSBBindingException {
+	public static OnOffHolderType.OnOffHolder transform(PowerType.Power.PowerState powerState) throws TypeNotSupportedException, RSBBindingException {
 		switch (powerState) {
 			case OFF:
-				return OnOffType.OFF;
+				return OnOffHolderType.OnOffHolder.newBuilder().setState(OnOffHolderType.OnOffHolder.OnOff.OFF).build();
 			case ON:
-				return OnOffType.ON;
+				return OnOffHolderType.OnOffHolder.newBuilder().setState(OnOffHolderType.OnOffHolder.OnOff.ON).build();
 			case UNKNOWN:
-				throw new TypeNotSupportedException(powerState, OnOffType.class);
+				throw new TypeNotSupportedException(powerState, OnOffHolderType.OnOffHolder.OnOff.class);
 			default:
 				throw new RSBBindingException("Could not transform " + PowerType.Power.PowerState.class.getName() + "! " + PowerType.Power.PowerState.class.getSimpleName() + "[" + powerState.name() + "] is unknown!");
 		}

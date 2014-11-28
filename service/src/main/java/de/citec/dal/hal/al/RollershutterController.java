@@ -9,7 +9,6 @@ import de.citec.dal.data.transform.StopMoveStateTransformer;
 import de.citec.dal.data.transform.UpDownStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import org.openhab.core.library.types.DecimalType;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -17,6 +16,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.RollershutterType;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.states.StopMoveType;
 import rst.homeautomation.states.UpDownType;
 
@@ -52,7 +52,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setUpDownState(final UpDownType.UpDown.UpDownState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to UpDownState [" + state.name() + "]");
-        executeCommand(UpDownStateTransformer.transform(state));
+        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+        newBuilder.setUpDown(UpDownStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.UPDOWN);
+        executeCommand(newBuilder);
     }
 
     public class SetUpDownStateCallback extends EventCallback {
@@ -76,7 +78,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to StopMove[" + state.name() + "]");
-        executeCommand(StopMoveStateTransformer.transform(state));
+        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+        newBuilder.setStopMove(StopMoveStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.STOPMOVE);
+        executeCommand(newBuilder);
     }
 
     public class SetStopMoveStateCallback extends EventCallback {
@@ -100,7 +104,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setPosition(final float position) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to Position [" + position + "]");
-        executeCommand(new DecimalType(position));
+        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+        newBuilder.setDecimal(rst.homeautomation.openhab.DecimalType.Decimal.newBuilder().setValue(position).build()).setType(OpenhabCommand.CommandType.DECIMAL);
+        executeCommand(newBuilder);
     }
 
     public class SetPositionCallback extends EventCallback {

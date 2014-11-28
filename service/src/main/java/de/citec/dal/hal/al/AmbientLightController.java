@@ -16,6 +16,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.AmbientLightType;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -51,7 +52,9 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
-        executeCommand(PowerStateTransformer.transform(state));
+        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
+        executeCommand(newBuilder);
     }
 
     public class SetPowerStateCallback extends EventCallback {
@@ -75,7 +78,9 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     public void setColor(final HSVColor color) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
-        executeCommand(HSVColorTransformer.transform(color));
+        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+        newBuilder.setHsb(HSVColorTransformer.transform(color)).setType(OpenhabCommand.CommandType.HSB);
+        executeCommand(newBuilder);
     }
 
     public class SetColorCallback extends EventCallback {
