@@ -5,18 +5,23 @@
  */
 package de.citec.dal.hal.al;
 
-import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
 import de.citec.dal.service.RSBRemoteService;
+import rst.homeautomation.AmbientLightType;
 
 /**
  *
  * @author mpohling
  */
-public class AmbientLightRemote extends RSBRemoteService<GeneratedMessage, GeneratedMessage.Builder>{
+public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.AmbientLight> {
 
-    public AmbientLightRemote(String id, Location location, GeneratedMessage.Builder builder) {
-        super(id, location, builder);
+    public AmbientLightRemote(String id, Location location) {
+        super(id, location);
+    }
+
+    @Override
+    public void notifyUpdated(AmbientLightType.AmbientLight data) {
+        
     }
     
 }
