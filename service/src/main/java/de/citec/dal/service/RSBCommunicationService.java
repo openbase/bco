@@ -19,6 +19,8 @@ import rsb.patterns.LocalServer;
 /**
  *
  * @author mpohling
+ * @param <M>
+ * @param <MB>
  */
 public abstract class RSBCommunicationService<M extends GeneratedMessage, MB extends Builder> {
 

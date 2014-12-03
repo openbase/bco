@@ -7,6 +7,7 @@ package de.citec.dal.service;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
+import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -92,7 +93,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         activateRemoteServer();
     }
 
-    public void deactivated() {
+    public void deactivate() {
         deacivateListener();
         deactivateRemoteServer();
     }
@@ -129,26 +130,32 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
     }
 
-    public <T extends Object> void callMethod(String methodName, T type, final Scope scope, boolean async) {
+    public <T extends Object> void callMethod(String methodName, T type, boolean async) {
         try {
-            System.out.println("Calling method [" + methodName + "] on scope: " + scope.toString());
+            System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
             if (async) {
                 remoteServer.callAsync(methodName, type);
             } else {
                 remoteServer.call(methodName, type);
             }
         } catch (RSBException | ExecutionException | TimeoutException ex) {
-            logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + scope + "].");
+            logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].");
         }
     }
     
-    
+    public void shutdown() {
+        deactivate();
+        super.shutdown();
+    }
 
     public static Scope generateScope(final String id, final Location location) {
         return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id));
     }
     
-    public M getData() {
+    public M getData() throws NotAvailableException {
+        if(data == null) {
+            throw new NotAvailableException("data");
+        }
         return data;
     }
 

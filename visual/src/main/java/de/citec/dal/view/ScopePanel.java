@@ -6,17 +6,22 @@
 
 package de.citec.dal.view;
 
+import de.citec.dal.util.Observer;
+
 /**
  *
  * @author nuc
  */
 public class ScopePanel extends javax.swing.JPanel {
 
+//    private Observer<Scope> observer;
+    
     /**
      * Creates new form ScopePanel
      */
     public ScopePanel() {
         initComponents();
+        
     }
 
     /**
