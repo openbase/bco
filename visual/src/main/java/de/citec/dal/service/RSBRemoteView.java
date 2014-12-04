@@ -11,6 +11,7 @@ import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rsb.Scope;
 
 /**
  *
@@ -39,6 +40,14 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
         
         this.remoteService = remoteService;
         remoteService.addObserver(this);
+    }
+    
+    public synchronized void shutdown() {
+        if(remoteService == null) {
+           return;
+        }
+        
+        remoteService.shutdown();
     }
     
     @Override
@@ -83,4 +92,10 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
+
+    public void setScope(Scope scope) {
+        
+    }
+
+    
 }

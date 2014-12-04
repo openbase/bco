@@ -5,18 +5,49 @@
  */
 package de.citec.dal.view;
 
+import de.citec.dal.hal.al.AmbientLightView;
+import de.citec.dal.service.RSBRemoteView;
+import de.citec.dal.util.Observable;
+import de.citec.dal.util.Observer;
+import rsb.Scope;
+
 /**
  *
  * @author mpohling
  */
-public class DeviceViewerFrame extends javax.swing.JFrame {
+public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Scope> {
 
+    
+    private RSBRemoteView remoteView;
+    
     /**
      * Creates new form DeviceViewerFrame
      */
     public DeviceViewerFrame() {
         initComponents();
+        setRemoteView(new AmbientLightView());
+        
     }
+    
+    public final synchronized void setRemoteView(RSBRemoteView remoteView) {
+        
+        if(this.remoteView != null) {
+            this.remoteView.shutdown();
+            remoteContextPanel.remove(remoteView);
+        }
+        remoteContextPanel.add(remoteView);
+    }
+
+    @Override
+    public void update(Observable<Scope> source, Scope scope) {
+        if(remoteView == null) {
+            return;
+        }
+        
+        remoteView.setScope(scope);
+    }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -32,7 +63,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox();
         jPanel3 = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
+        remoteContextPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -72,16 +103,16 @@ public class DeviceViewerFrame extends javax.swing.JFrame {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Remote"));
 
-        jPanel4.setBackground(new java.awt.Color(85, 85, 85));
+        remoteContextPanel.setBackground(new java.awt.Color(85, 85, 85));
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout remoteContextPanelLayout = new javax.swing.GroupLayout(remoteContextPanel);
+        remoteContextPanel.setLayout(remoteContextPanelLayout);
+        remoteContextPanelLayout.setHorizontalGroup(
+            remoteContextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        remoteContextPanelLayout.setVerticalGroup(
+            remoteContextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 349, Short.MAX_VALUE)
         );
 
@@ -89,13 +120,13 @@ public class DeviceViewerFrame extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(remoteContextPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(remoteContextPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -154,6 +185,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new DeviceViewerFrame().setVisible(true);
             }
@@ -165,7 +197,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel remoteContextPanel;
     private de.citec.dal.view.ScopePanel scopePanel1;
     // End of variables declaration//GEN-END:variables
 }

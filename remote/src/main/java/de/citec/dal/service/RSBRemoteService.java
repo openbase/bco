@@ -45,15 +45,16 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 
     public RSBRemoteService(final Scope scope) {
         this.logger = LoggerFactory.getLogger(getClass());
-        this.scope = new Scope(scope.toString().toLowerCase());
+        
         this.mainHandler = new InternalUpdateHandler();
-        this.init(scope);
     }
 
-    private void init(final Scope scope) {
-        logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + scope + ".");
-        initListener(scope);
-        initRemoteServer(scope);
+    public void init(final Scope scope) {
+        this.scope = new Scope(scope.toString().toLowerCase());
+        logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + this.scope + ".");
+        
+        initListener(this.scope);
+        initRemoteServer(this.scope);
 
         try {
             addHandler(mainHandler, true);
@@ -143,6 +144,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
     }
     
+    @Override
     public void shutdown() {
         deactivate();
         super.shutdown();

@@ -160,11 +160,11 @@ public class RSBInformerPool implements Activatable {
     }
 
     public Event send(final Event event) throws RSBException {
-
+        logger.debug("Send:" +event.toString());
         if (watchDogMap.isEmpty()) {
             logger.warn("Skip send, informerpool is empty!");
         }
-
+        
         return getNextInformer().send(event);
     }
 }
