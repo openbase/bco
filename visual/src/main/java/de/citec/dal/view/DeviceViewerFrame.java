@@ -37,6 +37,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             remoteContextPanel.remove(remoteView);
         }
         remoteContextPanel.add(remoteView);
+        this.pack();
     }
 
     @Override
