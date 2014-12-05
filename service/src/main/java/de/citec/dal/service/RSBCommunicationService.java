@@ -19,6 +19,8 @@ import rsb.patterns.LocalServer;
 /**
  *
  * @author mpohling
+ * @param <M>
+ * @param <MB>
  */
 public abstract class RSBCommunicationService<M extends GeneratedMessage, MB extends Builder> {
 
@@ -61,6 +63,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
             // register rpc methods.
             registerMethods(server);
+            
 
         } catch (Exception ex) {
             throw new RSBException("Could not init rpc server.", ex);

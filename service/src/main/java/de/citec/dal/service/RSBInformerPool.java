@@ -6,8 +6,11 @@
 package de.citec.dal.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rsb.Activatable;
 import rsb.Event;
 import rsb.Factory;
 import rsb.Informer;
@@ -19,17 +22,25 @@ import rsb.Scope;
  *
  * @author mpohling
  */
-public class RSBInformerPool {
+public class RSBInformerPool implements Activatable {
 
-    protected final Logger logger;
+    public enum State {
+
+        CONSTRUCTED, INITIALIZED, RUNNING, STANDBY, FATAL_ERROR;
+    };
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static RSBInformerPool instance;
 
+    private static final Object ACTIVATION_LOCK = new Object();
     public static final int DEFAULT_POOL_SIZE = 10;
     public static final String ROOT_SCOPE = "/";
 
     private final ArrayList<Informer> informerList;
+    private final Map<WatchDog, Informer> watchDogMap;
     private int poolPointer;
+    private State state;
 
     public static synchronized RSBInformerPool getInstance() {
         if (instance == null) {
@@ -38,42 +49,110 @@ public class RSBInformerPool {
         return instance;
     }
 
-    public RSBInformerPool() {
-        this.logger = LoggerFactory.getLogger(getClass());
+    private RSBInformerPool() {
         this.informerList = new ArrayList<>();
+        this.watchDogMap = new HashMap<>();
+        this.state = State.CONSTRUCTED;
     }
 
-    public RSBInformerPool(final int size) throws InitializeException {
-        this();
-        for (int i = 0; i < size; i++) {
-            informerList.add(Factory.getInstance().createInformer(new Scope(ROOT_SCOPE)));
-        }
-    }
+    public void init() {
+        final int size = DEFAULT_POOL_SIZE;
+        Informer<Object> informer;
 
-    public void activate() throws Exception {
-        logger.debug("Activate core informer.");
-
-        try {
-            for (Informer informer : informerList) {
-                informer.activate();
+        synchronized (ACTIVATION_LOCK) {
+            if (state != State.CONSTRUCTED) {
+                logger.warn("Skip initialization. " + getClass().getSimpleName() + " is already initialzed!");
+                return;
             }
-        } catch (InitializeException exx) {
-            throw new RSBException("Could not activate core Informer!.", exx);
+
+            for (int i = 0; i < size; i++) {
+                try {
+                    informer = Factory.getInstance().createInformer(new Scope(ROOT_SCOPE));
+                    informerList.add(informer);
+                    watchDogMap.put(new WatchDog(informer, Informer.class.getSimpleName() + "[" + i + "]"), informer);
+                } catch (InitializeException ex) {
+                    state = State.FATAL_ERROR;
+                    logger.error("Could not init core " + Informer.class.getSimpleName() + "[" + i + "]" + "!", ex);
+                    return;
+                }
+            }
+            state = State.INITIALIZED;
         }
     }
 
-    public void deactivate() throws Exception {
-        logger.debug("Deactivate core informer.");
-        try {
-            for (Informer informer : informerList) {
-                informer.deactivate();
-            }
-        } catch (InitializeException exx) {
-            throw new RSBException("Could not deactivate core Informer!.", exx);
+    @Override
+    public void activate() {
+
+        if (state == State.CONSTRUCTED) {
+            init();
         }
+
+        synchronized (ACTIVATION_LOCK) {
+            logger.debug("Activate core informer.");
+
+            if (state == State.RUNNING) {
+                logger.warn("Skip activation. " + getClass().getSimpleName() + " is already running!");
+                return;
+            }
+
+            if (watchDogMap.isEmpty()) {
+                logger.warn("Skip activation, informerpool is empty!");
+                return;
+            }
+
+            for (WatchDog watchDog : watchDogMap.keySet()) {
+                try {
+                    watchDog.activate();
+                } catch (RSBException ex) {
+                    logger.error("Could not activate core " + watchDog.getServiceName() + "!.", ex);
+                }
+            }
+            state = State.RUNNING;
+        }
+    }
+
+    @Override
+    public void deactivate() {
+        
+        if (state == State.CONSTRUCTED) {
+            init();
+        }
+        
+        synchronized (ACTIVATION_LOCK) {
+            logger.debug("Deactivate core informer.");
+
+            if (state == State.RUNNING) {
+                logger.warn("Skip deactivation. " + getClass().getSimpleName() + " is on standby!");
+                return;
+            }
+
+            if (watchDogMap.isEmpty()) {
+                logger.warn("Skip deactivation, informerpool is empty!");
+                return;
+            }
+
+            for (WatchDog watchDog : watchDogMap.keySet()) {
+                try {
+                    watchDog.deactivate();
+                } catch (RSBException | InterruptedException ex) {
+                    logger.error("Could not deactivate core " + watchDog.getServiceName() + "!.", ex);
+                }
+            }
+            state = State.STANDBY;
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return state == State.RUNNING;
+    }
+
+    public State getState() {
+        return state;
     }
 
     private synchronized Informer getNextInformer() {
+
         if (poolPointer >= informerList.size()) {
             poolPointer = 0;
         }
@@ -81,6 +160,11 @@ public class RSBInformerPool {
     }
 
     public Event send(final Event event) throws RSBException {
+        logger.debug("Send:" +event.toString());
+        if (watchDogMap.isEmpty()) {
+            logger.warn("Skip send, informerpool is empty!");
+        }
+        
         return getNextInformer().send(event);
     }
 }

@@ -7,9 +7,10 @@ package de.citec.dal.service;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
+import de.citec.dal.util.NotAvailableException;
+import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -23,42 +24,49 @@ import rsb.patterns.RemoteServer;
 /**
  *
  * @author mpohling
+ * @param <M>
+ * @param <MB>
  */
-public class RSBRemoteService<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> {
+public abstract class RSBRemoteService<M extends GeneratedMessage> extends Observable<M> {
 
     protected final Logger logger;
 
     private Listener listener;
-    private Handler handler;
+    private WatchDog listenerWatchDog, remoteServerWatchDog;
+    private Handler mainHandler;
     private RemoteServer remoteServer;
 
-//    protected final MB builder;
     protected Scope scope;
+    private M data;
 
-    public RSBRemoteService(final String id, final Location location, final MB builder) {
-        this(generateScope(id, location), builder);
+    public RSBRemoteService(final String id, final Location location) {
+        this(generateScope(id, location));
     }
 
-    public RSBRemoteService(final Scope scope, final MB builder) {
+    public RSBRemoteService(final Scope scope) {
         this.logger = LoggerFactory.getLogger(getClass());
+        
+        this.mainHandler = new InternalUpdateHandler();
+    }
+
+    public void init(final Scope scope) {
         this.scope = new Scope(scope.toString().toLowerCase());
-        this.handler = new InternalHandler();
-//        this.builder = builder;
+        logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + this.scope + ".");
+        
+        initListener(this.scope);
+        initRemoteServer(this.scope);
 
-        logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + scope + ".");
-
-        init(scope);
+        try {
+            addHandler(mainHandler, true);
+        } catch (InterruptedException ex) {
+            logger.warn("Could not register main handler!", ex);
+        }
     }
 
-    private void init(final Scope scope) {
-        initListener(scope);
-        initRemoteServer(scope);
-        registerHandler();
-    }
-    
     private void initListener(final Scope scope) {
         try {
             this.listener = Factory.getInstance().createListener(scope);
+            this.listenerWatchDog = new WatchDog(listener, "RSBListener");
         } catch (Exception ex) {
             logger.error("Could not create Listener on scope [" + scope.toString() + "]!", ex);
         }
@@ -67,27 +75,33 @@ public class RSBRemoteService<M extends GeneratedMessage, MB extends GeneratedMe
     private void initRemoteServer(final Scope scope) {
         try {
             this.remoteServer = Factory.getInstance().createRemoteServer(scope);
+            this.remoteServerWatchDog = new WatchDog(listener, "RSBRemoteServer");
         } catch (Exception ex) {
             logger.error("Could not create RemoteServer on scope [" + scope.toString() + "]!", ex);
         }
     }
 
-    private void registerHandler() {
+    public void addHandler(final Handler handler, final boolean wait) throws InterruptedException {
         try {
-            listener.addHandler(handler, true);
+            listener.addHandler(handler, wait);
         } catch (InterruptedException ex) {
-            java.util.logging.Logger.getLogger(RSBRemoteService.class.getName()).log(Level.SEVERE, null, ex);
             logger.error("Could not register Handler!", ex);
         }
     }
-    
-    private void activate() {
-        
+
+    public void activate() {
+        activateListener();
+        activateRemoteServer();
+    }
+
+    public void deactivate() {
+        deacivateListener();
+        deactivateRemoteServer();
     }
 
     private void activateListener() {
         try {
-            listener.activate();
+            listenerWatchDog.activate();
         } catch (RSBException ex) {
             logger.error("Could not activate Listener!", ex);
         }
@@ -95,7 +109,7 @@ public class RSBRemoteService<M extends GeneratedMessage, MB extends GeneratedMe
 
     private void deacivateListener() {
         try {
-            listener.deactivate();
+            listenerWatchDog.deactivate();
         } catch (InterruptedException | RSBException ex) {
             logger.error("Unable to deactivate Listener!", ex);
         }
@@ -103,7 +117,7 @@ public class RSBRemoteService<M extends GeneratedMessage, MB extends GeneratedMe
 
     private void activateRemoteServer() {
         try {
-            remoteServer.activate();
+            remoteServerWatchDog.activate();
         } catch (RSBException ex) {
             logger.error("Could not activate RemoteServer!", ex);
         }
@@ -111,40 +125,56 @@ public class RSBRemoteService<M extends GeneratedMessage, MB extends GeneratedMe
 
     private void deactivateRemoteServer() {
         try {
-            remoteServer.deactivate();
+            remoteServerWatchDog.deactivate();
         } catch (InterruptedException | RSBException ex) {
             logger.error("Unable to deactivate RemoteServer!", ex);
         }
     }
 
-    public <T extends Object> void callMethod(String methodName, T type, final Scope scope, boolean async) {
+    public <T extends Object> void callMethod(String methodName, T type, boolean async) {
         try {
-            System.out.println("Calling method [" + methodName + "] on scope: " + scope.toString());
+            System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
             if (async) {
                 remoteServer.callAsync(methodName, type);
             } else {
                 remoteServer.call(methodName, type);
             }
         } catch (RSBException | ExecutionException | TimeoutException ex) {
-            logger.error("Could not call remote Methode["+methodName+"] on Scope["+scope+"].");
+            logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].");
         }
+    }
+    
+    @Override
+    public void shutdown() {
+        deactivate();
+        super.shutdown();
     }
 
     public static Scope generateScope(final String id, final Location location) {
         return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id));
     }
+    
+    public M getData() throws NotAvailableException {
+        if(data == null) {
+            throw new NotAvailableException("data");
+        }
+        return data;
+    }
 
-//    protected abstract void addConverter();
-//
-//    @Override
-//    public abstract void internalNotify(Event event);
-//    
-    private class InternalHandler implements Handler {
+    public abstract void notifyUpdated(M data);
+
+    private class InternalUpdateHandler implements Handler {
 
         @Override
         public void internalNotify(Event event) {
-            logger.debug("Internal notification: "+event.toString());
+            logger.debug("Internal notification: " + event.toString());
+            try {
+                data = (M) event.getData();
+                notifyUpdated(data);
+                notifyObservers(data);
+            } catch (Exception ex) {
+                logger.error("Could not notify new data, given datatype is not valid!", ex);
+            }
         }
-        
     }
 }

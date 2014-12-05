@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.citec.dal.view;
+
+import de.citec.dal.util.Observable;
+import de.citec.dal.util.Observer;
+import rsb.Scope;
 
 /**
  *
@@ -12,11 +15,21 @@ package de.citec.dal.view;
  */
 public class ScopePanel extends javax.swing.JPanel {
 
+    private Observable<Scope> observable;
+
     /**
      * Creates new form ScopePanel
      */
     public ScopePanel() {
         initComponents();
+    }
+
+    public void addObserver(Observer<Scope> observer) {
+        observable.addObserver(observer);
+    }
+
+    public void removeObserver(Observer<Scope> observer) {
+        observable.removeObserver(observer);
     }
 
     /**
@@ -63,7 +76,7 @@ public class ScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-        // TODO add your handling code here:
+        observable.notifyObservers(new Scope(scopeTextField.getText()));
     }//GEN-LAST:event_scopeTextFieldActionPerformed
 
 

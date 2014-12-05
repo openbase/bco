@@ -5,18 +5,43 @@
  */
 package de.citec.dal.hal.al;
 
-import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
+import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
+import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.RSBRemoteService;
+import java.awt.Color;
+import rsb.Scope;
+import rst.homeautomation.AmbientLightType;
+import rst.vision.HSVColorType;
 
 /**
  *
  * @author mpohling
  */
-public class AmbientLightRemote extends RSBRemoteService<GeneratedMessage, GeneratedMessage.Builder>{
-
-    public AmbientLightRemote(String id, Location location, GeneratedMessage.Builder builder) {
-        super(id, location, builder);
+public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.AmbientLight> {
+    
+    public AmbientLightRemote(String id, Location location) {
+        super(id, location);
     }
     
+    public AmbientLightRemote(Scope scope) {
+        super(scope);
+    }
+    
+    public void setColor(final Color color) {
+        try {
+            setColor(HSVColorToRGBColorTransformer.transform(color));
+        } catch (RSBBindingException ex) {
+            logger.warn("Could not set color!", ex);
+        }
+    }
+    
+    public void setColor(final HSVColorType.HSVColor color) {
+        callMethod("setColor", color, true);
+    }
+    
+    @Override
+    public void notifyUpdated(AmbientLightType.AmbientLight data) {
+        
+    }
 }

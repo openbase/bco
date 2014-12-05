@@ -39,6 +39,7 @@ public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
 
         colorChooser.getSelectionModel().addChangeListener(
                 new ChangeListener() {
+                    @Override
                     public void stateChanged(ChangeEvent e) {
                         setColor();
                     }
