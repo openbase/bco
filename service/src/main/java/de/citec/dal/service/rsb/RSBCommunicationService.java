@@ -48,7 +48,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + scope + ".");
     }
 
-    protected void init() throws RSBException {
+    public void init() throws RSBException {
         try {
             logger.info("Init informer service...");            
             this.informer = new DistributedInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_INFORMER)), detectMessageClass());
@@ -117,8 +117,12 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         }
     }
 
-    public M.Builder getBuilder() {
-        return (M.Builder) builder.clone();
+    public MB cloneBuilder() {
+        return (MB) builder.clone();
+    }
+    
+    public MB getBuilder() {
+        return builder;
     }
 
     public Scope getScope() {
