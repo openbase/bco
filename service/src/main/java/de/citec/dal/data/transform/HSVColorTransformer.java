@@ -26,7 +26,7 @@ public class HSVColorTransformer {
 
     public static HSBType.HSB transform(HSVColor color) throws TypeNotSupportedException, RSBBindingException {
         try {
-            return HSBType.HSB.newBuilder().setHue(color.getHue()).setSaturation(color.getSaturation()).setBrightness(color.getSaturation()).build();
+            return HSBType.HSB.newBuilder().setHue(color.getHue()).setSaturation(color.getSaturation()).setBrightness(color.getValue()).build();
         } catch (Exception ex) {
             throw new RSBBindingException("Could not transform " + HSVColor.class.getName() + " to " + HSBType.class.getName() + "!", ex);
         }

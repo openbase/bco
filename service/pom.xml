@@ -49,30 +49,4 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
-    <repositories>
-        <repository>
-            <id>openhab.repository</id>
-            <name>openHAB Cloudbees Repository</name>
-            <url>http://repository-openhab.forge.cloudbees.com/release/1.5.0/maven/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
-    
-    <dependencies>
-        <dependency>
-            <groupId>org.openhab.core</groupId>
-            <artifactId>org.openhab.core</artifactId>
-            <version>1.5.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.openhab.core</groupId>
-            <artifactId>org.openhab.core.library</artifactId>
-            <version>1.5.0</version>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
 </project>
