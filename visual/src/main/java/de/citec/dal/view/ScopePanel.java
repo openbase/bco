@@ -9,8 +9,6 @@ import de.citec.dal.util.MultiException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
 import java.awt.Color;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
@@ -29,6 +27,7 @@ public class ScopePanel extends javax.swing.JPanel {
      */
     public ScopePanel() {
         initComponents();
+        observable = new Observable<>();
     }
 
     public void addObserver(Observer<Scope> observer) {
