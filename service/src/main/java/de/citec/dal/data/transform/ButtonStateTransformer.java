@@ -7,7 +7,6 @@ package de.citec.dal.data.transform;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
-import org.openhab.core.library.types.OnOffType;
 import rst.homeautomation.states.ClickType;
 import rst.homeautomation.openhab.OnOffHolderType;
 

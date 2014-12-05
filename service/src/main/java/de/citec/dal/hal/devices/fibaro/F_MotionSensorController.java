@@ -15,7 +15,6 @@ import de.citec.dal.hal.al.BrightnessSensorController;
 import de.citec.dal.hal.al.MotionSensorController;
 import de.citec.dal.hal.al.TamperSwitchController;
 import de.citec.dal.hal.al.TemperatureSensorController;
-import org.openhab.core.library.types.DecimalType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;
@@ -62,14 +61,14 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(UNIT_MOTION_SENSOR, getClass().getMethod("updateMotionSensor", DecimalType.class));
-        halFunctionMapping.put(UNIT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", DecimalType.class));
-        halFunctionMapping.put(UNIT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", DecimalType.class));
-        halFunctionMapping.put(UNIT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", DecimalType.class));
-        halFunctionMapping.put(UNIT_BATTERY, getClass().getMethod("updateBatteryLevel", DecimalType.class));
+        halFunctionMapping.put(UNIT_MOTION_SENSOR, getClass().getMethod("updateMotionSensor", double.class));
+        halFunctionMapping.put(UNIT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", double.class));
+        halFunctionMapping.put(UNIT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", double.class));
+        halFunctionMapping.put(UNIT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", double.class));
+        halFunctionMapping.put(UNIT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
     }
 
-    public void updateMotionSensor(DecimalType type) {
+    public void updateMotionSensor(double type) {
         try {
             motionSensor.updateMotionState(MotionStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -77,15 +76,15 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
         }
     }
 
-    public void updateTemperature(DecimalType type) {
-        temperatureSensor.updateTemperature(type.floatValue());
+    public void updateTemperature(double type) {
+        temperatureSensor.updateTemperature((float) type);
     }
 
-    public void updateBrightness(DecimalType type) {
-        brightnessSensor.updateBrightness(type.floatValue());
+    public void updateBrightness(double type) {
+        brightnessSensor.updateBrightness((float) type);
     }
 
-    public void updateTamperSwitch(DecimalType type) {
+    public void updateTamperSwitch(double type) {
         try {
             tamperSwitch.updateTamperState(TamperStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -93,7 +92,7 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
         }
     }
 
-    public void updateBatteryLevel(DecimalType value) {
-        battery.updateBatteryLevel(value.doubleValue());
+    public void updateBatteryLevel(double value) {
+        battery.updateBatteryLevel(value);
     }
 }

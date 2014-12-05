@@ -16,14 +16,14 @@ import rst.homeautomation.openhab.DecimalType;
  */
 public class MotionStateTransformer {
 
-	public static MotionType.Motion.MotionState transform(DecimalType.Decimal decimalType) throws RSBBindingException {
-		switch ((int) decimalType.getValue()) {
+	public static MotionType.Motion.MotionState transform(double decimalType) throws RSBBindingException {
+		switch ((int) decimalType) {
 			case 0:
 				return MotionType.Motion.MotionState.NO_MOVEMENT;
 			case 1:
 				return MotionType.Motion.MotionState.MOVEMENT;
 			default:
-				throw new RSBBindingException("Could not transform " + DecimalType.Decimal.class.getName() + "! " + DecimalType.Decimal.class.getSimpleName() + "[" + decimalType.getValue() + "] is unknown!");
+				throw new RSBBindingException("Could not transform " + DecimalType.Decimal.class.getName() + "! " + DecimalType.Decimal.class.getSimpleName() + "[" + decimalType + "] is unknown!");
 		}
 	}
 

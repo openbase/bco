@@ -15,6 +15,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.homematic.HM_RotaryHandleSensorType;
 import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
+import rst.homeautomation.openhab.StringType;
 
 /**
  *
@@ -45,11 +46,11 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", org.openhab.core.library.types.StringType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", StringType.String.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
     }
 
-    public void updateHandleSensor(org.openhab.core.library.types.StringType type) {
+    public void updateHandleSensor(StringType.String type) {
         try {
             handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -57,7 +58,7 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
         }
     }
 
-    public void updateBatteryLevel(org.openhab.core.library.types.DecimalType value) {
-        battery.updateBatteryLevel(value.floatValue());
+    public void updateBatteryLevel(double value) {
+        battery.updateBatteryLevel((float) value);
     }
 }

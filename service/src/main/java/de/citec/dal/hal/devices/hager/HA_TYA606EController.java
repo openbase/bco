@@ -11,11 +11,10 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.PowerConsumptionSensorController;
 import de.citec.dal.hal.al.PowerPlugController;
-import org.openhab.core.library.types.DecimalType;
-import org.openhab.core.library.types.OnOffType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.hager.HA_TYA606EType;
+import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 
 /**
  *
@@ -81,21 +80,21 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_POWER_PLUG_0, getClass().getMethod("updatePowerPlug_0", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_PLUG_1, getClass().getMethod("updatePowerPlug_1", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_PLUG_2, getClass().getMethod("updatePowerPlug_2", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_PLUG_3, getClass().getMethod("updatePowerPlug_3", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_PLUG_4, getClass().getMethod("updatePowerPlug_4", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_PLUG_5, getClass().getMethod("updatePowerPlug_5", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_0", getClass().getMethod("updatePowerConsumption_0", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_1", getClass().getMethod("updatePowerConsumption_1", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_2", getClass().getMethod("updatePowerConsumption_2", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_3", getClass().getMethod("updatePowerConsumption_3", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_4", getClass().getMethod("updatePowerConsumption_4", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_5", getClass().getMethod("updatePowerConsumption_5", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG_0, getClass().getMethod("updatePowerPlug_0", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG_1, getClass().getMethod("updatePowerPlug_1", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG_2, getClass().getMethod("updatePowerPlug_2", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG_3, getClass().getMethod("updatePowerPlug_3", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG_4, getClass().getMethod("updatePowerPlug_4", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG_5, getClass().getMethod("updatePowerPlug_5", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_0", getClass().getMethod("updatePowerConsumption_0", double.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_1", getClass().getMethod("updatePowerConsumption_1", double.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_2", getClass().getMethod("updatePowerConsumption_2", double.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_3", getClass().getMethod("updatePowerConsumption_3", double.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_4", getClass().getMethod("updatePowerConsumption_4", double.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_5", getClass().getMethod("updatePowerConsumption_5", double.class));
     }
 
-    public void updatePowerPlug_0(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug_0(OnOff type) throws RSBBindingException {
         try {
             powerPlug_0.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -103,7 +102,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerPlug_1(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug_1(OnOff type) throws RSBBindingException {
         try {
             powerPlug_1.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -111,7 +110,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerPlug_2(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug_2(OnOff type) throws RSBBindingException {
         try {
             powerPlug_2.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -119,7 +118,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerPlug_3(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug_3(OnOff type) throws RSBBindingException {
         try {
             powerPlug_3.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -127,7 +126,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerPlug_4(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug_4(OnOff type) throws RSBBindingException {
         try {
             powerPlug_4.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -135,7 +134,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerPlug_5(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug_5(OnOff type) throws RSBBindingException {
         try {
             powerPlug_5.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -143,27 +142,27 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         }
     }
 
-    public void updatePowerConsumption_0(DecimalType value) {
-        powerConsumptionSensor_0.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption_0(double value) {
+        powerConsumptionSensor_0.updatePowerConsumption((float) value);
     }
 
-    public void updatePowerConsumption_1(DecimalType value) {
-        powerConsumptionSensor_1.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption_1(double value) {
+        powerConsumptionSensor_1.updatePowerConsumption((float) value);
     }
 
-    public void updatePowerConsumption_2(DecimalType value) {
-        powerConsumptionSensor_2.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption_2(double value) {
+        powerConsumptionSensor_2.updatePowerConsumption((float) value);
     }
 
-    public void updatePowerConsumption_3(DecimalType value) {
-        powerConsumptionSensor_3.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption_3(double value) {
+        powerConsumptionSensor_3.updatePowerConsumption((float) value);
     }
 
-    public void updatePowerConsumption_4(DecimalType value) {
-        powerConsumptionSensor_4.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption_4(double value) {
+        powerConsumptionSensor_4.updatePowerConsumption((float) value);
     }
 
-    public void updatePowerConsumption_5(DecimalType value) {
-        powerConsumptionSensor_5.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption_5(double value) {
+        powerConsumptionSensor_5.updatePowerConsumption((float) value);
     }
 }

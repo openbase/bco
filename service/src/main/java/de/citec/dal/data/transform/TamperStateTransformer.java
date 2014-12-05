@@ -16,14 +16,14 @@ import rst.homeautomation.openhab.DecimalType;
  */
 public class TamperStateTransformer {
 
-	public static TamperType.Tamper.TamperState transform(DecimalType.Decimal decimalType) throws RSBBindingException {
-		switch ((int) decimalType.getValue()) {
+	public static TamperType.Tamper.TamperState transform(double decimalType) throws RSBBindingException {
+		switch ((int) decimalType) {
 			case 0:
 				return TamperType.Tamper.TamperState.NO_TAMPER;
 			case 1:
 				return TamperType.Tamper.TamperState.TAMPER;
 			default:
-				throw new RSBBindingException("Could not transform " + DecimalType.Decimal.class.getName() + "! " + DecimalType.Decimal.class.getSimpleName() + "[" + decimalType.getValue() + "] is unknown!");
+				throw new RSBBindingException("Could not transform " + DecimalType.Decimal.class.getName() + "! " + DecimalType.Decimal.class.getSimpleName() + "[" + decimalType + "] is unknown!");
 		}
 	}
 

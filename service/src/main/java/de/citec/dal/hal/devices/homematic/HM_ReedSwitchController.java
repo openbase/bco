@@ -15,6 +15,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.homematic.HM_ReedSwitchType;
 import rst.devices.homematic.HM_ReedSwitchType.HM_ReedSwitch;
+import rst.homeautomation.openhab.OpenClosedHolderType.OpenClosedHolder.OpenClosed;
 
 /**
  *
@@ -45,11 +46,11 @@ public class HM_ReedSwitchController extends AbstractDeviceController<HM_ReedSwi
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_REED_SWITCH, getClass().getMethod("updateReedSwitch", org.openhab.core.library.types.OpenClosedType.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", org.openhab.core.library.types.DecimalType.class));
+        halFunctionMapping.put(COMPONENT_REED_SWITCH, getClass().getMethod("updateReedSwitch", OpenClosed.class));
+        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
     }
 
-    public void updateReedSwitch(org.openhab.core.library.types.OpenClosedType type) {
+    public void updateReedSwitch(OpenClosed type) {
         try {
             reedSwitch.updateOpenClosedState(OpenClosedStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -57,7 +58,7 @@ public class HM_ReedSwitchController extends AbstractDeviceController<HM_ReedSwi
         }
     }
 
-    public void updateBatteryLevel(org.openhab.core.library.types.DecimalType value) {
-        battery.updateBatteryLevel(value.doubleValue());
+    public void updateBatteryLevel(double value) {
+        battery.updateBatteryLevel((float) value);
     }
 }

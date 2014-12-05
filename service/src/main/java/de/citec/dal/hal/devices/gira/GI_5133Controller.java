@@ -10,10 +10,10 @@ import de.citec.dal.data.transform.ButtonStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.ButtonController;
-import org.openhab.core.library.types.OnOffType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.gira.GI_5133Type;
+import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 
 /**
  *
@@ -60,15 +60,15 @@ public class GI_5133Controller extends AbstractDeviceController<GI_5133Type.GI_5
     
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_BUTTON_0, getClass().getMethod("updateButton_0", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_1, getClass().getMethod("updateButton_1", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_2, getClass().getMethod("updateButton_2", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_3, getClass().getMethod("updateButton_3", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_4, getClass().getMethod("updateButton_4", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_5, getClass().getMethod("updateButton_5", OnOffType.class));
+        halFunctionMapping.put(COMPONENT_BUTTON_0, getClass().getMethod("updateButton_0", OnOff.class));
+        halFunctionMapping.put(COMPONENT_BUTTON_1, getClass().getMethod("updateButton_1", OnOff.class));
+        halFunctionMapping.put(COMPONENT_BUTTON_2, getClass().getMethod("updateButton_2", OnOff.class));
+        halFunctionMapping.put(COMPONENT_BUTTON_3, getClass().getMethod("updateButton_3", OnOff.class));
+        halFunctionMapping.put(COMPONENT_BUTTON_4, getClass().getMethod("updateButton_4", OnOff.class));
+        halFunctionMapping.put(COMPONENT_BUTTON_5, getClass().getMethod("updateButton_5", OnOff.class));
     }
 
-    public void updateButton_0(OnOffType type) throws RSBBindingException {
+    public void updateButton_0(OnOff type) throws RSBBindingException {
         try {
             logger.debug("Try to update button 0");
             button_0.updateButtonState(ButtonStateTransformer.transform(type));
@@ -76,35 +76,35 @@ public class GI_5133Controller extends AbstractDeviceController<GI_5133Type.GI_5
             logger.error("Could not update button 0.", ex);
         }
     }
-    public void updateButton_1(OnOffType type) throws RSBBindingException {
+    public void updateButton_1(OnOff type) throws RSBBindingException {
         try {
             button_1.updateButtonState(ButtonStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
             logger.error("Could not update button 1.", ex);
         }
     }
-    public void updateButton_2(OnOffType type) throws RSBBindingException {
+    public void updateButton_2(OnOff type) throws RSBBindingException {
         try {
             button_2.updateButtonState(ButtonStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
             logger.error("Could not update button 2.", ex);
         }
     }
-    public void updateButton_3(OnOffType type) throws RSBBindingException {
+    public void updateButton_3(OnOff type) throws RSBBindingException {
         try {
             button_3.updateButtonState(ButtonStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
             logger.error("Could not update button 3.", ex);
         }
     }
-    public void updateButton_4(OnOffType type) throws RSBBindingException {
+    public void updateButton_4(OnOff type) throws RSBBindingException {
         try {
             button_4.updateButtonState(ButtonStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
             logger.error("Could not update button 4.", ex);
         }
     }
-    public void updateButton_5(OnOffType type) throws RSBBindingException {
+    public void updateButton_5(OnOff type) throws RSBBindingException {
         try {
             button_5.updateButtonState(ButtonStateTransformer.transform(type));
         } catch (RSBBindingException ex) {

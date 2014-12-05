@@ -11,12 +11,12 @@ import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.AmbientLightController;
-import org.openhab.core.library.types.HSBType;
-import org.openhab.core.library.types.OnOffType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.philips.PH_Hue_GU10Type;
 import rst.devices.philips.PH_Hue_GU10Type.PH_Hue_GU10;
+import rst.homeautomation.openhab.HSBType.HSB;
+import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 
 /**
  *
@@ -43,11 +43,11 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_AMBIENT_LIGHT, getClass().getMethod("updateAmbientLight", HSBType.class));
-        halFunctionMapping.put(COMPONENT_POWER_SWITCH, getClass().getMethod("updatePowerSwitch", OnOffType.class));
+        halFunctionMapping.put(COMPONENT_AMBIENT_LIGHT, getClass().getMethod("updateAmbientLight", HSB.class));
+        halFunctionMapping.put(COMPONENT_POWER_SWITCH, getClass().getMethod("updatePowerSwitch", OnOff.class));
     }
 
-    public void updateAmbientLight(final HSBType type) throws RSBBindingException {
+    public void updateAmbientLight(final HSB type) throws RSBBindingException {
         try {
             ambientLight.updateColor(HSVColorTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -55,7 +55,7 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
         }
     }
 
-    public void updatePowerSwitch(final OnOffType type) throws RSBBindingException {
+    public void updatePowerSwitch(final OnOff type) throws RSBBindingException {
         try {
             ambientLight.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {

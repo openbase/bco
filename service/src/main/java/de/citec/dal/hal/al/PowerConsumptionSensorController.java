@@ -7,7 +7,6 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import org.openhab.core.library.types.DecimalType;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;

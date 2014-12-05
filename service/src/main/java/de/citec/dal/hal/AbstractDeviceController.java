@@ -18,11 +18,10 @@ import de.citec.dal.exception.VerificatioinFailedException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.RSBCommunicationService;
 import java.util.concurrent.Future;
-import org.openhab.core.types.Command;
-import org.openhab.core.types.State;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.openhab.OpenhabCommandType;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionType;
 
 /**
@@ -110,8 +109,8 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         return location;
     }
 
-    public void internalReceiveUpdate(String itemName, State newState) {
-        logger.debug("internalReceiveUpdate [" + itemName + "=" + newState + "]");
+    public void internalReceiveUpdate(String itemName, OpenhabCommand command) {
+        logger.debug("internalReceiveUpdate [" + itemName + "=" + command.getType() + "]");
 
         String id_suffix = itemName.replaceFirst(id + "_", "");
         Method relatedMethod = halFunctionMapping.get(id_suffix);
@@ -120,13 +119,44 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             logger.warn("Could not apply update: Related Method unknown!");
             return;
         }
-        
+
         try {
-            relatedMethod.invoke(this, newState);
+            switch (command.getType()) {
+                case DECIMAL:
+                    relatedMethod.invoke(this, command.getDecimal().getValue());
+                    break;
+                case HSB:
+                    relatedMethod.invoke(this, command.getHsb());
+                    break;
+                case INCREASEDECREASE:
+                    relatedMethod.invoke(this, command.getIncreaseDecrease());
+                    break;
+                case ONOFF:
+                    relatedMethod.invoke(this, command.getOnOff().getState());
+                    break;
+                case OPENCLOSED:
+                    relatedMethod.invoke(this, command.getOpenClosed().getState());
+                    break;
+                case PERCENT:
+                    relatedMethod.invoke(this, command.getPercent().getValue());
+                    break;
+                case STOPMOVE:
+                    relatedMethod.invoke(this, command.getStopMove().getState());
+                    break;
+                case STRING:
+                    relatedMethod.invoke(this, command.getText());
+                    break;
+                case UPDOWN:
+                    relatedMethod.invoke(this, command.getUpDown().getState());
+                    break;
+                default:
+                    logger.warn("No corresponding Openhab command type found. Could not invoke method!");
+                    break;
+            }
         } catch (IllegalAccessException ex) {
             logger.error("Cannot acces related Method [" + relatedMethod.getName() + "]", ex);
         } catch (IllegalArgumentException ex) {
-            logger.error("The given argument is [" + newState.getClass().getName() + "]!");
+            //logger.error("The given argument is [" + newState.getClass().getName() + "]!");
             logger.error("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
         } catch (InvocationTargetException ex) {
             logger.error("The related method [" + relatedMethod.getName() + "] throws an exceptioin!", ex);

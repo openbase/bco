@@ -8,9 +8,9 @@ package de.citec.dal.service;
 import java.util.Map;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
-import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
  *
@@ -33,7 +33,7 @@ public class HardwareManager {
         return InstanceHolder.INSTANCE;
     }
 
-    public void activate() {
+    public void activate() throws Exception {
         synchronized (SYNC_LOCK) {
             active = true;
             for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
@@ -60,8 +60,9 @@ public class HardwareManager {
         }
     }
 
-    public void internalReceiveUpdate(String itemName, State newState) {
-
+    public void internalReceiveUpdate(OpenhabCommand command) {
+        logger.debug("Incomming Item[" + command.getItem() + "] State[" + command.getType() + "].");
+        String itemName = command.getItem();
         if (!active) {
             logger.warn("Skip internal update: RSBBinding not activated!");
             return;
@@ -72,10 +73,10 @@ public class HardwareManager {
             hardware = floorEntry.getValue();
         }
         if (!itemName.startsWith(hardware.getId())) {
-            logger.debug("Skip item update [" + itemName + "=" + newState + "] because item is not registered.");
+            logger.debug("Skip item update [" + itemName + "=" + command.getType() + "] because item is not registered.");
             return;
         }
-        hardware.internalReceiveUpdate(itemName, newState);
-
+        hardware.internalReceiveUpdate(itemName, command);
     }
+
 }

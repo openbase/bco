@@ -13,7 +13,6 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.RSBCommunicationService;
 import java.util.concurrent.Future;
-import org.openhab.core.types.Command;
 import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;

@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -33,6 +32,7 @@ import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rsb.patterns.RemoteServer;
 import rst.homeautomation.openhab.OpenhabCommandType;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
  *
@@ -63,7 +63,11 @@ public class RSBBindingConnection implements RSBBindingInterface {
         this.remoteServer = Factory.getInstance().createRemoteServer(remoteServerScope);
         this.localServer = Factory.getInstance().createLocalServer(localServerScope);
 
-        this.hardwareManager.activate();
+        try {
+            this.hardwareManager.activate();
+        } catch (Exception ex) {
+            // TODO: Handle this correctly and implement that the server will be activated!
+        }
     }
 
     private void initDevices() {
@@ -201,26 +205,32 @@ public class RSBBindingConnection implements RSBBindingInterface {
     }
 
     @Override
-    public void internalReceiveUpdate(String itemName, State newState) {
-        logger.debug("Incomming Item[" + itemName + "] State[" + newState.toString() + "].");
-        hardwareManager.internalReceiveUpdate(itemName, newState);
+    public void internalReceiveUpdate(OpenhabCommand command) {
+        hardwareManager.internalReceiveUpdate(command);
+    }
+
+    public static class InternalReceiveUpdateCallback extends EventCallback {
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {           
+            instance.internalReceiveUpdate((OpenhabCommand) request.getData());
+            return new Event(String.class, "Ok");
+        }
+
     }
 
     @Override
     public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws RSBBindingException {
         try {
-            remoteServer.activate();
             remoteServer.call("executeCommand", command);
-            remoteServer.deactivate();
         } catch (RSBException ex) {
             java.util.logging.Logger.getLogger(RSBBindingConnection.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {
             java.util.logging.Logger.getLogger(RSBBindingConnection.class.getName()).log(Level.SEVERE, null, ex);
         } catch (TimeoutException ex) {
             java.util.logging.Logger.getLogger(RSBBindingConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
-            java.util.logging.Logger.getLogger(RSBBindingConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return null; // TODO: mpohling implement future handling.
     }
 
     public static RSBBindingInterface getInstance() {

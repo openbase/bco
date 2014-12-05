@@ -7,7 +7,6 @@ package de.citec.dal;
 
 import de.citec.dal.exception.RSBBindingException;
 import java.util.concurrent.Future;
-import org.openhab.core.types.State;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
@@ -16,7 +15,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  */
 public interface RSBBindingInterface {
             
-    void internalReceiveUpdate(String itemName, State newState);
+    void internalReceiveUpdate(OpenhabCommand command);
     
     Future executeCommand(OpenhabCommand command) throws RSBBindingException;
 }

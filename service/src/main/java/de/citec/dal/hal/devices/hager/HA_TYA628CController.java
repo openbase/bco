@@ -9,7 +9,6 @@ import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.RollershutterController;
-import org.openhab.core.library.types.DecimalType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.hager.HA_TYA628CType;
@@ -67,45 +66,45 @@ public class HA_TYA628CController extends AbstractDeviceController<HA_TYA628CTyp
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_0, getClass().getMethod("updateRollershutter_0", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_1, getClass().getMethod("updateRollershutter_1", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_2, getClass().getMethod("updateRollershutter_2", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_3, getClass().getMethod("updateRollershutter_3", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_4, getClass().getMethod("updateRollershutter_4", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_5, getClass().getMethod("updateRollershutter_5", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_6, getClass().getMethod("updateRollershutter_6", DecimalType.class));
-        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_7, getClass().getMethod("updateRollershutter_7", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_0, getClass().getMethod("updateRollershutter_0", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_1, getClass().getMethod("updateRollershutter_1", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_2, getClass().getMethod("updateRollershutter_2", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_3, getClass().getMethod("updateRollershutter_3", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_4, getClass().getMethod("updateRollershutter_4", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_5, getClass().getMethod("updateRollershutter_5", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_6, getClass().getMethod("updateRollershutter_6", double.class));
+        halFunctionMapping.put(COMPONENT_ROLLERSHUTTER_7, getClass().getMethod("updateRollershutter_7", double.class));
     }
 
-    public void updateRollershutter_0(DecimalType type) throws RSBBindingException {
-        rollershutter_0.updatePosition(type.floatValue());
+    public void updateRollershutter_0(double type) throws RSBBindingException {
+        rollershutter_0.updatePosition((float) type);
     }
 
-    public void updateRollershutter_1(DecimalType type) throws RSBBindingException {
-        rollershutter_1.updatePosition(type.floatValue());
+    public void updateRollershutter_1(double type) throws RSBBindingException {
+        rollershutter_1.updatePosition((float) type);
     }
 
-    public void updateRollershutter_2(DecimalType type) throws RSBBindingException {
-        rollershutter_2.updatePosition(type.floatValue());
+    public void updateRollershutter_2(double type) throws RSBBindingException {
+        rollershutter_2.updatePosition((float) type);
     }
 
-    public void updateRollershutter_3(DecimalType type) throws RSBBindingException {
-        rollershutter_3.updatePosition(type.floatValue());
+    public void updateRollershutter_3(double type) throws RSBBindingException {
+        rollershutter_3.updatePosition((float) type);
     }
 
-    public void updateRollershutter_4(DecimalType type) throws RSBBindingException {
-        rollershutter_4.updatePosition(type.floatValue());
+    public void updateRollershutter_4(double type) throws RSBBindingException {
+        rollershutter_4.updatePosition((float) type);
     }
 
-    public void updateRollershutter_5(DecimalType type) throws RSBBindingException {
-        rollershutter_5.updatePosition(type.floatValue());
+    public void updateRollershutter_5(double type) throws RSBBindingException {
+        rollershutter_5.updatePosition((float) type);
     }
 
-    public void updateRollershutter_6(DecimalType type) throws RSBBindingException {
-        rollershutter_6.updatePosition(type.floatValue());
+    public void updateRollershutter_6(double type) throws RSBBindingException {
+        rollershutter_6.updatePosition((float) type);
     }
 
-    public void updateRollershutter_7(DecimalType type) throws RSBBindingException {
-        rollershutter_7.updatePosition(type.floatValue());
+    public void updateRollershutter_7(double type) throws RSBBindingException {
+        rollershutter_7.updatePosition((float) type);
     }
 }

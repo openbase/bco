@@ -11,12 +11,11 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.PowerConsumptionSensorController;
 import de.citec.dal.hal.al.PowerPlugController;
-import org.openhab.core.library.types.DecimalType;
-import org.openhab.core.library.types.OnOffType;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.plugwise.PW_PowerPlugType;
 import rst.devices.plugwise.PW_PowerPlugType.PW_PowerPlug;
+import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 
 /**
  *
@@ -46,11 +45,11 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_POWER_PLUG, getClass().getMethod("updatePowerPlug", OnOffType.class));
-        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION, getClass().getMethod("updatePowerConsumption", DecimalType.class));
+        halFunctionMapping.put(COMPONENT_POWER_PLUG, getClass().getMethod("updatePowerPlug", OnOff.class));
+        halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION, getClass().getMethod("updatePowerConsumption", double.class));
     }
 
-    public void updatePowerPlug(OnOffType type) throws RSBBindingException {
+    public void updatePowerPlug(OnOff type) throws RSBBindingException {
         try {
             powerPlug.updatePowerState(PowerStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
@@ -58,7 +57,7 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
         }
     }
 
-    public void updatePowerConsumption(DecimalType value) {
-        powerConsumption.updatePowerConsumption(value.floatValue());
+    public void updatePowerConsumption(double value) {
+        powerConsumption.updatePowerConsumption((float) value);
     }
 }

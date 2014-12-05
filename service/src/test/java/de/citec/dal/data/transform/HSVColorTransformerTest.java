@@ -6,17 +6,14 @@
 
 package de.citec.dal.data.transform;
 
-import de.citec.dal.data.transform.HSVColorTransformer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openhab.core.library.types.DecimalType;
-import org.openhab.core.library.types.HSBType;
-import org.openhab.core.library.types.PercentType;
 import rst.vision.HSVColorType;
+import rst.homeautomation.openhab.HSBType.HSB;
 
 /**
  *
@@ -49,9 +46,9 @@ public class HSVColorTransformerTest {
     @Test
     public void testTransform_HSBType() throws Exception {
         System.out.println("transform");
-        HSBType color = new HSBType(new DecimalType(345), new PercentType(30), new PercentType(50));
+        HSB color = HSB.newBuilder().setHue(345).setSaturation(30).setBrightness(50).build();
         HSVColorType.HSVColor tempResult = HSVColorTransformer.transform(color);
-        HSBType result = HSVColorTransformer.transform(tempResult);
+        HSB result = HSVColorTransformer.transform(tempResult);
         assertEquals(color, result);
     }
 
@@ -62,7 +59,7 @@ public class HSVColorTransformerTest {
     public void testTransform_HSVColorTypeHSVColor() throws Exception {
         System.out.println("transform");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(111).setSaturation(56).setValue(57).build();
-        HSBType tempResult = HSVColorTransformer.transform(color);
+        HSB tempResult = HSVColorTransformer.transform(color);
         HSVColorType.HSVColor result = HSVColorTransformer.transform(tempResult);
         assertEquals(color, result);
     }
