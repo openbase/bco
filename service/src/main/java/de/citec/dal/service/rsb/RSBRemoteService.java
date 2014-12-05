@@ -7,7 +7,6 @@ package de.citec.dal.service.rsb;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
-import de.citec.dal.service.rsb.WatchDog;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;

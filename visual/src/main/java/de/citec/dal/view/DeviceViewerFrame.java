@@ -7,6 +7,7 @@ package de.citec.dal.view;
 
 import de.citec.dal.hal.al.AmbientLightView;
 import de.citec.dal.service.RSBRemoteView;
+import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
 import rsb.Scope;
@@ -39,11 +40,10 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     }
 
     @Override
-    public void update(Observable<Scope> source, Scope scope) {
+    public void update(final Observable<Scope> source, final Scope scope) throws DALException {
         if(remoteView == null) {
             return;
         }
-        
         remoteView.setScope(scope);
     }
     

@@ -160,7 +160,9 @@ public class RSBInformerPool implements Activatable {
     }
 
     public Event send(final Event event) throws RSBException {
-        logger.debug("Send:" +event.toString());
+        // logger.debug("Send:" +event.toString()); //TODO mpohling: report this bug. toString not defined here!
+        logger.debug("Event[id=" + event.getId() + ", scope=" + event.getScope() + ", type="
+                + event.getType() + ", metaData=" + event.getMetaData() + "]");
         if (watchDogMap.isEmpty()) {
             logger.warn("Skip send, informerpool is empty!");
         }
