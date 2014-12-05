@@ -73,7 +73,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
         this.hardwareManager = HardwareManager.getInstance();
         this.initDevices();
 
-        dalRemoteService = new RSBRemoteService<DALBinding>(dalRemoteScope) {
+        dalRemoteService = new RSBRemoteService<DALBinding>() {
 
             @Override
             public void notifyUpdated(DALBinding data) {
