@@ -8,7 +8,7 @@ package de.citec.dal.hal.al;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.service.RSBRemoteService;
+import de.citec.dal.service.rsb.RSBRemoteService;
 import java.awt.Color;
 import rsb.Scope;
 import rst.homeautomation.AmbientLightType;

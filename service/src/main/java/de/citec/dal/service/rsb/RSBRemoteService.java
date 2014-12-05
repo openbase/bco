@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.service;
+package de.citec.dal.service.rsb;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
+import de.citec.dal.service.rsb.WatchDog;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;
