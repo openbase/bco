@@ -26,6 +26,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
      */
     public DeviceViewerFrame() {
         initComponents();
+        
         setRemoteView(new AmbientLightView());
         
     }
@@ -37,6 +38,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             remoteContextPanel.remove(remoteView);
         }
         remoteContextPanel.add(remoteView);
+        
         this.pack();
     }
 
@@ -83,7 +85,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Type"));
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "AmbientLight" }));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -106,17 +108,6 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
         remoteContextPanel.setBackground(new java.awt.Color(85, 85, 85));
 
-        javax.swing.GroupLayout remoteContextPanelLayout = new javax.swing.GroupLayout(remoteContextPanel);
-        remoteContextPanel.setLayout(remoteContextPanelLayout);
-        remoteContextPanelLayout.setHorizontalGroup(
-            remoteContextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        remoteContextPanelLayout.setVerticalGroup(
-            remoteContextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 349, Short.MAX_VALUE)
-        );
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -125,9 +116,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(remoteContextPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(remoteContextPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

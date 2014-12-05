@@ -38,6 +38,10 @@ public class ScopePanel extends javax.swing.JPanel {
     public void removeObserver(Observer<Scope> observer) {
         observable.removeObserver(observer);
     }
+    
+    public Scope getScope() {
+        return new Scope(scopeTextField.getText());
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
