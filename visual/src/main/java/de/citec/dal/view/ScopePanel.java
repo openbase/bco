@@ -5,8 +5,13 @@
  */
 package de.citec.dal.view;
 
+import de.citec.dal.util.MultiException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
+import java.awt.Color;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
 /**
@@ -15,6 +20,8 @@ import rsb.Scope;
  */
 public class ScopePanel extends javax.swing.JPanel {
 
+    protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+    
     private Observable<Scope> observable;
 
     /**
@@ -76,7 +83,13 @@ public class ScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-        observable.notifyObservers(new Scope(scopeTextField.getText()));
+        try {
+            observable.notifyObservers(new Scope(scopeTextField.getText()));
+            scopeTextField.setForeground(Color.BLACK);
+        } catch (MultiException ex) {
+            scopeTextField.setForeground(Color.RED);
+            logger.error("Could not update scope!", ex);
+        }
     }//GEN-LAST:event_scopeTextFieldActionPerformed
 
 

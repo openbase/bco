@@ -11,7 +11,6 @@ import de.citec.dal.util.DALException;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
-import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -76,24 +75,24 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
     public M getData() throws NotAvailableException {
         return getRemoteService().getData();
     }
-    
+
     public void setScope(final Scope scope) throws DALException {
-        
+
         R service;
-        
-        if(remoteServiceClass == null) {
+
+        if (remoteServiceClass == null) {
             throw new DALException("Could not setup scope! RemoteService is not configurated!");
         }
         try {
-            service = remoteServiceClass.getConstructor(Scope.class).newInstance(scope);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            service = remoteServiceClass.newInstance();
+            service.init(scope);
+        } catch (InstantiationException | IllegalAccessException ex) {
             throw new DALException("Could not setup scope! RemoteService could not be instaniated!", ex);
         }
-        
+
         setRemoteService(service);
-               
     }
-    
+
     protected abstract void updateDynamicComponents(M data);
 
     /**
@@ -120,5 +119,4 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-    
 }

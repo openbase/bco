@@ -42,11 +42,24 @@ public class Observable<T> {
         }
     }
 
-    public void notifyObservers(T arg) {
+    public void notifyObservers(T arg) throws MultiException {
+        List<Exception> exceptionStack = null;
+
         synchronized (LOCK) {
             for (Observer<T> observer : observers) {
-                observer.update(this, arg);
+                try {
+                    observer.update(this, arg);
+                } catch (Exception ex) {
+                    if(exceptionStack == null) {
+                        exceptionStack = new ArrayList<>();
+                    }
+                    exceptionStack.add(ex);
+                }
             }
+        }
+
+        if (exceptionStack != null) {
+            throw new MultiException("Could not notify Data["+arg+"] to all observer!", exceptionStack);
         }
     }
 }
