@@ -10,6 +10,8 @@ import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
 /**
@@ -18,6 +20,7 @@ import rsb.Scope;
  */
 public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Scope> {
 
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     
     private RSBRemoteView remoteView;
     
@@ -26,19 +29,19 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
      */
     public DeviceViewerFrame() {
         initComponents();
-        
         setRemoteView(new AmbientLightView());
-        
+        scopePanel1.addObserver(this);
     }
     
     public final synchronized void setRemoteView(RSBRemoteView remoteView) {
+        logger.info("Set remote view: "+remoteView.getClass().getSimpleName());
         
         if(this.remoteView != null) {
             this.remoteView.shutdown();
             remoteContextPanel.remove(remoteView);
         }
         remoteContextPanel.add(remoteView);
-        
+        remoteContextPanel.validate();
         this.pack();
     }
 
@@ -49,8 +52,6 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         }
         remoteView.setScope(scope);
     }
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.

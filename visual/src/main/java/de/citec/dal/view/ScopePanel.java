@@ -57,7 +57,7 @@ public class ScopePanel extends javax.swing.JPanel {
 
         scopeLabel.setText("Scope:");
 
-        scopeTextField.setText("/home");
+        scopeTextField.setText("/home/control/ambientlight/TestUnit_0");
         scopeTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scopeTextFieldActionPerformed(evt);

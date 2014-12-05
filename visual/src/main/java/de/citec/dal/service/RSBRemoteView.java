@@ -77,7 +77,8 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
     }
 
     public void setScope(final Scope scope) throws DALException {
-
+        logger.info("Update Scope: "+scope);
+        
         R service;
 
         if (remoteServiceClass == null) {

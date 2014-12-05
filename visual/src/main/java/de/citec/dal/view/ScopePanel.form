@@ -46,7 +46,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="scopeTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" value="/home"/>
+        <Property name="text" type="java.lang.String" value="/home/control/ambientlight/TestUnit_0"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scopeTextFieldActionPerformed"/>
