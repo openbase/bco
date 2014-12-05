@@ -5,8 +5,9 @@
  */
 package de.citec.dal.service;
 
-import de.citec.dal.service.rsb.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.dal.util.DALException;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
@@ -22,51 +23,76 @@ import rsb.Scope;
  */
 public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
 
-    protected final Logger logger;
-    
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Class<R> remoteServiceClass;
     private R remoteService;
+
     /**
      * Creates new form RSBViewService
      */
     public RSBRemoteView() {
-        this.logger = LoggerFactory.getLogger(getClass());
         this.initComponents();
+        this.remoteServiceClass = null;
+        logger.warn("DO NOT USE THIS CONSTRUCTOR! This constructor is just for netbeans gui gen support.");
     }
-    
-    public synchronized void setRemoteService(final R remoteService) {
-        
-        if(this.remoteService != null) {
+
+    public RSBRemoteView(Class<R> remoteServiceClass) {
+        this.initComponents();
+        this.remoteServiceClass = remoteServiceClass;
+    }
+
+    private synchronized void setRemoteService(final R remoteService) {
+
+        if (this.remoteService != null) {
             this.remoteService.shutdown();
         }
-        
+
         this.remoteService = remoteService;
         remoteService.addObserver(this);
     }
-    
+
     public synchronized void shutdown() {
-        if(remoteService == null) {
-           return;
+        if (remoteService == null) {
+            return;
         }
-        
+
         remoteService.shutdown();
     }
-    
+
     @Override
     public void update(Observable<M> source, M data) {
         updateDynamicComponents(data);
     }
 
     public R getRemoteService() throws NotAvailableException {
-        if(remoteService == null) {
+        if (remoteService == null) {
             throw new NotAvailableException("remoteService");
         }
         return remoteService;
     }
-    
+
     public M getData() throws NotAvailableException {
         return getRemoteService().getData();
     }
-    
+
+    public void setScope(final Scope scope) throws DALException {
+
+        R service;
+
+        if (remoteServiceClass == null) {
+            throw new DALException("Could not setup scope! RemoteService is not configurated!");
+        }
+        try {
+            service = remoteServiceClass.newInstance();
+            service.init(scope);
+        } catch (InstantiationException | IllegalAccessException ex) {
+            throw new DALException("Could not setup scope! RemoteService could not be instaniated!", ex);
+        }
+
+        setRemoteService(service);
+    }
+
     protected abstract void updateDynamicComponents(M data);
 
     /**
@@ -93,10 +119,4 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-
-    public void setScope(Scope scope) {
-        
-    }
-
-    
 }

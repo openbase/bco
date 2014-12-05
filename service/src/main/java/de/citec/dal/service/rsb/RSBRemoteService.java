@@ -7,7 +7,6 @@ package de.citec.dal.service.rsb;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
-import de.citec.dal.service.rsb.WatchDog;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;
@@ -30,30 +29,35 @@ import rsb.patterns.RemoteServer;
  */
 public abstract class RSBRemoteService<M extends GeneratedMessage> extends Observable<M> {
 
-    protected final Logger logger;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Listener listener;
     private WatchDog listenerWatchDog, remoteServerWatchDog;
-    private Handler mainHandler;
+    private final Handler mainHandler;
     private RemoteServer remoteServer;
 
     protected Scope scope;
     private M data;
+    private boolean initialized;
 
-    public RSBRemoteService(final String id, final Location location) {
-        this(generateScope(id, location));
-    }
-
-    public RSBRemoteService(final Scope scope) {
-        this.logger = LoggerFactory.getLogger(getClass());
-        
+    public RSBRemoteService() {
         this.mainHandler = new InternalUpdateHandler();
+        this.initialized = false;
     }
 
-    public void init(final Scope scope) {
+    public void init(final String label, final Location location) {
+        init(generateScope(label, location));
+    }
+
+    public synchronized void init(final Scope scope) {
+
+        if (initialized) {
+            logger.warn("Skip initialization because " + this + " already initialized!");
+        }
+
         this.scope = new Scope(scope.toString().toLowerCase());
         logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + this.scope + ".");
-        
+
         initListener(this.scope);
         initRemoteServer(this.scope);
 
@@ -62,6 +66,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         } catch (InterruptedException ex) {
             logger.warn("Could not register main handler!", ex);
         }
+        initialized = true;
     }
 
     private void initListener(final Scope scope) {
@@ -91,11 +96,17 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
     }
 
     public void activate() {
+        if (!initialized) {
+            logger.warn("Skip activation because " + this + " is not initialized!");
+        }
         activateListener();
         activateRemoteServer();
     }
 
     public void deactivate() {
+        if (!initialized) {
+            logger.warn("Skip deactivation because " + this + " is not initialized!");
+        }
         deacivateListener();
         deactivateRemoteServer();
     }
@@ -133,6 +144,10 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
     }
 
     public <T extends Object> void callMethod(String methodName, T type, boolean async) {
+
+        if (!initialized) {
+            logger.warn("Skip callMethod because " + this + " is not initialized!");
+        }
         try {
             System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
             if (async) {
@@ -144,7 +159,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
             logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].");
         }
     }
-    
+
     @Override
     public void shutdown() {
         deactivate();
@@ -154,9 +169,9 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
     public static Scope generateScope(final String id, final Location location) {
         return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id));
     }
-    
+
     public M getData() throws NotAvailableException {
-        if(data == null) {
+        if (data == null) {
             throw new NotAvailableException("data");
         }
         return data;
@@ -177,5 +192,10 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
                 logger.error("Could not notify new data, given datatype is not valid!", ex);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[scope:" + scope.toString() + "]";
     }
 }

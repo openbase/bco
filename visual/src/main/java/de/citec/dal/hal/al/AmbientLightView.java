@@ -11,7 +11,6 @@ import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.NotAvailableException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import rsb.Scope;
 import rst.homeautomation.AmbientLightType;
 
 /**
@@ -24,9 +23,9 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
      * Creates new form AmbientLightView
      */
     public AmbientLightView() {
-        super();
+        super(AmbientLightRemote.class);
         initComponents();
-        
+
         colorChooser.getSelectionModel().addChangeListener(
                 new ChangeListener() {
                     @Override
@@ -40,11 +39,7 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
                 }
         );
     }
-    
-    public void setScope(final Scope scope) {
-        setRemoteService(new AmbientLightRemote(scope));
-    }
-    
+
     @Override
     protected void updateDynamicComponents(AmbientLightType.AmbientLight data) {
         try {
@@ -112,5 +107,4 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
-    
 }
