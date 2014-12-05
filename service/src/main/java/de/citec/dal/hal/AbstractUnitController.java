@@ -11,7 +11,7 @@ import de.citec.dal.RSBBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
-import de.citec.dal.service.RSBCommunicationService;
+import de.citec.dal.service.rsb.RSBCommunicationService;
 import java.util.concurrent.Future;
 import rsb.RSBException;
 import rsb.Scope;

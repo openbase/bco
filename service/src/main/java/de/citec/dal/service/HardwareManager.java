@@ -5,6 +5,7 @@
  */
 package de.citec.dal.service;
 
+import de.citec.dal.service.rsb.RSBInformerPool;
 import java.util.Map;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
