@@ -71,7 +71,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 
     private void initListener(final Scope scope) {
         try {
-            this.listener = Factory.getInstance().createListener(scope);
+            this.listener = Factory.getInstance().createListener(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_INFORMER));
             this.listenerWatchDog = new WatchDog(listener, "RSBListener");
         } catch (Exception ex) {
             logger.error("Could not create Listener on scope [" + scope.toString() + "]!", ex);
@@ -80,8 +80,8 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 
     private void initRemoteServer(final Scope scope) {
         try {
-            this.remoteServer = Factory.getInstance().createRemoteServer(scope);
-            this.remoteServerWatchDog = new WatchDog(listener, "RSBRemoteServer");
+            this.remoteServer = Factory.getInstance().createRemoteServer(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC));
+            this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer");
         } catch (Exception ex) {
             logger.error("Could not create RemoteServer on scope [" + scope.toString() + "]!", ex);
         }
@@ -156,7 +156,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
                 remoteServer.call(methodName, type);
             }
         } catch (RSBException | ExecutionException | TimeoutException ex) {
-            logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].");
+            logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].", ex);
         }
     }
 

@@ -8,7 +8,10 @@ package de.citec.dal.hal.al;
 import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.rsb.RSBRemoteService;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.AmbientLightType;
+import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
@@ -16,6 +19,11 @@ import rst.vision.HSVColorType.HSVColor;
  * @author mpohling
  */
 public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.AmbientLight> {
+    
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColorType.HSVColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
+    }
     
     public AmbientLightRemote() {
         

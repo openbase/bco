@@ -10,6 +10,7 @@ import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -40,8 +41,19 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             this.remoteView.shutdown();
             remoteContextPanel.remove(remoteView);
         }
+        
+        // Init RemoteView
+        this.remoteView = remoteView;
+        try {
+            remoteView.setScope(scopePanel1.getScope());
+        } catch (DALException ex) {
+            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        // Setup context panel
         remoteContextPanel.add(remoteView);
         remoteContextPanel.validate();
+        remoteContextPanel.revalidate();
         this.pack();
     }
 
@@ -108,6 +120,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Remote"));
 
         remoteContextPanel.setBackground(new java.awt.Color(85, 85, 85));
+        remoteContextPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -147,7 +160,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
+    /**l
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -192,3 +205,4 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     private de.citec.dal.view.ScopePanel scopePanel1;
     // End of variables declaration//GEN-END:variables
 }
+

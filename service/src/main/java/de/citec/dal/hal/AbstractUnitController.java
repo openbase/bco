@@ -22,7 +22,9 @@ import rsb.patterns.LocalServer;
 /**
  *
  * @author mpohling
+ * @param <M>
  * @param <B> Type related Builder
+ * @param <MB>
  */
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> {
 
