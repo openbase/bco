@@ -3,14 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.view;
+package de.citec.dal;
 
 import de.citec.dal.hal.al.AmbientLightView;
 import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -47,22 +46,25 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         try {
             remoteView.setScope(scopePanel1.getScope());
         } catch (DALException ex) {
-            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("Could not setup remote view!", ex);
         }
         
         // Setup context panel
         remoteContextPanel.add(remoteView);
-        remoteContextPanel.validate();
         remoteContextPanel.revalidate();
         this.pack();
     }
 
     @Override
-    public void update(final Observable<Scope> source, final Scope scope) throws DALException {
+    public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
         if(remoteView == null) {
             return;
         }
+        
+        remoteView.setEnabled(false);
         remoteView.setScope(scope);
+        remoteView.setEnabled(true);
+        
     }
 
     /**
@@ -75,7 +77,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        scopePanel1 = new de.citec.dal.view.ScopePanel();
+        scopePanel1 = new de.citec.dal.service.ScopePanel();
         jPanel2 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox();
         jPanel3 = new javax.swing.JPanel();
@@ -202,7 +204,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel remoteContextPanel;
-    private de.citec.dal.view.ScopePanel scopePanel1;
+    private de.citec.dal.service.ScopePanel scopePanel1;
     // End of variables declaration//GEN-END:variables
 }
 

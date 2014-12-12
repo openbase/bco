@@ -3,12 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.view;
+package de.citec.dal.service;
 
 import de.citec.dal.util.MultiException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
 import java.awt.Color;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingWorker;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
@@ -19,7 +23,7 @@ import rsb.Scope;
 public class ScopePanel extends javax.swing.JPanel {
 
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private Observable<Scope> observable;
 
     /**
@@ -37,7 +41,7 @@ public class ScopePanel extends javax.swing.JPanel {
     public void removeObserver(Observer<Scope> observer) {
         observable.removeObserver(observer);
     }
-    
+
     public Scope getScope() {
         return new Scope(scopeTextField.getText());
     }
@@ -60,6 +64,11 @@ public class ScopePanel extends javax.swing.JPanel {
         scopeTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scopeTextFieldActionPerformed(evt);
+            }
+        });
+        scopeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                scopeTextFieldKeyTyped(evt);
             }
         });
 
@@ -86,14 +95,52 @@ public class ScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-        try {
-            observable.notifyObservers(new Scope(scopeTextField.getText()));
-            scopeTextField.setForeground(Color.BLACK);
-        } catch (MultiException ex) {
-            scopeTextField.setForeground(Color.RED);
-            logger.error("Could not update scope!", ex);
-        }
+        
+        scopeTextField.setForeground(Color.BLACK);
+        scopeTextField.setEnabled(false);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    observable.notifyObservers(new Scope(scopeTextField.getText()));
+                    scopeTextField.setForeground(Color.RED);
+                    scopeTextField.setEnabled(true);
+                } catch (MultiException ex) {
+                    logger.error("Could not update scope!", ex);
+                }
+                return null;
+            }
+        };
+        worker.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("state")) {
+                    switch ((SwingWorker.StateValue) evt.getNewValue()) {
+                        
+                        case STARTED:
+                            break;
+                        case PENDING:
+                            break;
+                        case DONE:
+                            scopeTextField.setForeground(Color.GREEN.darker());
+                            scopeTextField.setEnabled(true);
+                            break;
+                        default:
+                            throw new AssertionError("Unknown SwingWorker state!");
+                    }
+                }
+            }
+        });
+        worker.execute();
+
     }//GEN-LAST:event_scopeTextFieldActionPerformed
+
+    private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
+        scopeTextField.setForeground(Color.BLACK);
+    }//GEN-LAST:event_scopeTextFieldKeyTyped
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

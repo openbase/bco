@@ -71,7 +71,7 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="de.citec.dal.view.ScopePanel" name="scopePanel1">
+        <Component class="de.citec.dal.service.ScopePanel" name="scopePanel1">
         </Component>
       </SubComponents>
     </Container>

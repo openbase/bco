@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.view;
+package de.citec.dal.outdated;
 
-import de.citec.dal.Controller;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -19,6 +18,7 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author nuc
  */
+@Deprecated
 public class GUI extends javax.swing.JFrame implements PropertyChangeListener {
 
     /**

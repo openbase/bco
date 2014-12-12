@@ -42,7 +42,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.dal.view.DeviceViewerFrame</mainClass>
+                            <mainClass>de.citec.dal.DeviceViewerFrame</mainClass>
                             <name>dal-remote</name>
                             <platforms>
                                 <platform>unix</platform>

@@ -101,6 +101,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
         activateListener();
         activateRemoteServer();
+        requestUpdate();
     }
 
     public void deactivate() {
@@ -158,6 +159,10 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         } catch (RSBException | ExecutionException | TimeoutException ex) {
             logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].", ex);
         }
+    }
+    
+    public void requestUpdate() {
+        // TODO mpohling: Implement!
     }
 
     @Override
