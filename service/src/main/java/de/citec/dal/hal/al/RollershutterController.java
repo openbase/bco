@@ -9,6 +9,7 @@ import de.citec.dal.data.transform.StopMoveStateTransformer;
 import de.citec.dal.data.transform.UpDownStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.service.rsb.RSBCommunicationService;
 import org.openhab.core.library.types.DecimalType;
 import rsb.Event;
 import rsb.RSBException;
@@ -26,6 +27,9 @@ import rst.homeautomation.states.UpDownType;
  */
 public class RollershutterController extends AbstractUnitController<RollershutterType.Rollershutter, RollershutterType.Rollershutter.Builder> {
 
+    
+    // TODO thuxohl: make rsb interface more intuitive instead aligned on openhab.
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
@@ -61,10 +65,10 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         public Event invoke(final Event request) throws Throwable {
             try {
                 RollershutterController.this.setUpDownState(((UpDownType.UpDown) request.getData()).getState());
-                return new Event(String.class, "Ok");
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setUpDownState] for [" + RollershutterController.this.getId() + "]", ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
     }
@@ -85,10 +89,10 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         public Event invoke(final Event request) throws Throwable {
             try {
                 RollershutterController.this.setStopMoveState(((StopMoveType.StopMove) request.getData()).getState());
-                return new Event(String.class, "Ok");
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setStopMoveState] for " + RollershutterController.this, ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
     }
@@ -109,10 +113,10 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         public Event invoke(final Event request) throws Throwable {
             try {
                 RollershutterController.this.setPosition((Float) request.getData());
-                return new Event(String.class, "Ok");
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setPosition] for " + RollershutterController.this, ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
 

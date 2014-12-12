@@ -38,18 +38,4 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         logger.debug("Getting [" + id + "] Temperature: [" + builder.getTemperature() + "]");
         return builder.getTemperature();
     }
-
-    public class GetBrightness extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                return new Event(Float.class, TemperatureSensorController.this.getTemperature());
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + TemperatureSensorController.this.getId() + "}", ex);
-                return new Event(String.class, "Failed");
-            }
-        }
-    }
-
 }

@@ -7,12 +7,8 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import rsb.Event;
-import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.patterns.EventCallback;
-import rsb.patterns.LocalServer;
 import rst.homeautomation.BatteryType;
 import rst.homeautomation.BatteryType.Battery;
 
@@ -34,28 +30,5 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     public void updateBatteryLevel(final double batteryState) {
         builder.setState(builder.getStateBuilder().setLevel(batteryState));
         notifyChange();
-    }
-
-    @Override
-    public void registerMethods(final LocalServer server) throws RSBException {
-        server.addMethod("getBatteryLevel", new GetBatteryLevelCallback());
-    }
-
-    public double getBatteryLevel() {
-        logger.debug("Getting [" + id + "] BatteryChargeLevel: [" + builder.getState().getLevel() + "]");
-        return builder.getState().getLevel();
-    }
-
-    public class GetBatteryLevelCallback extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                return new Event(Float.class, BatteryController.this.getBatteryLevel());
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + BatteryController.this.getId() + "}", ex);
-                return new Event(String.class, "Failed");
-            }
-        }
     }
 }
