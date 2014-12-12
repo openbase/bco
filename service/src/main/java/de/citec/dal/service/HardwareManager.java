@@ -28,7 +28,7 @@ public class HardwareManager {
 
     private final Object SYNC_LOCK = new Object();
     private boolean active;
-    private final HardwareRegistry registry = HardwareRegistry.getInstance();
+    private final DalRegistry registry = DalRegistry.getInstance();
 
     public static HardwareManager getInstance() {
         return InstanceHolder.INSTANCE;
@@ -69,7 +69,7 @@ public class HardwareManager {
         }
         AbstractDeviceController hardware;
         synchronized (SYNC_LOCK) {
-            Map.Entry<String, AbstractDeviceController> floorEntry = registry.getHardwareMap().floorEntry(itemName);
+            Map.Entry<String, AbstractDeviceController> floorEntry = registry.getDeviceMap().floorEntry(itemName);
             hardware = floorEntry.getValue();
         }
         if (!itemName.startsWith(hardware.getId())) {

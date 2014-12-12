@@ -13,7 +13,6 @@ import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -188,6 +187,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
     }
 
     public void requestStatus() throws DALException {
+        logger.debug("requestStatus updated.");
         callMethodAsync(RPC_REQUEST_STATUS);
     }
 

@@ -47,7 +47,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             remoteView.setScope(scopePanel1.getScope());
         } catch (DALException ex) {
             logger.error("Could not setup remote view!", ex);
-        }
+        }        
         
         // Setup context panel
         remoteContextPanel.add(remoteView);

@@ -18,6 +18,8 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.VerificatioinFailedException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.rsb.RSBCommunicationService;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Future;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
@@ -100,7 +102,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         return instanceId;
     }
 
-    protected void register(final AbstractUnitController hardware) {
+    protected <U extends AbstractUnitController> void register(final U hardware) {
         unitMap.put(hardware.getId(), hardware);
     }
 
@@ -193,5 +195,9 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[id:" + id + "|scope:" + getLocation().getScope() + "]";
+    }
+
+    public Collection<AbstractUnitController> getUnits() {
+        return Collections.unmodifiableCollection(unitMap.values());
     }
 }

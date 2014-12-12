@@ -63,7 +63,7 @@ public class WatchDog implements Activatable {
 
     public String getServiceName() {
         return serviceName;
-    }    
+    }
 
     class Minder extends Thread {
 
@@ -76,13 +76,13 @@ public class WatchDog implements Activatable {
                             service.activate();
                             logger.info("Service[" + serviceName + "] is now running.");
                         } catch (RSBException ex) {
-                            logger.error("Could not start Service[" + serviceName + "]! Try again in " + (DELAY / 10) + " secunds...", ex);
+                            logger.error("Could not start Service[" + serviceName + "]! Try again in " + (DELAY / 1000) + " seconds...", ex);
                         }
                     }
                     waitWithinDelay();
                 }
             } catch (InterruptedException ex) {
-                logger.debug("Catch Service[" + serviceName + "] inerruption.");
+                logger.debug("Catch Service[" + serviceName + "] interruption.");
             }
 
             while (service.isActive()) {
@@ -90,13 +90,14 @@ public class WatchDog implements Activatable {
                     service.deactivate();
                     logger.info("Service[" + serviceName + "] is now finished.");
                 } catch (RSBException | InterruptedException ex) {
-                    logger.error("Could not shutdown Service[" + serviceName + "]! Try again in " + (DELAY / 10) + " secunds...", ex);
+                    logger.error("Could not shutdown Service[" + serviceName + "]! Try again in " + (DELAY / 1000) + " seconds...", ex);
+                    try {
+                        waitWithinDelay();
+                    } catch (InterruptedException exx) {
+                        logger.debug("Catch Service[" + serviceName + "] interruption during shutdown!");
+                    }
                 }
-                try {
-                    waitWithinDelay();
-                } catch (InterruptedException ex) {
-                    logger.debug("Catch Service[" + serviceName + "] inerruption during shutdown!");
-                }
+
             }
         }
 
