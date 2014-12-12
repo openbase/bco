@@ -169,10 +169,10 @@ public class RSBBindingConnection implements RSBBindingInterface {
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_003", "Table_1", living));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_004", "Couch", living));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_005", "Media", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_006", "Interaction_0", sports));
+            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "Interaction_0", sports));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_007", "Interaction_1", sports));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "TestUnit_0", control));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "TestUnit_1", control));
+            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_006", "TestUnit_0", sports));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_010", "SLamp_Left_Window1", living));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_011", "SLamp_Left_Window2", living));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_012", "SLamp_Right_Window1", living));

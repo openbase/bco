@@ -3,13 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.view;
+package de.citec.dal;
 
 import de.citec.dal.hal.al.AmbientLightView;
 import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
 /**
@@ -18,6 +20,7 @@ import rsb.Scope;
  */
 public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Scope> {
 
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     
     private RSBRemoteView remoteView;
     
@@ -27,27 +30,42 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     public DeviceViewerFrame() {
         initComponents();
         setRemoteView(new AmbientLightView());
-        
+        scopePanel1.addObserver(this);
     }
     
     public final synchronized void setRemoteView(RSBRemoteView remoteView) {
+        logger.info("Set remote view: "+remoteView.getClass().getSimpleName());
         
         if(this.remoteView != null) {
             this.remoteView.shutdown();
             remoteContextPanel.remove(remoteView);
         }
+        
+        // Init RemoteView
+        this.remoteView = remoteView;
+        try {
+            remoteView.setScope(scopePanel1.getScope());
+        } catch (DALException ex) {
+            logger.error("Could not setup remote view!", ex);
+        }
+        
+        // Setup context panel
         remoteContextPanel.add(remoteView);
+        remoteContextPanel.revalidate();
+        this.pack();
     }
 
     @Override
-    public void update(final Observable<Scope> source, final Scope scope) throws DALException {
+    public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
         if(remoteView == null) {
             return;
         }
+        
+        remoteView.setEnabled(false);
         remoteView.setScope(scope);
+        remoteView.setEnabled(true);
+        
     }
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -59,7 +77,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        scopePanel1 = new de.citec.dal.view.ScopePanel();
+        scopePanel1 = new de.citec.dal.service.ScopePanel();
         jPanel2 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox();
         jPanel3 = new javax.swing.JPanel();
@@ -82,7 +100,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Type"));
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "AmbientLight" }));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -104,17 +122,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Remote"));
 
         remoteContextPanel.setBackground(new java.awt.Color(85, 85, 85));
-
-        javax.swing.GroupLayout remoteContextPanelLayout = new javax.swing.GroupLayout(remoteContextPanel);
-        remoteContextPanel.setLayout(remoteContextPanelLayout);
-        remoteContextPanelLayout.setHorizontalGroup(
-            remoteContextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        remoteContextPanelLayout.setVerticalGroup(
-            remoteContextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 349, Short.MAX_VALUE)
-        );
+        remoteContextPanel.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -124,9 +132,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(remoteContextPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(remoteContextPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -156,7 +162,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
+    /**l
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -198,6 +204,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel remoteContextPanel;
-    private de.citec.dal.view.ScopePanel scopePanel1;
+    private de.citec.dal.service.ScopePanel scopePanel1;
     // End of variables declaration//GEN-END:variables
 }
+

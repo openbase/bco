@@ -5,17 +5,45 @@
  */
 package de.citec.dal.service;
 
+import de.citec.dal.util.MultiException;
+import de.citec.dal.util.Observable;
+import de.citec.dal.util.Observer;
+import java.awt.Color;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingWorker;
+import org.slf4j.LoggerFactory;
+import rsb.Scope;
+
 /**
  *
- * @author mpohling
+ * @author nuc
  */
 public class ScopePanel extends javax.swing.JPanel {
+
+    protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+
+    private Observable<Scope> observable;
 
     /**
      * Creates new form ScopePanel
      */
     public ScopePanel() {
         initComponents();
+        observable = new Observable<>();
+    }
+
+    public void addObserver(Observer<Scope> observer) {
+        observable.addObserver(observer);
+    }
+
+    public void removeObserver(Observer<Scope> observer) {
+        observable.removeObserver(observer);
+    }
+
+    public Scope getScope() {
+        return new Scope(scopeTextField.getText());
     }
 
     /**
@@ -27,76 +55,96 @@ public class ScopePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
-        contextPanel = new javax.swing.JPanel();
+        scopeLabel = new javax.swing.JLabel();
+        scopeTextField = new javax.swing.JTextField();
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Scope"));
+        scopeLabel.setText("Scope:");
 
-        jTextField1.setText("/home/");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        scopeTextField.setText("/home/control/ambientlight/TestUnit_0");
+        scopeTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                scopeTextFieldActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 12, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout contextPanelLayout = new javax.swing.GroupLayout(contextPanel);
-        contextPanel.setLayout(contextPanelLayout);
-        contextPanelLayout.setHorizontalGroup(
-            contextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        contextPanelLayout.setVerticalGroup(
-            contextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 288, Short.MAX_VALUE)
-        );
+        scopeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                scopeTextFieldKeyTyped(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(contextPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(scopeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scopeTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(contextPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(scopeLabel)
+                    .addComponent(scopeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
+        
+        scopeTextField.setForeground(Color.BLACK);
+        scopeTextField.setEnabled(false);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    observable.notifyObservers(new Scope(scopeTextField.getText()));
+                    scopeTextField.setForeground(Color.RED);
+                    scopeTextField.setEnabled(true);
+                } catch (MultiException ex) {
+                    logger.error("Could not update scope!", ex);
+                }
+                return null;
+            }
+        };
+        worker.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("state")) {
+                    switch ((SwingWorker.StateValue) evt.getNewValue()) {
+                        
+                        case STARTED:
+                            break;
+                        case PENDING:
+                            break;
+                        case DONE:
+                            scopeTextField.setForeground(Color.GREEN.darker());
+                            scopeTextField.setEnabled(true);
+                            break;
+                        default:
+                            throw new AssertionError("Unknown SwingWorker state!");
+                    }
+                }
+            }
+        });
+        worker.execute();
+
+    }//GEN-LAST:event_scopeTextFieldActionPerformed
+
+    private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
+        scopeTextField.setForeground(Color.BLACK);
+    }//GEN-LAST:event_scopeTextFieldKeyTyped
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel contextPanel;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel scopeLabel;
+    private javax.swing.JTextField scopeTextField;
     // End of variables declaration//GEN-END:variables
 }

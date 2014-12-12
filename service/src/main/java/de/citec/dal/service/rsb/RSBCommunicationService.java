@@ -26,8 +26,8 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
     public enum ConnectionState {Online, Offline};
     
-    public final static String SCOPE_SUFFIX_RPC = "ctrl";
-    public final static String SCOPE_SUFFIX_INFORMER = "status";
+    public final static Scope SCOPE_SUFFIX_RPC = new Scope("/ctrl");
+    public final static Scope SCOPE_SUFFIX_INFORMER = new Scope("/status");
 
     protected final Logger logger;
 
@@ -51,7 +51,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     public void init() throws RSBException {
         try {
             logger.info("Init informer service...");            
-            this.informer = new DistributedInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_INFORMER)), detectMessageClass());
+            this.informer = new DistributedInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_INFORMER)), detectMessageClass());
         } catch (Exception ex) {
             throw new RSBException("Could not init informer.", ex);
         }
@@ -59,7 +59,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
         try {
             logger.info("Init rpc server...");
             // Get local server object which allows to expose remotely callable methods.
-            server = Factory.getInstance().createLocalServer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR + SCOPE_SUFFIX_RPC)));
+            server = Factory.getInstance().createLocalServer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_RPC)));
 
             // register rpc methods.
             registerMethods(server);

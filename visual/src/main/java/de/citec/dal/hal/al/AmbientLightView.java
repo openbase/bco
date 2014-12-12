@@ -9,6 +9,7 @@ import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.NotAvailableException;
+import java.awt.Color;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import rst.homeautomation.AmbientLightType;
@@ -43,7 +44,7 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
     @Override
     protected void updateDynamicComponents(AmbientLightType.AmbientLight data) {
         try {
-            colorChooser.setColor(HSVColorToRGBColorTransformer.transform(data.getColor()));
+            colorPreviewPanel.setBackground(HSVColorToRGBColorTransformer.transform(data.getColor()));
         } catch (RSBBindingException ex) {
             logger.error("Could not update color value!", ex);
         }
@@ -61,29 +62,58 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
         ambientLightPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         colorChooser = new javax.swing.JColorChooser();
+        colorPreviewPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
 
         ambientLightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Ambient Light"));
+
+        colorPreviewPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 18)); // NOI18N
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Current Color Preview");
+
+        javax.swing.GroupLayout colorPreviewPanelLayout = new javax.swing.GroupLayout(colorPreviewPanel);
+        colorPreviewPanel.setLayout(colorPreviewPanelLayout);
+        colorPreviewPanelLayout.setHorizontalGroup(
+            colorPreviewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, colorPreviewPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        colorPreviewPanelLayout.setVerticalGroup(
+            colorPreviewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(colorPreviewPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout ambientLightPanelLayout = new javax.swing.GroupLayout(ambientLightPanel);
         ambientLightPanel.setLayout(ambientLightPanelLayout);
         ambientLightPanelLayout.setHorizontalGroup(
             ambientLightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(ambientLightPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ambientLightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(ambientLightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(colorPreviewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1))
         );
         ambientLightPanelLayout.setVerticalGroup(
             ambientLightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ambientLightPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(91, 91, 91))
-            .addGroup(ambientLightPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(colorPreviewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(ambientLightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ambientLightPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(91, 91, 91))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, ambientLightPanelLayout.createSequentialGroup()
+                        .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -94,9 +124,7 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(ambientLightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(ambientLightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -104,7 +132,9 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ambientLightPanel;
     private javax.swing.JColorChooser colorChooser;
+    private javax.swing.JPanel colorPreviewPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 
 }
