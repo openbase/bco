@@ -6,6 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.dal.util.DALException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.RollershutterType;
@@ -27,16 +28,16 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
     public RollershutterRemote() {
     }
 
-    public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) {
-        callMethod("setStopMoveState", state, true);
+    public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) throws DALException {
+        callMethodAsync("setStopMoveState", state);
     }
     
-    public void setPosition(final float position) {
-        callMethod("setPosition", position, true);
+    public void setPosition(final float position) throws DALException {
+        callMethodAsync("setPosition", position);
     }
     
-    public void setUpDownState(final UpDownType.UpDown.UpDownState state) {
-        callMethod("setUpDownState", state, true);
+    public void setUpDownState(final UpDownType.UpDown.UpDownState state) throws DALException {
+        callMethodAsync("setUpDownState", state);
     }
     
     @Override

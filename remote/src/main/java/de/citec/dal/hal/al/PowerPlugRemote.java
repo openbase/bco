@@ -6,6 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.dal.util.DALException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.PowerPlugType;
@@ -25,8 +26,8 @@ public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug>{
     public PowerPlugRemote() {
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) {
-        callMethod("setPowerState", state, true);
+    public void setPowerState(final PowerType.Power.PowerState state) throws DALException {
+        callMethodAsync("setPowerState", state);
     }
     
     @Override
