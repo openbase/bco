@@ -24,6 +24,7 @@ import de.citec.dal.hal.devices.philips.PH_Hue_GU10Controller;
 import de.citec.dal.hal.devices.plugwise.PW_PowerPlugController;
 import de.citec.dal.util.NotAvailableException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ public class DalRegistry {
     private DalRegistry() {
         this.deviceRegistry = new TreeMap<>();
         this.unitRegistry = new TreeMap<>();
-        this.registeredUnitClasses = new TreeMap<>();
+        this.registeredUnitClasses = new HashMap<>();
         initDevices();
     }
 
