@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.view;
+package de.citec.dal.outdated;
 
-import de.citec.dal.Controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JTextField;
@@ -15,6 +14,7 @@ import rsb.Scope;
  *
  * @author thuxohl
  */
+@Deprecated
 public class ScopeActionListener implements ActionListener{
 
     private final Controller controller;

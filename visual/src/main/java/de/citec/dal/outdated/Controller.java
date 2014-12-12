@@ -1,6 +1,6 @@
-package de.citec.dal;
+package de.citec.dal.outdated;
 
-import de.citec.dal.view.GUI;
+import de.citec.dal.outdated.GUI;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.concurrent.ExecutionException;
@@ -26,6 +26,7 @@ import rst.homeautomation.states.PowerType;
 import rst.homeautomation.states.PowerType.Power.PowerState;
 import rst.vision.HSVColorType;
 
+@Deprecated
 public class Controller implements Handler {
 
     private final PropertyChangeSupport pcs;
