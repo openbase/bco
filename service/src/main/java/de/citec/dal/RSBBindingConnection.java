@@ -35,7 +35,10 @@ public class RSBBindingConnection implements RSBBindingInterface {
         this.instance = this;
         this.registry = DalRegistry.getInstance();
         this.hardwareManager = HardwareManager.getInstance();
-        this.hardwareManager.activate();
+        
+        if(binding != null) {
+            hardwareManager.activate();
+        }
     }
 
     @Override
