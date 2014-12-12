@@ -95,7 +95,7 @@ public class DalRegistry {
 
     private void initDevices() {
         logger.info("Init devices...");
-        Location outdoor = new Location("Outdoor");
+        Location outdoor = new Location("outdoor");
         Location kitchen = new Location("kitchen");
         Location wardrobe = new Location("wardrobe");
         Location living = new Location("living");

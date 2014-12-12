@@ -11,6 +11,7 @@ import static de.citec.dal.service.rsb.RSBCommunicationService.RPC_REQUEST_STATU
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
+import de.citec.dal.util.Observer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -85,6 +86,15 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         try {
             this.remoteServer = Factory.getInstance().createRemoteServer(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC));
             this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer");
+            this.listenerWatchDog.addObserver(new Observer<WatchDog.ServiceState>() {
+
+                @Override
+                public void update(Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data) throws Exception {
+                    if(data == WatchDog.ServiceState.Running) {
+                        requestStatus();
+                    }
+                }
+            });
         } catch (Exception ex) {
             logger.error("Could not create RemoteServer on scope [" + scope.toString() + "]!", ex);
         }
@@ -104,11 +114,6 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
         activateListener();
         activateRemoteServer();
-        try {
-            requestStatus();
-        } catch (DALException ex) {
-            logger.warn("First sync failed!", ex);
-        }
     }
 
     public void deactivate() {
