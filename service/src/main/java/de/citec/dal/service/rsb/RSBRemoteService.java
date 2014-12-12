@@ -13,6 +13,7 @@ import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -104,7 +105,11 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
         activateListener();
         activateRemoteServer();
-        requestStatus();
+        try {
+            requestStatus();
+        } catch (DALException ex) {
+            logger.warn("First sync failed!", ex);
+        }
     }
 
     public void deactivate() {
