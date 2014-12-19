@@ -10,8 +10,7 @@ import de.citec.dal.util.DALException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.RollershutterType;
-import rst.homeautomation.states.StopMoveType;
-import rst.homeautomation.states.UpDownType;
+import rst.homeautomation.states.ShutterType;
 
 /**
  *
@@ -21,23 +20,18 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StopMoveType.StopMove.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UpDownType.UpDown.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
     public RollershutterRemote() {
     }
 
-    public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) throws DALException {
-        callMethodAsync("setStopMoveState", state);
+    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws DALException {
+        callMethodAsync("setShutterState", state);
     }
     
     public void setPosition(final float position) throws DALException {
         callMethodAsync("setPosition", position);
-    }
-    
-    public void setUpDownState(final UpDownType.UpDown.UpDownState state) throws DALException {
-        callMethodAsync("setUpDownState", state);
     }
     
     @Override
