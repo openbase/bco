@@ -18,8 +18,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.RollershutterType;
-import rst.homeautomation.states.StopMoveType;
-import rst.homeautomation.states.UpDownType;
+import rst.homeautomation.states.ShutterType;
 
 /**
  *
@@ -34,9 +33,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(StopMoveType.StopMove.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(UpDownType.UpDown.getDefaultInstance()));
+                new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
     public RollershutterController(String id, final String label, HardwareUnit hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws RSBBindingException {
@@ -45,26 +42,26 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     @Override
     public void registerMethods(final LocalServer server) throws RSBException {
-        server.addMethod("setStopMoveState", new SetStopMoveStateCallback());
-        server.addMethod("setUpDownState", new SetUpDownStateCallback());
+        server.addMethod("setShutterState", new SetShutterStateCallback());
     }
 
-    public void updateUpDownState(final UpDownType.UpDown.UpDownState state) {
-        builder.getUpDownStateBuilder().setState(state);
+    public void updateShutterState(final ShutterType.Shutter.ShutterState state) {
+        builder.getShutterStateBuilder().setState(state);
         notifyChange();
     }
 
-    public void setUpDownState(final UpDownType.UpDown.UpDownState state) throws RSBBindingException {
-        logger.debug("Setting [" + id + "] to UpDownState [" + state.name() + "]");
+    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws RSBBindingException {
+        logger.debug("Setting [" + id + "] to ShutterState [" + state.name() + "]");
         executeCommand(UpDownStateTransformer.transform(state));
+        executeCommand(StopMoveStateTransformer.transform(state));
     }
 
-    public class SetUpDownStateCallback extends EventCallback {
+    public class SetShutterStateCallback extends EventCallback {
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                RollershutterController.this.setUpDownState(((UpDownType.UpDown) request.getData()).getState());
+                RollershutterController.this.setShutterState(((ShutterType.Shutter) request.getData()).getState());
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setUpDownState] for [" + RollershutterController.this.getId() + "]", ex);
@@ -73,32 +70,8 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         }
     }
 
-    public void updateStopMoveState(final StopMoveType.StopMove.StopMoveState state) {
-        builder.getStopMoveStateBuilder().setState(state);
-        notifyChange();
-    }
-
-    public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) throws RSBBindingException {
-        logger.debug("Setting [" + id + "] to StopMove[" + state.name() + "]");
-        executeCommand(StopMoveStateTransformer.transform(state));
-    }
-
-    public class SetStopMoveStateCallback extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                RollershutterController.this.setStopMoveState(((StopMoveType.StopMove) request.getData()).getState());
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setStopMoveState] for " + RollershutterController.this, ex);
-                throw ex;
-            }
-        }
-    }
-
     public void updatePosition(final float position) {
-        builder.setValue(position);
+        builder.setOpeningRatio(position);
         notifyChange();
     }
 
