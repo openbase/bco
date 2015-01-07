@@ -8,8 +8,7 @@ package de.citec.dal.hal.al;
 import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.RSBRemoteView;
-import de.citec.dal.util.NotAvailableException;
-import java.awt.Color;
+import de.citec.dal.util.DALException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import rst.homeautomation.AmbientLightType;
@@ -33,7 +32,7 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
                     public void stateChanged(ChangeEvent e) {
                         try {
                             getRemoteService().setColor(colorChooser.getColor());
-                        } catch (NotAvailableException ex) {
+                        } catch (DALException ex) {
                             logger.error("Could not set color value!", ex);
                         }
                     }
@@ -42,6 +41,7 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
     }
 
     @Override
+
     protected void updateDynamicComponents(AmbientLightType.AmbientLight data) {
         try {
             colorPreviewPanel.setBackground(HSVColorToRGBColorTransformer.transform(data.getColor()));

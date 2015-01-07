@@ -7,8 +7,11 @@ package de.citec.dal.service.rsb;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
+import static de.citec.dal.service.rsb.RSBCommunicationService.RPC_REQUEST_STATUS;
+import de.citec.dal.util.DALException;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
+import de.citec.dal.util.Observer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -19,6 +22,7 @@ import rsb.Handler;
 import rsb.Listener;
 import rsb.RSBException;
 import rsb.Scope;
+import rsb.patterns.Future;
 import rsb.patterns.RemoteServer;
 
 /**
@@ -82,6 +86,15 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         try {
             this.remoteServer = Factory.getInstance().createRemoteServer(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC));
             this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer");
+            this.listenerWatchDog.addObserver(new Observer<WatchDog.ServiceState>() {
+
+                @Override
+                public void update(Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data) throws Exception {
+                    if(data == WatchDog.ServiceState.Running) {
+                        requestStatus();
+                    }
+                }
+            });
         } catch (Exception ex) {
             logger.error("Could not create RemoteServer on scope [" + scope.toString() + "]!", ex);
         }
@@ -101,7 +114,6 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
         activateListener();
         activateRemoteServer();
-        requestUpdate();
     }
 
     public void deactivate() {
@@ -144,25 +156,44 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
         }
     }
 
-    public <T extends Object> void callMethod(String methodName, T type, boolean async) {
+    public <R,T extends Object> R callMethod(String methodName) throws RSBException, ExecutionException, TimeoutException {
+        return callMethod(methodName, null);
+    }
+    
+    public <R,T extends Object> Future<Object> callMethodAsync(String methodName) throws DALException {
+        return callMethodAsync(methodName, null);
+    }
+
+    public <R, T extends Object> R callMethod(String methodName, T type) throws RSBException, ExecutionException, TimeoutException {
 
         if (!initialized) {
             logger.warn("Skip callMethod because " + this + " is not initialized!");
         }
         try {
             System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
-            if (async) {
-                remoteServer.callAsync(methodName, type);
-            } else {
-                remoteServer.call(methodName, type);
-            }
+            return remoteServer.call(methodName, type);
         } catch (RSBException | ExecutionException | TimeoutException ex) {
             logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].", ex);
+            throw ex;
         }
     }
-    
-    public void requestUpdate() {
-        // TODO mpohling: Implement!
+
+    public <R,T extends Object> Future<R> callMethodAsync(String methodName, T type) throws DALException {
+
+        if (!initialized) {
+            logger.warn("Skip callMethod because " + this + " is not initialized!");
+        }
+        try {
+            System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
+                return remoteServer.callAsync(methodName, type);
+        } catch (RSBException ex) {
+            throw new DALException("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].", ex);
+        }
+    }
+
+    public void requestStatus() throws DALException {
+        logger.debug("requestStatus updated.");
+        callMethodAsync(RPC_REQUEST_STATUS);
     }
 
     @Override

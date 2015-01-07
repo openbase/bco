@@ -9,6 +9,7 @@ import de.citec.dal.data.transform.StopMoveStateTransformer;
 import de.citec.dal.data.transform.UpDownStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.service.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -17,8 +18,6 @@ import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.RollershutterType;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.homeautomation.states.StopMoveType;
-import rst.homeautomation.states.UpDownType;
 
 /**
  *
@@ -26,13 +25,14 @@ import rst.homeautomation.states.UpDownType;
  */
 public class RollershutterController extends AbstractUnitController<RollershutterType.Rollershutter, RollershutterType.Rollershutter.Builder> {
 
+    
+    // TODO thuxohl: make rsb interface more intuitive instead aligned on openhab.
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(StopMoveType.StopMove.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(UpDownType.UpDown.getDefaultInstance()));
+                new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
     public RollershutterController(String id, final String label, HardwareUnit hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws RSBBindingException {
@@ -41,64 +41,36 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     @Override
     public void registerMethods(final LocalServer server) throws RSBException {
-        server.addMethod("setStopMoveState", new SetStopMoveStateCallback());
-        server.addMethod("setUpDownState", new SetUpDownStateCallback());
+        server.addMethod("setShutterState", new SetShutterStateCallback());
     }
 
-    public void updateUpDownState(final UpDownType.UpDown.UpDownState state) {
-        builder.getUpDownStateBuilder().setState(state);
+    public void updateShutterState(final ShutterType.Shutter.ShutterState state) {
+        builder.getShutterStateBuilder().setState(state);
         notifyChange();
     }
 
-    public void setUpDownState(final UpDownType.UpDown.UpDownState state) throws RSBBindingException {
-        logger.debug("Setting [" + id + "] to UpDownState [" + state.name() + "]");
-        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
-        newBuilder.setUpDown(UpDownStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.UPDOWN);
-        executeCommand(newBuilder);
+    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws RSBBindingException {
+        logger.debug("Setting [" + id + "] to ShutterState [" + state.name() + "]");
+        executeCommand(UpDownStateTransformer.transform(state));
+        executeCommand(StopMoveStateTransformer.transform(state));
     }
 
-    public class SetUpDownStateCallback extends EventCallback {
+    public class SetShutterStateCallback extends EventCallback {
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                RollershutterController.this.setUpDownState(((UpDownType.UpDown) request.getData()).getState());
-                return new Event(String.class, "Ok");
+                RollershutterController.this.setShutterState(((ShutterType.Shutter) request.getData()).getState());
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setUpDownState] for [" + RollershutterController.this.getId() + "]", ex);
-                return new Event(String.class, "Failed");
-            }
-        }
-    }
-
-    public void updateStopMoveState(final StopMoveType.StopMove.StopMoveState state) {
-        builder.getStopMoveStateBuilder().setState(state);
-        notifyChange();
-    }
-
-    public void setStopMoveState(final StopMoveType.StopMove.StopMoveState state) throws RSBBindingException {
-        logger.debug("Setting [" + id + "] to StopMove[" + state.name() + "]");
-        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
-        newBuilder.setStopMove(StopMoveStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.STOPMOVE);
-        executeCommand(newBuilder);
-    }
-
-    public class SetStopMoveStateCallback extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                RollershutterController.this.setStopMoveState(((StopMoveType.StopMove) request.getData()).getState());
-                return new Event(String.class, "Ok");
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setStopMoveState] for " + RollershutterController.this, ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
     }
 
     public void updatePosition(final float position) {
-        builder.setValue(position);
+        builder.setOpeningRatio(position);
         notifyChange();
     }
 
@@ -115,10 +87,10 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         public Event invoke(final Event request) throws Throwable {
             try {
                 RollershutterController.this.setPosition((Float) request.getData());
-                return new Event(String.class, "Ok");
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setPosition] for " + RollershutterController.this, ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
 

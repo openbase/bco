@@ -10,10 +10,12 @@ import com.google.protobuf.GeneratedMessage.Builder;
 import de.citec.dal.data.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rsb.Event;
 import rsb.Factory;
 import rsb.InitializeException;
 import rsb.RSBException;
 import rsb.Scope;
+import rsb.patterns.Callback;
 import rsb.patterns.LocalServer;
 
 /**
@@ -28,6 +30,9 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
     
     public final static Scope SCOPE_SUFFIX_RPC = new Scope("/ctrl");
     public final static Scope SCOPE_SUFFIX_INFORMER = new Scope("/status");
+    
+    public final static String RPC_REQUEST_STATUS = "requestStatus";
+    public final static Event RPC_FEEDBACK_OK = new Event(String.class, "OK");
 
     protected final Logger logger;
 
@@ -62,6 +67,14 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
             server = Factory.getInstance().createLocalServer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_RPC)));
 
             // register rpc methods.
+            server.addMethod(RPC_REQUEST_STATUS, new Callback() {
+
+                @Override
+                public Event internalInvoke(Event request) throws Throwable {
+                    requestStatus();
+                    return RPC_FEEDBACK_OK;
+                }
+            });
             registerMethods(server);
             
 
@@ -152,6 +165,10 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
     public ConnectionState getState() {
         return state;
+    }
+    
+    public void requestStatus() {
+        notifyChange();
     }
     
     public abstract void registerMethods(final LocalServer server) throws RSBException;

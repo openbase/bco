@@ -12,6 +12,8 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingWorker;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -95,51 +97,60 @@ public class ScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-        
-        scopeTextField.setForeground(Color.BLACK);
+
+        scopeTextField.setForeground(Color.BLUE);
         scopeTextField.setEnabled(false);
-        
-        SwingWorker worker = new SwingWorker<Void, Void>() {
 
-            @Override
-            protected Void doInBackground() throws Exception {
-                try {
-                    observable.notifyObservers(new Scope(scopeTextField.getText()));
-                    scopeTextField.setForeground(Color.RED);
-                    scopeTextField.setEnabled(true);
-                } catch (MultiException ex) {
-                    logger.error("Could not update scope!", ex);
-                }
-                return null;
-            }
-        };
-        worker.addPropertyChangeListener(new PropertyChangeListener() {
+        try {
+            //        SwingWorker worker = new SwingWorker<Void, Void>() {
+//
+//            @Override
+//            protected Void doInBackground() throws Exception {
+//                try {
+//                    observable.notifyObservers(new Scope(scopeTextField.getText()));
+//                    scopeTextField.setForeground(Color.RED);
+//                    scopeTextField.setEnabled(true);
+//                } catch (MultiException ex) {
+//                    logger.error("Could not update scope!", ex);
+//                }
+//                return null;
+//            }
+//        };
+//        worker.addPropertyChangeListener(new PropertyChangeListener() {
+//
+//            @Override
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                if (evt.getPropertyName().equals("state")) {
+//                    switch ((SwingWorker.StateValue) evt.getNewValue()) {
+//                        
+//                        case STARTED:
+//                            break;
+//                        case PENDING:
+//                            break;
+//                        case DONE:
+//                            scopeTextField.setForeground(Color.GREEN.darker());
+//                            scopeTextField.setEnabled(true);
+//                            break;
+//                        default:
+//                            throw new AssertionError("Unknown SwingWorker state!");
+//                    }
+//                }
+//            }
+//        });
+//        worker.execute();
 
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("state")) {
-                    switch ((SwingWorker.StateValue) evt.getNewValue()) {
-                        
-                        case STARTED:
-                            break;
-                        case PENDING:
-                            break;
-                        case DONE:
-                            scopeTextField.setForeground(Color.GREEN.darker());
-                            scopeTextField.setEnabled(true);
-                            break;
-                        default:
-                            throw new AssertionError("Unknown SwingWorker state!");
-                    }
-                }
-            }
-        });
-        worker.execute();
+            observable.notifyObservers(new Scope(scopeTextField.getText()));
+            scopeTextField.setForeground(Color.GREEN.darker().darker().darker());
+            scopeTextField.setEnabled(true);
+        } catch (MultiException ex) {
+            scopeTextField.setForeground(Color.RED);
+            scopeTextField.setEnabled(true);
+        }
 
     }//GEN-LAST:event_scopeTextFieldActionPerformed
 
     private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
-        scopeTextField.setForeground(Color.BLACK);
+        scopeTextField.setForeground(Color.BLUE);
     }//GEN-LAST:event_scopeTextFieldKeyTyped
 
 

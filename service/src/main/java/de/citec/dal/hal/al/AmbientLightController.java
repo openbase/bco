@@ -9,6 +9,7 @@ import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.service.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -63,10 +64,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         public Event invoke(final Event request) throws Throwable {
             try {
                 AmbientLightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
-                return new Event(String.class, "Ok");
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setPowerState] for [" + AmbientLightController.this.getId() + "]", ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
     }
@@ -89,10 +90,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         public Event invoke(final Event request) throws Throwable {
             try {
                 AmbientLightController.this.setColor(((HSVColor) request.getData()));
-                return new Event(String.class, "Ok");
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setColor] for " + AmbientLightController.this, ex);
-                return new Event(String.class, "Failed");
+                throw ex;
             }
         }
     }

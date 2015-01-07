@@ -5,11 +5,20 @@
  */
 package de.citec.dal;
 
+import de.citec.dal.hal.AbstractUnitController;
 import de.citec.dal.hal.al.AmbientLightView;
+import de.citec.dal.service.DalRegistry;
 import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import javax.swing.ComboBoxEditor;
+import javax.swing.ComboBoxModel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -21,26 +30,28 @@ import rsb.Scope;
 public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Scope> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private RSBRemoteView remoteView;
-    
+    private final DalRegistry registry = DalRegistry.getInstance();
+
     /**
      * Creates new form DeviceViewerFrame
      */
     public DeviceViewerFrame() {
         initComponents();
+        initTypeComboBox();
         setRemoteView(new AmbientLightView());
         scopePanel1.addObserver(this);
     }
-    
+
     public final synchronized void setRemoteView(RSBRemoteView remoteView) {
-        logger.info("Set remote view: "+remoteView.getClass().getSimpleName());
-        
-        if(this.remoteView != null) {
+        logger.info("Set remote view: " + remoteView.getClass().getSimpleName());
+
+        if (this.remoteView != null) {
             this.remoteView.shutdown();
             remoteContextPanel.remove(remoteView);
         }
-        
+
         // Init RemoteView
         this.remoteView = remoteView;
         try {
@@ -48,23 +59,56 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         } catch (DALException ex) {
             logger.error("Could not setup remote view!", ex);
         }
-        
+
         // Setup context panel
         remoteContextPanel.add(remoteView);
         remoteContextPanel.revalidate();
         this.pack();
     }
 
-    @Override
-    public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
-        if(remoteView == null) {
-            return;
+    class UnitClassContainer<T> {
+
+        private final Class<T> clazz;
+        private final String label;
+
+        public UnitClassContainer(Class<T> clazz, String label) {
+            this.clazz = clazz;
+            this.label = label;
+        }
+
+        public Class<T> getClazz() {
+            return clazz;
+        }
+
+        public String getLabel() {
+            return label;
         }
         
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+    
+    private void initTypeComboBox() {
+        ArrayList<Class<? extends AbstractUnitController>> unitClasses = new ArrayList();
+        for (Class<? extends AbstractUnitController> unitClass : registry.getRegisteredUnitClasses()) {
+            unitClasses.add(unitClass);
+        }
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitClasses.toArray()));
+        typeComboBox.setSelectedItem(0);
+    }
+
+    @Override
+    public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
+        if (remoteView == null) {
+            return;
+        }
+
         remoteView.setEnabled(false);
         remoteView.setScope(scope);
         remoteView.setEnabled(true);
-        
+
     }
 
     /**
@@ -79,7 +123,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         jPanel1 = new javax.swing.JPanel();
         scopePanel1 = new de.citec.dal.service.ScopePanel();
         jPanel2 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox();
+        typeComboBox = new javax.swing.JComboBox();
         jPanel3 = new javax.swing.JPanel();
         remoteContextPanel = new javax.swing.JPanel();
 
@@ -100,7 +144,12 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Type"));
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "AmbientLight" }));
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "AmbientLight" }));
+        typeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeComboBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -108,14 +157,14 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(typeComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(typeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -162,7 +211,13 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**l
+    private void typeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboBoxActionPerformed
+
+    }//GEN-LAST:event_typeComboBoxActionPerformed
+
+    /**
+     * l
+     *
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -193,18 +248,18 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
+                new RSBBindingConnection(null); // init face interface RMOVE LATER!!!
                 new DeviceViewerFrame().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel remoteContextPanel;
     private de.citec.dal.service.ScopePanel scopePanel1;
+    private javax.swing.JComboBox typeComboBox;
     // End of variables declaration//GEN-END:variables
 }
-

@@ -7,14 +7,11 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.patterns.EventCallback;
 import rst.homeautomation.ButtonType;
 import rst.homeautomation.ButtonType.Button;
 import rst.homeautomation.states.ClickType;
-import rst.homeautomation.states.ClickType.Click.ClickState;
 
 /**
  *
@@ -37,23 +34,5 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         builder.getStateBuilder().setState(state);
         logger.debug("Updatet Button State. Sending rsb messsage...");
         notifyChange();
-    }
-
-    public ClickState getButtonState() {
-        logger.debug("Getting [" + id + "] State: [" + builder.getState() + "]");
-        return builder.getState().getState();
-    }
-
-    public class GetButtonState extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                return new Event(ClickState.class, ButtonController.this.getButtonState());
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + ButtonController.this.getId() + "}", ex);
-                return new Event(String.class, "Failed");
-            }
-        }
     }
 }
