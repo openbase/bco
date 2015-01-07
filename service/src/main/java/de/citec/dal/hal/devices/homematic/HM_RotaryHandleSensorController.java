@@ -45,11 +45,11 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
 
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", StringType.String.class));
+        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", String.class));
         halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
     }
 
-    public void updateHandleSensor(StringType.String type) {
+    public void updateHandleSensor(String type) {
         try {
             handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
         } catch (RSBBindingException ex) {

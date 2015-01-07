@@ -7,7 +7,6 @@ package de.citec.dal.data.transform;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
-import org.openhab.core.library.types.DecimalType;
 import rst.homeautomation.states.MotionType;
 
 /**
@@ -16,7 +15,7 @@ import rst.homeautomation.states.MotionType;
  */
 public class MotionStateTransformer {
 
-	public static MotionType.Motion.MotionState transform(double decimalType) throws RSBBindingException {
+	public static MotionType.Motion.MotionState transform(final double decimalType) throws RSBBindingException {
 		switch ((int) decimalType) {
 			case 0:
 				return MotionType.Motion.MotionState.NO_MOVEMENT;
@@ -27,7 +26,7 @@ public class MotionStateTransformer {
 		}
 	}
 
-	public static DecimalType.Decimal transform(MotionType.Motion.MotionState motionState) throws TypeNotSupportedException, RSBBindingException {
+	public static DecimalType.Decimal transform(final MotionType.Motion.MotionState motionState) throws TypeNotSupportedException, RSBBindingException {
 		switch (motionState) {
 			case NO_MOVEMENT:
 				return DecimalType.Decimal.newBuilder().setValue(0).build();

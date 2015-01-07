@@ -8,7 +8,6 @@ package de.citec.dal.data.transform;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
 import rst.homeautomation.states.OpenClosedTiltedType;
-import rst.homeautomation.openhab.StringType;
 
 /**
  *
@@ -16,8 +15,8 @@ import rst.homeautomation.openhab.StringType;
  */
 public class OpenClosedTiltedStateTransformer {
 
-    public static OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState transform(StringType.String stringType) throws RSBBindingException {
-        switch (stringType.getValue()) {
+    public static OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState transform(final String stringType) throws RSBBindingException {
+        switch (stringType) {
             case "CLOSED":
                 return OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.CLOSED;
             case "OPEN":
@@ -25,20 +24,20 @@ public class OpenClosedTiltedStateTransformer {
             case "TILTED":
                 return OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
             default:
-                throw new RSBBindingException("Could not transform " + StringType.String.class.getName() + "! " + StringType.String.class.getSimpleName() + "[" + stringType.toString() + "] is unknown!");
+                throw new RSBBindingException("Could not transform " + String.class.getName() + "! " + String.class.getSimpleName() + "[" + stringType+ "] is unknown!");
         }
     }
 
-    public static StringType.String transform(OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState openClosedTiltedState) throws TypeNotSupportedException, RSBBindingException {
+    public static String transform(final OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState openClosedTiltedState) throws TypeNotSupportedException, RSBBindingException {
         switch (openClosedTiltedState) {
             case CLOSED:
-                return StringType.String.newBuilder().setValue("CLOSED").build();
+                return "CLOSED";
             case OPEN:
-                return StringType.String.newBuilder().setValue("OPEN").build();
+                return "OPEN";
             case TILTED:
-                return StringType.String.newBuilder().setValue("TILTED").build();
+                return "TILTED";
             case UNKNOWN:
-                throw new TypeNotSupportedException(openClosedTiltedState, StringType.String.class);
+                throw new TypeNotSupportedException(openClosedTiltedState, String.class);
             default:
                 throw new RSBBindingException("Could not transform " + OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.class.getName() + "! " + OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.class.getSimpleName() + "[" + openClosedTiltedState.name() + "] is unknown!");
         }
