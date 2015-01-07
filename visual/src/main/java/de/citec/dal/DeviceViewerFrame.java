@@ -248,7 +248,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new RSBBindingConnection(null); // init face interface RMOVE LATER!!!
+                new RSBBindingConnection(); // TODO mpohling: load devices, remove aftern device manager does this job!!!
                 new DeviceViewerFrame().setVisible(true);
             }
         });

@@ -7,8 +7,8 @@ package de.citec.dal.data.transform;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
+import org.openhab.core.library.types.DecimalType;
 import rst.homeautomation.states.MotionType;
-import rst.homeautomation.openhab.DecimalType;
 
 /**
  *

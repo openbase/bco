@@ -15,7 +15,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.homematic.HM_RotaryHandleSensorType;
 import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
-import rst.homeautomation.openhab.StringType;
 
 /**
  *
