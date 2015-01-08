@@ -22,18 +22,18 @@ public class MotionStateTransformer {
 			case 1:
 				return MotionType.Motion.MotionState.MOVEMENT;
 			default:
-				throw new RSBBindingException("Could not transform " + DecimalType.Decimal.class.getName() + "! " + DecimalType.Decimal.class.getSimpleName() + "[" + decimalType + "] is unknown!");
+				throw new RSBBindingException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + decimalType + "] is unknown!");
 		}
 	}
 
-	public static DecimalType.Decimal transform(final MotionType.Motion.MotionState motionState) throws TypeNotSupportedException, RSBBindingException {
+	public static double transform(final MotionType.Motion.MotionState motionState) throws TypeNotSupportedException, RSBBindingException {
 		switch (motionState) {
 			case NO_MOVEMENT:
-				return DecimalType.Decimal.newBuilder().setValue(0).build();
+				return 0d;
 			case MOVEMENT:
-				return DecimalType.Decimal.newBuilder().setValue(1).build();
+				return 1d;
 			case UNKNOWN:
-				throw new TypeNotSupportedException(motionState, DecimalType.Decimal.class);
+				throw new TypeNotSupportedException(motionState, Double.class);
 			default:
 				throw new RSBBindingException("Could not transform " + MotionType.Motion.MotionState.class.getName() + "! " + MotionType.Motion.MotionState.class.getSimpleName() + "[" + motionState.name() + "] is unknown!");
 		}

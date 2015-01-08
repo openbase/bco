@@ -7,6 +7,7 @@ package de.citec.dal.data.transform;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
+import rst.homeautomation.openhab.UpDownHolderType;
 import rst.homeautomation.states.ShutterType.Shutter;
 
 /**
@@ -15,7 +16,7 @@ import rst.homeautomation.states.ShutterType.Shutter;
  */
 public class UpDownStateTransformer {
 
-	public static Shutter.ShutterState transform(org.openhab.core.library.types.UpDownType upDownType) throws RSBBindingException {
+	public static Shutter.ShutterState transform(final UpDownHolderType.UpDownHolder.UpDown upDownType) throws RSBBindingException {
 		switch (upDownType) {
 			case DOWN:
 				return Shutter.ShutterState.DOWN;
@@ -26,14 +27,14 @@ public class UpDownStateTransformer {
 		}
 	}
 
-	public static org.openhab.core.library.types.UpDownType transform(Shutter.ShutterState shutterState) throws TypeNotSupportedException, RSBBindingException {
+	public static UpDownHolderType.UpDownHolder transform(final Shutter.ShutterState shutterState) throws TypeNotSupportedException, RSBBindingException {
 		switch (shutterState) {
 			case DOWN:
 				return UpDownHolderType.UpDownHolder.newBuilder().setState(UpDownHolderType.UpDownHolder.UpDown.DOWN).build();
 			case UP:
 				return UpDownHolderType.UpDownHolder.newBuilder().setState(UpDownHolderType.UpDownHolder.UpDown.DOWN).build();
 			case UNKNOWN:
-				throw new TypeNotSupportedException(shutterState, org.openhab.core.library.types.UpDownType.class);
+				throw new TypeNotSupportedException(shutterState, UpDownHolderType.UpDownHolder.UpDown.class);
 			default:
 				throw new RSBBindingException("Could not transform " + Shutter.ShutterState.class.getName() + "! " + Shutter.ShutterState.class.getSimpleName() + "[" + shutterState.name() + "] is unknown!");
 		}

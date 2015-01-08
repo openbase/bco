@@ -125,7 +125,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         try {
             switch (command.getType()) {
                 case DECIMAL:
-                    relatedMethod.invoke(this, command.getDecimal().getValue());
+                    relatedMethod.invoke(this, command.getDecimal());
                     break;
                 case HSB:
                     relatedMethod.invoke(this, command.getHsb());

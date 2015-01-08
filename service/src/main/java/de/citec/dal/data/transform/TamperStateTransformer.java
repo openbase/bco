@@ -8,7 +8,6 @@ package de.citec.dal.data.transform;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
 import rst.homeautomation.states.TamperType;
-import rst.homeautomation.openhab.DecimalType;
 
 /**
  *
@@ -16,25 +15,25 @@ import rst.homeautomation.openhab.DecimalType;
  */
 public class TamperStateTransformer {
 
-	public static TamperType.Tamper.TamperState transform(double decimalType) throws RSBBindingException {
-		switch ((int) decimalType) {
+	public static TamperType.Tamper.TamperState transform(final double state) throws RSBBindingException {
+		switch ((int) state) {
 			case 0:
 				return TamperType.Tamper.TamperState.NO_TAMPER;
 			case 1:
 				return TamperType.Tamper.TamperState.TAMPER;
 			default:
-				throw new RSBBindingException("Could not transform " + DecimalType.Decimal.class.getName() + "! " + DecimalType.Decimal.class.getSimpleName() + "[" + decimalType + "] is unknown!");
+				throw new RSBBindingException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + state + "] is unknown!");
 		}
 	}
 
-	public static DecimalType.Decimal transform(TamperType.Tamper.TamperState tamperState) throws TypeNotSupportedException, RSBBindingException {
+	public static double transform(final TamperType.Tamper.TamperState tamperState) throws TypeNotSupportedException, RSBBindingException {
 		switch (tamperState) {
 			case NO_TAMPER:
-				return DecimalType.Decimal.newBuilder().setValue(0).build();
+				return 0d;
 			case TAMPER:
-				return DecimalType.Decimal.newBuilder().setValue(1).build();
+				return 1d;
 			case UNKNOWN:
-				throw new TypeNotSupportedException(tamperState, DecimalType.Decimal.class);
+				throw new TypeNotSupportedException(tamperState, Double.class);
 			default:
 				throw new RSBBindingException("Could not transform " + TamperType.Tamper.TamperState.class.getName() + "! " + TamperType.Tamper.TamperState.class.getSimpleName() + "[" + tamperState.name() + "] is unknown!");
 		}

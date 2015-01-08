@@ -8,6 +8,8 @@ package de.citec.dal.data.transform;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.TypeNotSupportedException;
 import rst.homeautomation.openhab.StopMoveHolderType;
+import static rst.homeautomation.openhab.StopMoveHolderType.StopMoveHolder.StopMove.STOP;
+import rst.homeautomation.states.ShutterType.Shutter;
 
 /**
  *
@@ -16,7 +18,7 @@ import rst.homeautomation.openhab.StopMoveHolderType;
 public class StopMoveStateTransformer {
 
 
-	public static Shutter.ShutterState transform(org.openhab.core.library.types.StopMoveType stopMoveType) throws RSBBindingException {
+	public static Shutter.ShutterState transform(final StopMoveHolderType.StopMoveHolder.StopMove stopMoveType) throws RSBBindingException {
 		switch (stopMoveType) {
 			case STOP:
 				return Shutter.ShutterState.STOP;
@@ -28,16 +30,16 @@ public class StopMoveStateTransformer {
 	}
 
 
-	public static org.openhab.core.library.types.StopMoveType transform(Shutter.ShutterState shutterState) throws TypeNotSupportedException, RSBBindingException {
+	public static StopMoveHolderType.StopMoveHolder transform(Shutter.ShutterState shutterState) throws TypeNotSupportedException, RSBBindingException {
 		switch (shutterState) {
 			case STOP:
-				return org.openhab.core.library.types.StopMoveType.STOP;
+				return StopMoveHolderType.StopMoveHolder.newBuilder().setState(StopMoveHolderType.StopMoveHolder.StopMove.STOP).build();
 			case UP:
-				return org.openhab.core.library.types.StopMoveType.MOVE;
+				return StopMoveHolderType.StopMoveHolder.newBuilder().setState(StopMoveHolderType.StopMoveHolder.StopMove.MOVE).build();
             case DOWN:
-                return org.openhab.core.library.types.StopMoveType.MOVE;
+                return StopMoveHolderType.StopMoveHolder.newBuilder().setState(StopMoveHolderType.StopMoveHolder.StopMove.MOVE).build();
 			case UNKNOWN:
-				throw new TypeNotSupportedException(shutterState, org.openhab.core.library.types.StopMoveType.class);
+				throw new TypeNotSupportedException(shutterState, StopMoveHolderType.StopMoveHolder.StopMove.class);
 			default:
 				throw new RSBBindingException("Could not transform " + Shutter.ShutterState.class.getName() + "! " + Shutter.ShutterState.class.getSimpleName() + "[" + shutterState.name() + "] is unknown!");
 		}
