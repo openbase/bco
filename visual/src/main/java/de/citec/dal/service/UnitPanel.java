@@ -22,7 +22,7 @@ public class UnitPanel extends javax.swing.JPanel {
 
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final DalRegistry registry = DalRegistry.getInstance();
+    private final DALRegistry registry = DALRegistry.getInstance();
 
     private final Observable<Scope> observable;
 

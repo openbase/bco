@@ -6,8 +6,8 @@
 package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.RSBBindingConnection;
-import de.citec.dal.RSBBindingInterface;
+import de.citec.dal.bindings.openhab.OpenhabBinding;
+import de.citec.dal.bindings.openhab.RSBBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
@@ -32,7 +32,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     protected final String label;
     private final HardwareUnit relatedHardwareUnit;
 
-    protected final RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
+    protected final RSBBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
     public AbstractUnitController(final String id, final String label, final HardwareUnit relatedHardwareUnit, final MB builder) throws RSBBindingException {
         super(generateScope(id, label, relatedHardwareUnit), builder);

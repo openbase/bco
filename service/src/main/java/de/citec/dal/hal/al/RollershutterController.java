@@ -25,9 +25,6 @@ import rst.homeautomation.states.ShutterType;
  * @author thuxohl
  */
 public class RollershutterController extends AbstractUnitController<RollershutterType.Rollershutter, RollershutterType.Rollershutter.Builder> {
-
-    
-    // TODO thuxohl: make rsb interface more intuitive instead aligned on openhab.
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(

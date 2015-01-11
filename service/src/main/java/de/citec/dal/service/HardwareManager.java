@@ -21,22 +21,29 @@ public class HardwareManager {
 
     private static final Logger logger = LoggerFactory.getLogger(HardwareManager.class);
 
-    private static final class InstanceHolder {
-
-        static final HardwareManager INSTANCE = new HardwareManager();
-    }
+    private static HardwareManager instance;
 
     private final Object SYNC_LOCK = new Object();
     private boolean active;
-    private final DalRegistry registry = DalRegistry.getInstance();
+    private final DALRegistry registry;
 
-    public static HardwareManager getInstance() {
-        return InstanceHolder.INSTANCE;
+    public synchronized static HardwareManager getInstance() {
+		if(instance == null) {
+			instance = new HardwareManager();
+		}
+        return instance;
     }
+
+	private HardwareManager() {
+		this.registry = DALRegistry.getInstance();
+		assert registry != null;
+	}
 
     public void activate() throws Exception {
         synchronized (SYNC_LOCK) {
             active = true;
+
+			assert registry != null;
             for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
                 try {
                     hardware.activate();

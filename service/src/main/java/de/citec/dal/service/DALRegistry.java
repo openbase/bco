@@ -5,7 +5,7 @@
  */
 package de.citec.dal.service;
 
-import de.citec.dal.RSBBindingConnection;
+import de.citec.dal.bindings.openhab.OpenhabBinding;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import java.util.Collection;
@@ -34,17 +34,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class DalRegistry {
+public class DALRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(RSBBindingConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
+	private static DALRegistry instance;
 
-    private static final class InstanceHolder {
-
-        static final DalRegistry INSTANCE = new DalRegistry();
-    }
-
-    public static DalRegistry getInstance() {
-        return InstanceHolder.INSTANCE;
+    public synchronized static DALRegistry getInstance() {
+		if(instance == null) {
+			instance = new DALRegistry();
+		}
+		assert instance != null;
+        return instance;
     }
 
     private final TreeMap<String, AbstractDeviceController> deviceRegistry;
@@ -52,7 +52,7 @@ public class DalRegistry {
 
     private final Map<Class<? extends AbstractUnitController>, List<AbstractUnitController>> registeredUnitClasses;
 
-    private DalRegistry() {
+    private DALRegistry() {
         this.deviceRegistry = new TreeMap<>();
         this.unitRegistry = new TreeMap<>();
         this.registeredUnitClasses = new HashMap<>();

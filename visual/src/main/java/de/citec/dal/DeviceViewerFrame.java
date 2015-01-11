@@ -7,18 +7,12 @@ package de.citec.dal;
 
 import de.citec.dal.hal.AbstractUnitController;
 import de.citec.dal.hal.al.AmbientLightView;
-import de.citec.dal.service.DalRegistry;
+import de.citec.dal.service.DALRegistry;
 import de.citec.dal.service.RSBRemoteView;
 import de.citec.dal.util.DALException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
-import java.awt.Component;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import javax.swing.ComboBoxEditor;
-import javax.swing.ComboBoxModel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -32,7 +26,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private RSBRemoteView remoteView;
-    private final DalRegistry registry = DalRegistry.getInstance();
+    private final DALRegistry registry = DALRegistry.getInstance();
 
     /**
      * Creates new form DeviceViewerFrame
@@ -248,7 +242,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new RSBBindingConnection(); // TODO mpohling: load devices, remove aftern device manager does this job!!!
+                new DALService(); // TODO mpohling: load devices, remove aftern device manager does this job!!!
                 new DeviceViewerFrame().setVisible(true);
             }
         });

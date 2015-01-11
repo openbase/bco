@@ -6,8 +6,8 @@
 package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.RSBBindingConnection;
-import de.citec.dal.RSBBindingInterface;
+import de.citec.dal.bindings.openhab.OpenhabBinding;
+import de.citec.dal.bindings.openhab.RSBBindingInterface;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     protected final Map<String, Method> halFunctionMapping;
     protected final Map<String, AbstractUnitController> unitMap;
 
-    protected RSBBindingInterface rsbBinding = RSBBindingConnection.getInstance();
+    protected RSBBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
     public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws RSBBindingException {
         super(generateScope(id, location), builder);

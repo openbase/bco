@@ -3,17 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal;
+package de.citec.dal.bindings.openhab;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.service.DalRegistry;
 import de.citec.dal.service.HardwareManager;
 import de.citec.dal.service.rsb.RSBCommunicationService;
 import de.citec.dal.service.rsb.RSBRemoteService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -31,10 +29,21 @@ import rst.homeautomation.openhab.RSBBindingType;
 import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
 
 /**
- *
  * @author thuxohl
+ * @author mpohling
  */
-public class RSBBindingConnection implements RSBBindingInterface {
+public class OpenhabBinding implements RSBBindingInterface {
+
+	private static final Scope SCOPE_DAL = new Scope("/dal");
+	private static final Scope SCOPE_OPENHAB = new Scope("/openhab");
+
+	private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
+
+	private static OpenhabBinding instance;
+
+    private final RSBRemoteService<DALBinding> dalRemoteService;
+    private final RSBCommunicationService<RSBBinding, RSBBinding.Builder> communicationService;
+	private final HardwareManager hardwareManager;
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -44,38 +53,31 @@ public class RSBBindingConnection implements RSBBindingInterface {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
     }
-    
-    private static final Logger logger = LoggerFactory.getLogger(RSBBindingConnection.class);
 
-    private static RSBBindingConnection instance;
-    private final Scope dalRemoteScope = new Scope("/dal");
-    private final Scope openhabBindingScope = new Scope("/openhab");
-    private final RSBRemoteService<DALBinding> dalRemoteService;
-    private final RSBCommunicationService<RSBBinding, RSBBinding.Builder> communicationService;
+	public synchronized static OpenhabBinding getInstance() {
+		if(instance == null) {
+			instance = new OpenhabBinding();
+		}
+		return instance;
+	}
 
-    private final DalRegistry registry;
-
-    private final HardwareManager hardwareManager;
-
-    public RSBBindingConnection() {
-        this.instance = this;
-        this.registry = DalRegistry.getInstance();
-        this.hardwareManager = HardwareManager.getInstance();
+    private OpenhabBinding() {
+		this.hardwareManager = HardwareManager.getInstance();
 
         dalRemoteService = new RSBRemoteService<DALBinding>() {
 
             @Override
             public void notifyUpdated(DALBinding data) {
-                RSBBindingConnection.this.notifyUpdated(data);
+                OpenhabBinding.this.notifyUpdated(data);
             }
         };
-        dalRemoteService.init(dalRemoteScope);
+        dalRemoteService.init(SCOPE_DAL);
 
-        communicationService = new RSBCommunicationService<RSBBinding, RSBBinding.Builder>(openhabBindingScope, RSBBinding.newBuilder()) {
+        communicationService = new RSBCommunicationService<RSBBinding, RSBBinding.Builder>(SCOPE_OPENHAB, RSBBinding.newBuilder()) {
 
             @Override
             public void registerMethods(LocalServer server) throws RSBException {
-                RSBBindingConnection.this.registerMethods(server);
+                OpenhabBinding.this.registerMethods(server);
             }
         };
         try {
@@ -84,11 +86,7 @@ public class RSBBindingConnection implements RSBBindingInterface {
             logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]");
         }
 
-        try {
-            this.hardwareManager.activate();
-        } catch (Exception ex) {
-            logger.warn("Hardware manager could not be activated!", ex);
-        }
+        
 
         dalRemoteService.activate();
         {
@@ -131,10 +129,9 @@ public class RSBBindingConnection implements RSBBindingInterface {
 
         @Override
         public Event invoke(final Event request) throws Throwable {
-            instance.internalReceiveUpdate((OpenhabCommand) request.getData());
+            OpenhabBinding.instance.internalReceiveUpdate((OpenhabCommand) request.getData());
             return new Event(String.class, "Ok");
         }
-
     }
 
     @Override
@@ -145,17 +142,5 @@ public class RSBBindingConnection implements RSBBindingInterface {
 		} catch (RSBException | ExecutionException | TimeoutException  ex) {
 			throw new RSBBindingException("Could not execute "+command+"!", ex);
 		}
-    }
-
-    public static RSBBindingInterface getInstance() {
-        while (instance == null) {
-            logger.warn("WARN: Binding not ready yet!");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                java.util.logging.Logger.getLogger(RSBBindingConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return instance;
     }
 }

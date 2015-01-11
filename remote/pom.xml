@@ -27,22 +27,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>1.8.1</version>
-                <configuration>
-                    <programs>
-                        <program>
-                            <mainClass></mainClass>
-                            <name></name>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                    </programs>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
