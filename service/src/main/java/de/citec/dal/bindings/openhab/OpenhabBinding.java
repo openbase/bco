@@ -32,17 +32,17 @@ import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
  * @author thuxohl
  * @author mpohling
  */
-public class OpenhabBinding implements RSBBindingInterface {
+public class OpenhabBinding implements OpenhabBindingInterface {
 
-	private static final Scope SCOPE_DAL = new Scope("/dal");
-	private static final Scope SCOPE_OPENHAB = new Scope("/openhab");
+	public static final Scope SCOPE_DAL = new Scope("/dal");
+	public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
 
 	private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
 
 	private static OpenhabBinding instance;
 
-    private final RSBRemoteService<DALBinding> dalRemoteService;
-    private final RSBCommunicationService<RSBBinding, RSBBinding.Builder> communicationService;
+    private final RSBRemoteService<RSBBinding> openhabRemoteService;
+    private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalService;
 	private final HardwareManager hardwareManager;
 
     static {
@@ -64,16 +64,16 @@ public class OpenhabBinding implements RSBBindingInterface {
     private OpenhabBinding() {
 		this.hardwareManager = HardwareManager.getInstance();
 
-        dalRemoteService = new RSBRemoteService<DALBinding>() {
+        openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
             @Override
-            public void notifyUpdated(DALBinding data) {
+            public void notifyUpdated(RSBBinding data) {
                 OpenhabBinding.this.notifyUpdated(data);
             }
         };
-        dalRemoteService.init(SCOPE_DAL);
+        openhabRemoteService.init(SCOPE_OPENHAB);
 
-        communicationService = new RSBCommunicationService<RSBBinding, RSBBinding.Builder>(SCOPE_OPENHAB, RSBBinding.newBuilder()) {
+        dalService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
 
             @Override
             public void registerMethods(LocalServer server) throws RSBException {
@@ -81,24 +81,24 @@ public class OpenhabBinding implements RSBBindingInterface {
             }
         };
         try {
-            communicationService.init();
+            dalService.init();
         } catch (RSBException ex) {
             logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]");
         }
 
         
 
-        dalRemoteService.activate();
+        openhabRemoteService.activate();
         {
             try {
-                communicationService.activate();
+                dalService.activate();
             } catch (Exception ex) {
                 logger.warn("Unable to activate the communication service in [" + getClass().getSimpleName() + "]", ex);
             }
         }
     }
 
-    public final void notifyUpdated(DALBinding data) {
+    public final void notifyUpdated(RSBBinding data) {
         switch (data.getState().getState()) {
             case ACTIVE:
                 logger.debug("Active rsb binding state!");
@@ -137,7 +137,7 @@ public class OpenhabBinding implements RSBBindingInterface {
     @Override
     public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws RSBBindingException {
 		try {
-			dalRemoteService.callMethod("executeCommand", command);
+			openhabRemoteService.callMethod("executeCommand", command);
 			return null; // TODO: mpohling implement future handling.
 		} catch (RSBException | ExecutionException | TimeoutException  ex) {
 			throw new RSBBindingException("Could not execute "+command+"!", ex);

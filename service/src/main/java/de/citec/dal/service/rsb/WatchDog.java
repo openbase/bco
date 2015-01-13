@@ -46,7 +46,7 @@ public class WatchDog implements Activatable {
     }
 
     @Override
-    public void activate() throws RSBException {
+    public void activate() {
         synchronized (EXECUTION_LOCK) {
             if (minder != null) {
                 logger.warn("Skip activation, Service[" + serviceName + "] already running!");
@@ -58,7 +58,7 @@ public class WatchDog implements Activatable {
     }
 
     @Override
-    public void deactivate() throws RSBException, InterruptedException {
+    public void deactivate() throws InterruptedException {
         synchronized (EXECUTION_LOCK) {
             if (minder == null) {
                 logger.warn("Skip deactivation, Service[" + serviceName + "] not running!");

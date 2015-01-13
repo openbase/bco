@@ -71,12 +71,12 @@ public class DistributedInformer<DataType extends Object> implements Activatable
     }
 
     @Override
-    public void activate() throws InitializeException {
+    public void activate() {
         active = true;
     }
 
     @Override
-    public void deactivate() throws RSBException, InterruptedException {
+    public void deactivate() {
         active = false;
     }
 

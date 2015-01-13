@@ -13,8 +13,8 @@ import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.AmbientLightController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.philips.PH_Hue_GU10Type;
-import rst.devices.philips.PH_Hue_GU10Type.PH_Hue_GU10;
+import rst.devices.philips.PH_Hue_E27Type;
+import rst.devices.philips.PH_Hue_E27Type.PH_Hue_E27;
 import rst.homeautomation.openhab.HSBType.HSB;
 import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 
@@ -22,20 +22,20 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  *
  * @author mpohling
  */
-public class PH_Hue_E27Controller extends AbstractDeviceController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
+public class PH_Hue_E27Controller extends AbstractDeviceController<PH_Hue_E27, PH_Hue_E27.Builder> {
 
     private final static String COMPONENT_AMBIENT_LIGHT = "AmbientLight";
     private final static String COMPONENT_POWER_SWITCH = "PowerSwitch";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(PH_Hue_GU10Type.PH_Hue_GU10.getDefaultInstance()));
+                new ProtocolBufferConverter<>(PH_Hue_E27Type.PH_Hue_E27.getDefaultInstance()));
     }
 
     private final AmbientLightController ambientLight;
 
     public PH_Hue_E27Controller(final String id, final String label, final Location location) throws RSBBindingException {
-        super(id, label, location, PH_Hue_GU10.newBuilder());
+        super(id, label, location, PH_Hue_E27.newBuilder());
         super.builder.setId(id);
         this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label, this, builder.getAmbientLightBuilder());
         this.register(ambientLight);

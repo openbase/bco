@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.citec.dal;
 
 import de.citec.dal.service.DALRegistry;
@@ -20,17 +19,28 @@ public class DALService {
 	private static final Logger logger = LoggerFactory.getLogger(DALService.class);
 
 	private final DALRegistry registry;
-    private final HardwareManager hardwareManager;
+	private final HardwareManager hardwareManager;
 
 	public DALService() {
 		this.registry = DALRegistry.getInstance();
-        this.hardwareManager = HardwareManager.getInstance();
+		this.registry.initDevices();
+		this.hardwareManager = HardwareManager.getInstance();
+	}
 
+	public void activate() {
 		try {
-            this.hardwareManager.activate();
-        } catch (Exception ex) {
-            logger.warn("Hardware manager could not be activated!", ex);
-        }
+			this.hardwareManager.activate();
+		} catch (Exception ex) {
+			logger.warn("Hardware manager could not be activated!", ex);
+		}
+	}
+
+	public void deactivate() {
+		try {
+			this.hardwareManager.deactivate();
+		} catch (Exception ex) {
+			logger.warn("Hardware manager could not be deactivated!", ex);
+		}
 	}
 
 	public DALRegistry getRegistry() {
@@ -45,7 +55,7 @@ public class DALService {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
-		new DALService();
+		new DALService().activate();
 	}
 
 }

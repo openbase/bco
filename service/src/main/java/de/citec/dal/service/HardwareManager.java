@@ -19,72 +19,66 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  */
 public class HardwareManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(HardwareManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(HardwareManager.class);
 
-    private static HardwareManager instance;
+	private static HardwareManager instance;
 
-    private final Object SYNC_LOCK = new Object();
-    private boolean active;
-    private final DALRegistry registry;
+	private final Object SYNC_LOCK = new Object();
+	private boolean active;
+	private final DALRegistry registry;
 
-    public synchronized static HardwareManager getInstance() {
-		if(instance == null) {
+	public synchronized static HardwareManager getInstance() {
+		if (instance == null) {
 			instance = new HardwareManager();
 		}
-        return instance;
-    }
+		return instance;
+	}
 
 	private HardwareManager() {
 		this.registry = DALRegistry.getInstance();
-		assert registry != null;
 	}
 
-    public void activate() throws Exception {
-        synchronized (SYNC_LOCK) {
-            active = true;
+	public void activate() throws Exception {
+		synchronized (SYNC_LOCK) {
+			active = true;
 
-			assert registry != null;
-            for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
-                try {
-                    hardware.activate();
-                } catch (RSBBindingException ex) {
-                    logger.error("Could not activate: " + hardware, ex);
-                }
-            }
-            RSBInformerPool.getInstance().activate();
-        }
-    }
+			for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
+				hardware.activate();
+			}
+			RSBInformerPool.getInstance().activate();
+		}
+	}
 
-    public void deactivate() {
-        synchronized (SYNC_LOCK) {
-            active = false;
-            for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
-                try {
-                    hardware.deactivate();
-                } catch (RSBBindingException ex) {
-                    logger.error("Could not deactivate: " + hardware, ex);
-                }
-            }
-        }
-    }
+	public void deactivate() {
+		synchronized (SYNC_LOCK) {
+			active = false;
+			for (AbstractDeviceController hardware : registry.getHardwareCollection()) {
+				try {
+					hardware.deactivate();
+				} catch (InterruptedException ex) {
+					logger.error("Could not deactivate: " + hardware, ex);
+				}
+			}
+		}
+	}
 
-    public void internalReceiveUpdate(OpenhabCommand command) {
-        logger.debug("Incomming Item[" + command.getItem() + "] State[" + command.getType() + "].");
-        String itemName = command.getItem();
-        if (!active) {
-            logger.warn("Skip internal update: RSBBinding not activated!");
-            return;
-        }
-        AbstractDeviceController hardware;
-        synchronized (SYNC_LOCK) {
-            Map.Entry<String, AbstractDeviceController> floorEntry = registry.getDeviceMap().floorEntry(itemName);
-            hardware = floorEntry.getValue();
-        }
-        if (!itemName.startsWith(hardware.getId())) {
-            logger.debug("Skip item update [" + itemName + "=" + command.getType() + "] because item is not registered.");
-            return;
-        }
-        hardware.internalReceiveUpdate(itemName, command);
-    }
+	public void internalReceiveUpdate(OpenhabCommand command) {
+		logger.debug("Incomming Item[" + command.getItem() + "] State[" + command.getType() + "].");
+		String itemName = command.getItem();
+		if (!active) {
+			logger.warn("Skip internal update: RSBBinding not activated!");
+			return;
+		}
+		AbstractDeviceController hardware;
+		synchronized (SYNC_LOCK) {
+			Map.Entry<String, AbstractDeviceController> floorEntry = registry.getDeviceMap().floorEntry(itemName);
+			hardware = floorEntry.getValue();
+		}
+		if (!itemName.startsWith(hardware.getId())) {
+			logger.debug("Skip item update [" + itemName + "=" + command.getType() + "] because item is not registered.");
+			return;
+		}
+		hardware.internalReceiveUpdate(itemName, command);
+	}
 
 }
