@@ -41,9 +41,9 @@ public class DALRegistry {
 
     public synchronized static DALRegistry getInstance() {
 		if(instance == null) {
+			logger.debug("Registry not initialized. Create new instance...");
 			instance = new DALRegistry();
 		}
-		assert instance != null;
         return instance;
     }
 
@@ -56,7 +56,6 @@ public class DALRegistry {
         this.deviceRegistry = new TreeMap<>();
         this.unitRegistry = new TreeMap<>();
         this.registeredUnitClasses = new HashMap<>();
-        initDevices();
     }
 
     public void register(AbstractDeviceController hardware) {
@@ -94,7 +93,7 @@ public class DALRegistry {
         return Collections.unmodifiableCollection(registeredUnitClasses.get(unitClass));
     }
 
-    private void initDevices() {
+    public void initDevices() {
         logger.info("Init devices...");
         Location outdoor = new Location("outdoor");
         Location kitchen = new Location("kitchen");

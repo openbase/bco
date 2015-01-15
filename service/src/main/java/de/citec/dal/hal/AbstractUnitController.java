@@ -7,7 +7,7 @@ package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.bindings.openhab.OpenhabBinding;
-import de.citec.dal.bindings.openhab.RSBBindingInterface;
+import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
@@ -22,25 +22,27 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionTyp
 /**
  *
  * @author mpohling
- * @param <M>
- * @param <B> Type related Builder
- * @param <MB>
+ * @param <M> Underling message type.
+ * @param <MB> Message related builder.
  */
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> {
+
+	public final static String TYPE_FILED_ID = "id";
+	public final static String TYPE_FILED_LABEL = "label";
 
     protected final String id;
     protected final String label;
     private final HardwareUnit relatedHardwareUnit;
 
-    protected final RSBBindingInterface rsbBinding = OpenhabBinding.getInstance();
+    protected final OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
     public AbstractUnitController(final String id, final String label, final HardwareUnit relatedHardwareUnit, final MB builder) throws RSBBindingException {
         super(generateScope(id, label, relatedHardwareUnit), builder);
         this.id = id;
         this.label = label;
         this.relatedHardwareUnit = relatedHardwareUnit;
-        setField("id", generateHardwareId());
-        setField("label", label);
+        setField(TYPE_FILED_ID, generateHardwareId());
+        setField(TYPE_FILED_LABEL, label);
 
         try {
             init();

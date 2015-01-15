@@ -13,7 +13,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  *
  * @author thuxohl
  */
-public interface RSBBindingInterface {
+public interface OpenhabBindingInterface {
             
     void internalReceiveUpdate(OpenhabCommand command);
     

@@ -21,6 +21,8 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  */
 public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5133, GI_5133Type.GI_5133.Builder> {
 
+	//FIXME:
+
     private final static String COMPONENT_BUTTON_0 = "Button_0";
     private final static String COMPONENT_BUTTON_1 = "Button_1";
     private final static String COMPONENT_BUTTON_2 = "Button_2";
@@ -38,7 +40,7 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5
     
     public GI_5142Controller(final String id, final String label, final String[] unitLabel, final Location location) throws RSBBindingException {
         super(id, label, location, GI_5133Type.GI_5133.newBuilder());
-
+		logger.error("Bad type GI_5133 is used instead of type GI_5142. Tamino please fix me! :)");
         builder.setId(id);
         this.button_0 = new ButtonController(COMPONENT_BUTTON_0, unitLabel[0], this, builder.getButton0Builder());
         this.button_1 = new ButtonController(COMPONENT_BUTTON_1, unitLabel[1], this, builder.getButton1Builder());

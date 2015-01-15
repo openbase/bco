@@ -9,7 +9,8 @@
 	<groupId>de.citec</groupId>
 	<artifactId>dal</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
-	<name>DeviceAbstractionLayer</name>
+	<name>DAL</name>
+	<description>Device Abstraction Layer</description>
     
 	<organization>
 		<name>DC</name>
@@ -20,7 +21,7 @@
 		<url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</url>
 	</scm>
     
-	<description>Device Homeautomation Abstraction Layer</description>
+	
     
 	<packaging>pom</packaging>
     
