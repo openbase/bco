@@ -49,11 +49,11 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
         // Init RemoteView
         this.remoteView = remoteView;
-//        try {
-//            remoteView.setScope(unitPanel.getScope());
-//        } catch (DALException ex) {
-//            logger.error("Could not setup remote view!", ex);
-//        }
+        try {
+            remoteView.setScope(unitPanel.getScope());
+        } catch (DALException ex) {
+            logger.error("Could not setup remote view!", ex);
+        }
 
         // Setup context panel
         remoteContextPanel.add(remoteView);
@@ -92,6 +92,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         }
         typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitClasses.toArray()));
         typeComboBox.setSelectedItem(0);
+        unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
     }
 
     @Override

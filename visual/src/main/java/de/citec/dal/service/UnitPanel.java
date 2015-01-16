@@ -79,7 +79,7 @@ public class UnitPanel extends javax.swing.JPanel {
             logger.error("Could not fill the UnitComboBox!", ex);
         }
     }
-    
+
     public Scope getScope() {
         return ((UnitContainer) unitComboBox.getSelectedItem()).getUnit().getScope();
     }
@@ -123,8 +123,8 @@ public class UnitPanel extends javax.swing.JPanel {
 
     private void unitComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unitComboBoxActionPerformed
         try {
-            if( unitComboBox.getSelectedItem() != null ) {
-            observable.notifyObservers(((UnitContainer) unitComboBox.getSelectedItem()).getUnit().getScope());
+            if (unitComboBox.getSelectedItem() != null) {
+                observable.notifyObservers(((UnitContainer) unitComboBox.getSelectedItem()).getUnit().getScope());
             }
         } catch (MultiException ex) {
             logger.error("Could not set the scope for this unit!", ex);
