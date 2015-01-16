@@ -79,6 +79,10 @@ public class UnitPanel extends javax.swing.JPanel {
             logger.error("Could not fill the UnitComboBox!", ex);
         }
     }
+    
+    public Scope getScope() {
+        return ((UnitContainer) unitComboBox.getSelectedItem()).getUnit().getScope();
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -90,6 +94,8 @@ public class UnitPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         unitComboBox = new javax.swing.JComboBox();
+
+        setBorder(javax.swing.BorderFactory.createTitledBorder("Unit"));
 
         unitComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -103,7 +109,7 @@ public class UnitPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(unitComboBox, 0, 457, Short.MAX_VALUE)
+                .addComponent(unitComboBox, 0, 447, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -117,7 +123,9 @@ public class UnitPanel extends javax.swing.JPanel {
 
     private void unitComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unitComboBoxActionPerformed
         try {
+            if( unitComboBox.getSelectedItem() != null ) {
             observable.notifyObservers(((UnitContainer) unitComboBox.getSelectedItem()).getUnit().getScope());
+            }
         } catch (MultiException ex) {
             logger.error("Could not set the scope for this unit!", ex);
         }
