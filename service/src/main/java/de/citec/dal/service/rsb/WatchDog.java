@@ -20,6 +20,8 @@ import rsb.RSBException;
 public class WatchDog implements Activatable {
 
     private final Object EXECUTION_LOCK = new Object();
+    private final Object STATE_LOCK = new Object();
+	
     private static final long DELAY = 10000;
 
     public enum ServiceState {
@@ -27,7 +29,6 @@ public class WatchDog implements Activatable {
         Unknown, Initializing, Running, Terminating, Finished, Failed
     };
 
-    private final Object stateLock = new Object();
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -47,27 +48,35 @@ public class WatchDog implements Activatable {
 
     @Override
     public void activate() {
+		logger.info("Try to activate service: "+serviceName);
         synchronized (EXECUTION_LOCK) {
+			logger.info("Init activation of service: "+serviceName);
             if (minder != null) {
                 logger.warn("Skip activation, Service[" + serviceName + "] already running!");
                 return;
             }
             minder = new Minder(serviceName + "WatchDog");
+			logger.info("Start activation of service: "+serviceName);
             minder.start();
         }
     }
 
     @Override
     public void deactivate() throws InterruptedException {
+		logger.debug("Try to deactivate service: "+serviceName);
         synchronized (EXECUTION_LOCK) {
+			logger.info("Init deactivation of service: "+serviceName);
             if (minder == null) {
                 logger.warn("Skip deactivation, Service[" + serviceName + "] not running!");
                 return;
             }
 
+			logger.info("Init service interruption...");
             minder.interrupt();
-            minder.join();
+			logger.info("Wait for service interruption...");
+			minder.join();
             minder = null;
+			logger.info("Service interrupted!");
         }
     }
 
@@ -82,7 +91,7 @@ public class WatchDog implements Activatable {
 
     public void waitForActivation() throws InterruptedException {
 
-        synchronized (stateLock) {
+        synchronized (STATE_LOCK) {
             if (serviceState == ServiceState.Running) {
                 return;
             }
@@ -92,19 +101,19 @@ public class WatchDog implements Activatable {
                 @Override
                 public void update(Observable<ServiceState> source, ServiceState data) throws Exception {
                     if (data == ServiceState.Running) {
-                        synchronized (stateLock) {
-                            stateLock.notify();
+                        synchronized (STATE_LOCK) {
+                            STATE_LOCK.notify();
                         }
                     }
                 }
             });
-            stateLock.wait();
+            STATE_LOCK.wait();
         }
     }
 
-    class Minder extends Thread {
+    private class Minder extends Thread {
 
-        public Minder(String name) {
+        private Minder(String name) {
             super(name);
             setServiceState(ServiceState.Initializing);
         }
@@ -158,15 +167,17 @@ public class WatchDog implements Activatable {
 
     private void setServiceState(final ServiceState serviceState) {
         try {
-            synchronized (stateLock) {
+            synchronized (STATE_LOCK) {
                 if (this.serviceState == serviceState) {
                     return;
                 }
                 this.serviceState = serviceState;
             }
+			logger.info(this+ "is now "+serviceState.name()+".");
             serviceStateObserable.notifyObservers(serviceState);
         } catch (MultiException ex) {
             logger.warn("Could not notify statechange to all instanzes!", ex);
+			ex.printExceptionStack();
         }
     }
 

@@ -14,7 +14,6 @@ import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -77,7 +76,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	private void initListener(final Scope scope) {
 		try {
 			this.listener = Factory.getInstance().createListener(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_INFORMER));
-			this.listenerWatchDog = new WatchDog(listener, "RSBListener");
+			this.listenerWatchDog = new WatchDog(listener, "RSBListener["+scope.concat(RSBCommunicationService.SCOPE_SUFFIX_INFORMER)+"]");
 		} catch (Exception ex) {
 			logger.error("Could not create Listener on scope [" + scope.toString() + "]!", ex);
 		}
@@ -86,7 +85,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	private void initRemoteServer(final Scope scope) {
 		try {
 			this.remoteServer = Factory.getInstance().createRemoteServer(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC));
-			this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer");
+			this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer["+scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC)+"]");
 			this.listenerWatchDog.addObserver(new Observer<WatchDog.ServiceState>() {
 
 				@Override
