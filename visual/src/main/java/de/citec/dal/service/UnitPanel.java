@@ -141,7 +141,7 @@ public class UnitPanel extends javax.swing.JPanel {
 
 		@Override
 		public String toString() {
-			return label;
+			return unit.getRelatedHardwareUnit().getLocation().getScope()+" -- "+ label;
 		}
 	}
 }

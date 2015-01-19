@@ -5,6 +5,7 @@
  */
 package de.citec.dal.service.rsb;
 
+import de.citec.dal.service.WatchDog;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.data.Location;
 import static de.citec.dal.service.rsb.RSBCommunicationService.RPC_REQUEST_STATUS;
@@ -32,8 +33,6 @@ import rsb.patterns.RemoteServer;
  * @param <M>
  */
 public abstract class RSBRemoteService<M extends GeneratedMessage> extends Observable<M> {
-
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Listener listener;
 	private WatchDog listenerWatchDog, remoteServerWatchDog;

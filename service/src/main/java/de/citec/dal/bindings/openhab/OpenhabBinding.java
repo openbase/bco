@@ -8,6 +8,7 @@ package de.citec.dal.bindings.openhab;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.HardwareManager;
 import de.citec.dal.service.rsb.RSBCommunicationService;
+import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
 import de.citec.dal.service.rsb.RSBRemoteService;
 import de.citec.dal.util.DALException;
 import java.util.concurrent.ExecutionException;
@@ -35,8 +36,6 @@ import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
  */
 public class OpenhabBinding implements OpenhabBindingInterface {
 
-
-	
     public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
 	public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
@@ -87,7 +86,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
             }
         };
         try {
-            dalService.init();
+            dalService.init(InformerType.Single);
         } catch (RSBException ex) {
             logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]");
         }

@@ -17,6 +17,7 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.exception.VerificatioinFailedException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.rsb.RSBCommunicationService;
+import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Future;
@@ -60,7 +61,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 //        super.builder.setField(builder.getDescriptorForType().findFieldByName("label"), label); //TODO: Activate after rst integration
 
 		try {
-			init();
+			init(InformerType.Distributed);
 		} catch (RSBException ex) {
 			throw new RSBBindingException("Could not init RSBCommunicationService!", ex);
 		}

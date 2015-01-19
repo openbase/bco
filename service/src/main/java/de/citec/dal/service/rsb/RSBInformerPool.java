@@ -5,6 +5,7 @@
  */
 package de.citec.dal.service.rsb;
 
+import de.citec.dal.service.WatchDog;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

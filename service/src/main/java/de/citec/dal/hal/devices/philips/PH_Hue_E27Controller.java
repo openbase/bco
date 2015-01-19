@@ -15,7 +15,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.philips.PH_Hue_E27Type;
 import rst.devices.philips.PH_Hue_E27Type.PH_Hue_E27;
-import rst.homeautomation.openhab.HSBType;
 import rst.homeautomation.openhab.HSBType.HSB;
 import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 

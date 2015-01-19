@@ -12,6 +12,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.dal.service.rsb.RSBCommunicationService;
+import de.citec.dal.service.rsb.RSBInformerInterface;
 import java.util.concurrent.Future;
 import rsb.RSBException;
 import rsb.Scope;
@@ -45,7 +46,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         setField(TYPE_FILED_LABEL, label);
 
         try {
-            init();
+            init(RSBInformerInterface.InformerType.Distributed);
         } catch (RSBException ex) {
             throw new RSBBindingException("Could not init RSBCommunicationService!", ex);
         }

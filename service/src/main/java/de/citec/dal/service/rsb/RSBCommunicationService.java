@@ -5,13 +5,16 @@
  */
 package de.citec.dal.service.rsb;
 
+import de.citec.dal.service.WatchDog;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.GeneratedMessage.Builder;
 import de.citec.dal.data.Location;
+import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.Factory;
+import rsb.InitializeException;
 import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.Callback;
@@ -30,6 +33,8 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 		Online, Offline
 	};
 
+	
+
 	public final static Scope SCOPE_SUFFIX_RPC = new Scope("/ctrl");
 	public final static Scope SCOPE_SUFFIX_INFORMER = new Scope("/status");
 
@@ -39,7 +44,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 	protected final Logger logger;
 
 	protected final MB builder;
-	protected DistributedInformer<M> informer;
+	protected RSBInformerInterface<M> informer;
 	protected LocalServer server;
 	protected WatchDog serverWatchDog;
 	protected Scope scope;
@@ -56,11 +61,20 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 		logger.debug("Init RSBCommunicationService for component " + getClass().getSimpleName() + " on " + scope + ".");
 	}
 
-	public void init() throws RSBException {
+	public void init(final InformerType informerType) throws RSBException {
 		try {
-			logger.info("Init informer service...");
-			this.informer = new DistributedInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_INFORMER)), detectMessageClass());
-		} catch (Exception ex) {
+			logger.info("Init "+informerType.name().toLowerCase()+" informer service...");
+			switch(informerType) {
+				case Single:
+					this.informer = new RSBSingleInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_INFORMER)), detectMessageClass());
+					break;
+				case Distributed:
+					this.informer = new RSBDistributedInformer(scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_INFORMER)), detectMessageClass());
+					break;
+				default:
+					throw new AssertionError("Could not handle unknown "+informerType.getClass().getSimpleName()+"["+informerType.name()+"].");
+			}
+		} catch (InitializeException ex) {
 			throw new RSBException("Could not init informer.", ex);
 		}
 
@@ -79,7 +93,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 				}
 			});
 			registerMethods(server);
-			serverWatchDog = new WatchDog(server, "RSBLocalServer["+scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_RPC))+"]");
+			serverWatchDog = new WatchDog(server, "RSBLocalServer[" + scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_RPC)) + "]");
 
 		} catch (Exception ex) {
 			throw new RSBException("Could not init rpc server.", ex);
@@ -92,13 +106,21 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 
 	public void activate() {
 		logger.debug("Activate RSBCommunicationService for: " + this);
-		informer.activate();
+		try {
+			informer.activate();
+		} catch (RSBException ex) {
+			throw new AssertionError(ex);
+		}
 		serverWatchDog.activate();
 		state = ConnectionState.Online;
 	}
 
 	public void deactivate() throws InterruptedException {
-		informer.deactivate();
+		try {
+			informer.deactivate();
+		} catch (RSBException ex) {
+			throw new AssertionError(ex);
+		}
 		serverWatchDog.deactivate();
 		state = ConnectionState.Offline;
 	}

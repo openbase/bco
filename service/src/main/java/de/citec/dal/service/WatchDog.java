@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.service.rsb;
+package de.citec.dal.service;
 
 import de.citec.dal.util.MultiException;
 import de.citec.dal.util.Observable;

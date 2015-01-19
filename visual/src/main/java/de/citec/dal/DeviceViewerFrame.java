@@ -6,6 +6,7 @@
 package de.citec.dal;
 
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.hal.al.AmbientLightController;
 import de.citec.dal.hal.al.AmbientLightView;
 import de.citec.dal.service.DALRegistry;
 import de.citec.dal.service.RSBRemoteView;
@@ -91,9 +92,10 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
 	private void initTypeComboBox() {
 		ArrayList<Class<? extends AbstractUnitController>> unitClasses = new ArrayList();
-		for (Class<? extends AbstractUnitController> unitClass : registry.getRegisteredUnitClasses()) {
-			unitClasses.add(unitClass);
-		}
+//		for (Class<? extends AbstractUnitController> unitClass : registry.getRegisteredUnitClasses()) {
+//			unitClasses.add(unitClass);
+//		}
+		unitClasses.add(AmbientLightController.class);
 		typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitClasses.toArray()));
 		typeComboBox.setSelectedItem(0);
 		unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
@@ -143,7 +145,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(typeComboBox, 0, 1038, Short.MAX_VALUE)
+                .addComponent(typeComboBox, 0, 382, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -179,7 +181,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(unitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(unitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

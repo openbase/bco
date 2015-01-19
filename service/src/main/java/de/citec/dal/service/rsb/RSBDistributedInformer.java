@@ -6,7 +6,6 @@
 package de.citec.dal.service.rsb;
 
 import org.slf4j.LoggerFactory;
-import rsb.Activatable;
 import rsb.Event;
 import rsb.InitializeException;
 import rsb.RSBException;
@@ -17,7 +16,7 @@ import rsb.Scope;
  * @author mpohling
  * @param <DataType>
  */
-public class DistributedInformer<DataType extends Object> implements Activatable {
+public class RSBDistributedInformer<DataType extends Object> implements RSBInformerInterface<DataType> {
 
     protected final org.slf4j.Logger logger;
     
@@ -40,7 +39,7 @@ public class DistributedInformer<DataType extends Object> implements Activatable
      * @param type the data type to send by this informer
      * @throws InitializeException error initializing the informer
      */
-    public DistributedInformer(final String scope, final Class<DataType> type) throws InitializeException {
+    public RSBDistributedInformer(final String scope, final Class<DataType> type) throws InitializeException {
         this(new Scope(scope), type);
     }
 
@@ -52,7 +51,7 @@ public class DistributedInformer<DataType extends Object> implements Activatable
      * @param type the data type to send by this informer
      * @throws InitializeException error initializing the informer
      */
-    public DistributedInformer(final Scope scope, final Class<DataType> type) throws InitializeException {
+    public RSBDistributedInformer(final Scope scope, final Class<DataType> type) throws InitializeException {
 
         if (scope == null) {
             throw new IllegalArgumentException("Informer scope must not be null.");
@@ -99,6 +98,7 @@ public class DistributedInformer<DataType extends Object> implements Activatable
      * @throws IllegalArgumentException if the event is not complete or does not
      * match the type or scope settings of the informer
      */
+	@Override
     public Event send(final Event event) throws RSBException {
         validateState();
         return pool.send(event);
@@ -111,6 +111,7 @@ public class DistributedInformer<DataType extends Object> implements Activatable
      * @return generated event
      * @throws RSBException error sending event
      */
+	@Override
     public Event send(final DataType data) throws RSBException {
         validateState();
         return pool.send(new Event(scope, type, data));
@@ -121,6 +122,7 @@ public class DistributedInformer<DataType extends Object> implements Activatable
      *
      * @return class
      */
+	@Override
     public Class<?> getTypeInfo() {
         return this.type;
     }
@@ -130,10 +132,12 @@ public class DistributedInformer<DataType extends Object> implements Activatable
      *
      * @param typeInfo a {@link Class} instance describing the sent data
      */
+	@Override
     public void setTypeInfo(final Class<DataType> typeInfo) {
         this.type = typeInfo;
     }
 
+	@Override
     public Scope getScope() {
         return scope;
     }
