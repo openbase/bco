@@ -82,8 +82,12 @@ public class DistributedInformer<DataType extends Object> implements Activatable
 
     private void validateState() throws RSBException {
         if (!active) {
-            throw new RSBException("Informer not active!");
+            throw new RSBException(this+" not active!");
         }
+
+		if(!pool.isActive()) {
+			throw new RSBException(pool+" not active!");
+		}
     }
 
     /**
@@ -140,7 +144,11 @@ public class DistributedInformer<DataType extends Object> implements Activatable
 
     @Override
     public boolean isActive() {
-        return active;
+        return active && pool.isActive();
     }
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName()+"["+scope+"]";
+	}
 }

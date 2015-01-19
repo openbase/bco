@@ -14,6 +14,7 @@ import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -29,7 +30,6 @@ import rsb.patterns.RemoteServer;
  *
  * @author mpohling
  * @param <M>
- * @param <MB>
  */
 public abstract class RSBRemoteService<M extends GeneratedMessage> extends Observable<M> {
 
@@ -57,6 +57,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 
 		if (initialized) {
 			logger.warn("Skip initialization because " + this + " already initialized!");
+			return;
 		}
 
 		this.scope = new Scope(scope.toString().toLowerCase());
@@ -76,7 +77,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	private void initListener(final Scope scope) {
 		try {
 			this.listener = Factory.getInstance().createListener(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_INFORMER));
-			this.listenerWatchDog = new WatchDog(listener, "RSBListener["+scope.concat(RSBCommunicationService.SCOPE_SUFFIX_INFORMER)+"]");
+			this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + scope.concat(RSBCommunicationService.SCOPE_SUFFIX_INFORMER) + "]");
 		} catch (Exception ex) {
 			logger.error("Could not create Listener on scope [" + scope.toString() + "]!", ex);
 		}
@@ -85,13 +86,25 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	private void initRemoteServer(final Scope scope) {
 		try {
 			this.remoteServer = Factory.getInstance().createRemoteServer(scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC));
-			this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer["+scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC)+"]");
+			this.remoteServerWatchDog = new WatchDog(remoteServer, "RSBRemoteServer[" + scope.concat(RSBCommunicationService.SCOPE_SUFFIX_RPC) + "]");
 			this.listenerWatchDog.addObserver(new Observer<WatchDog.ServiceState>() {
 
 				@Override
 				public void update(Observable<WatchDog.ServiceState> source, WatchDog.ServiceState data) throws Exception {
 					if (data == WatchDog.ServiceState.Running) {
-						requestStatus();
+
+						// Sync data after service start.
+						new Thread() {
+							@Override
+							public void run() {
+								try {
+									remoteServerWatchDog.waitForActivation();
+									requestStatus();
+								} catch (InterruptedException | DALException ex) {
+									logger.warn("Could not trigger data sync!", ex);
+								}
+							}
+						}.start();
 					}
 				}
 			});
@@ -111,6 +124,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	public void activate() {
 		if (!initialized) {
 			logger.warn("Skip activation because " + this + " is not initialized!");
+			return;
 		}
 		activateListener();
 		activateRemoteServer();
@@ -119,6 +133,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	public void deactivate() throws InterruptedException {
 		if (!initialized) {
 			logger.warn("Skip deactivation because " + this + " is not initialized!");
+			return;
 		}
 		deactivateListener();
 		deactivateRemoteServer();
@@ -140,7 +155,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 		remoteServerWatchDog.deactivate();
 	}
 
-	public <R, T extends Object> R callMethod(String methodName) throws RSBException, ExecutionException, TimeoutException {
+	public <R, T extends Object> R callMethod(String methodName) throws RSBException, ExecutionException, TimeoutException, DALException {
 		return callMethod(methodName, null);
 	}
 
@@ -148,16 +163,17 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 		return callMethodAsync(methodName, null);
 	}
 
-	public <R, T extends Object> R callMethod(String methodName, T type) throws RSBException, ExecutionException, TimeoutException {
+	public <R, T extends Object> R callMethod(String methodName, T type) throws RSBException, ExecutionException, TimeoutException, DALException {
 
 		if (!initialized) {
-			logger.warn("Skip callMethod because " + this + " is not initialized!");
+			throw new DALException("Skip invocation of Method["+methodName+"] because " + this + " is not initialized!");
 		}
+		
 		try {
-			System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
+			logger.info("Calling method [" + methodName + "("+type+")] on scope: " + remoteServer.getScope().toString());
 			return remoteServer.call(methodName, type);
 		} catch (RSBException | ExecutionException | TimeoutException ex) {
-			logger.error("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].", ex);
+			logger.error("Could not call remote Methode[" + methodName + "("+type+")] on Scope[" + remoteServer.getScope() + "].", ex);
 			throw ex;
 		}
 	}
@@ -165,13 +181,13 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	public <R, T extends Object> Future<R> callMethodAsync(String methodName, T type) throws DALException {
 
 		if (!initialized) {
-			logger.warn("Skip callMethod because " + this + " is not initialized!");
+			throw new DALException("Skip invocation of Method["+methodName+"] because " + this + " is not initialized!");
 		}
 		try {
-			System.out.println("Calling method [" + methodName + "] on scope: " + remoteServer.getScope().toString());
+			logger.info("Calling method [" + methodName + "("+type+")] on scope: " + remoteServer.getScope().toString());
 			return remoteServer.callAsync(methodName, type);
 		} catch (RSBException ex) {
-			throw new DALException("Could not call remote Methode[" + methodName + "] on Scope[" + remoteServer.getScope() + "].", ex);
+			throw new DALException("Could not call remote Methode[" + methodName + "("+type+")] on Scope[" + remoteServer.getScope() + "].", ex);
 		}
 	}
 
@@ -201,6 +217,11 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 		return data;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "[scope:" + scope.toString() + "]";
+	}
+
 	public abstract void notifyUpdated(M data);
 
 	private class InternalUpdateHandler implements Handler {
@@ -213,13 +234,8 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 				notifyUpdated(data);
 				notifyObservers(data);
 			} catch (Exception ex) {
-				logger.error("Could not notify new data, given datatype is not valid!", ex);
+				logger.error("Could not notify data update! Given Datatype[" + event.getData().getClass().getName() + "] is not compatible with " + this.getClass().getName() + "]!", ex);
 			}
 		}
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "[scope:" + scope.toString() + "]";
 	}
 }

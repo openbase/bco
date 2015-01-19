@@ -30,7 +30,7 @@ public class MultiException extends Exception {
 
 	public void printExceptionStack() {
 		for(Object source : exceptionMap.keySet()) {
-			logger.error("Exception from "+source+":", exceptionMap.get(source));
+			logger.error("Exception from "+source.toString()+":", exceptionMap.get(source));
 		}
 	}
 }

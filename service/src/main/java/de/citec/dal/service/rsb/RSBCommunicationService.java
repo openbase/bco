@@ -79,7 +79,7 @@ public abstract class RSBCommunicationService<M extends GeneratedMessage, MB ext
 				}
 			});
 			registerMethods(server);
-			serverWatchDog = new WatchDog(server, toString());
+			serverWatchDog = new WatchDog(server, "RSBLocalServer["+scope.concat(new Scope(Location.COMPONENT_SEPERATOR).concat(SCOPE_SUFFIX_RPC))+"]");
 
 		} catch (Exception ex) {
 			throw new RSBException("Could not init rpc server.", ex);

@@ -9,6 +9,7 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.HardwareManager;
 import de.citec.dal.service.rsb.RSBCommunicationService;
 import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.dal.util.DALException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -33,6 +34,11 @@ import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
  * @author mpohling
  */
 public class OpenhabBinding implements OpenhabBindingInterface {
+
+
+	
+    public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
+	public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
     public static final Scope SCOPE_DAL = new Scope("/dal");
     public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
@@ -106,7 +112,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
     public final void registerMethods(LocalServer server) {
         try {
-            server.addMethod("internalReceiveUpdate", new InternalReceiveUpdateCallback());
+            server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
         } catch (RSBException ex) {
             logger.warn("Could not add methods to local server in [" + getClass().getSimpleName() + "]", ex);
         }
@@ -129,10 +135,10 @@ public class OpenhabBinding implements OpenhabBindingInterface {
     @Override
     public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws RSBBindingException {
         try {
-            openhabRemoteService.callMethod("executeCommand", command);
+            openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
             return null; // TODO: mpohling implement future handling.
-        } catch (RSBException | ExecutionException | TimeoutException ex) {
+        } catch (RSBException | ExecutionException | TimeoutException | DALException ex) {
             throw new RSBBindingException("Could not execute " + command + "!", ex);
-        }
+		}
     }
 }

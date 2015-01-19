@@ -55,7 +55,7 @@ public class RSBInformerPool implements Activatable {
 		this.state = State.CONSTRUCTED;
 	}
 
-	public void init() {
+	private void init() {
 		final int size = DEFAULT_POOL_SIZE;
 		Informer<Object> informer;
 
@@ -73,6 +73,8 @@ public class RSBInformerPool implements Activatable {
 				} catch (InitializeException ex) {
 					state = State.FATAL_ERROR;
 					logger.error("Could not init core " + Informer.class.getSimpleName() + "[" + i + "]" + "!", ex);
+					informerList.clear();
+					watchDogMap.clear();
 					return;
 				}
 			}
@@ -110,8 +112,9 @@ public class RSBInformerPool implements Activatable {
 	@Override
 	public void deactivate() {
 
-		if (state == State.CONSTRUCTED) {
-			init();
+		if (state != State.RUNNING) {
+			logger.warn("Skip informerpool deactivation, because pool is not running!");
+			return;
 		}
 
 		synchronized (ACTIVATION_LOCK) {
@@ -157,12 +160,20 @@ public class RSBInformerPool implements Activatable {
 
 	public Event send(final Event event) throws RSBException {
 		// logger.debug("Send:" +event.toString()); //TODO mpohling: report this bug. toString not defined here!
-		logger.debug("Event[scope=" + event.getScope() + ", type="
-				+ event.getType() + ", metaData=" + event.getMetaData() + "]");
+		logger.debug("Event[scope=" + event.getScope() + ", type=" + event.getType() + ", metaData=" + event.getMetaData() + "]");
 		if (watchDogMap.isEmpty()) {
-			logger.warn("Skip send, informerpool is empty!");
+			throw new RSBException("Skip send invocation, because Informerpool is empty!");
+		}
+
+		if (getState() != State.RUNNING) {
+			throw new RSBException("Skip send invocation, because Informerpool is " + state.name() + " instead " + State.RUNNING.name() + "!");
 		}
 
 		return getNextInformer().send(event);
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName()+"["+ROOT_SCOPE+"]";
 	}
 }

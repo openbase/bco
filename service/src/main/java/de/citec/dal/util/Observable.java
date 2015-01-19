@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -15,6 +17,8 @@ import java.util.Map;
  * @param <T>
  */
 public class Observable<T> {
+
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Object LOCK = new Object();
     private final List<Observer<T>> observers;
@@ -25,9 +29,12 @@ public class Observable<T> {
 
     public void addObserver(Observer<T> observer) {
         synchronized (LOCK) {
-            if (!observers.contains(observer)) {
-                observers.add(observer);
+            if (observers.contains(observer)) {
+				logger.warn("Skip observer registration. Observer["+observer+"] is already registered!");
+                return;
             }
+
+			observers.add(observer);
         }
     }
 

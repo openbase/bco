@@ -45,7 +45,7 @@ public class UnitPanel extends javax.swing.JPanel {
 	public void fillComboBox(Class<? extends AbstractUnitController> unitClass) {
 		unitComboBox.removeAllItems();
 		try {
-			ArrayList<UnitContainer> unitNames = new ArrayList();
+			ArrayList<UnitContainer> unitNames = new ArrayList<>();
 			for (AbstractUnitController unit : registry.getUnits(unitClass)) {
 				unitNames.add(new UnitContainer(unit, unit.getLable()));
 			}
