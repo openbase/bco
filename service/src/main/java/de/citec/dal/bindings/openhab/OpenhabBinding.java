@@ -11,6 +11,8 @@ import de.citec.dal.service.rsb.RSBCommunicationService;
 import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
 import de.citec.dal.service.rsb.RSBRemoteService;
 import de.citec.dal.util.DALException;
+import de.citec.jps.core.JPService;
+import de.citec.jps.properties.JPHardwareSimulationMode;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -133,6 +135,12 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
     @Override
     public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws RSBBindingException {
+
+		if(JPService.getAttribute(JPHardwareSimulationMode.class).getValue()) {
+			internalReceiveUpdate(command);
+			return null;
+		}
+
         try {
             openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
             return null; // TODO: mpohling implement future handling.

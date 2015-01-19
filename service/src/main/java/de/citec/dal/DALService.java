@@ -7,6 +7,9 @@ package de.citec.dal;
 
 import de.citec.dal.service.DALRegistry;
 import de.citec.dal.service.HardwareManager;
+import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPShowGUI;
+import de.citec.jps.properties.JPHardwareSimulationMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +58,11 @@ public class DALService {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
+		/* Setup CLParser */
+        JPService.setApplicationName("DeviceManager");
+        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.parseAndExitOnError(args);
+
 		new DALService().activate();
 	}
 
