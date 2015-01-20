@@ -90,7 +90,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
         try {
             dalService.init(InformerType.Single);
         } catch (RSBException ex) {
-            logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]");
+            logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]", ex);
         }
 
         openhabRemoteService.activate();
@@ -100,13 +100,13 @@ public class OpenhabBinding implements OpenhabBindingInterface {
     public final void notifyUpdated(RSBBinding data) {
         switch (data.getState().getState()) {
             case ACTIVE:
-                logger.debug("Active rsb binding state!");
+                logger.debug("Active dal binding state!");
                 break;
             case DEACTIVE:
-                logger.debug("Deactive rsb binding state!");
+                logger.debug("Deactive dal binding state!");
                 break;
             case UNKNOWN:
-                logger.debug("Unkown rsb binding state!");
+                logger.debug("Unkown dal binding state!");
                 break;
         }
     }
