@@ -5,9 +5,10 @@
  */
 package de.citec.dal.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -15,14 +16,21 @@ import java.util.List;
  */
 public class MultiException extends Exception {
 
-    private final List<Exception> exceptionStack = new ArrayList<>();
+	private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
+    private final Map<Object, Exception> exceptionMap = new HashMap<>();
     
-    public MultiException(String message, Collection<Exception> exceptions) {
+    public MultiException(final String message, final Map<Object, Exception> exceptions) {
         super(message);
-        exceptionStack.addAll(exceptions);
+        exceptionMap.putAll(exceptions);
     }
 
-    public List<Exception> getExceptionStack() {
-        return exceptionStack;
-    }
+	public Map<Object, Exception> getExceptionStack() {
+		return Collections.unmodifiableMap(exceptionMap);
+	}
+
+	public void printExceptionStack() {
+		for(Object source : exceptionMap.keySet()) {
+			logger.error("Exception from "+source.toString()+":", exceptionMap.get(source));
+		}
+	}
 }

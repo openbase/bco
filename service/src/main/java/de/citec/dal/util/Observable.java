@@ -5,7 +5,11 @@
 package de.citec.dal.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -14,8 +18,9 @@ import java.util.List;
  */
 public class Observable<T> {
 
-    private static final Object LOCK = new Object();
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final Object LOCK = new Object();
     private final List<Observer<T>> observers;
 
     public Observable() {
@@ -24,9 +29,12 @@ public class Observable<T> {
 
     public void addObserver(Observer<T> observer) {
         synchronized (LOCK) {
-            if (!observers.contains(observer)) {
-                observers.add(observer);
+            if (observers.contains(observer)) {
+				logger.warn("Skip observer registration. Observer["+observer+"] is already registered!");
+                return;
             }
+
+			observers.add(observer);
         }
     }
 
@@ -43,23 +51,23 @@ public class Observable<T> {
     }
 
     public void notifyObservers(T arg) throws MultiException {
-        List<Exception> exceptionStack = null;
+        Map<Object, Exception> exceptionMap = null;
 
         synchronized (LOCK) {
             for (Observer<T> observer : observers) {
                 try {
                     observer.update(this, arg);
                 } catch (Exception ex) {
-                    if(exceptionStack == null) {
-                        exceptionStack = new ArrayList<>();
+                    if(exceptionMap == null) {
+                        exceptionMap = new HashMap<>();
                     }
-                    exceptionStack.add(ex);
+					exceptionMap.put(observer, ex);
                 }
             }
         }
 
-        if (exceptionStack != null) {
-            throw new MultiException("Could not notify Data["+arg+"] to all observer!", exceptionStack);
+        if (exceptionMap != null) {
+            throw new MultiException("Could not notify Data["+arg+"] to all observer!", exceptionMap);
         }
     }
 }

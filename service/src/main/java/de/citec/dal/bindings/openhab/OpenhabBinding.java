@@ -8,7 +8,11 @@ package de.citec.dal.bindings.openhab;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.HardwareManager;
 import de.citec.dal.service.rsb.RSBCommunicationService;
+import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
 import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.dal.util.DALException;
+import de.citec.jps.core.JPService;
+import de.citec.jps.properties.JPHardwareSimulationMode;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -34,16 +38,19 @@ import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
  */
 public class OpenhabBinding implements OpenhabBindingInterface {
 
-	public static final Scope SCOPE_DAL = new Scope("/dal");
-	public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
+    public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
+	public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
-	private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
+    public static final Scope SCOPE_DAL = new Scope("/dal");
+    public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
 
-	private static OpenhabBinding instance;
+    private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
+
+    private static OpenhabBinding instance;
 
     private final RSBRemoteService<RSBBinding> openhabRemoteService;
     private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalService;
-	private final HardwareManager hardwareManager;
+    private final HardwareManager hardwareManager;
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -54,15 +61,15 @@ public class OpenhabBinding implements OpenhabBindingInterface {
                 new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
     }
 
-	public synchronized static OpenhabBinding getInstance() {
-		if(instance == null) {
-			instance = new OpenhabBinding();
-		}
-		return instance;
-	}
+    public synchronized static OpenhabBinding getInstance() {
+        if (instance == null) {
+            instance = new OpenhabBinding();
+        }
+        return instance;
+    }
 
     private OpenhabBinding() {
-		this.hardwareManager = HardwareManager.getInstance();
+        this.hardwareManager = HardwareManager.getInstance();
 
         openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
@@ -81,40 +88,32 @@ public class OpenhabBinding implements OpenhabBindingInterface {
             }
         };
         try {
-            dalService.init();
+            dalService.init(InformerType.Single);
         } catch (RSBException ex) {
-            logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]");
+            logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]", ex);
         }
-
-        
 
         openhabRemoteService.activate();
-        {
-            try {
-                dalService.activate();
-            } catch (Exception ex) {
-                logger.warn("Unable to activate the communication service in [" + getClass().getSimpleName() + "]", ex);
-            }
-        }
+        dalService.activate();
     }
 
     public final void notifyUpdated(RSBBinding data) {
         switch (data.getState().getState()) {
             case ACTIVE:
-                logger.debug("Active rsb binding state!");
+                logger.debug("Active dal binding state!");
                 break;
             case DEACTIVE:
-                logger.debug("Deactive rsb binding state!");
+                logger.debug("Deactive dal binding state!");
                 break;
             case UNKNOWN:
-                logger.debug("Unkown rsb binding state!");
+                logger.debug("Unkown dal binding state!");
                 break;
         }
     }
 
     public final void registerMethods(LocalServer server) {
         try {
-            server.addMethod("internalReceiveUpdate", new InternalReceiveUpdateCallback());
+            server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
         } catch (RSBException ex) {
             logger.warn("Could not add methods to local server in [" + getClass().getSimpleName() + "]", ex);
         }
@@ -136,11 +135,17 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
     @Override
     public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws RSBBindingException {
-		try {
-			openhabRemoteService.callMethod("executeCommand", command);
-			return null; // TODO: mpohling implement future handling.
-		} catch (RSBException | ExecutionException | TimeoutException  ex) {
-			throw new RSBBindingException("Could not execute "+command+"!", ex);
+
+		if(JPService.getAttribute(JPHardwareSimulationMode.class).getValue()) {
+			internalReceiveUpdate(command);
+			return null;
+		}
+
+        try {
+            openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
+            return null; // TODO: mpohling implement future handling.
+        } catch (RSBException | ExecutionException | TimeoutException | DALException ex) {
+            throw new RSBBindingException("Could not execute " + command + "!", ex);
 		}
     }
 }
