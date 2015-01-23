@@ -64,20 +64,5 @@
             <artifactId>remote</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>rsb</artifactId>
-            <version>0.11-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>rst</artifactId>
-            <version>0.11-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>rst-sandbox</artifactId>
-            <version>0.11-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 </project>
