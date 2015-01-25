@@ -70,13 +70,6 @@
 		</dependency>
 	</dependencies>
 
-	<distributionManagement>
-		<repository>
-			<id>ssh-repository</id>
-			<url>scpexe://portb.techfak.uni-bielefeld.de/vol/csra/share/repository</url>
-		</repository>
-	</distributionManagement>
-
 	<build>
 		<extensions>
 			<!-- Enabling the use of SSH -->
