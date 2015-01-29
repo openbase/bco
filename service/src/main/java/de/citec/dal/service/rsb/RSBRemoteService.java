@@ -13,11 +13,9 @@ import de.citec.dal.util.DALException;
 import de.citec.dal.util.NotAvailableException;
 import de.citec.dal.util.Observable;
 import de.citec.dal.util.Observer;
+import java.lang.reflect.ParameterizedType;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.Factory;
 import rsb.Handler;
@@ -49,7 +47,7 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	}
 
 	public void init(final String label, final Location location) {
-		init(generateScope(label, location));
+		generateScope(label, detectMessageClass(), location);
 	}
 
 	public synchronized void init(final Scope scope) {
@@ -165,14 +163,14 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	public <R, T extends Object> R callMethod(String methodName, T type) throws RSBException, ExecutionException, TimeoutException, DALException {
 
 		if (!initialized) {
-			throw new DALException("Skip invocation of Method["+methodName+"] because " + this + " is not initialized!");
+			throw new DALException("Skip invocation of Method[" + methodName + "] because " + this + " is not initialized!");
 		}
-		
+
 		try {
-			logger.info("Calling method [" + methodName + "("+type+")] on scope: " + remoteServer.getScope().toString());
+			logger.info("Calling method [" + methodName + "(" + type + ")] on scope: " + remoteServer.getScope().toString());
 			return remoteServer.call(methodName, type);
 		} catch (RSBException | ExecutionException | TimeoutException ex) {
-			logger.error("Could not call remote Methode[" + methodName + "("+type+")] on Scope[" + remoteServer.getScope() + "].", ex);
+			logger.error("Could not call remote Methode[" + methodName + "(" + type + ")] on Scope[" + remoteServer.getScope() + "].", ex);
 			throw ex;
 		}
 	}
@@ -180,13 +178,13 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 	public <R, T extends Object> Future<R> callMethodAsync(String methodName, T type) throws DALException {
 
 		if (!initialized) {
-			throw new DALException("Skip invocation of Method["+methodName+"] because " + this + " is not initialized!");
+			throw new DALException("Skip invocation of Method[" + methodName + "] because " + this + " is not initialized!");
 		}
 		try {
-			logger.info("Calling method [" + methodName + "("+type+")] on scope: " + remoteServer.getScope().toString());
+			logger.info("Calling method [" + methodName + "(" + type + ")] on scope: " + remoteServer.getScope().toString());
 			return remoteServer.callAsync(methodName, type);
 		} catch (RSBException ex) {
-			throw new DALException("Could not call remote Methode[" + methodName + "("+type+")] on Scope[" + remoteServer.getScope() + "].", ex);
+			throw new DALException("Could not call remote Methode[" + methodName + "(" + type + ")] on Scope[" + remoteServer.getScope() + "].", ex);
 		}
 	}
 
@@ -205,8 +203,8 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 		super.shutdown();
 	}
 
-	public static Scope generateScope(final String id, final Location location) {
-		return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id));
+	public static Scope generateScope(final String label, final Class typeClass, final Location location) {
+		return location.getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + typeClass.getSimpleName())).concat(new Scope(Location.COMPONENT_SEPERATOR + label));
 	}
 
 	public M getData() throws NotAvailableException {
@@ -214,6 +212,11 @@ public abstract class RSBRemoteService<M extends GeneratedMessage> extends Obser
 			throw new NotAvailableException("data");
 		}
 		return data;
+	}
+
+	public Class detectMessageClass() {
+		ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
+		return (Class) parameterizedType.getActualTypeArguments()[0];
 	}
 
 	@Override
