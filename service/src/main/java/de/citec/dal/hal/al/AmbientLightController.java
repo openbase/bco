@@ -44,6 +44,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     public void registerMethods(final LocalServer server) throws RSBException {
         server.addMethod("setColor", new SetColorCallback());
         server.addMethod("setPowerState", new SetPowerStateCallback());
+        server.addMethod("setBrightness", new SetBrightnessCallback());
     }
 
     public void updatePowerState(final PowerType.Power.PowerState state) {
@@ -93,6 +94,25 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setColor] for " + AmbientLightController.this, ex);
+                throw ex;
+            }
+        }
+    }
+    
+    public void setBrightness(double brightness) throws RSBBindingException {
+        logger.debug("Setting [" + id + "] to Brightness[" + brightness + "]");    
+        setColor(cloneBuilder().getColorBuilder().setValue(brightness).build());
+    }
+    
+    public class SetBrightnessCallback extends EventCallback {
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                AmbientLightController.this.setBrightness(((double) request.getData()));
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
+            } catch (Exception ex) {
+                logger.warn("Could not invoke method [setBrightness] for " + AmbientLightController.this, ex);
                 throw ex;
             }
         }

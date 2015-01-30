@@ -14,13 +14,13 @@ import rst.homeautomation.ReedSwitchType;
  *
  * @author thuxohl
  */
-public class ReedSwtichRemote extends RSBRemoteService<ReedSwitchType.ReedSwitch>{
+public class ReedSwitchRemote extends RSBRemoteService<ReedSwitchType.ReedSwitch>{
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwtichRemote() {
+    public ReedSwitchRemote() {
     }
 
     @Override
