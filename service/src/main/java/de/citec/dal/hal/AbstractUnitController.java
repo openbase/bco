@@ -11,7 +11,7 @@ import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.al.HardwareUnit;
+import de.citec.dal.hal.unit.HardwareUnit;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;

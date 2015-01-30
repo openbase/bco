@@ -16,7 +16,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.jul.exception.VerificatioinFailedException;
-import de.citec.dal.hal.al.HardwareUnit;
+import de.citec.dal.hal.unit.HardwareUnit;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import java.util.Collection;

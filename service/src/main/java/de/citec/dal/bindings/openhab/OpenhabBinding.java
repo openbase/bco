@@ -6,7 +6,7 @@
 package de.citec.dal.bindings.openhab;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.service.HardwareManager;
+import de.citec.dal.util.HardwareManager;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import de.citec.jul.rsb.RSBRemoteService;

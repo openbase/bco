@@ -6,7 +6,7 @@
 package de.citec.dal.visual.unit;
 
 import de.citec.dal.hal.AbstractUnitController;
-import de.citec.dal.service.DALRegistry;
+import de.citec.dal.util.DALRegistry;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;

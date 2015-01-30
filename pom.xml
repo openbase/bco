@@ -21,8 +21,6 @@
         <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</url>
     </scm>
     
-	
-    
     <packaging>pom</packaging>
     
     <modules>

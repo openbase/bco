@@ -6,9 +6,9 @@
 package de.citec.dal;
 
 import de.citec.dal.hal.AbstractUnitController;
-import de.citec.dal.hal.al.AmbientLightController;
+import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.dal.visual.unit.AmbientLightView;
-import de.citec.dal.service.DALRegistry;
+import de.citec.dal.util.DALRegistry;
 import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.dal.exception.DALException;
 import de.citec.jul.pattern.Observable;

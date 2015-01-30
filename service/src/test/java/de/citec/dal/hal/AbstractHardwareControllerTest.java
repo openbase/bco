@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import de.citec.dal.hal.devices.plugwise.PW_PowerPlugController;
+import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 
 /**
  *
