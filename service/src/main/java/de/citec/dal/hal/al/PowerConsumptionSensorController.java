@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.RSBException;
@@ -27,7 +27,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
                 new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(String id, final String label, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws RSBBindingException {
+    public PowerConsumptionSensorController(String id, final String label, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

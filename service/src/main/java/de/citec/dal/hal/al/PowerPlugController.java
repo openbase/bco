@@ -6,8 +6,10 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.PowerStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.TypeNotSupportedException;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -32,7 +34,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public PowerPlugController(String id, final String label, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws RSBBindingException {
+    public PowerPlugController(String id, final String label, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 
@@ -46,7 +48,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
         notifyChange();
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
+    public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
         OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
         newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);

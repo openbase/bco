@@ -7,10 +7,12 @@ package de.citec.dal.hal.devices.hager;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.PowerStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.PowerConsumptionSensorController;
 import de.citec.dal.hal.al.PowerPlugController;
+import de.citec.jul.exception.VerificatioinFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.hager.HA_TYA606EType;
@@ -48,7 +50,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
     private final PowerConsumptionSensorController powerConsumptionSensor_4;
     private final PowerConsumptionSensorController powerConsumptionSensor_5;
 
-    public HA_TYA606EController(final String id, final String label, final Location location) throws RSBBindingException {
+    public HA_TYA606EController(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
         super(id, label, location, HA_TYA606EType.HA_TYA606E.newBuilder());
 
         builder.setId(id);

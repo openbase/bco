@@ -1,9 +1,11 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.PowerStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import de.citec.dal.service.rsb.RSBCommunicationService;
+import de.citec.jul.exception.TypeNotSupportedException;
+import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -27,7 +29,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public LightController(String id, final String label, HardwareUnit hardwareUnit, LightType.Light.Builder builder) throws RSBBindingException {
+    public LightController(String id, final String label, HardwareUnit hardwareUnit, LightType.Light.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 
@@ -41,7 +43,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
         notifyChange();
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
+    public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
         OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
         newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);

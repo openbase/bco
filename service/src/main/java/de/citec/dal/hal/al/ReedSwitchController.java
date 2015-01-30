@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
@@ -27,7 +27,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
                 new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(String id, final String label, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws RSBBindingException {
+    public ReedSwitchController(String id, final String label, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

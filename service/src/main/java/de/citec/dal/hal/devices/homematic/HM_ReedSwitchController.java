@@ -7,10 +7,12 @@ package de.citec.dal.hal.devices.homematic;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.BatteryController;
 import de.citec.dal.hal.al.ReedSwitchController;
+import de.citec.jul.exception.VerificatioinFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.homematic.HM_ReedSwitchType;
@@ -34,7 +36,7 @@ public class HM_ReedSwitchController extends AbstractDeviceController<HM_ReedSwi
     private final ReedSwitchController reedSwitch;
     private final BatteryController battery;
 
-    public HM_ReedSwitchController(final String id, final String label, final Location location) throws RSBBindingException {
+    public HM_ReedSwitchController(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
         super(id, label, location, HM_ReedSwitch.newBuilder());
 
         builder.setId(id);

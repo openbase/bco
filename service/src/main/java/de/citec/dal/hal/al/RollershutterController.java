@@ -7,8 +7,10 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.StopMoveStateTransformer;
 import de.citec.dal.data.transform.UpDownStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.TypeNotSupportedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
@@ -33,7 +35,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
                 new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
-    public RollershutterController(String id, final String label, HardwareUnit hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws RSBBindingException {
+    public RollershutterController(String id, final String label, HardwareUnit hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 
@@ -47,7 +49,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         notifyChange();
     }
 
-    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws RSBBindingException {
+    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to ShutterState [" + state.name() + "]");
 
 		OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();

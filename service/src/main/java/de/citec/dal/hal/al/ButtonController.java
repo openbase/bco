@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -26,7 +26,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
                 new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(String id, final String label, HardwareUnit hardwareUnit, Button.Builder builder) throws RSBBindingException {
+    public ButtonController(String id, final String label, HardwareUnit hardwareUnit, Button.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

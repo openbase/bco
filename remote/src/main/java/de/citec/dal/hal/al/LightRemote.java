@@ -5,8 +5,9 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.service.rsb.RSBRemoteService;
-import de.citec.dal.util.DALException;
+import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.LightType;
@@ -26,7 +27,7 @@ public class LightRemote extends RSBRemoteService<LightType.Light> {
     public LightRemote() {
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws DALException {
+    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", state);
     }
 

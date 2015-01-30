@@ -45,7 +45,7 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
 
-    public F_MotionSensorController(final String id, String label, final Location location) throws VerificatioinFailedException, DALException {
+    public F_MotionSensorController(final String id, String label, final Location location) throws VerificatioinFailedException, DALException  {
         super(id, label, location, F_MotionSensor.newBuilder());
 
         builder.setId(id);

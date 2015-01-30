@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -23,7 +23,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
                 new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(String id, final String label, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws RSBBindingException {
+    public TemperatureSensorController(String id, final String label, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

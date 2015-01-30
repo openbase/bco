@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -23,7 +23,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
                 new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
     }
 
-    public BrightnessSensorController(String id, final String label, HardwareUnit hardwareUnit, BrightnessSensor.Builder builder) throws RSBBindingException {
+    public BrightnessSensorController(String id, final String label, HardwareUnit hardwareUnit, BrightnessSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

@@ -9,6 +9,7 @@ import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.bindings.openhab.OpenhabBinding;
 import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.data.Location;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
 import de.citec.jul.rsb.RSBCommunicationService;
@@ -38,7 +39,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     protected final OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
-    public AbstractUnitController(final String id, final String label, final HardwareUnit relatedHardwareUnit, final MB builder) throws RSBBindingException {
+    public AbstractUnitController(final String id, final String label, final HardwareUnit relatedHardwareUnit, final MB builder) throws DALException {
         super(generateScope(id, label, relatedHardwareUnit), builder);
         this.id = id;
         this.label = label;
@@ -49,7 +50,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         try {
             init(RSBInformerInterface.InformerType.Distributed);
         } catch (RSBException ex) {
-            throw new RSBBindingException("Could not init RSBCommunicationService!", ex);
+            throw new DALException("Could not init RSBCommunicationService!", ex);
         }
     }
 

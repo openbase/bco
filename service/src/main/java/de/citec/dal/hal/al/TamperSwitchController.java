@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -24,7 +24,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
                 new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(String id, final String label, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws RSBBindingException {
+    public TamperSwitchController(String id, final String label, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

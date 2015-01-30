@@ -8,9 +8,11 @@ package de.citec.dal.hal.devices.gira;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.ButtonStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.ButtonController;
+import de.citec.jul.exception.VerificatioinFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.gira.GI_5133Type;
@@ -41,7 +43,7 @@ public class GI_5133Controller extends AbstractDeviceController<GI_5133Type.GI_5
     private final ButtonController button_4;
     private final ButtonController button_5;
 
-    public GI_5133Controller(final String id, final String label, final String[] unitLabel, final Location location) throws RSBBindingException {
+    public GI_5133Controller(final String id, final String label, final String[] unitLabel, final Location location) throws DALException, VerificatioinFailedException {
         super(id, label, location, GI_5133Type.GI_5133.newBuilder());
 
         builder.setId(id);

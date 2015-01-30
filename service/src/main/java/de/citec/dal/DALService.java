@@ -6,20 +6,17 @@
 package de.citec.dal;
 
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.devices.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.devices.gira.GI_5133Controller;
 import de.citec.dal.hal.devices.gira.GI_5142Controller;
-import de.citec.dal.hal.devices.hager.HA_TYA606EController;
-import de.citec.dal.hal.devices.homematic.HM_ReedSwitchController;
-import de.citec.dal.hal.devices.homematic.HM_RotaryHandleSensorController;
 import de.citec.dal.hal.devices.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.devices.philips.PH_Hue_GU10Controller;
-import de.citec.dal.hal.devices.plugwise.PW_PowerPlugController;
 import de.citec.dal.service.DALRegistry;
 import de.citec.dal.service.HardwareManager;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.VerificatioinFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,7 +208,7 @@ public class DALService {
 
 				String[] giraLabel3 = {"Button_7", "Button_8", "Button_9", "Button_10", "Button_11", "Button_12"};
 				registry.register(new GI_5133Controller("GI_5133_003", "Hallway", giraLabel3, wardrobe));
-			} catch (RSBBindingException ex) {
+			} catch (DALException | VerificatioinFailedException ex) {
 				logger.warn("Could not initialize devices!", ex);
 			}
 		}

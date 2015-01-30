@@ -7,8 +7,10 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.TypeNotSupportedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
@@ -36,7 +38,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public AmbientLightController(String id, final String label, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws RSBBindingException {
+    public AmbientLightController(String id, final String label, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 
@@ -52,7 +54,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         notifyChange();
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException {
+    public void setPowerState(final PowerType.Power.PowerState state) throws TypeNotSupportedException, RSBBindingException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
         OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
         newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
@@ -78,7 +80,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         notifyChange();
     }
 
-    public void setColor(final HSVColor color) throws RSBBindingException {
+    public void setColor(final HSVColor color) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
         OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
         newBuilder.setHsb(HSVColorTransformer.transform(color)).setType(OpenhabCommand.CommandType.HSB);
@@ -99,7 +101,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         }
     }
     
-    public void setBrightness(double brightness) throws RSBBindingException {
+    public void setBrightness(double brightness) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to Brightness[" + brightness + "]");    
         setColor(cloneBuilder().getColorBuilder().setValue(brightness).build());
     }

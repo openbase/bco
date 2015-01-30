@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
@@ -27,7 +27,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
                 new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(final String id, final String label, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws RSBBindingException {
+    public MotionSensorController(final String id, final String label, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
         
     }

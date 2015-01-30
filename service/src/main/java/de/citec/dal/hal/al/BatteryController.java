@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -23,7 +23,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
                 new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(String id, final String label, HardwareUnit hardwareUnit, Battery.Builder builder) throws RSBBindingException {
+    public BatteryController(String id, final String label, HardwareUnit hardwareUnit, Battery.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

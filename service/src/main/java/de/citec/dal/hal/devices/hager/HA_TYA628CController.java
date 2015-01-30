@@ -6,9 +6,11 @@
 package de.citec.dal.hal.devices.hager;
 
 import de.citec.dal.data.Location;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.RollershutterController;
+import de.citec.jul.exception.VerificatioinFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.hager.HA_TYA628CType;
@@ -42,7 +44,7 @@ public class HA_TYA628CController extends AbstractDeviceController<HA_TYA628CTyp
     private final RollershutterController rollershutter_6;
     private final RollershutterController rollershutter_7;
 
-    public HA_TYA628CController(final String id, final String label, final Location location) throws RSBBindingException {
+    public HA_TYA628CController(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
         super(id, label, location, HA_TYA628CType.HA_TYA628C.newBuilder());
 
         builder.setId(id);
