@@ -12,6 +12,7 @@ import de.citec.dal.util.DALException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.AmbientLightType;
+import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -24,6 +25,7 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColorType.HSVColor.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
     
     public AmbientLightRemote() {
@@ -40,6 +42,10 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     
     public void setColor(final HSVColor color) throws DALException {
         callMethodAsync("setColor", color);
+    }
+    
+    public void setPowerState(final PowerType.Power.PowerState state) throws DALException {
+        callMethodAsync("setPowerState", state);
     }
     
     @Override

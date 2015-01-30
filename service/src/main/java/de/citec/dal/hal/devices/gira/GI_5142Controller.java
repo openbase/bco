@@ -12,16 +12,14 @@ import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.ButtonController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.gira.GI_5133Type;
+import rst.devices.gira.GI_5142Type;
 import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
 
 /**
  *
  * @author mpohling
  */
-public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5133, GI_5133Type.GI_5133.Builder> {
-
-	//FIXME:
+public class GI_5142Controller extends AbstractDeviceController<GI_5142Type.GI_5142, GI_5142Type.GI_5142.Builder> {
 
     private final static String COMPONENT_BUTTON_0 = "Button_0";
     private final static String COMPONENT_BUTTON_1 = "Button_1";
@@ -30,17 +28,16 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(GI_5133Type.GI_5133.getDefaultInstance()));
+                new ProtocolBufferConverter<>(GI_5142Type.GI_5142.getDefaultInstance()));
     }
 
     private final ButtonController button_0;
     private final ButtonController button_1;
     private final ButtonController button_2;
     private final ButtonController button_3;
-    
+
     public GI_5142Controller(final String id, final String label, final String[] unitLabel, final Location location) throws RSBBindingException {
-        super(id, label, location, GI_5133Type.GI_5133.newBuilder());
-		logger.error("Bad type GI_5133 is used instead of type GI_5142. Tamino please fix me! :)");
+        super(id, label, location, GI_5142Type.GI_5142.newBuilder());
         builder.setId(id);
         this.button_0 = new ButtonController(COMPONENT_BUTTON_0, unitLabel[0], this, builder.getButton0Builder());
         this.button_1 = new ButtonController(COMPONENT_BUTTON_1, unitLabel[1], this, builder.getButton1Builder());
@@ -51,7 +48,7 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5
         this.register(button_2);
         this.register(button_3);
     }
-    
+
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put(COMPONENT_BUTTON_0, getClass().getMethod("updateButton_0", OnOff.class));
@@ -67,6 +64,7 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5
             logger.error("Could not update button 0.", ex);
         }
     }
+
     public void updateButton_1(OnOff type) throws RSBBindingException {
         try {
             button_1.updateButtonState(ButtonStateTransformer.transform(type));
@@ -74,6 +72,7 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5
             logger.error("Could not update button 1.", ex);
         }
     }
+
     public void updateButton_2(OnOff type) throws RSBBindingException {
         try {
             button_2.updateButtonState(ButtonStateTransformer.transform(type));
@@ -81,6 +80,7 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5133Type.GI_5
             logger.error("Could not update button 2.", ex);
         }
     }
+
     public void updateButton_3(OnOff type) throws RSBBindingException {
         try {
             button_3.updateButtonState(ButtonStateTransformer.transform(type));
