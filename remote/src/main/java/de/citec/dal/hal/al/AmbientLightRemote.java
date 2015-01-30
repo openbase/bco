@@ -7,8 +7,8 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.service.rsb.RSBRemoteService;
-import de.citec.dal.util.DALException;
+import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.AmbientLightType;
@@ -32,7 +32,7 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
         
     }
     
-    public void setColor(final java.awt.Color color) throws DALException {
+    public void setColor(final java.awt.Color color) throws CouldNotPerformException {
         try {
             setColor(HSVColorToRGBColorTransformer.transform(color));
         } catch (RSBBindingException ex) {
@@ -40,11 +40,11 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
         }
     }
     
-    public void setColor(final HSVColor color) throws DALException {
+    public void setColor(final HSVColor color) throws CouldNotPerformException {
         callMethodAsync("setColor", color);
     }
     
-    public void setPowerState(final PowerType.Power.PowerState state) throws DALException {
+    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", state);
     }
     

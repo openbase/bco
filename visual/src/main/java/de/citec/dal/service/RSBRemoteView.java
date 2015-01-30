@@ -6,11 +6,11 @@
 package de.citec.dal.service;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.service.rsb.RSBRemoteService;
-import de.citec.dal.util.DALException;
-import de.citec.dal.util.NotAvailableException;
-import de.citec.dal.util.Observable;
-import de.citec.dal.util.Observer;
+import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

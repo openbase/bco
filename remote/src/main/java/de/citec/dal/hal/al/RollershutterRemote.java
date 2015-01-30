@@ -5,8 +5,8 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.service.rsb.RSBRemoteService;
-import de.citec.dal.util.DALException;
+import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.RollershutterType;
@@ -26,11 +26,11 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
 	public RollershutterRemote() {
 	}
 
-	public void setShutterState(final ShutterType.Shutter.ShutterState state) throws DALException {
+	public void setShutterState(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
 		callMethodAsync("setShutterState", state);
 	}
 
-	public void setPosition(final float position) throws DALException {
+	public void setPosition(final float position) throws CouldNotPerformException {
 		callMethodAsync("setPosition", position);
 	}
 

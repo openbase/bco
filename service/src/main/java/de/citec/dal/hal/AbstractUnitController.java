@@ -11,8 +11,9 @@ import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.HardwareUnit;
-import de.citec.dal.service.rsb.RSBCommunicationService;
-import de.citec.dal.service.rsb.RSBInformerInterface;
+import de.citec.jul.rsb.RSBCommunicationService;
+import de.citec.jul.rsb.RSBInformerInterface;
+import de.citec.jul.rsb.ScopeProvider;
 import java.util.concurrent.Future;
 import rsb.RSBException;
 import rsb.Scope;
@@ -28,8 +29,8 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionTyp
  */
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> {
 
-	public final static String TYPE_FILED_ID = "id";
-	public final static String TYPE_FILED_LABEL = "label";
+    public final static String TYPE_FILED_ID = "id";
+    public final static String TYPE_FILED_LABEL = "label";
 
     protected final String id;
     protected final String label;
@@ -59,7 +60,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public String getLable() {
         return label;
     }
-    
+
     public HardwareUnit getRelatedHardwareUnit() {
         return relatedHardwareUnit;
     }
@@ -71,35 +72,35 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public void registerMethods(LocalServer server) throws RSBException {
     }
-    
+
     public Future executeCommand(final OpenhabCommand.Builder commandBuilder) throws RSBBindingException {
         return executeCommand(generateHardwareId(), commandBuilder, ExecutionType.SYNCHRONOUS);
     }
-    
+
     public Future executeCommand(final String itemName, final OpenhabCommand.Builder commandBuilder, final ExecutionType type) throws RSBBindingException {
-        if(commandBuilder == null) {
+        if (commandBuilder == null) {
             throw new RSBBindingException("Skip sending empty command!", new NullPointerException("Argument command is null!"));
         }
-        
-        if(rsbBinding == null) {
+
+        if (rsbBinding == null) {
             throw new RSBBindingException("Skip sending command, binding not ready!", new NullPointerException("Argument rsbBinding is null!"));
         }
-        
-        if(generateHardwareId() == null) {
+
+        if (generateHardwareId() == null) {
             throw new RSBBindingException("Skip sending command, could not generate id!", new NullPointerException("Argument id is null!"));
         }
-        
-        logger.debug("Execute command: Setting item ["+generateHardwareId()+"] to ["+commandBuilder.getType().toString()+"]");
+
+        logger.debug("Execute command: Setting item [" + generateHardwareId() + "] to [" + commandBuilder.getType().toString() + "]");
         commandBuilder.setItem(itemName).setExecutionType(type);
         return rsbBinding.executeCommand(commandBuilder.build());
     }
 
     public static Scope generateScope(final String id, final String label, final HardwareUnit hardware) {
-        return hardware.getLocation().getScope().concat(new Scope(Location.COMPONENT_SEPERATOR + id).concat(new Scope(Location.COMPONENT_SEPERATOR + label)));
+        return hardware.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + id).concat(new Scope(ScopeProvider.SEPARATOR + label)));
     }
-    
+
     @Override
     public String toString() {
-        return getClass().getSimpleName()+"["+id+"["+label+"]]";
+        return getClass().getSimpleName() + "[" + id + "[" + label + "]]";
     }
 }

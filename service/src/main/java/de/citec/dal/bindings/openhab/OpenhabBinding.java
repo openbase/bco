@@ -7,12 +7,13 @@ package de.citec.dal.bindings.openhab;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.service.HardwareManager;
-import de.citec.dal.service.rsb.RSBCommunicationService;
-import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
-import de.citec.dal.service.rsb.RSBRemoteService;
-import de.citec.dal.util.DALException;
+import de.citec.jul.rsb.RSBCommunicationService;
+import de.citec.jul.rsb.RSBInformerInterface.InformerType;
+import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.dal.exception.DALException;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.CouldNotPerformException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -39,7 +40,7 @@ import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
 public class OpenhabBinding implements OpenhabBindingInterface {
 
     public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
-	public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
+    public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
     public static final Scope SCOPE_DAL = new Scope("/dal");
     public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
@@ -136,16 +137,16 @@ public class OpenhabBinding implements OpenhabBindingInterface {
     @Override
     public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws RSBBindingException {
 
-		if(JPService.getAttribute(JPHardwareSimulationMode.class).getValue()) {
-			internalReceiveUpdate(command);
-			return null;
-		}
+        if (JPService.getAttribute(JPHardwareSimulationMode.class).getValue()) {
+            internalReceiveUpdate(command);
+            return null;
+        }
 
         try {
             openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
             return null; // TODO: mpohling implement future handling.
-        } catch (RSBException | ExecutionException | TimeoutException | DALException ex) {
+        } catch (RSBException | ExecutionException | TimeoutException | CouldNotPerformException ex) {
             throw new RSBBindingException("Could not execute " + command + "!", ex);
-		}
+        }
     }
 }

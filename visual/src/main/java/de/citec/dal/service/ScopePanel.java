@@ -5,9 +5,9 @@
  */
 package de.citec.dal.service;
 
-import de.citec.dal.util.MultiException;
-import de.citec.dal.util.Observable;
-import de.citec.dal.util.Observer;
+import de.citec.jul.exception.MultiException;
+import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 import java.awt.Color;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;

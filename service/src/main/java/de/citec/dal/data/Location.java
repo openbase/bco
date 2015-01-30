@@ -6,6 +6,7 @@
 
 package de.citec.dal.data;
 
+import de.citec.jul.rsb.ScopeProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,10 +16,9 @@ import rsb.Scope;
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public class Location {
+public class Location implements ScopeProvider {
 
-	private final static Scope SCOPE_PREFIX = new Scope("/home");
-  	public final static String COMPONENT_SEPERATOR = "/";
+    private final static Scope SCOPE_PREFIX = new Scope("/home");
     public final static Location HOME = new Location();
 
 	private final String name;
@@ -65,6 +65,6 @@ public class Location {
 		if(parent.equals(this)) {
 			return SCOPE_PREFIX;
 		}
-		return parent.getScope().concat(new Scope(COMPONENT_SEPERATOR+name));
+		return parent.getScope().concat(new Scope(ScopeProvider.SEPARATOR+name));
 	}
 }

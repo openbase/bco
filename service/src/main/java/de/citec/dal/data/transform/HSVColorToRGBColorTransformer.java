@@ -6,7 +6,7 @@
 package de.citec.dal.data.transform;
 
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.exception.TypeNotSupportedException;
+import de.citec.jul.exception.TypeNotSupportedException;
 import java.awt.Color;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;

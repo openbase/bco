@@ -8,6 +8,7 @@ package de.citec.dal.hal.devices.fibaro;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.MotionStateTransformer;
 import de.citec.dal.data.transform.TamperStateTransformer;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.al.BatteryController;
@@ -15,6 +16,7 @@ import de.citec.dal.hal.al.BrightnessSensorController;
 import de.citec.dal.hal.al.MotionSensorController;
 import de.citec.dal.hal.al.TamperSwitchController;
 import de.citec.dal.hal.al.TemperatureSensorController;
+import de.citec.jul.exception.VerificatioinFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;
@@ -43,7 +45,7 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
 
-    public F_MotionSensorController(final String id, String label, final Location location) throws RSBBindingException {
+    public F_MotionSensorController(final String id, String label, final Location location) throws VerificatioinFailedException, DALException {
         super(id, label, location, F_MotionSensor.newBuilder());
 
         builder.setId(id);

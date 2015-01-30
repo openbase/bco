@@ -9,7 +9,7 @@ import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import de.citec.dal.service.rsb.RSBCommunicationService;
+import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;

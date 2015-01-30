@@ -1,83 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
     
-	<prerequisites>
-		<maven>3.0</maven>
-	</prerequisites>
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
     
-	<groupId>de.citec</groupId>
-	<artifactId>dal</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
-	<name>DAL</name>
-	<description>Device Abstraction Layer</description>
+    <groupId>de.citec</groupId>
+    <artifactId>dal</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>DAL</name>
+    <description>Device Abstraction Layer</description>
     
-	<organization>
-		<name>DC</name>
-		<url>https://www.cit-ec.de</url>
-	</organization>
-	<scm>
-		<developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</developerConnection>
-		<url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</url>
-	</scm>
+    <organization>
+        <name>DC</name>
+        <url>https://www.cit-ec.de</url>
+    </organization>
+    <scm>
+        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</developerConnection>
+        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</url>
+    </scm>
     
 	
     
-	<packaging>pom</packaging>
+    <packaging>pom</packaging>
     
-	<modules>
-		<module>remote</module>
-		<module>service</module>
-		<module>visual</module>
-	</modules>
+    <modules>
+        <module>remote</module>
+        <module>service</module>
+        <module>visual</module>
+    </modules>
     
-	<dependencies>
-		<dependency>
-			<groupId>de.cit-ec</groupId>
-			<artifactId>jps</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>rsb</groupId>
-			<artifactId>rsb</artifactId>
-			<version>0.11.0</version>
-		</dependency>
-		<dependency>
-			<groupId>rsb</groupId>
-			<artifactId>rst</artifactId>
-			<version>0.11-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>rsb</groupId>
-			<artifactId>rst-sandbox</artifactId>
-			<version>0.11-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.7</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.7</version>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>de.cit-ec</groupId>
+            <artifactId>jps</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.rsb</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rsb</artifactId>
+            <version>0.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rst</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rst-sandbox</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<extensions>
-			<!-- Enabling the use of SSH -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh-external</artifactId>
-				<version>2.8</version>
-			</extension>
-		</extensions>
-	</build>
+    <build>
+        <extensions>
+            <!-- Enabling the use of SSH -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>2.8</version>
+            </extension>
+        </extensions>
+    </build>
 </project>

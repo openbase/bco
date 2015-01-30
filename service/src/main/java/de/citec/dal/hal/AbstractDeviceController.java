@@ -13,11 +13,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
+import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificatioinFailedException;
 import de.citec.dal.hal.al.HardwareUnit;
-import de.citec.dal.service.rsb.RSBCommunicationService;
-import de.citec.dal.service.rsb.RSBInformerInterface.InformerType;
+import de.citec.jul.rsb.RSBCommunicationService;
+import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Future;
@@ -48,7 +49,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
 	protected OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
-	public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws RSBBindingException {
+	public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws VerificatioinFailedException, DALException {
 		super(generateScope(id, location), builder);
 		this.id = id;
 		this.label = label;
@@ -63,13 +64,13 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		try {
 			init(InformerType.Distributed);
 		} catch (RSBException ex) {
-			throw new RSBBindingException("Could not init RSBCommunicationService!", ex);
+			throw new DALException("Could not init RSBCommunicationService!", ex);
 		}
 
 		try {
 			initHardwareMapping();
 		} catch (Exception ex) {
-			throw new RSBBindingException("Could not apply hardware mapping for " + getClass().getSimpleName() + "!", ex);
+			throw new DALException("Could not apply hardware mapping for " + getClass().getSimpleName() + "!", ex);
 		}
 	}
 

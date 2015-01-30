@@ -5,6 +5,7 @@
  */
 package de.citec.dal.service;
 
+import de.citec.jul.schedule.WatchDog;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

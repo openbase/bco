@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.HandleSensorType;

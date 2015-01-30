@@ -7,7 +7,7 @@ package de.citec.dal.service;
 
 import java.util.Map;
 import de.citec.dal.hal.AbstractDeviceController;
-import de.citec.dal.service.rsb.RSBInformerPool;
+import de.citec.jul.rsb.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;

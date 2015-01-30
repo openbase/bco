@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.TreeMap;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.AbstractUnitController;
-import de.citec.dal.util.NotAvailableException;
+import de.citec.jul.exception.NotAvailableException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

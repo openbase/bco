@@ -5,11 +5,11 @@
  */
 package de.citec.dal.service;
 
-import de.citec.dal.service.rsb.RSBRemoteService;
+import de.citec.jul.rsb.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.util.NotAvailableException;
-import de.citec.dal.util.Observable;
-import de.citec.dal.util.Observer;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 
 /**
  *
