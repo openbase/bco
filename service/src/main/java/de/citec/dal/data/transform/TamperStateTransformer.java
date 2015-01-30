@@ -19,7 +19,7 @@ public class TamperStateTransformer {
 		switch ((int) state) {
 			case 0:
 				return TamperType.Tamper.TamperState.NO_TAMPER;
-			case 1:
+			case 255:
 				return TamperType.Tamper.TamperState.TAMPER;
 			default:
 				throw new RSBBindingException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + state + "] is unknown!");
@@ -31,7 +31,7 @@ public class TamperStateTransformer {
 			case NO_TAMPER:
 				return 0d;
 			case TAMPER:
-				return 1d;
+				return 255d;
 			case UNKNOWN:
 				throw new TypeNotSupportedException(tamperState, Double.class);
 			default:
