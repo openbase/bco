@@ -27,7 +27,7 @@ public class LightRemote extends RSBRemoteService<LightType.Light> {
     public LightRemote() {
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPowerState(final PowerType.Power state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", state);
     }
 
