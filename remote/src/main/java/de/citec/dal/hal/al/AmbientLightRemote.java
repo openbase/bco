@@ -48,8 +48,11 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
         callMethodAsync("setPowerState", state);
     }
     
+    public void setBrightness(final double brightness) throws DALException {
+        callMethodAsync("setBrightness", brightness);
+    }
+
     @Override
     public void notifyUpdated(AmbientLightType.AmbientLight data) {
-        
     }
 }

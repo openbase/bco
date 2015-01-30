@@ -93,29 +93,29 @@ public class DALService {
 			Location control = new Location("control");
 
 			try {
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_001", "USBCharger_2", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_002", "USBCharger_3", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_003", "USBCharger_4", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_004", "Fan", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_005", "", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_006", "", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_007", "", control));
-				registry.register(new PW_PowerPlugController("PW_PowerPlug_008", "", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_001", "USBCharger_2", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_002", "USBCharger_3", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_003", "USBCharger_4", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_004", "Fan", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_005", "", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_006", "", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_007", "", control));
+//				registry.register(new PW_PowerPlugController("PW_PowerPlug_008", "", control));
 
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_000", "Entrance", wardrobe));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_001", "1", kitchen));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_002", "2", kitchen));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_003", "3", bath));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_004", "4", sports));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_005", "5", sports));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_006", "6", living));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_007", "7", living));
-				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_008", "8", sports));
-
-				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_000", "WindowLeft", living));
-				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_001", "WindowRight", living));
-				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_002", "Window", sports));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_000", "Entrance", wardrobe));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_001", "1", kitchen));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_002", "2", kitchen));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_003", "3", bath));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_004", "4", sports));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_005", "5", sports));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_006", "6", living));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_007", "7", living));
+//				registry.register(new HM_ReedSwitchController("HM_ReedSwitch_008", "8", sports));
+//
+//				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_000", "WindowLeft", living));
+//				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_001", "WindowRight", living));
+//				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_002", "Window", sports));
 
 				registry.register(new F_MotionSensorController("F_MotionSensor_000", "Entrance", wardrobe));
 				registry.register(new F_MotionSensorController("F_MotionSensor_001", "Hallway", wardrobe));
@@ -182,17 +182,17 @@ public class DALService {
 				registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_006", "Global_2", bath));
 				registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_007", "Global_3", bath));
 
-				registry.register(new HA_TYA606EController("HA_TYA606E_000", "1", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_001", "2", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_002", "3", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_003", "4", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_004", "5", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_005", "6", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_006", "7", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_007", "8", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_008", "9", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_009", "10", control));
-				registry.register(new HA_TYA606EController("HA_TYA606E_010", "11", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_000", "1", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_001", "2", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_002", "3", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_003", "4", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_004", "5", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_005", "6", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_006", "7", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_007", "8", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_008", "9", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_009", "10", control));
+//				registry.register(new HA_TYA606EController("HA_TYA606E_010", "11", control));
 
 				String[] giraLabel0 = {"Button_1", "Button_2", "Button_3", "Button_4"};
 				registry.register(new GI_5142Controller("GI_5142_000", "Entrance", giraLabel0, bath));

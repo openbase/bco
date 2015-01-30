@@ -7,10 +7,8 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
-import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.patterns.EventCallback;
 import rst.homeautomation.TemperatureSensorType;
 import rst.homeautomation.TemperatureSensorType.TemperatureSensor;
 
