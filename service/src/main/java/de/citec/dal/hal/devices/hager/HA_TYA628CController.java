@@ -44,18 +44,18 @@ public class HA_TYA628CController extends AbstractDeviceController<HA_TYA628CTyp
     private final RollershutterController rollershutter_6;
     private final RollershutterController rollershutter_7;
 
-    public HA_TYA628CController(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
+    public HA_TYA628CController(final String id, final String label, final String[] unitLabel, final Location location) throws VerificatioinFailedException, DALException {
         super(id, label, location, HA_TYA628CType.HA_TYA628C.newBuilder());
 
         builder.setId(id);
-        this.rollershutter_0 = new RollershutterController(COMPONENT_ROLLERSHUTTER_0, label, this, builder.getRollershutter0Builder());
-        this.rollershutter_1 = new RollershutterController(COMPONENT_ROLLERSHUTTER_1, label, this, builder.getRollershutter1Builder());
-        this.rollershutter_2 = new RollershutterController(COMPONENT_ROLLERSHUTTER_2, label, this, builder.getRollershutter2Builder());
-        this.rollershutter_3 = new RollershutterController(COMPONENT_ROLLERSHUTTER_3, label, this, builder.getRollershutter3Builder());
-        this.rollershutter_4 = new RollershutterController(COMPONENT_ROLLERSHUTTER_4, label, this, builder.getRollershutter4Builder());
-        this.rollershutter_5 = new RollershutterController(COMPONENT_ROLLERSHUTTER_5, label, this, builder.getRollershutter5Builder());
-        this.rollershutter_6 = new RollershutterController(COMPONENT_ROLLERSHUTTER_6, label, this, builder.getRollershutter6Builder());
-        this.rollershutter_7 = new RollershutterController(COMPONENT_ROLLERSHUTTER_7, label, this, builder.getRollershutter7Builder());
+        this.rollershutter_0 = new RollershutterController(COMPONENT_ROLLERSHUTTER_0, unitLabel[0], this, builder.getRollershutter0Builder());
+        this.rollershutter_1 = new RollershutterController(COMPONENT_ROLLERSHUTTER_1, unitLabel[1], this, builder.getRollershutter1Builder());
+        this.rollershutter_2 = new RollershutterController(COMPONENT_ROLLERSHUTTER_2, unitLabel[2], this, builder.getRollershutter2Builder());
+        this.rollershutter_3 = new RollershutterController(COMPONENT_ROLLERSHUTTER_3, unitLabel[3], this, builder.getRollershutter3Builder());
+        this.rollershutter_4 = new RollershutterController(COMPONENT_ROLLERSHUTTER_4, unitLabel[4], this, builder.getRollershutter4Builder());
+        this.rollershutter_5 = new RollershutterController(COMPONENT_ROLLERSHUTTER_5, unitLabel[5], this, builder.getRollershutter5Builder());
+        this.rollershutter_6 = new RollershutterController(COMPONENT_ROLLERSHUTTER_6, unitLabel[6], this, builder.getRollershutter6Builder());
+        this.rollershutter_7 = new RollershutterController(COMPONENT_ROLLERSHUTTER_7, unitLabel[7], this, builder.getRollershutter7Builder());
         this.register(rollershutter_0);
         this.register(rollershutter_1);
         this.register(rollershutter_2);

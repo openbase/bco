@@ -10,6 +10,7 @@ import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.devices.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.devices.gira.GI_5133Controller;
 import de.citec.dal.hal.devices.gira.GI_5142Controller;
+import de.citec.dal.hal.devices.hager.HA_TYA628CController;
 import de.citec.dal.hal.devices.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.devices.philips.PH_Hue_GU10Controller;
 import de.citec.dal.service.DALRegistry;
@@ -208,6 +209,9 @@ public class DALService {
 
 				String[] giraLabel3 = {"Button_7", "Button_8", "Button_9", "Button_10", "Button_11", "Button_12"};
 				registry.register(new GI_5133Controller("GI_5133_003", "Hallway", giraLabel3, wardrobe));
+                
+                String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
+                registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
 			} catch (DALException | VerificatioinFailedException ex) {
 				logger.warn("Could not initialize devices!", ex);
 			}
