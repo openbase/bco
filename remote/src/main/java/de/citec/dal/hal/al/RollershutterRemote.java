@@ -26,7 +26,7 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
 	public RollershutterRemote() {
 	}
 
-	public void setShutterState(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+	public void setShutterState(final ShutterType.Shutter state) throws CouldNotPerformException {
 		callMethodAsync("setShutterState", state);
 	}
 

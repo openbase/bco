@@ -30,12 +30,9 @@ import rst.vision.HSVColorType.HSVColor;
 public class AmbientLightController extends AbstractUnitController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
     public AmbientLightController(String id, final String label, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws DALException {
@@ -100,12 +97,12 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
             }
         }
     }
-    
+
     public void setBrightness(double brightness) throws RSBBindingException, TypeNotSupportedException {
-        logger.debug("Setting [" + id + "] to Brightness[" + brightness + "]");    
+        logger.debug("Setting [" + id + "] to Brightness[" + brightness + "]");
         setColor(cloneBuilder().getColorBuilder().setValue(brightness).build());
     }
-    
+
     public class SetBrightnessCallback extends EventCallback {
 
         @Override
