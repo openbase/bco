@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.service;
+package de.citec.dal.visual.util;
 
 import de.citec.jul.rsb.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;

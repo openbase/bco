@@ -126,7 +126,7 @@
         </Container>
       </SubComponents>
     </Container>
-    <Component class="de.citec.dal.service.UnitPanel" name="unitPanel">
+    <Component class="de.citec.dal.visual.unit.UnitPanel" name="unitPanel">
     </Component>
   </SubComponents>
 </Form>

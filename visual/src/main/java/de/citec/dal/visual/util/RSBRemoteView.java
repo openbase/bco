@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.service;
+package de.citec.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.jul.rsb.RSBRemoteService;
@@ -11,7 +11,6 @@ import de.citec.dal.exception.DALException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;

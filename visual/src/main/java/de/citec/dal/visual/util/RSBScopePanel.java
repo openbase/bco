@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.service;
+package de.citec.dal.visual.util;
 
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.pattern.Observable;
@@ -16,7 +16,7 @@ import rsb.Scope;
  *
  * @author nuc
  */
-public class ScopePanel extends javax.swing.JPanel {
+public class RSBScopePanel extends javax.swing.JPanel {
 
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -25,7 +25,7 @@ public class ScopePanel extends javax.swing.JPanel {
     /**
      * Creates new form ScopePanel
      */
-    public ScopePanel() {
+    public RSBScopePanel() {
         initComponents();
         observable = new Observable<>();
     }

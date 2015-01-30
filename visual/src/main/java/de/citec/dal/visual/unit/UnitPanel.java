@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.service;
+package de.citec.dal.visual.unit;
 
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.service.DALRegistry;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;

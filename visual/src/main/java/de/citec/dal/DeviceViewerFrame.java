@@ -7,9 +7,9 @@ package de.citec.dal;
 
 import de.citec.dal.hal.AbstractUnitController;
 import de.citec.dal.hal.al.AmbientLightController;
-import de.citec.dal.hal.al.AmbientLightView;
+import de.citec.dal.visual.unit.AmbientLightView;
 import de.citec.dal.service.DALRegistry;
-import de.citec.dal.service.RSBRemoteView;
+import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.dal.exception.DALException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -24,101 +24,101 @@ import rsb.Scope;
  */
 public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Scope> {
 
-	private final Object REMOTE_VIEW_LOCK = new Object();
+    private final Object REMOTE_VIEW_LOCK = new Object();
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	private RSBRemoteView remoteView;
-	private final DALRegistry registry = DALRegistry.getInstance();
+    private RSBRemoteView remoteView;
+    private final DALRegistry registry = DALRegistry.getInstance();
 
-	/**
-	 * Creates new form DeviceViewerFrame
-	 */
-	public DeviceViewerFrame() {
-		initComponents();
-		initTypeComboBox();
-		setRemoteView(new AmbientLightView());
-		unitPanel.addObserver(this);
-	}
+    /**
+     * Creates new form DeviceViewerFrame
+     */
+    public DeviceViewerFrame() {
+        initComponents();
+        initTypeComboBox();
+        setRemoteView(new AmbientLightView());
+        unitPanel.addObserver(this);
+    }
 
-	public final void setRemoteView(RSBRemoteView remoteView) {
-		synchronized (REMOTE_VIEW_LOCK) {
-			logger.info("Set remote view: " + remoteView.getClass().getSimpleName());
+    public final void setRemoteView(RSBRemoteView remoteView) {
+        synchronized (REMOTE_VIEW_LOCK) {
+            logger.info("Set remote view: " + remoteView.getClass().getSimpleName());
 
-			if (this.remoteView != null) {
-				this.remoteView.shutdown();
-				remoteContextPanel.remove(remoteView);
-			}
+            if (this.remoteView != null) {
+                this.remoteView.shutdown();
+                remoteContextPanel.remove(remoteView);
+            }
 
-			// Init RemoteView
-			this.remoteView = remoteView;
-			try {
-				remoteView.setScope(unitPanel.getScope());
-			} catch (DALException ex) {
-				logger.error("Could not setup remote view!", ex);
-			}
+            // Init RemoteView
+            this.remoteView = remoteView;
+            try {
+                remoteView.setScope(unitPanel.getScope());
+            } catch (DALException ex) {
+                logger.error("Could not setup remote view!", ex);
+            }
 
-			// Setup context panel
-			remoteContextPanel.add(remoteView);
-		}
-		remoteContextPanel.revalidate();
+            // Setup context panel
+            remoteContextPanel.add(remoteView);
+        }
+        remoteContextPanel.revalidate();
 
-		this.pack();
-	}
+        this.pack();
+    }
 
-	class UnitClassContainer<T> {
+    class UnitClassContainer<T> {
 
-		private final Class<T> clazz;
-		private final String label;
+        private final Class<T> clazz;
+        private final String label;
 
-		public UnitClassContainer(Class<T> clazz, String label) {
-			this.clazz = clazz;
-			this.label = label;
-		}
+        public UnitClassContainer(Class<T> clazz, String label) {
+            this.clazz = clazz;
+            this.label = label;
+        }
 
-		public Class<T> getClazz() {
-			return clazz;
-		}
+        public Class<T> getClazz() {
+            return clazz;
+        }
 
-		public String getLabel() {
-			return label;
-		}
+        public String getLabel() {
+            return label;
+        }
 
-		@Override
-		public String toString() {
-			return label;
-		}
-	}
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
 
-	private void initTypeComboBox() {
-		ArrayList<Class<? extends AbstractUnitController>> unitClasses = new ArrayList();
+    private void initTypeComboBox() {
+        ArrayList<Class<? extends AbstractUnitController>> unitClasses = new ArrayList();
 //		for (Class<? extends AbstractUnitController> unitClass : registry.getRegisteredUnitClasses()) {
 //			unitClasses.add(unitClass);
 //		}
-		unitClasses.add(AmbientLightController.class);
-		typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitClasses.toArray()));
-		typeComboBox.setSelectedItem(0);
-		unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
-	}
+        unitClasses.add(AmbientLightController.class);
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitClasses.toArray()));
+        typeComboBox.setSelectedItem(0);
+        unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
+    }
 
-	@Override
-	public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
-		if (remoteView == null) {
-			return;
-		}
+    @Override
+    public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
+        if (remoteView == null) {
+            return;
+        }
 
-		remoteView.setEnabled(false);
-		remoteView.setScope(scope);
-		remoteView.setEnabled(true);
+        remoteView.setEnabled(false);
+        remoteView.setScope(scope);
+        remoteView.setEnabled(true);
 
-	}
+    }
 
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
-	@SuppressWarnings("unchecked")
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -126,7 +126,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         typeComboBox = new javax.swing.JComboBox();
         jPanel3 = new javax.swing.JPanel();
         remoteContextPanel = new javax.swing.JPanel();
-        unitPanel = new de.citec.dal.service.UnitPanel();
+        unitPanel = new de.citec.dal.visual.unit.UnitPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -200,54 +200,54 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     }// </editor-fold>//GEN-END:initComponents
 
     private void typeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboBoxActionPerformed
-		unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
+        unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
     }//GEN-LAST:event_typeComboBoxActionPerformed
 
-	/**
-	 * l
-	 *
-	 * @param args the command line arguments
-	 */
-	public static void main(String args[]) {
-		/* Set the Nimbus look and feel */
+    /**
+     * l
+     *
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-		 * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-		 */
-		try {
-			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					javax.swing.UIManager.setLookAndFeel(info.getClassName());
-					break;
-				}
-			}
-		} catch (ClassNotFoundException ex) {
-			java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		} catch (InstantiationException ex) {
-			java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		} catch (IllegalAccessException ex) {
-			java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-			java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		}
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
         //</editor-fold>
 
-		/* Create and display the form */
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
 
-				new DALService(); // TODO mpohling: load devices, remove aftern device manager does this job!!!
-				new DeviceViewerFrame().setVisible(true);
-			}
-		});
-	}
+                new DALService(); // TODO mpohling: load devices, remove aftern device manager does this job!!!
+                new DeviceViewerFrame().setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel remoteContextPanel;
     private javax.swing.JComboBox typeComboBox;
-    private de.citec.dal.service.UnitPanel unitPanel;
+    private de.citec.dal.visual.unit.UnitPanel unitPanel;
     // End of variables declaration//GEN-END:variables
 }
