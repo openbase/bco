@@ -33,13 +33,13 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
     }
 
     public void updateMotionState(final MotionType.Motion.MotionState state) {
-        builder.getStateBuilder().setState(state);
+        builder.getMotionStateBuilder().setState(state);
         notifyChange();
     }
 
     public MotionState getMotionState() {
-        logger.debug("Getting [" + id + "] State: [" + builder.getState() + "]");
-        return builder.getState().getState();
+        logger.debug("Getting [" + id + "] State: [" + builder.getMotionState() + "]");
+        return builder.getMotionState().getState();
     }
 
     public class GetMotionState extends EventCallback {

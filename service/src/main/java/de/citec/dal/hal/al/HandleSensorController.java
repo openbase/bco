@@ -32,13 +32,13 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
     }
 
     public void updateOpenClosedTiltedState(final OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state) {
-        builder.getStateBuilder().setState(state);
+        builder.getHandleStateBuilder().setState(state);
         notifyChange();
     }
 
     public OpenClosedTiltedState getRotaryHandleState() {
-        logger.debug("Getting [" + id + "] State: [" + builder.getState() + "]");
-        return builder.getState().getState();
+        logger.debug("Getting [" + id + "] State: [" + builder.getHandleState() + "]");
+        return builder.getHandleState().getState();
     }
 
     public class GetRotaryHandleState extends EventCallback {
