@@ -16,7 +16,7 @@ import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.hal.unit.MotionSensorController;
 import de.citec.dal.hal.unit.TamperSwitchController;
 import de.citec.dal.hal.unit.TemperatureSensorController;
-import de.citec.jul.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;
@@ -45,7 +45,7 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
 
-    public F_MotionSensorController(final String id, String label, final Location location) throws VerificatioinFailedException, DALException  {
+    public F_MotionSensorController(final String id, String label, final Location location) throws VerificationFailedException, DALException  {
         super(id, label, location, F_MotionSensor.newBuilder());
 
         builder.setId(id);

@@ -7,10 +7,13 @@ package de.citec.dal.util;
 
 import java.util.Map;
 import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rsb.InvalidStateException;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
+import de.citec.jul.exception.NotAvailableException;
 
 /**
  *
@@ -61,21 +64,23 @@ public class HardwareManager {
 		}
 	}
 
-	public void internalReceiveUpdate(OpenhabCommand command) {
+	public void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException, NotAvailableException {
 		logger.debug("Incomming Item[" + command.getItem() + "] State[" + command.getType() + "].");
 		String itemName = command.getItem();
 		if (!active) {
-			logger.warn("Skip internal update: RSBBinding not activated!");
-			return;
+			throw new InvalidStateException("Hardware manager is not active!");
 		}
 		AbstractDeviceController hardware;
 		synchronized (SYNC_LOCK) {
-			Map.Entry<String, AbstractDeviceController> floorEntry = registry.getDeviceMap().floorEntry(itemName);
-			hardware = floorEntry.getValue();
+			try {
+				Map.Entry<String, AbstractDeviceController> floorEntry = registry.getDeviceMap().floorEntry(itemName);
+				hardware = floorEntry.getValue();
+			} catch (NullPointerException ex) {
+				throw new NotAvailableException("Item[" + itemName + "] not registered!");
+			}
 		}
 		if (!itemName.startsWith(hardware.getId())) {
-			logger.debug("Skip item update [" + itemName + "=" + command.getType() + "] because item is not registered.");
-			return;
+			throw new CouldNotPerformException("Skip item update [" + itemName + "=" + command.getType() + "]: Item is not registered.");
 		}
 		hardware.internalReceiveUpdate(itemName, command);
 	}

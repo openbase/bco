@@ -12,7 +12,7 @@ import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.AmbientLightController;
-import de.citec.jul.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.philips.PH_Hue_E27Type;
@@ -36,7 +36,7 @@ public class PH_Hue_E27Controller extends AbstractDeviceController<PH_Hue_E27, P
 
     private final AmbientLightController ambientLight;
 
-    public PH_Hue_E27Controller(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
+    public PH_Hue_E27Controller(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, PH_Hue_E27.newBuilder());
         super.builder.setId(id);
         this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label, this, builder.getAmbientLightBuilder());

@@ -17,7 +17,7 @@ import de.citec.dal.util.DALRegistry;
 import de.citec.dal.util.HardwareManager;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
-import de.citec.jul.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,7 +212,7 @@ public class DALService {
                 
                 String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
                 registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
-			} catch (DALException | VerificatioinFailedException ex) {
+			} catch (DALException | VerificationFailedException ex) {
 				logger.warn("Could not initialize devices!", ex);
 			}
 		}

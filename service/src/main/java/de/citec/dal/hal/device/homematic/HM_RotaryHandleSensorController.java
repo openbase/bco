@@ -12,7 +12,7 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.HandleSensorController;
-import de.citec.jul.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.homematic.HM_RotaryHandleSensorType;
@@ -35,7 +35,7 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
     private final HandleSensorController handleSensor;
     private final BatteryController battery;
 
-    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
+    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, HM_RotaryHandleSensor.newBuilder());
 
         builder.setId(id);

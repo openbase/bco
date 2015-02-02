@@ -12,7 +12,7 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerPlugController;
-import de.citec.jul.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.plugwise.PW_PowerPlugType;
@@ -36,7 +36,7 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
     private final PowerPlugController powerPlug;
     private final PowerConsumptionSensorController powerConsumption;
 
-    public PW_PowerPlugController(final String id, final String label, final Location location) throws VerificatioinFailedException, DALException {
+    public PW_PowerPlugController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, PW_PowerPlug.newBuilder());
 //        builder.setId(id); //TODO still useful or already setuped in super class?
         this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, label, this, builder.getPowerPlugBuilder());

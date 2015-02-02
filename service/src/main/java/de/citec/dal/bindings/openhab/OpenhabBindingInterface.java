@@ -6,6 +6,7 @@
 package de.citec.dal.bindings.openhab;
 
 import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotPerformException;
 import java.util.concurrent.Future;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
@@ -15,7 +16,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  */
 public interface OpenhabBindingInterface {
             
-    void internalReceiveUpdate(OpenhabCommand command);
+    void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException;
     
     Future executeCommand(OpenhabCommand command) throws RSBBindingException;
 }

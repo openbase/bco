@@ -15,8 +15,9 @@ import java.util.Map;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.jul.exception.VerificatioinFailedException;
 import de.citec.dal.hal.unit.HardwareUnit;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import java.util.Collection;
@@ -38,6 +39,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
 	public final static String ID_SEPERATOR = "_";
 	public final static String TYPE_FILED_ID = "id";
+	public final static String TYPE_FILED_LABEL= "label";
 
 	protected final String id;
 	protected final String label;
@@ -49,7 +51,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
 	protected OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
-	public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws VerificatioinFailedException, DALException {
+	public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws VerificationFailedException, DALException {
 		super(generateScope(id, location), builder);
 		this.id = id;
 		this.label = label;
@@ -58,8 +60,9 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		this.location = location;
 		this.unitMap = new HashMap<>();
 		this.halFunctionMapping = new HashMap<>();
+
 		setField(TYPE_FILED_ID, id);
-//        super.builder.setField(builder.getDescriptorForType().findFieldByName("label"), label); //TODO: Activate after rst integration
+		setField(TYPE_FILED_LABEL, label);
 
 		try {
 			init(InformerType.Distributed);
@@ -74,34 +77,34 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		}
 	}
 
-	public final static String parseHardwareId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificatioinFailedException {
+	public final static String parseHardwareId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificationFailedException {
 		assert id != null;
 		assert hardware != null;
 		String hardwareId = hardware.getSimpleName().replace("Controller", "");
 
 		/* verify given id */
 		if (!id.startsWith(hardwareId)) {
-			throw new VerificatioinFailedException("Given id [" + id + "] does not start with prefix [" + hardwareId + "]!");
+			throw new VerificationFailedException("Given id [" + id + "] does not start with prefix [" + hardwareId + "]!");
 		}
 
 		return hardwareId;
 	}
 
-	public final static String parseInstanceId(String id) throws VerificatioinFailedException {
+	public final static String parseInstanceId(String id) throws VerificationFailedException {
 		String[] split = id.split(ID_SEPERATOR);
 		String instanceId;
 
 		try {
 			instanceId = split[split.length - 1];
 		} catch (IndexOutOfBoundsException ex) {
-			throw new VerificatioinFailedException("Given id [" + id + "] does not contain saperator [" + ID_SEPERATOR + "]");
+			throw new VerificationFailedException("Given id [" + id + "] does not contain saperator [" + ID_SEPERATOR + "]");
 		}
 
 		/* verify instance id */
 		try {
 			Integer.parseInt(instanceId);
 		} catch (NumberFormatException ex) {
-			throw new VerificatioinFailedException("Given id [" + id + "] does not end with a instance nubmer!");
+			throw new VerificationFailedException("Given id [" + id + "] does not end with a instance nubmer!");
 		}
 		return instanceId;
 	}
@@ -116,10 +119,11 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	}
 
 	//TODO tamino: Make AbstractDeviceController openhab independent. Move all type transformations in dal-openhab-binding.
-	public void internalReceiveUpdate(String itemName, OpenhabCommand command) {
+	public void internalReceiveUpdate(String itemName, OpenhabCommand command) throws CouldNotPerformException {
 		logger.debug("internalReceiveUpdate [" + itemName + "=" + command.getType() + "]");
 
 		String id_suffix = itemName.replaceFirst(id + "_", "");
+		//TODO mpohling: Resolve mapping by service not by unit type.
 		Method relatedMethod = halFunctionMapping.get(id_suffix);
 
 		if (relatedMethod == null) {
@@ -161,14 +165,13 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 					break;
 			}
 		} catch (IllegalAccessException ex) {
-			logger.error("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
+			throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
 		} catch (IllegalArgumentException ex) {
-			//logger.error("The given argument is [" + newState.getClass().getName() + "]!");
-			logger.error("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
+			throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
 		} catch (InvocationTargetException ex) {
-			logger.error("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
+			throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
 		} catch (Exception ex) {
-			logger.error("Fatal invocation error!", ex);
+			throw new CouldNotPerformException("Fatal invocation error!", ex);
 		}
 	}
 
@@ -230,3 +233,4 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		return Collections.unmodifiableCollection(unitMap.values());
 	}
 }
+

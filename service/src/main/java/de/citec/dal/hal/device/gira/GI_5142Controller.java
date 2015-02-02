@@ -11,7 +11,7 @@ import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.ButtonController;
-import de.citec.jul.exception.VerificatioinFailedException;
+import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.gira.GI_5142Type;
@@ -38,7 +38,7 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5142Type.GI_5
     private final ButtonController button_2;
     private final ButtonController button_3;
 
-    public GI_5142Controller(final String id, final String label, final String[] unitLabel, final Location location) throws VerificatioinFailedException, DALException {
+    public GI_5142Controller(final String id, final String label, final String[] unitLabel, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, GI_5142Type.GI_5142.newBuilder());
         builder.setId(id);
         this.button_0 = new ButtonController(COMPONENT_BUTTON_0, unitLabel[0], this, builder.getButton0Builder());
@@ -51,6 +51,8 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5142Type.GI_5
         this.register(button_3);
     }
 
+
+	//TODO mpohling: Resolve mapping by service not by unit type.
     @Override
     protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
         halFunctionMapping.put(COMPONENT_BUTTON_0, getClass().getMethod("updateButton_0", OnOff.class));
