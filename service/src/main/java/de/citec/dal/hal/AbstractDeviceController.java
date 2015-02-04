@@ -15,11 +15,13 @@ import java.util.Map;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.unit.HardwareUnit;
+import de.citec.dal.hal.service.Service;
+import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Future;
@@ -35,7 +37,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionTyp
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements HardwareUnit {
+public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements DeviceInterface {
 
 	public final static String ID_SEPERATOR = "_";
 	public final static String TYPE_FILED_ID = "id";
@@ -48,6 +50,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	protected final Location location;
 	protected final Map<String, Method> halFunctionMapping;
 	protected final Map<String, AbstractUnitController> unitMap;
+	protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
 
 	protected OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
@@ -60,6 +63,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		this.location = location;
 		this.unitMap = new HashMap<>();
 		this.halFunctionMapping = new HashMap<>();
+		this.unitServiceHardwareMap = new HashMap<>();
 
 		setField(TYPE_FILED_ID, id);
 		setField(TYPE_FILED_LABEL, label);
@@ -116,6 +120,13 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	@Override
 	public Location getLocation() {
 		return location;
+	}
+
+	public void registerService(Service service, AbstractUnitController unit) {
+		if(!unitServiceHardwareMap.containsKey(unit)) {
+			unitServiceHardwareMap.put(unit, new ArrayList<Service>());
+		}
+		unitServiceHardwareMap.get(unit).add(service);
 	}
 
 	//TODO tamino: Make AbstractDeviceController openhab independent. Move all type transformations in dal-openhab-binding.

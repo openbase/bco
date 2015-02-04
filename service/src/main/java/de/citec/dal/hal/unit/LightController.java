@@ -29,7 +29,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public LightController(String id, final String label, HardwareUnit hardwareUnit, LightType.Light.Builder builder) throws DALException {
+    public LightController(String id, final String label, DeviceInterface hardwareUnit, LightType.Light.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

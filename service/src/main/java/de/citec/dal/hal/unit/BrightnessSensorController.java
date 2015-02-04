@@ -23,7 +23,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
                 new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
     }
 
-    public BrightnessSensorController(String id, final String label, HardwareUnit hardwareUnit, BrightnessSensor.Builder builder) throws DALException {
+    public BrightnessSensorController(String id, final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

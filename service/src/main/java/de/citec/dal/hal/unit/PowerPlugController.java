@@ -34,7 +34,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public PowerPlugController(String id, final String label, HardwareUnit hardwareUnit, PowerPlug.Builder builder) throws DALException {
+    public PowerPlugController(String id, final String label, DeviceInterface hardwareUnit, PowerPlug.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

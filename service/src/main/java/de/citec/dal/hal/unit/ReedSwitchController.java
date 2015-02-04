@@ -27,7 +27,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
                 new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(String id, final String label, HardwareUnit hardwareUnit, ReedSwitch.Builder builder) throws DALException {
+    public ReedSwitchController(String id, final String label, DeviceInterface hardwareUnit, ReedSwitch.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

@@ -142,7 +142,7 @@ public class UnitPanel extends javax.swing.JPanel {
 
 		@Override
 		public String toString() {
-			return label + "@" +unit.getRelatedHardwareUnit().getLocation().getName() + " [" + unit.getScope() + "]";
+			return label + "@" +unit.getDevice().getLocation().getName() + " [" + unit.getScope() + "]";
 		}
 	}
 }

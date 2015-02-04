@@ -21,7 +21,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.AmbientLightType;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -37,8 +36,8 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public AmbientLightController(String id, final String label, HardwareUnit hardwareUnit, AmbientLightType.AmbientLight.Builder builder) throws DALException {
-        super(id, label, hardwareUnit, builder);
+    public AmbientLightController(String id, final String label, DeviceInterface device, AmbientLightType.AmbientLight.Builder builder) throws DALException {
+        super(id, label, device, builder);
     }
 
     @Override
@@ -55,7 +54,8 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     public void setPowerState(final PowerType.Power.PowerState state) throws TypeNotSupportedException, RSBBindingException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
-        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+
+        getDevice().requestUpdate(OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder().build());
         newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
         executeCommand(newBuilder);
     }
@@ -86,7 +86,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     
     @Override
     public void setColor(final HSVColor color) throws RSBBindingException, TypeNotSupportedException {
-        logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
+		logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
+		cloneBuilder().setColor(color);
+
+        
         OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
         newBuilder.setHsb(HSVColorTransformer.transform(color)).setType(OpenhabCommand.CommandType.HSB);
         executeCommand(newBuilder);

@@ -9,7 +9,7 @@ package de.citec.dal.hal.service;
  *
  * @author mpohling
  */
-public interface BrightnessService {
+public interface BrightnessService extends Service {
 
     public void setBrightness(double brightness) throws Exception;
 

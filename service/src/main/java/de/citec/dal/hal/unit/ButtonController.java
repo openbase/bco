@@ -26,7 +26,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
                 new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(String id, final String label, HardwareUnit hardwareUnit, Button.Builder builder) throws DALException {
+    public ButtonController(String id, final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

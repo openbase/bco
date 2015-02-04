@@ -11,7 +11,7 @@ import rst.vision.HSVColorType;
  *
  * @author mpohling
  */
-public interface ColorService {
+public interface ColorService extends Service {
 
     public HSVColorType.HSVColor getColor();
 

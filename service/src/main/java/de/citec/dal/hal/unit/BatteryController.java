@@ -23,7 +23,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
                 new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(String id, final String label, HardwareUnit hardwareUnit, Battery.Builder builder) throws DALException {
+    public BatteryController(String id, final String label, DeviceInterface hardwareUnit, Battery.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

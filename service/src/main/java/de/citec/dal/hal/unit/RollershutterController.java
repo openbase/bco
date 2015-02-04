@@ -35,7 +35,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
                 new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
-    public RollershutterController(String id, final String label, HardwareUnit hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws DALException {
+    public RollershutterController(String id, final String label, DeviceInterface hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

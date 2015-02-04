@@ -27,7 +27,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
                 new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(final String id, final String label, final HardwareUnit hardwareUnit, final MotionSensor.Builder builder) throws DALException {
+    public MotionSensorController(final String id, final String label, final DeviceInterface hardwareUnit, final MotionSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
         
     }

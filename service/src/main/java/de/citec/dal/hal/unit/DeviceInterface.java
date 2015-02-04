@@ -11,7 +11,7 @@ import de.citec.dal.data.Location;
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public interface HardwareUnit {
+public interface DeviceInterface {
 
     public String getId();
 

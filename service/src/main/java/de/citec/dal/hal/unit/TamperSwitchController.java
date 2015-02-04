@@ -24,7 +24,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
                 new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(String id, final String label, HardwareUnit hardwareUnit, TamperSwitch.Builder builder) throws DALException {
+    public TamperSwitchController(String id, final String label, DeviceInterface hardwareUnit, TamperSwitch.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

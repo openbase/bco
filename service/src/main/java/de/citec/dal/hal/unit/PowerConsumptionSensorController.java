@@ -27,7 +27,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
                 new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(String id, final String label, HardwareUnit hardwareUnit, PowerConsumptionSensor.Builder builder) throws DALException {
+    public PowerConsumptionSensorController(String id, final String label, DeviceInterface hardwareUnit, PowerConsumptionSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

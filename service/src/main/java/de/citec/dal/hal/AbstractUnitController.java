@@ -11,7 +11,7 @@ import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.unit.HardwareUnit;
+import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
@@ -35,15 +35,15 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     protected final String id;
     protected final String label;
-    private final HardwareUnit relatedHardwareUnit;
+    private final DeviceInterface device;
 
     protected final OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
 
-    public AbstractUnitController(final String id, final String label, final HardwareUnit relatedHardwareUnit, final MB builder) throws DALException {
-        super(generateScope(id, label, relatedHardwareUnit), builder);
+    public AbstractUnitController(final String id, final String label, final DeviceInterface device, final MB builder) throws DALException {
+        super(generateScope(id, label, device), builder);
         this.id = id;
         this.label = label;
-        this.relatedHardwareUnit = relatedHardwareUnit;
+        this.device = device;
         setField(TYPE_FILED_ID, generateHardwareId());
         setField(TYPE_FILED_LABEL, label);
 
@@ -62,12 +62,12 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return label;
     }
 
-    public HardwareUnit getRelatedHardwareUnit() {
-        return relatedHardwareUnit;
+    public DeviceInterface getDevice() {
+        return device;
     }
 
     public final String generateHardwareId() { //TODO impl static const
-        return relatedHardwareUnit.getId() + "_" + id;
+        return device.getId() + "_" + id;
     }
 
     @Override
@@ -96,7 +96,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return rsbBinding.executeCommand(commandBuilder.build());
     }
 
-    public static Scope generateScope(final String id, final String label, final HardwareUnit hardware) {
+    public static Scope generateScope(final String id, final String label, final DeviceInterface hardware) {
         return hardware.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + id).concat(new Scope(ScopeProvider.SEPARATOR + label)));
     }
 

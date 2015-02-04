@@ -27,7 +27,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
                 new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(String id, final String label, HardwareUnit hardwareUnit, HandleSensor.Builder builder) throws DALException {
+    public HandleSensorController(String id, final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 

@@ -23,7 +23,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
                 new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(String id, final String label, HardwareUnit hardwareUnit, TemperatureSensor.Builder builder) throws DALException {
+    public TemperatureSensorController(String id, final String label, DeviceInterface hardwareUnit, TemperatureSensor.Builder builder) throws DALException {
         super(id, label, hardwareUnit, builder);
     }
 
