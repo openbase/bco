@@ -5,6 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
+import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.unit.UnitInterface;
@@ -29,6 +30,6 @@ public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends O
 
     @Override
     public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        //newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
+        executeCommand(OpenHABCommandFactory.newOnOffCommand(state));
     }
 }
