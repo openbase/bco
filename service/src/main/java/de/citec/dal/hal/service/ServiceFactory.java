@@ -5,7 +5,8 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.unit.DeviceInterface;
+import de.citec.jul.exception.InstantiationException;
 
 /**
  *
@@ -13,10 +14,10 @@ import de.citec.dal.hal.AbstractDeviceController;
  */
 public interface ServiceFactory {
 
-    public abstract BrightnessService newBrightnessService(AbstractDeviceController device, BrightnessService unit);
+    public abstract BrightnessService newBrightnessService(DeviceInterface device, BrightnessService unit) throws InstantiationException;
 
-    public abstract ColorService newColorService(AbstractDeviceController device, ColorService unit);
+    public abstract ColorService newColorService(DeviceInterface device, ColorService unit) throws InstantiationException;
 
-    public abstract PowerService newPowerService(AbstractDeviceController device, PowerService unit);
+    public abstract PowerService newPowerService(DeviceInterface device, PowerService unit) throws InstantiationException;
     
 }

@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
+import de.citec.dal.hal.service.ServiceFactory;
 
 /**
  *
@@ -231,6 +232,11 @@ public class AbstractHardwareControllerTest {
         }
 
         public void initHardwareMapping() throws NoSuchMethodException, SecurityException {
+        }
+
+        @Override
+        public ServiceFactory getDefaultServiceFactory() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
     

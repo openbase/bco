@@ -5,11 +5,11 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
-import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.dal.hal.unit.DeviceInterface;
 
 /**
  *
@@ -17,21 +17,18 @@ import de.citec.dal.hal.service.ServiceFactory;
  */
 public class OpenhabServiceFactory implements ServiceFactory {
 
-    
-    
-    public BrightnessService newBrightnessService(AbstractDeviceController device, BrightnessService unit) {
-          return new BrightnessServiceImpl(device, unit);
+    @Override
+    public BrightnessService newBrightnessService(DeviceInterface device, BrightnessService unit) {
+        return new BrightnessServiceImpl(device, unit);
     }
 
     @Override
-    public ColorService newColorService(AbstractDeviceController device, ColorService unit) {
+    public ColorService newColorService(DeviceInterface device, ColorService unit) {
         return new ColorServiceImpl(device, unit);
     }
 
     @Override
-    public PowerService newPowerService(AbstractDeviceController device, PowerService unit) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public PowerService newPowerService(DeviceInterface device, PowerService unit) {
+        return new PowerServiceImpl(device, unit);
     }
-
-     
 }

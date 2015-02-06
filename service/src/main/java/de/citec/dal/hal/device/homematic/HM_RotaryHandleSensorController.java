@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.device.homematic;
 
+import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedTiltedStateTransformer;
 import de.citec.dal.exception.DALException;
@@ -12,6 +13,7 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.HandleSensorController;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -22,7 +24,7 @@ import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
  *
  * @author thuxohl
  */
-public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
+public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
 
     private final static String COMPONENT_HANDLE_SENSOR = "HandleSensor";
     private final static String COMPONENT_BATTERY = "Battery";
@@ -35,7 +37,7 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
     private final HandleSensorController handleSensor;
     private final BatteryController battery;
 
-    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
+    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, DALException, InstantiationException {
         super(id, label, location, HM_RotaryHandleSensor.newBuilder());
 
         data.setId(id);

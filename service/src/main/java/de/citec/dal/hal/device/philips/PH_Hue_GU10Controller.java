@@ -5,14 +5,14 @@
  */
 package de.citec.dal.hal.device.philips;
 
+import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.AmbientLightController;
-import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.philips.PH_Hue_GU10Type;
@@ -24,7 +24,7 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  *
  * @author mpohling
  */
-public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
+public class PH_Hue_GU10Controller extends AbstractOpenHABDeviceController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
 
     private final static String COMPONENT_AMBIENT_LIGHT = "AmbientLight";
     private final static String COMPONENT_POWER_SWITCH = "PowerSwitch";
@@ -36,7 +36,7 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
 
     private final AmbientLightController ambientLight;
 
-    public PH_Hue_GU10Controller(final String id, final String label,final Location location) throws VerificationFailedException, DALException {
+    public PH_Hue_GU10Controller(final String id, final String label,final Location location) throws InstantiationException  {
         super(id, label,location, PH_Hue_GU10.newBuilder());
         super.data.setId(id);
         this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label,this, data.getAmbientLightBuilder());
@@ -52,7 +52,7 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
     public void updateAmbientLight(final HSB type) throws RSBBindingException {
         try {
             ambientLight.updateColor(HSVColorTransformer.transform(type));
-        } catch (RSBBindingException ex) {
+        } catch (CouldNotPerformException ex) {
             logger.error("Could not updateAmbientLight!", ex);
         }
     }
@@ -60,7 +60,7 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
     public void updatePowerSwitch(final OnOff type) throws RSBBindingException {
         try {
             ambientLight.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
+        } catch (CouldNotPerformException ex) {
             logger.error("Not able to transform from OnOffType to PowerState!", ex);
         }
     }

@@ -8,6 +8,7 @@ package de.citec.dal.bindings.openhab;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.service.Service;
+import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -25,11 +26,11 @@ public class OpenHABServiceImpl<ST extends Service> {
     
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    protected final AbstractDeviceController device;
+    protected final DeviceInterface device;
     protected final ST unit;
     private final String deviceId;
 
-    public OpenHABServiceImpl(AbstractDeviceController device, ST unit) {
+    public OpenHABServiceImpl(DeviceInterface device, ST unit) {
         this.device = device;
         this.unit = unit;
         this.deviceId = generateHardwareId();

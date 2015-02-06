@@ -6,18 +6,19 @@
 package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
+import de.citec.jul.exception.InstantiationException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import rsb.RSBException;
 import rsb.Scope;
+import rsb.patterns.LocalServer;
 
 /**
  *
@@ -35,7 +36,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final DeviceInterface device;
     private List<Service> serviceList;
 
-    public AbstractUnitController(final String id, final String label, final DeviceInterface device, final MB builder) throws DALException {
+    public AbstractUnitController(final String id, final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
         super(generateScope(id, label, device), builder);
         this.id = id; // TODO mpohling: Still necessary?
         this.label = label;
@@ -48,7 +49,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         try {
             init(RSBInformerInterface.InformerType.Distributed);
         } catch (RSBException ex) {
-            throw new DALException("Could not init RSBCommunicationService!", ex);
+            throw new InstantiationException("Could not init RSBCommunicationService!", ex);
         }
     }
 
@@ -83,5 +84,10 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + id + "[" + label + "]]";
+    }
+
+    @Override
+    public void registerMethods(LocalServer server) throws RSBException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

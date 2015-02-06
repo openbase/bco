@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -27,7 +28,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
                 new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(String id, final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws DALException {
+    public HandleSensorController(String id, final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 

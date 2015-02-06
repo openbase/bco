@@ -4,6 +4,7 @@ import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
@@ -29,7 +30,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public LightController(String id, final String label, DeviceInterface hardwareUnit, LightType.Light.Builder builder) throws DALException {
+    public LightController(String id, final String label, DeviceInterface hardwareUnit, LightType.Light.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 
@@ -45,9 +46,10 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
 
     public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
-        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
-        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
-        executeCommand(newBuilder);
+        throw new UnsupportedOperationException("Not supported yet.");
+//        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+//        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
+//        executeCommand(newBuilder);
     }
 
     public class SetPowerStateCallback extends EventCallback {
@@ -55,8 +57,9 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                LightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
+                throw new UnsupportedOperationException("Not supported yet.");
+//                LightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
+//                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setPowerState] for [" + LightController.this.getId() + "]", ex);
                 throw ex;

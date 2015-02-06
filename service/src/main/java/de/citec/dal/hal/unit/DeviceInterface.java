@@ -6,6 +6,7 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.data.Location;
+import de.citec.dal.hal.service.ServiceFactory;
 
 /**
  *
@@ -20,4 +21,6 @@ public interface DeviceInterface {
     public String getHardware_id();
 
     public String getInstance_id();
+    
+    public ServiceFactory getDefaultServiceFactory();
 }

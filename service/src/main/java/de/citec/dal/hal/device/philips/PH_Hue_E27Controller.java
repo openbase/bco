@@ -6,19 +6,15 @@
 package de.citec.dal.hal.device.philips;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
-import de.citec.dal.bindings.openhab.service.BrightnessServiceImpl;
-import de.citec.dal.bindings.openhab.service.ColorServiceImpl;
-import de.citec.dal.bindings.openhab.service.PowerServiceImpl;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
 import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.philips.PH_Hue_E27Type;
@@ -36,16 +32,15 @@ public class PH_Hue_E27Controller extends AbstractOpenHABDeviceController<PH_Hue
     private final static String COMPONENT_POWER_SWITCH = "PowerSwitch";
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(PH_Hue_E27Type.PH_Hue_E27.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PH_Hue_E27Type.PH_Hue_E27.getDefaultInstance()));
     }
 
     private final AmbientLightController ambientLight;
 
-    public PH_Hue_E27Controller(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
+    public PH_Hue_E27Controller(final String id, final String label, final Location location) throws InstantiationException {
         super(id, label, location, PH_Hue_E27.newBuilder());
         super.data.setId(id);
-        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label, this, data.getAmbientLightBuilder(), new PowerServiceImpl(), new ColorServiceImpl(), new BrightnessServiceImpl());
+        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label, this, data.getAmbientLightBuilder(), getDefaultServiceFactory());
         this.register(ambientLight);
     }
 
@@ -70,10 +65,8 @@ public class PH_Hue_E27Controller extends AbstractOpenHABDeviceController<PH_Hue
     public void updatePowerSwitch(final OnOff type) throws CouldNotPerformException {
         try {
             ambientLight.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
+        } catch (CouldNotTransformException ex) {
             throw new CouldNotPerformException("Could not updatePowerSwitch!", ex);
         }
     }
-    
-    
 }

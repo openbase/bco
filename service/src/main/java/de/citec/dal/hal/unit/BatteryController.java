@@ -5,8 +5,8 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.BatteryType;
@@ -23,7 +23,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
                 new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(String id, final String label, DeviceInterface hardwareUnit, Battery.Builder builder) throws DALException {
+    public BatteryController(String id, final String label, DeviceInterface hardwareUnit, Battery.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 

@@ -5,13 +5,13 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
@@ -39,12 +39,15 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     private final BrightnessService brightnessService;
     private final PowerService powerService;
 
-    public AmbientLightController(final String id, final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder,
-            final ServiceFactory serviceFactory) throws DALException {
+    public AmbientLightController(final String id, final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
+        this(id, label, device, builder, device.getDefaultServiceFactory());
+    }
+    
+    public AmbientLightController(final String id, final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
         super(id, label, device, builder);
-        this.powerService = serviceFactory.newPowerService();
-        this.colorService = serviceFactory.newColorService();
-        this.brightnessService = serviceFactory.newBrightnessService();
+        this.powerService = serviceFactory.newPowerService(device, this);
+        this.colorService = serviceFactory.newColorService(device, this);
+        this.brightnessService = serviceFactory.newBrightnessService(device, this);
     }
 
     @Override
@@ -59,11 +62,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         notifyChange();
     }
 
+    @Override
     public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
         powerService.setPowerState(state);
-//        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
-//        executeCommand(newBuilder);
     }
 
     @Override

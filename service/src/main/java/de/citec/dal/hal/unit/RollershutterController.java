@@ -5,11 +5,9 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.data.transform.StopMoveStateTransformer;
-import de.citec.dal.data.transform.UpDownStateTransformer;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
@@ -19,7 +17,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.RollershutterType;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.states.ShutterType;
 
 /**
@@ -35,7 +32,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
                 new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
-    public RollershutterController(String id, final String label, DeviceInterface hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws DALException {
+    public RollershutterController(String id, final String label, DeviceInterface hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 
@@ -51,14 +48,14 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setShutterState(final ShutterType.Shutter.ShutterState state) throws RSBBindingException, TypeNotSupportedException {
         logger.debug("Setting [" + id + "] to ShutterState [" + state.name() + "]");
-
-		OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
-        newBuilder.setUpDown(UpDownStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.UPDOWN);
-        executeCommand(newBuilder);
-
-		newBuilder = OpenhabCommand.newBuilder();
-		newBuilder.setStopMove(StopMoveStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.STOPMOVE);
-        executeCommand(newBuilder);
+        throw new UnsupportedOperationException("Not supported yet.");
+//		OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+//        newBuilder.setUpDown(UpDownStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.UPDOWN);
+//        executeCommand(newBuilder);
+//
+//		newBuilder = OpenhabCommand.newBuilder();
+//		newBuilder.setStopMove(StopMoveStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.STOPMOVE);
+//        executeCommand(newBuilder);
     }
 
     public class SetShutterStateCallback extends EventCallback {
@@ -82,23 +79,24 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     public void setPosition(final float position) throws RSBBindingException {
         logger.debug("Setting [" + id + "] to Position [" + position + "]");
-        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
-        newBuilder.setDecimal(position).setType(OpenhabCommand.CommandType.DECIMAL);
-        executeCommand(newBuilder);
+        throw new UnsupportedOperationException("Not supported yet.");
+//        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
+//        newBuilder.setDecimal(position).setType(OpenhabCommand.CommandType.DECIMAL);
+//        executeCommand(newBuilder);
     }
 
-    public class SetPositionCallback extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                RollershutterController.this.setPosition((Float) request.getData());
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setPosition] for " + RollershutterController.this, ex);
-                throw ex;
-            }
-        }
-
-    }
+//    public class SetPositionCallback extends EventCallback {
+//
+//        @Override
+//        public Event invoke(final Event request) throws Throwable {
+//            try {
+//                RollershutterController.this.setPosition((Float) request.getData());
+//                return RSBCommunicationService.RPC_FEEDBACK_OK;
+//            } catch (Exception ex) {
+//                logger.warn("Could not invoke method [setPosition] for " + RollershutterController.this, ex);
+//                throw ex;
+//            }
+//        }
+//
+//    }
 }

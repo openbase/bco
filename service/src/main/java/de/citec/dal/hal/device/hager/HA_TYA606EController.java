@@ -5,13 +5,14 @@
  */
 package de.citec.dal.hal.device.hager;
 
+import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.PowerStateTransformer;
-import de.citec.dal.exception.DALException;
-import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerPlugController;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.CouldNotTransformException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -22,7 +23,7 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  *
  * @author mpohling
  */
-public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606EType.HA_TYA606E, HA_TYA606EType.HA_TYA606E.Builder> {
+public class HA_TYA606EController extends AbstractOpenHABDeviceController<HA_TYA606EType.HA_TYA606E, HA_TYA606EType.HA_TYA606E.Builder> {
 
     private final static String COMPONENT_POWER_PLUG_0 = "PowerPlug_0";
     private final static String COMPONENT_POWER_PLUG_1 = "PowerPlug_1";
@@ -50,7 +51,7 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
     private final PowerConsumptionSensorController powerConsumptionSensor_4;
     private final PowerConsumptionSensorController powerConsumptionSensor_5;
 
-    public HA_TYA606EController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
+    public HA_TYA606EController(final String id, final String label, final Location location) throws VerificationFailedException, InstantiationException {
         super(id, label, location, HA_TYA606EType.HA_TYA606E.newBuilder());
 
         data.setId(id);
@@ -96,51 +97,51 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
         halFunctionMapping.put(COMPONENT_POWER_CONSUMPTION_SENSOR + "_5", getClass().getMethod("updatePowerConsumption_5", double.class));
     }
 
-    public void updatePowerPlug_0(OnOff type) throws RSBBindingException {
+    public void updatePowerPlug_0(OnOff type) throws CouldNotPerformException {
         try {
             powerPlug_0.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from OnOffType to PowerState!", ex);
+        } catch (CouldNotTransformException ex) {
+            throw new CouldNotPerformException("Could not updatePowerPlug_0!", ex);
         }
     }
 
-    public void updatePowerPlug_1(OnOff type) throws RSBBindingException {
+    public void updatePowerPlug_1(OnOff type) throws CouldNotPerformException {
         try {
             powerPlug_1.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from OnOffType to PowerState!", ex);
+        } catch (CouldNotTransformException ex) {
+            throw new CouldNotPerformException("Could not updatePowerPlug_1!", ex);
         }
     }
 
-    public void updatePowerPlug_2(OnOff type) throws RSBBindingException {
+    public void updatePowerPlug_2(OnOff type) throws CouldNotPerformException {
         try {
             powerPlug_2.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from OnOffType to PowerState!", ex);
+        } catch (CouldNotTransformException ex) {
+            throw new CouldNotPerformException("Could not updatePowerPlug_2!", ex);
         }
     }
 
-    public void updatePowerPlug_3(OnOff type) throws RSBBindingException {
+    public void updatePowerPlug_3(OnOff type) throws CouldNotPerformException {
         try {
             powerPlug_3.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from OnOffType to PowerState!", ex);
+        } catch (CouldNotTransformException ex) {
+            throw new CouldNotPerformException("Could not updatePowerPlug_3!", ex);
         }
     }
 
-    public void updatePowerPlug_4(OnOff type) throws RSBBindingException {
+    public void updatePowerPlug_4(OnOff type) throws CouldNotPerformException {
         try {
             powerPlug_4.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from OnOffType to PowerState!", ex);
+        } catch (CouldNotTransformException ex) {
+            throw new CouldNotPerformException("Could not updatePowerPlug_4!", ex);
         }
     }
 
-    public void updatePowerPlug_5(OnOff type) throws RSBBindingException {
+    public void updatePowerPlug_5(OnOff type) throws CouldNotPerformException {
         try {
             powerPlug_5.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from OnOffType to PowerState!", ex);
+        } catch (CouldNotTransformException ex) {
+            throw new CouldNotPerformException("Could not updatePowerPlug_5!", ex);
         }
     }
 
