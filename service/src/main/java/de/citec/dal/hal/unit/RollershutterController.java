@@ -5,10 +5,10 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.TypeNotSupportedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
@@ -23,7 +23,7 @@ import rst.homeautomation.states.ShutterType;
  *
  * @author thuxohl
  */
-public class RollershutterController extends AbstractUnitController<RollershutterType.Rollershutter, RollershutterType.Rollershutter.Builder> {
+public class RollershutterController extends AbstractUnitController<RollershutterType.Rollershutter, RollershutterType.Rollershutter.Builder> implements RollershutterInterface{
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -46,7 +46,8 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         notifyChange();
     }
 
-    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws RSBBindingException, TypeNotSupportedException {
+    @Override
+    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
         logger.debug("Setting [" + id + "] to ShutterState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //		OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
@@ -56,6 +57,22 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 //		newBuilder = OpenhabCommand.newBuilder();
 //		newBuilder.setStopMove(StopMoveStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.STOPMOVE);
 //        executeCommand(newBuilder);
+    }
+
+    @Override
+    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException {
+        return data.getShutterState().getState();
+    }
+
+    @Override
+    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
+        data.setOpeningRatio(openingRatio);
+        notifyChange();
+    }
+
+    @Override
+    public double getOpeningRatio() throws CouldNotPerformException {
+        return data.getOpeningRatio();
     }
 
     public class SetShutterStateCallback extends EventCallback {

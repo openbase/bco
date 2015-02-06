@@ -6,7 +6,7 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
-import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -17,7 +17,7 @@ import rst.homeautomation.TemperatureSensorType.TemperatureSensor;
  *
  * @author thuxohl
  */
-public class TemperatureSensorController extends AbstractUnitController<TemperatureSensor, TemperatureSensor.Builder> {
+public class TemperatureSensorController extends AbstractUnitController<TemperatureSensor, TemperatureSensor.Builder> implements TemperatureSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -33,7 +33,8 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         notifyChange();
     }
 
-    public float getTemperature() {
+    @Override
+    public float getTemperature() throws CouldNotPerformException {
         logger.debug("Getting [" + id + "] Temperature: [" + data.getTemperature() + "]");
         return data.getTemperature();
     }

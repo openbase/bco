@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
-import de.citec.dal.exception.DALException;
+import de.citec.dal.hal.unit.LightInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
@@ -17,7 +17,7 @@ import rst.homeautomation.states.PowerType;
  *
  * @author thuxohl
  */
-public class LightRemote extends RSBRemoteService<LightType.Light> {
+public class LightRemote extends RSBRemoteService<LightType.Light> implements LightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightType.Light.getDefaultInstance()));
@@ -27,11 +27,17 @@ public class LightRemote extends RSBRemoteService<LightType.Light> {
     public LightRemote() {
     }
 
-    public void setPowerState(final PowerType.Power state) throws CouldNotPerformException {
-        callMethodAsync("setPowerState", state);
+    @Override
+    public void notifyUpdated(LightType.Light data) {
     }
 
     @Override
-    public void notifyUpdated(LightType.Light data) {
+    public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
+        callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
+    }
+
+    @Override
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+        return this.getData().getPowerState().getState();
     }
 }

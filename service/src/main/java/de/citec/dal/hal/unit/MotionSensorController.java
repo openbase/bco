@@ -6,6 +6,7 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.jul.exception.CouldNotPerformException;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -19,7 +20,7 @@ import rst.homeautomation.states.MotionType.Motion.MotionState;
  *
  * @author mpohling
  */
-public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> {
+public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> implements MotionSensorInterface{
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -36,7 +37,8 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         notifyChange();
     }
 
-    public MotionState getMotionState() {
+    @Override
+    public MotionState getMotionState() throws CouldNotPerformException{
         logger.debug("Getting [" + id + "] State: [" + data.getMotionState() + "]");
         return data.getMotionState().getState();
     }

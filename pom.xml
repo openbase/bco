@@ -29,6 +29,10 @@
         <module>visual</module>
     </modules>
     
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>de.cit-ec</groupId>

@@ -3,20 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.service;
+package de.citec.dal.hal.provider;
 
-import de.citec.dal.hal.provider.PowerProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import rst.homeautomation.states.PowerType;
 
 /**
  *
- * @author mpohling
+ * @author thuxohl
  */
-public interface PowerService extends Service, PowerProvider {
+public interface PowerProvider extends Provider {
 
-    
-
-    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException;
-
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException;
 }

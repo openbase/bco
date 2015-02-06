@@ -6,11 +6,8 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
-import de.citec.dal.data.transform.PowerStateTransformer;
-import de.citec.dal.exception.DALException;
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.TypeNotSupportedException;
 import rsb.Event;
 import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
@@ -19,14 +16,13 @@ import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.PowerPlugType;
 import rst.homeautomation.PowerPlugType.PowerPlug;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.states.PowerType;
 
 /**
  *
  * @author mpohling
  */
-public class PowerPlugController extends AbstractUnitController<PowerPlug, PowerPlug.Builder> {
+public class PowerPlugController extends AbstractUnitController<PowerPlug, PowerPlug.Builder> implements PowerPlugInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -49,12 +45,18 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
         notifyChange();
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws RSBBindingException, TypeNotSupportedException {
+    @Override
+    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
 //        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
 //        executeCommand(newBuilder);
+    }
+
+    @Override
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+        return data.getPowerState().getState();
     }
 
     public class SetPowerStateCallback extends EventCallback {

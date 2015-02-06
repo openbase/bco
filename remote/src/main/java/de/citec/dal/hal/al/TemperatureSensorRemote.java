@@ -5,6 +5,8 @@
  */
 package de.citec.dal.hal.al;
 
+import de.citec.dal.hal.unit.TemperatureSensorInterface;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -14,7 +16,7 @@ import rst.homeautomation.TemperatureSensorType;
  *
  * @author thuxohl
  */
-public class TemperatureSensorRemote extends RSBRemoteService<TemperatureSensorType.TemperatureSensor>{
+public class TemperatureSensorRemote extends RSBRemoteService<TemperatureSensorType.TemperatureSensor> implements TemperatureSensorInterface {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
@@ -25,6 +27,11 @@ public class TemperatureSensorRemote extends RSBRemoteService<TemperatureSensorT
 
     @Override
     public void notifyUpdated(TemperatureSensorType.TemperatureSensor data) {
+    }
+
+    @Override
+    public float getTemperature() throws CouldNotPerformException {
+        return this.getData().getTemperature();
     }
 
 }

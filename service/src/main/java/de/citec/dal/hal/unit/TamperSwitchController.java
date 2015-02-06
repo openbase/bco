@@ -6,7 +6,7 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
-import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -18,7 +18,7 @@ import rst.homeautomation.states.TamperType;
  *
  * @author thuxohl
  */
-public class TamperSwitchController extends AbstractUnitController<TamperSwitch, TamperSwitch.Builder> {
+public class TamperSwitchController extends AbstractUnitController<TamperSwitch, TamperSwitch.Builder> implements TamperSwitchInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -32,6 +32,11 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
     public void updateTamperState(final TamperType.Tamper.TamperState state) {
         data.getTamperStateBuilder().setState(state);
         notifyChange();
+    }
+
+    @Override
+    public TamperType.Tamper.TamperState getTamperState() throws CouldNotPerformException {
+        return data.getTamperState().getState();
     }
 
 }

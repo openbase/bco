@@ -6,6 +6,7 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -16,7 +17,7 @@ import rst.homeautomation.BatteryType.Battery;
  *
  * @author thuxohl
  */
-public class BatteryController extends AbstractUnitController<Battery, Battery.Builder> {
+public class BatteryController extends AbstractUnitController<Battery, Battery.Builder> implements BatteryInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -30,5 +31,10 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     public void updateBatteryLevel(final double batteryState) {
         data.setBatteryState(data.getBatteryStateBuilder().setLevel(batteryState));
         notifyChange();
+    }
+
+    @Override
+    public double getBattaryLevel() throws CouldNotPerformException {
+        return data.getBatteryState().getLevel();
     }
 }

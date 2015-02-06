@@ -5,15 +5,14 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.provider.ColorProvider;
+import de.citec.dal.hal.provider.OpeningRationProvider;
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.vision.HSVColorType;
 
 /**
  *
- * @author mpohling
+ * @author thuxohl
  */
-public interface ColorService extends Service, ColorProvider {
-
-    public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException;
+public interface OpeningRatioService extends Service, OpeningRationProvider{
+    
+    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException;
 }

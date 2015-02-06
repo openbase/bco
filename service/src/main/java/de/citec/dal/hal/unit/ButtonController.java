@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -18,7 +19,7 @@ import rst.homeautomation.states.ClickType;
  *
  * @author mpohling
  */
-public class ButtonController extends AbstractUnitController<Button, Button.Builder> {
+public class ButtonController extends AbstractUnitController<Button, Button.Builder> implements ButtonInterface{
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -35,5 +36,10 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         data.getButtonStateBuilder().setState(state);
         logger.debug("Updatet Button State. Sending rsb messsage...");
         notifyChange();
+    }
+
+    @Override
+    public ClickType.Click.ClickState getButtonState() throws CouldNotPerformException {
+        return data.getButtonState().getState();
     }
 }
