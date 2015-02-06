@@ -15,6 +15,7 @@ import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.device.philips.PH_Hue_GU10Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.dal.util.ConnectionManager;
+import de.citec.dal.util.DeviceInitializer;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.VerificationFailedException;
@@ -33,7 +34,7 @@ public class DALService {
 	private final ConnectionManager hardwareManager;
 
 	public DALService() {
-		this(new DeviceInitializer());
+		this(new DeviceInitializerImpl());
 	}
 
 	public DALService(DeviceInitializer initializer) {
@@ -78,8 +79,9 @@ public class DALService {
 		new DALService().activate();
 	}
 
-	public static class DeviceInitializer {
+	public static class DeviceInitializerImpl implements DeviceInitializer {
 
+        @Override
 		public void initDevices(final DALRegistry registry) {
 			logger.info("Init devices...");
 			Location outdoor = new Location("outdoor");

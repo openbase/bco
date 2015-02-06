@@ -5,10 +5,16 @@
  */
 package de.citec.dal.hal.al;
 
+import de.citec.dal.DALService;
 import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.hal.unit.AmbientLightInterface;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.AmbientLightType;
@@ -20,7 +26,9 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author mpohling
  */
-public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.AmbientLight> {
+public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.AmbientLight> implements AmbientLightInterface {
+
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
@@ -39,19 +47,37 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
         }
     }
 
+    @Override
     public void setColor(final HSVColor color) throws CouldNotPerformException {
         callMethodAsync("setColor", color);
     }
 
-    public void setPowerState(final PowerType.Power state) throws CouldNotPerformException {
-        callMethodAsync("setPowerState", state);
-    }
-
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
-        callMethodAsync("setBrightness", brightness);
+    @Override
+    public void notifyUpdated(AmbientLightType.AmbientLight data) {
     }
 
     @Override
-    public void notifyUpdated(AmbientLightType.AmbientLight data) {
+    public HSVColor getColor() {
+        return this.getData().getColor();
+    }
+
+    @Override
+    public void setBrightness(double brightness) throws Exception {
+        callMethodAsync("setBrightness", new Double(brightness));
+    }
+
+    @Override
+    public double getBrightness() throws Exception {
+        return this.getData().getColor().getValue();
+    }
+
+    @Override
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+        return this.getData().getPowerState().getState();
+    }
+
+    @Override
+    public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
+        callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
     }
 }
