@@ -17,13 +17,13 @@ import rst.homeautomation.states.MotionType;
  *
  * @author thuxohl
  */
-public class MotionSenorRemote extends RSBRemoteService<MotionSensorType.MotionSensor> implements MotionSensorInterface {
+public class MotionSensorRemote extends RSBRemoteService<MotionSensorType.MotionSensor> implements MotionSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSenorRemote() {
+    public MotionSensorRemote() {
     }
 
     @Override

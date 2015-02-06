@@ -28,13 +28,13 @@ import rst.homeautomation.states.PowerType;
  */
 public class LightRemoteTest {
 
+    private static final Location LOCATION = new Location("paradise");
+    private static final String LABEL = "Light_Unit_Test";
+
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
 
-    private final LightRemote lightRemote = new LightRemote();
-    private DALService dalService = new DALService(new LightRemoteTest.DeviceInitializerImpl());
-
-    private static final Location location = new Location("paradise");
-    private static final String label = "Light_Unit_Test";
+    private LightRemote lightRemote;
+    private DALService dalService;
 
     public LightRemoteTest() {
     }
@@ -49,11 +49,13 @@ public class LightRemoteTest {
 
     @Before
     public void setUp() {
-        JPService.registerProperty(JPHardwareSimulationMode.class, false);
+        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        dalService = new DALService(new LightRemoteTest.DeviceInitializerImpl());
         dalService = new DALService();
         dalService.activate();
 
-        lightRemote.init(label, location);
+        lightRemote = new LightRemote();
+        lightRemote.init(LABEL, LOCATION);
         lightRemote.activate();
     }
 
@@ -69,16 +71,18 @@ public class LightRemoteTest {
 
     /**
      * Test of setPowerState method, of class LightRemote.
+     *
+     * @throws java.lang.Exception
      */
     @Ignore
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         lightRemote.setPowerState(state);
-        while (!lightRemote.getData().getPowerState().equals(state)) {
+        while (!lightRemote.getData().getPowerState().getState().equals(state)) {
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", lightRemote.getData().getPowerState().equals(state));
+        assertTrue("Color has not been set in time!", lightRemote.getData().getPowerState().getState().equals(state));
     }
 
     /**

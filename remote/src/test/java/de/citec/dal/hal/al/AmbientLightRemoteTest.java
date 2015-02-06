@@ -7,6 +7,7 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
+import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
@@ -32,12 +33,11 @@ public class AmbientLightRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
     private static final String LABEL = "Ambient_Light_Unit_Test";
-    
+
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
-    
+
     private AmbientLightRemote ambientLightRemote;
     private DALService dalService;
-    
 
     public AmbientLightRemoteTest() {
     }
@@ -53,7 +53,7 @@ public class AmbientLightRemoteTest {
     @Before
     public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService(new AmbientLightRemoteTest.DeviceInitializerImpl());
         dalService.activate();
 
         ambientLightRemote = new AmbientLightRemote();
@@ -81,10 +81,10 @@ public class AmbientLightRemoteTest {
         System.out.println("setColor");
         Color color = Color.MAGENTA;
         ambientLightRemote.setColor(color);
-        while (!ambientLightRemote.getData().getColor().equals(color)) {
+        while (!ambientLightRemote.getData().getColor().equals(HSVColorToRGBColorTransformer.transform(color))) {
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", ambientLightRemote.getData().getColor().equals(color));
+        assertTrue("Color has not been set in time!", ambientLightRemote.getData().getColor().equals(HSVColorToRGBColorTransformer.transform(color)));
     }
 
     /**
@@ -92,7 +92,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 30000)
+    @Test(timeout = 3000)
     public void testSetColor_HSVColorTypeHSVColor() throws Exception {
         System.out.println("setColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(50).setSaturation(50).setValue(50).build();
@@ -102,18 +102,18 @@ public class AmbientLightRemoteTest {
         }
         assertTrue("Color has not been set in time!", ambientLightRemote.getData().getColor().equals(color));
     }
-    
+
     /**
      * Test of getColor method, of class AmbientLightRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 3000)
-    public void testGSetColor() throws Exception {
+    public void testGetColor() throws Exception {
         System.out.println("getColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(66).setSaturation(63).setValue(33).build();
         ambientLightRemote.setColor(color);
-        while (!ambientLightRemote.getData().getColor().equals(color)) {
+        while (!ambientLightRemote.getColor().equals(color)) {
             Thread.yield();
         }
         assertTrue("Color has not been set in time or the return value from the getter is different!", ambientLightRemote.getColor().equals(color));
@@ -129,12 +129,12 @@ public class AmbientLightRemoteTest {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         ambientLightRemote.setPowerState(state);
-        while (!ambientLightRemote.getData().getPowerState().equals(state)) {
+        while (!ambientLightRemote.getData().getPowerState().getState().equals(state)) {
             Thread.yield();
         }
-        assertTrue("Power state has not been set in time!", ambientLightRemote.getData().getPowerState().equals(state));
+        assertTrue("Power state has not been set in time!", ambientLightRemote.getData().getPowerState().getState().equals(state));
     }
-    
+
     /**
      * Test of getPowerState method, of class AmbientLightRemote.
      *
@@ -145,7 +145,7 @@ public class AmbientLightRemoteTest {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         ambientLightRemote.setPowerState(state);
-        while (!ambientLightRemote.getData().getPowerState().equals(state)) {
+        while (!ambientLightRemote.getPowerState().equals(state)) {
             Thread.yield();
         }
         assertTrue("Power state has not been set in time or the return value from the getter is different!", ambientLightRemote.getPowerState().equals(state));
@@ -166,7 +166,7 @@ public class AmbientLightRemoteTest {
         }
         assertTrue("Power state has not been set in time!", ambientLightRemote.getData().getColor().getValue() == brightness);
     }
-    
+
     /**
      * Test of getBrightness method, of class AmbientLightRemote.
      *
@@ -177,7 +177,7 @@ public class AmbientLightRemoteTest {
         System.out.println("getBrightness");
         Double brightness = 25d;
         ambientLightRemote.setBrightness(brightness);
-        while (!(ambientLightRemote.getData().getColor().getValue() == brightness)) {
+        while (!(ambientLightRemote.getBrightness() == brightness)) {
             Thread.yield();
         }
         assertTrue("Brightness has not been set in time or the return value from the getter is different!", ambientLightRemote.getBrightness() == brightness);

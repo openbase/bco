@@ -8,6 +8,7 @@ package de.citec.dal.hal.al;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
+import de.citec.dal.hal.unit.PowerPlugController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -29,13 +30,13 @@ import rst.homeautomation.states.PowerType;
  */
 public class PowerPlugRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
+    private static final Location LOCATION = new Location("paradise");
+    private static final String LABEL = "Power_Plug_Unit_Test";
 
-    private final PowerPlugRemote powerPlugRemote = new PowerPlugRemote();
-    private DALService dalService = new DALService(new PowerPlugRemoteTest.DeviceInitializerImpl());
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerPlugRemoteTest.class);
 
-    private static final Location location = new Location("paradise");
-    private static final String label = "Power_Plug_Unit_Test";
+    private PowerPlugRemote powerPlugRemote;
+    private DALService dalService;
 
     public PowerPlugRemoteTest() {
     }
@@ -50,11 +51,13 @@ public class PowerPlugRemoteTest {
 
     @Before
     public void setUp() {
-        JPService.registerProperty(JPHardwareSimulationMode.class, false);
+        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        dalService = new DALService(new PowerPlugRemoteTest.DeviceInitializerImpl());
         dalService = new DALService();
         dalService.activate();
 
-        powerPlugRemote.init(label, location);
+        powerPlugRemote = new PowerPlugRemote();
+        powerPlugRemote.init(LABEL, LOCATION);
         powerPlugRemote.activate();
     }
 
@@ -64,22 +67,40 @@ public class PowerPlugRemoteTest {
         try {
             powerPlugRemote.deactivate();
         } catch (InterruptedException ex) {
-            logger.warn("Could not deactivate ambient light remote: ", ex);
+            logger.warn("Could not deactivate power plug remote: ", ex);
         }
     }
 
     /**
      * Test of setPowerState method, of class PowerPlugRemote.
+     *
+     * @throws java.lang.Exception
      */
     @Test(timeout = 3000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         powerPlugRemote.setPowerState(state);
-        while (!powerPlugRemote.getData().getPowerState().equals(state)) {
+        while (!powerPlugRemote.getData().getPowerState().getState().equals(state)) {
             Thread.yield();
         }
-        assertTrue("Power state has not been set in time!", powerPlugRemote.getData().getPowerState().equals(state));
+        assertTrue("Power state has not been set in time!", powerPlugRemote.getData().getPowerState().getState().equals(state));
+    }
+
+    /**
+     * Test of getPowerState method, of class PowerPlugRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 3000)
+    public void testGetPowerState() throws Exception {
+        System.out.println("getPowerState");
+        PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
+        ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).setPowerState(state);
+        while (!powerPlugRemote.getPowerState().equals(state)) {
+            Thread.yield();
+        }
+        assertTrue("The getter for the power state returns the wrong value!", powerPlugRemote.getPowerState().equals(state));
     }
 
     /**
@@ -95,7 +116,7 @@ public class PowerPlugRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new PW_PowerPlugController("PW_PowerPlug_000", label, location));
+                registry.register(new PW_PowerPlugController("PW_PowerPlug_000", LABEL, LOCATION));
             } catch (VerificationFailedException | InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
