@@ -43,7 +43,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         this.device = device;
         this.serviceList = new ArrayList<>();
         
-        setField(TYPE_FILED_ID, generateScope(id, null)); // TODO mpohling: Still necessary?
+        setField(TYPE_FILED_ID, generateScope()); // TODO mpohling: Still necessary?
         setField(TYPE_FILED_LABEL, label);
 
         try {
