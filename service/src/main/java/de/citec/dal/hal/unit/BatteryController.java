@@ -28,7 +28,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     }
 
     public void updateBatteryLevel(final double batteryState) {
-        builder.setBatteryState(builder.getBatteryStateBuilder().setLevel(batteryState));
+        data.setBatteryState(data.getBatteryStateBuilder().setLevel(batteryState));
         notifyChange();
     }
 }

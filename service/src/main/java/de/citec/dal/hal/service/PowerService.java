@@ -6,14 +6,16 @@
 package de.citec.dal.hal.service;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import rst.homeautomation.states.PowerType;
 
 /**
  *
  * @author mpohling
  */
-public interface BrightnessService extends Service {
+public interface PowerService extends Service {
 
-    public double getBrightness() throws CouldNotPerformException;
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException;
 
-    public void setBrightness(double brightness) throws CouldNotPerformException;
+    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException;
+
 }

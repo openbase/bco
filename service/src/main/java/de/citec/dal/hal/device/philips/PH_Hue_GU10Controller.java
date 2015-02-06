@@ -38,8 +38,8 @@ public class PH_Hue_GU10Controller extends AbstractDeviceController<PH_Hue_GU10,
 
     public PH_Hue_GU10Controller(final String id, final String label,final Location location) throws VerificationFailedException, DALException {
         super(id, label,location, PH_Hue_GU10.newBuilder());
-        super.builder.setId(id);
-        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label,this, builder.getAmbientLightBuilder());
+        super.data.setId(id);
+        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label,this, data.getAmbientLightBuilder());
         this.register(ambientLight);
     }
 

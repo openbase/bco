@@ -38,9 +38,9 @@ public class HM_RotaryHandleSensorController extends AbstractDeviceController<HM
     public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, HM_RotaryHandleSensor.newBuilder());
 
-        builder.setId(id);
-        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, label, this, builder.getHandleSensorBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, builder.getBatteryBuilder());
+        data.setId(id);
+        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, label, this, data.getHandleSensorBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, data.getBatteryBuilder());
         this.register(handleSensor);
         this.register(battery);
     }

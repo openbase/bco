@@ -6,21 +6,18 @@
 package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.bindings.openhab.OpenhabBinding;
-import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
-import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import rsb.RSBException;
 import rsb.Scope;
-import rsb.patterns.LocalServer;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionType;
 
 /**
  *
@@ -36,15 +33,16 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     protected final String id;
     protected final String label;
     private final DeviceInterface device;
-
-    protected final OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
+    private List<Service> serviceList;
 
     public AbstractUnitController(final String id, final String label, final DeviceInterface device, final MB builder) throws DALException {
         super(generateScope(id, label, device), builder);
-        this.id = id;
+        this.id = id; // TODO mpohling: Still necessary?
         this.label = label;
         this.device = device;
-        setField(TYPE_FILED_ID, generateHardwareId());
+        this.serviceList = new ArrayList<>();
+        
+        setField(TYPE_FILED_ID, generateScope(id, null)); // TODO mpohling: Still necessary?
         setField(TYPE_FILED_LABEL, label);
 
         try {
@@ -65,39 +63,21 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public DeviceInterface getDevice() {
         return device;
     }
-
-    public final String generateHardwareId() { //TODO impl static const
-        return device.getId() + "_" + id;
+    
+    public Collection<Service> getServices() {
+        return Collections.unmodifiableList(serviceList);
+    }
+    
+    public void registerService(final Service service) {
+        serviceList.add(service);
+    }
+    
+    public Scope generateScope() {
+        return generateScope(id, label, device);
     }
 
-    @Override
-    public void registerMethods(LocalServer server) throws RSBException {
-    }
-
-    public Future executeCommand(final OpenhabCommand.Builder commandBuilder) throws RSBBindingException {
-        return executeCommand(generateHardwareId(), commandBuilder, ExecutionType.SYNCHRONOUS);
-    }
-
-    public Future executeCommand(final String itemName, final OpenhabCommand.Builder commandBuilder, final ExecutionType type) throws RSBBindingException {
-        if (commandBuilder == null) {
-            throw new RSBBindingException("Skip sending empty command!", new NullPointerException("Argument command is null!"));
-        }
-
-        if (rsbBinding == null) {
-            throw new RSBBindingException("Skip sending command, binding not ready!", new NullPointerException("Argument rsbBinding is null!"));
-        }
-
-        if (generateHardwareId() == null) {
-            throw new RSBBindingException("Skip sending command, could not generate id!", new NullPointerException("Argument id is null!"));
-        }
-
-        logger.debug("Execute command: Setting item [" + generateHardwareId() + "] to [" + commandBuilder.getType().toString() + "]");
-        commandBuilder.setItem(itemName).setExecutionType(type);
-        return rsbBinding.executeCommand(commandBuilder.build());
-    }
-
-    public static Scope generateScope(final String id, final String label, final DeviceInterface hardware) {
-        return hardware.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + id).concat(new Scope(ScopeProvider.SEPARATOR + label)));
+    public static Scope generateScope(final String id, final String label, final DeviceInterface device) {
+        return device.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + id).concat(new Scope(ScopeProvider.SEPARATOR + label)));
     }
 
     @Override

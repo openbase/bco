@@ -39,9 +39,9 @@ public class HM_ReedSwitchController extends AbstractDeviceController<HM_ReedSwi
     public HM_ReedSwitchController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, HM_ReedSwitch.newBuilder());
 
-        builder.setId(id);
-        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, label, this, builder.getReedSwitchBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, builder.getBatteryBuilder());
+        data.setId(id);
+        this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, label, this, data.getReedSwitchBuilder());
+        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, data.getBatteryBuilder());
         this.register(reedSwitch);
         this.register(battery);
     }

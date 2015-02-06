@@ -40,11 +40,11 @@ public class GI_5142Controller extends AbstractDeviceController<GI_5142Type.GI_5
 
     public GI_5142Controller(final String id, final String label, final String[] unitLabel, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, GI_5142Type.GI_5142.newBuilder());
-        builder.setId(id);
-        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, unitLabel[0], this, builder.getButton0Builder());
-        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, unitLabel[1], this, builder.getButton1Builder());
-        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, unitLabel[2], this, builder.getButton2Builder());
-        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, unitLabel[3], this, builder.getButton3Builder());
+        data.setId(id);
+        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, unitLabel[0], this, data.getButton0Builder());
+        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, unitLabel[1], this, data.getButton1Builder());
+        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, unitLabel[2], this, data.getButton2Builder());
+        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, unitLabel[3], this, data.getButton3Builder());
         this.register(button_0);
         this.register(button_1);
         this.register(button_2);

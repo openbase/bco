@@ -6,30 +6,21 @@
 package de.citec.dal.hal;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.bindings.openhab.OpenhabBinding;
-import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
 import de.citec.dal.exception.DALException;
-import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.unit.DeviceInterface;
-import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Future;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
-import rst.homeautomation.openhab.OpenhabCommandType;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.ExecutionType;
 
 /**
  *
@@ -52,13 +43,11 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	protected final Map<String, AbstractUnitController> unitMap;
 	protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
 
-	protected OpenhabBindingInterface rsbBinding = OpenhabBinding.getInstance();
-
 	public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws VerificationFailedException, DALException {
 		super(generateScope(id, location), builder);
 		this.id = id;
 		this.label = label;
-		this.hardware_id = parseHardwareId(id, getClass());
+		this.hardware_id = parseDeviceId(id, getClass());
 		this.instance_id = parseInstanceId(id);
 		this.location = location;
 		this.unitMap = new HashMap<>();
@@ -81,7 +70,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		}
 	}
 
-	public final static String parseHardwareId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificationFailedException {
+	public final static String parseDeviceId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificationFailedException {
 		assert id != null;
 		assert hardware != null;
 		String hardwareId = hardware.getSimpleName().replace("Controller", "");
@@ -128,64 +117,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		}
 		unitServiceHardwareMap.get(unit).add(service);
 	}
-
-	//TODO tamino: Make AbstractDeviceController openhab independent. Move all type transformations in dal-openhab-binding.
-	public void internalReceiveUpdate(String itemName, OpenhabCommand command) throws CouldNotPerformException {
-		logger.debug("internalReceiveUpdate [" + itemName + "=" + command.getType() + "]");
-
-		String id_suffix = itemName.replaceFirst(id + "_", "");
-		//TODO mpohling: Resolve mapping by service not by unit type.
-		Method relatedMethod = halFunctionMapping.get(id_suffix);
-
-		if (relatedMethod == null) {
-			logger.warn("Could not apply update: Related Method unknown!");
-			return;
-		}
-
-		try {
-			switch (command.getType()) {
-				case DECIMAL:
-					relatedMethod.invoke(this, command.getDecimal());
-					break;
-				case HSB:
-					relatedMethod.invoke(this, command.getHsb());
-					break;
-				case INCREASEDECREASE:
-					relatedMethod.invoke(this, command.getIncreaseDecrease());
-					break;
-				case ONOFF:
-					relatedMethod.invoke(this, command.getOnOff().getState());
-					break;
-				case OPENCLOSED:
-					relatedMethod.invoke(this, command.getOpenClosed().getState());
-					break;
-				case PERCENT:
-					relatedMethod.invoke(this, command.getPercent().getValue());
-					break;
-				case STOPMOVE:
-					relatedMethod.invoke(this, command.getStopMove().getState());
-					break;
-				case STRING:
-					relatedMethod.invoke(this, command.getText());
-					break;
-				case UPDOWN:
-					relatedMethod.invoke(this, command.getUpDown().getState());
-					break;
-				default:
-					logger.warn("No corresponding Openhab command type found. Skip message invocation.");
-					break;
-			}
-		} catch (IllegalAccessException ex) {
-			throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
-		} catch (IllegalArgumentException ex) {
-			throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
-		} catch (InvocationTargetException ex) {
-			throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
-		} catch (Exception ex) {
-			throw new CouldNotPerformException("Fatal invocation error!", ex);
-		}
-	}
-
+    
 	@Override
 	public String getId() {
 		return id;
@@ -216,11 +148,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	@Override
 	public void registerMethods(LocalServer server) {
 		// dummy construct: For registering methods overwrite this method.
-	}
-
-	public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder commandBuilder, final ExecutionType type) throws RSBBindingException {
-		commandBuilder.setItem(itemName).setExecutionType(type);
-		return rsbBinding.executeCommand(commandBuilder.build());
 	}
 
 	@Override

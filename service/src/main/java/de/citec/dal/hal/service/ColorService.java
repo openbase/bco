@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.service;
 
+import de.citec.jul.exception.CouldNotPerformException;
 import rst.vision.HSVColorType;
 
 /**
@@ -13,7 +14,7 @@ import rst.vision.HSVColorType;
  */
 public interface ColorService extends Service {
 
-    public HSVColorType.HSVColor getColor();
+    public HSVColorType.HSVColor getColor() throws CouldNotPerformException;
 
-    public void setColor(HSVColorType.HSVColor color) throws Exception;
+    public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException;
 }

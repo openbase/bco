@@ -53,19 +53,19 @@ public class HA_TYA606EController extends AbstractDeviceController<HA_TYA606ETyp
     public HA_TYA606EController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, HA_TYA606EType.HA_TYA606E.newBuilder());
 
-        builder.setId(id);
-        this.powerPlug_0 = new PowerPlugController(COMPONENT_POWER_PLUG_0, label, this, builder.getPowerPlug0Builder());
-        this.powerPlug_1 = new PowerPlugController(COMPONENT_POWER_PLUG_1, label, this, builder.getPowerPlug1Builder());
-        this.powerPlug_2 = new PowerPlugController(COMPONENT_POWER_PLUG_2, label, this, builder.getPowerPlug2Builder());
-        this.powerPlug_3 = new PowerPlugController(COMPONENT_POWER_PLUG_3, label, this, builder.getPowerPlug3Builder());
-        this.powerPlug_4 = new PowerPlugController(COMPONENT_POWER_PLUG_4, label, this, builder.getPowerPlug4Builder());
-        this.powerPlug_5 = new PowerPlugController(COMPONENT_POWER_PLUG_5, label, this, builder.getPowerPlug5Builder());
-        this.powerConsumptionSensor_0 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_0", label, this, builder.getPowerConsumptionSensor0Builder());
-        this.powerConsumptionSensor_1 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_1", label, this, builder.getPowerConsumptionSensor1Builder());
-        this.powerConsumptionSensor_2 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_2", label, this, builder.getPowerConsumptionSensor2Builder());
-        this.powerConsumptionSensor_3 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_3", label, this, builder.getPowerConsumptionSensor3Builder());
-        this.powerConsumptionSensor_4 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_4", label, this, builder.getPowerConsumptionSensor4Builder());
-        this.powerConsumptionSensor_5 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_5", label, this, builder.getPowerConsumptionSensor5Builder());
+        data.setId(id);
+        this.powerPlug_0 = new PowerPlugController(COMPONENT_POWER_PLUG_0, label, this, data.getPowerPlug0Builder());
+        this.powerPlug_1 = new PowerPlugController(COMPONENT_POWER_PLUG_1, label, this, data.getPowerPlug1Builder());
+        this.powerPlug_2 = new PowerPlugController(COMPONENT_POWER_PLUG_2, label, this, data.getPowerPlug2Builder());
+        this.powerPlug_3 = new PowerPlugController(COMPONENT_POWER_PLUG_3, label, this, data.getPowerPlug3Builder());
+        this.powerPlug_4 = new PowerPlugController(COMPONENT_POWER_PLUG_4, label, this, data.getPowerPlug4Builder());
+        this.powerPlug_5 = new PowerPlugController(COMPONENT_POWER_PLUG_5, label, this, data.getPowerPlug5Builder());
+        this.powerConsumptionSensor_0 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_0", label, this, data.getPowerConsumptionSensor0Builder());
+        this.powerConsumptionSensor_1 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_1", label, this, data.getPowerConsumptionSensor1Builder());
+        this.powerConsumptionSensor_2 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_2", label, this, data.getPowerConsumptionSensor2Builder());
+        this.powerConsumptionSensor_3 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_3", label, this, data.getPowerConsumptionSensor3Builder());
+        this.powerConsumptionSensor_4 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_4", label, this, data.getPowerConsumptionSensor4Builder());
+        this.powerConsumptionSensor_5 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_5", label, this, data.getPowerConsumptionSensor5Builder());
         this.register(powerPlug_0);
         this.register(powerPlug_1);
         this.register(powerPlug_2);

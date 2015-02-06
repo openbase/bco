@@ -14,7 +14,7 @@ import de.citec.dal.hal.device.hager.HA_TYA628CController;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.device.philips.PH_Hue_GU10Controller;
 import de.citec.dal.util.DALRegistry;
-import de.citec.dal.util.HardwareManager;
+import de.citec.dal.util.ConnectionManager;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.VerificationFailedException;
@@ -30,7 +30,7 @@ public class DALService {
 	private static final Logger logger = LoggerFactory.getLogger(DALService.class);
 
 	private final DALRegistry registry;
-	private final HardwareManager hardwareManager;
+	private final ConnectionManager hardwareManager;
 
 	public DALService() {
 		this(new DeviceInitializer());
@@ -39,7 +39,7 @@ public class DALService {
 	public DALService(DeviceInitializer initializer) {
 		this.registry = DALRegistry.getInstance();
 		initializer.initDevices(registry);
-		this.hardwareManager = HardwareManager.getInstance();
+		this.hardwareManager = ConnectionManager.getInstance();
 	}
 
 	public void activate() {
@@ -62,7 +62,7 @@ public class DALService {
 		return registry;
 	}
 
-	public HardwareManager getHardwareManager() {
+	public ConnectionManager getHardwareManager() {
 		return hardwareManager;
 	}
 

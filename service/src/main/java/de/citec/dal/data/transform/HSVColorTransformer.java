@@ -5,8 +5,7 @@
  */
 package de.citec.dal.data.transform;
 
-import de.citec.dal.exception.RSBBindingException;
-import de.citec.jul.exception.TypeNotSupportedException;
+import de.citec.jul.exception.CouldNotTransformException;
 import rst.vision.HSVColorType.HSVColor;
 import rst.homeautomation.openhab.HSBType;
 
@@ -16,19 +15,19 @@ import rst.homeautomation.openhab.HSBType;
  */
 public class HSVColorTransformer {
 
-    public static HSVColor transform(HSBType.HSB color) throws RSBBindingException {
+    public static HSVColor transform(HSBType.HSB color) throws CouldNotTransformException {
         try {
             return HSVColor.newBuilder().setHue(color.getHue()).setSaturation(color.getSaturation()).setValue(color.getBrightness()).build();
         } catch (Exception ex) {
-            throw new RSBBindingException("Could not transform " + HSBType.HSB.class.getName() + " to " + HSBType.HSB.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + HSBType.HSB.class.getName() + " to " + HSBType.HSB.class.getName() + "!", ex);
         }
     }
 
-    public static HSBType.HSB transform(HSVColor color) throws TypeNotSupportedException, RSBBindingException {
+    public static HSBType.HSB transform(HSVColor color) throws CouldNotTransformException {
         try {
             return HSBType.HSB.newBuilder().setHue(color.getHue()).setSaturation(color.getSaturation()).setBrightness(color.getValue()).build();
         } catch (Exception ex) {
-            throw new RSBBindingException("Could not transform " + HSVColor.class.getName() + " to " + HSBType.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + HSVColor.class.getName() + " to " + HSBType.class.getName() + "!", ex);
         }
     }
 }

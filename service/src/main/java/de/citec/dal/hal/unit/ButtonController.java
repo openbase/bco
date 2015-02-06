@@ -31,7 +31,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
     }
 
     public void updateButtonState(final ClickType.Click.ClickState state) {
-        builder.getButtonStateBuilder().setState(state);
+        data.getButtonStateBuilder().setState(state);
         logger.debug("Updatet Button State. Sending rsb messsage...");
         notifyChange();
     }

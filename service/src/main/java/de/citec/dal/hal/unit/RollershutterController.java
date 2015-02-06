@@ -45,7 +45,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     public void updateShutterState(final ShutterType.Shutter.ShutterState state) {
-        builder.getShutterStateBuilder().setState(state);
+        data.getShutterStateBuilder().setState(state);
         notifyChange();
     }
 
@@ -76,7 +76,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     public void updatePosition(final float position) {
-        builder.setOpeningRatio(position);
+        data.setOpeningRatio(position);
         notifyChange();
     }
 

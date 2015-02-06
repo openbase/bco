@@ -5,14 +5,13 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.data.transform.HSVColorTransformer;
-import de.citec.dal.data.transform.PowerStateTransformer;
 import de.citec.dal.exception.DALException;
-import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.AbstractUnitController;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
-import de.citec.jul.exception.TypeNotSupportedException;
+import de.citec.dal.hal.service.PowerService;
+import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
 import rsb.RSBException;
@@ -28,7 +27,7 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author nuc
  */
-public class AmbientLightController extends AbstractUnitController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> implements ColorService, BrightnessService {
+public class AmbientLightController extends AbstractUnitController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> implements AmbientLightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
@@ -36,8 +35,16 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public AmbientLightController(String id, final String label, DeviceInterface device, AmbientLightType.AmbientLight.Builder builder) throws DALException {
+    private final ColorService colorService;
+    private final BrightnessService brightnessService;
+    private final PowerService powerService;
+
+    public AmbientLightController(final String id, final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder,
+            final ServiceFactory serviceFactory) throws DALException {
         super(id, label, device, builder);
+        this.powerService = serviceFactory.newPowerService();
+        this.colorService = serviceFactory.newColorService();
+        this.brightnessService = serviceFactory.newBrightnessService();
     }
 
     @Override
@@ -48,16 +55,20 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     }
 
     public void updatePowerState(final PowerType.Power.PowerState state) {
-        builder.getPowerStateBuilder().setState(state);
+        data.getPowerStateBuilder().setState(state);
         notifyChange();
     }
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws TypeNotSupportedException, RSBBindingException {
+    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
+        powerService.setPowerState(state);
+//        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
+//        executeCommand(newBuilder);
+    }
 
-        getDevice().requestUpdate(OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder().build());
-        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
-        executeCommand(newBuilder);
+    @Override
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+        return data.getPowerState().getState();
     }
 
     public class SetPowerStateCallback extends EventCallback {
@@ -75,24 +86,19 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     }
 
     public void updateColor(final HSVColor color) {
-        builder.setColor(color);
+        data.setColor(color);
         notifyChange();
     }
 
     @Override
     public HSVColor getColor() {
-        return builder.getColor();
+        return data.getColor();
     }
-    
-    @Override
-    public void setColor(final HSVColor color) throws RSBBindingException, TypeNotSupportedException {
-		logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
-		cloneBuilder().setColor(color);
 
-        
-        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
-        newBuilder.setHsb(HSVColorTransformer.transform(color)).setType(OpenhabCommand.CommandType.HSB);
-        executeCommand(newBuilder);
+    @Override
+    public void setColor(final HSVColor color) throws CouldNotPerformException {
+        logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
+        colorService.setColor(color);
     }
 
     public class SetColorCallback extends EventCallback {
@@ -108,16 +114,16 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
             }
         }
     }
-    
+
     @Override
-    public double getBrightness() throws Exception {
-        return builder.getColor().getValue();
+    public double getBrightness() {
+        return data.getColor().getValue();
     }
 
     @Override
-    public void setBrightness(double brightness) throws RSBBindingException, TypeNotSupportedException {
+    public void setBrightness(double brightness) throws CouldNotPerformException {
         logger.debug("Setting [" + id + "] to Brightness[" + brightness + "]");
-        setColor(cloneBuilder().getColorBuilder().setValue(brightness).build());
+        brightnessService.setBrightness(brightness);
     }
 
     public class SetBrightnessCallback extends EventCallback {

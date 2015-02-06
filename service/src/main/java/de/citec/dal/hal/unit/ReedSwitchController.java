@@ -32,13 +32,13 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
     }
 
     public void updateOpenClosedState(final OpenClosedType.OpenClosed.OpenClosedState state) {
-        builder.getReedSwitchStateBuilder().setState(state);
+        data.getReedSwitchStateBuilder().setState(state);
         notifyChange();
     }
 
     public OpenClosedState getReedSwitchState() {
-        logger.debug("Getting [" + id + "] State: [" + builder.getReedSwitchState() + "]");
-        return builder.getReedSwitchState().getState();
+        logger.debug("Getting [" + id + "] State: [" + data.getReedSwitchState() + "]");
+        return data.getReedSwitchState().getState();
     }
 
     public class GetReedSwitchState extends EventCallback {

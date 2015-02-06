@@ -82,4 +82,18 @@ public class DALRegistry {
         }
         return Collections.unmodifiableCollection(registeredUnitClasses.get(unitClass));
     }
+    
+    public AbstractDeviceController getDevice(String unitName) throws NotAvailableException {
+        AbstractDeviceController device;
+            try {
+                Map.Entry<String, AbstractDeviceController> floorEntry = deviceRegistry.floorEntry(unitName);
+                device = floorEntry.getValue();
+            } catch (NullPointerException ex) {
+                throw new NotAvailableException("Item[" + unitName + "] not registered!", ex);
+            }
+        if (!unitName.startsWith(device.getId())) {
+            throw new NotAvailableException("Skip item update [" + unitName + "]: Item is not registered.");
+        }
+        return device;
+    }
 }

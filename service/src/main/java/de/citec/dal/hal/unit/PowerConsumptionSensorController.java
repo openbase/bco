@@ -37,13 +37,13 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
     }
 
     public void updatePowerConsumption(final float consumption) {
-        builder.setConsumption(consumption);
+        data.setConsumption(consumption);
         notifyChange();
     }
 
     public float getPowerConsumption() {
-        logger.debug("Getting [" + id + "] Consumption: [" + builder.getConsumption() + "]");
-        return builder.getConsumption();
+        logger.debug("Getting [" + id + "] Consumption: [" + data.getConsumption() + "]");
+        return data.getConsumption();
     }
 
     public class GetPowerConsumptionCallback extends EventCallback {

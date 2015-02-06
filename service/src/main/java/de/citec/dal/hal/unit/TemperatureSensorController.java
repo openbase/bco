@@ -28,12 +28,12 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
     }
 
     public void updateTemperature(final float temperature) {
-        builder.setTemperature(temperature);
+        data.setTemperature(temperature);
         notifyChange();
     }
 
     public float getTemperature() {
-        logger.debug("Getting [" + id + "] Temperature: [" + builder.getTemperature() + "]");
-        return builder.getTemperature();
+        logger.debug("Getting [" + id + "] Temperature: [" + data.getTemperature() + "]");
+        return data.getTemperature();
     }
 }

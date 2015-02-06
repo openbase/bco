@@ -28,7 +28,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
     }
 
     public void updateBrightness(final float brightness) {
-        builder.setBrightness(brightness);
+        data.setBrightness(brightness);
         notifyChange();
     }
 }

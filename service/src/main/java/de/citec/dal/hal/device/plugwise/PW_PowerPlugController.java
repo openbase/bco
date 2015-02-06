@@ -39,8 +39,8 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
     public PW_PowerPlugController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
         super(id, label, location, PW_PowerPlug.newBuilder());
 //        builder.setId(id); //TODO still useful or already setuped in super class?
-        this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, label, this, builder.getPowerPlugBuilder());
-        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, label, this, builder.getPowerConsumptionBuilder());
+        this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, label, this, data.getPowerPlugBuilder());
+        this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, label, this, data.getPowerConsumptionBuilder());
         this.register(powerPlug);
         this.register(powerConsumption);
     }
