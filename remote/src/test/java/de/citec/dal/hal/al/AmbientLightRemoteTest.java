@@ -34,6 +34,7 @@ public class AmbientLightRemoteTest {
     private static final String LABEL = "Ambient_Light_Unit_Test";
     
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
+    
     private AmbientLightRemote ambientLightRemote;
     private DALService dalService;
     
@@ -43,7 +44,6 @@ public class AmbientLightRemoteTest {
 
     @BeforeClass
     public static void setUpClass() {
-
     }
 
     @AfterClass
@@ -52,7 +52,7 @@ public class AmbientLightRemoteTest {
 
     @Before
     public void setUp() {
-        JPService.registerProperty(JPHardwareSimulationMode.class, false);
+        JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
@@ -92,7 +92,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test(timeout = 30000)
     public void testSetColor_HSVColorTypeHSVColor() throws Exception {
         System.out.println("setColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(50).setSaturation(50).setValue(50).build();
