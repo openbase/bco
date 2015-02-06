@@ -6,12 +6,13 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import rst.homeautomation.states.MotionType;
 
 /**
  *
  * @author thuxohl
  */
-public interface BatteryLevelProvider extends Provider {
-
-    public double getBattaryLevel() throws CouldNotPerformException;
+public interface MotionProvider extends Provider {
+    
+    public MotionType.Motion.MotionState getMotionState() throws CouldNotPerformException;
 }

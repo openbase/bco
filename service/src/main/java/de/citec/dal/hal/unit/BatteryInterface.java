@@ -5,12 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.BatteryLevelProvider;
+import de.citec.dal.hal.provider.BatteryProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface BatteryInterface extends BatteryLevelProvider {
+public interface BatteryInterface extends BatteryProvider {
     
 }

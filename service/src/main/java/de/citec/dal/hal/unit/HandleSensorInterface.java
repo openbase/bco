@@ -5,12 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.HandleStateProvider;
+import de.citec.dal.hal.provider.HandleProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface HandleSensorInterface extends HandleStateProvider {
+public interface HandleSensorInterface extends HandleProvider {
     
 }

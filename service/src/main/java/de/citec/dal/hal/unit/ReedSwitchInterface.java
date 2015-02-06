@@ -5,12 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.ReedSwitchStateProvider;
+import de.citec.dal.hal.provider.ReedSwitchProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface ReedSwitchInterface extends ReedSwitchStateProvider {
+public interface ReedSwitchInterface extends ReedSwitchProvider {
 
 }

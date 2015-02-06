@@ -6,13 +6,13 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.homeautomation.states.OpenClosedType;
+import rst.homeautomation.states.ShutterType;
 
 /**
  *
  * @author thuxohl
  */
-public interface ReedSwitchStateProvider extends Provider {
+public interface ShutterProvider extends Provider {
     
-    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitchState() throws CouldNotPerformException;
+    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException;
 }

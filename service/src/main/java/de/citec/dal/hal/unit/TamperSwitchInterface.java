@@ -5,12 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.TamperStateProvider;
+import de.citec.dal.hal.provider.TamperProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface TamperSwitchInterface extends TamperStateProvider {
+public interface TamperSwitchInterface extends TamperProvider {
     
 }

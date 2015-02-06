@@ -5,12 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.MotionStateProvider;
+import de.citec.dal.hal.provider.MotionProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface MotionSensorInterface extends MotionStateProvider {
+public interface MotionSensorInterface extends MotionProvider {
     
 }
