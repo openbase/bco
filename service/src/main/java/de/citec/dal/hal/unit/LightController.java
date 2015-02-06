@@ -16,7 +16,7 @@ import rst.homeautomation.states.PowerType;
  *
  * @author thuxohl
  */
-public class LightController extends AbstractUnitController<LightType.Light, LightType.Light.Builder> implements LightInterface{
+public class LightController extends AbstractUnitController<LightType.Light, LightType.Light.Builder> implements LightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(

@@ -107,7 +107,10 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         return instanceId;
     }
 
-    protected <U extends AbstractUnitController> void register(final U hardware) {
+    protected <U extends AbstractUnitController> void registerUnit(final U hardware) {
+        
+        
+        
         unitMap.put(hardware.getId(), hardware);
     }
 

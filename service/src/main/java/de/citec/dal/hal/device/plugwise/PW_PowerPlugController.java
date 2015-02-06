@@ -42,8 +42,8 @@ public class PW_PowerPlugController extends AbstractOpenHABDeviceController<PW_P
 //        builder.setId(id); //TODO still useful or already setuped in super class?
         this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, label, this, data.getPowerPlugBuilder());
         this.powerConsumption = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION, label, this, data.getPowerConsumptionBuilder());
-        this.register(powerPlug);
-        this.register(powerConsumption);
+        this.registerUnit(powerPlug);
+        this.registerUnit(powerConsumption);
     }
 
     @Override

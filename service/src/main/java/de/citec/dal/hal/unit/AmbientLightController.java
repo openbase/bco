@@ -39,12 +39,12 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     private final BrightnessService brightnessService;
     private final PowerService powerService;
 
-    public AmbientLightController(final String id, final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
-        this(id, label, device, builder, device.getDefaultServiceFactory());
+    public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
+        this(label, device, builder, device.getDefaultServiceFactory());
     }
     
-    public AmbientLightController(final String id, final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
-        super(id, label, device, builder);
+    public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
+        super(label, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
         this.colorService = serviceFactory.newColorService(device, this);
         this.brightnessService = serviceFactory.newBrightnessService(device, this);
@@ -58,13 +58,14 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     }
 
     public void updatePowerState(final PowerType.Power.PowerState state) {
+        logger.debug("Update "+name+"[" + label + "] to PowerState [" + state.name() + "]");
         data.getPowerStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
     public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
+        logger.debug("Set "+name+"[" + label + "] to PowerState [" + state.name() + "]");
         powerService.setPowerState(state);
     }
 
@@ -81,7 +82,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
                 AmbientLightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [setPowerState] for [" + AmbientLightController.this.getId() + "]", ex);
+                logger.warn("Could not invoke method [setPowerState] for [" + AmbientLightController.this.getName()+ "]", ex);
                 throw ex;
             }
         }

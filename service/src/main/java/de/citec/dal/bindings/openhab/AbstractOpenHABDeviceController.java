@@ -25,7 +25,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  */
 public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends AbstractDeviceController<M, MB> {
 
-    
+    private String ITEM_ID_DELIMITER = "_";
     private final static ServiceFactory defaultServiceFactory = new OpenhabServiceFactory();
     
 //    private final static OpenhabBinding openhabBinding = OpenhabBinding.getInstance();
@@ -37,9 +37,14 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
     public void receiveUpdate(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
         logger.debug("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
 
-        String id_suffix = command.getItem().replaceFirst(id + "_", "");
+        String unitServicePattern = command.getItem().replaceFirst(id + "_", "");
+        String[] pattern = unitServicePattern.split(ITEM_ID_DELIMITER);
+        String unitName = pattern[0];
+        String serviceName = pattern[1];
+        
+        
         //TODO mpohling: Resolve mapping by service not by unit type.
-        Method relatedMethod = halFunctionMapping.get(id_suffix);
+        Method relatedMethod = halFunctionMapping.get(unitName);
 
         if (relatedMethod == null) {
             throw new CouldNotPerformException("Could not apply update: Related Method["+id_suffix+"] unknown!");

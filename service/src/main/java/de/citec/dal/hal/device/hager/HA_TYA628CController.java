@@ -55,14 +55,14 @@ public class HA_TYA628CController extends AbstractOpenHABDeviceController<HA_TYA
         this.rollershutter_5 = new RollershutterController(COMPONENT_ROLLERSHUTTER_5, unitLabel[5], this, data.getRollershutter5Builder());
         this.rollershutter_6 = new RollershutterController(COMPONENT_ROLLERSHUTTER_6, unitLabel[6], this, data.getRollershutter6Builder());
         this.rollershutter_7 = new RollershutterController(COMPONENT_ROLLERSHUTTER_7, unitLabel[7], this, data.getRollershutter7Builder());
-        this.register(rollershutter_0);
-        this.register(rollershutter_1);
-        this.register(rollershutter_2);
-        this.register(rollershutter_3);
-        this.register(rollershutter_4);
-        this.register(rollershutter_5);
-        this.register(rollershutter_6);
-        this.register(rollershutter_7);
+        this.registerUnit(rollershutter_0);
+        this.registerUnit(rollershutter_1);
+        this.registerUnit(rollershutter_2);
+        this.registerUnit(rollershutter_3);
+        this.registerUnit(rollershutter_4);
+        this.registerUnit(rollershutter_5);
+        this.registerUnit(rollershutter_6);
+        this.registerUnit(rollershutter_7);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class PH_Hue_GU10Controller extends AbstractOpenHABDeviceController<PH_Hu
         super(id, label,location, PH_Hue_GU10.newBuilder());
         super.data.setId(id);
         this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label,this, data.getAmbientLightBuilder());
-        this.register(ambientLight);
+        this.registerUnit(ambientLight);
     }
 
     @Override

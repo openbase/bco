@@ -47,10 +47,10 @@ public class GI_5142Controller extends AbstractOpenHABDeviceController<GI_5142Ty
         this.button_1 = new ButtonController(COMPONENT_BUTTON_1, unitLabel[1], this, data.getButton1Builder());
         this.button_2 = new ButtonController(COMPONENT_BUTTON_2, unitLabel[2], this, data.getButton2Builder());
         this.button_3 = new ButtonController(COMPONENT_BUTTON_3, unitLabel[3], this, data.getButton3Builder());
-        this.register(button_0);
-        this.register(button_1);
-        this.register(button_2);
-        this.register(button_3);
+        this.registerUnit(button_0);
+        this.registerUnit(button_1);
+        this.registerUnit(button_2);
+        this.registerUnit(button_3);
     }
 
 

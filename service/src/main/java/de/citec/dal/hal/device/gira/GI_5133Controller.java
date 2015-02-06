@@ -54,12 +54,12 @@ public class GI_5133Controller extends AbstractOpenHABDeviceController<GI_5133Ty
         this.button_3 = new ButtonController(COMPONENT_BUTTON_3, unitLabel[3], this, data.getButton3Builder());
         this.button_4 = new ButtonController(COMPONENT_BUTTON_4, unitLabel[4], this, data.getButton4Builder());
         this.button_5 = new ButtonController(COMPONENT_BUTTON_5, unitLabel[5], this, data.getButton5Builder());
-        this.register(button_0);
-        this.register(button_1);
-        this.register(button_2);
-        this.register(button_3);
-        this.register(button_4);
-        this.register(button_5);
+        this.registerUnit(button_0);
+        this.registerUnit(button_1);
+        this.registerUnit(button_2);
+        this.registerUnit(button_3);
+        this.registerUnit(button_4);
+        this.registerUnit(button_5);
     }
 
     @Override

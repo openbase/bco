@@ -11,6 +11,7 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  * @author mpohling
  * @param <ST> related service type
  */
-public class OpenHABServiceImpl<ST extends Service & UnitInterface> {
+public abstract class OpenHABServiceImpl<ST extends Service & UnitInterface> {
 
     private static final OpenhabBindingInterface openhabBinding = OpenhabBinding.getInstance();
 
@@ -29,24 +30,23 @@ public class OpenHABServiceImpl<ST extends Service & UnitInterface> {
 
     protected final DeviceInterface device;
     protected final ST unit;
-    private final String deviceId;
+    private final String itemID;
 
     public OpenHABServiceImpl(DeviceInterface device, ST unit) {
         this.device = device;
         this.unit = unit;
-        this.deviceId = generateHardwareId();
+        this.itemID = generateItemId();
     }
 
-    public final String generateHardwareId() {
-        logger.info(" ==== generateHardwareId[[" + device.getId() + "]+[" + unit + "]=[" + device.getId() + "_" + unit + "]]");
-        return device.getId() + "_" + unit.getId();
+    public final String generateItemId() {
+        return device.getId() + "_" + unit.getId() + "_" + getClass().getSimpleName().replaceAll("Service", "").replaceAll("Provider", "");
     }
 
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand.Builder command) throws CouldNotPerformException {
-        if (deviceId == null) {
-            throw new CouldNotPerformException("Skip sending command, could not generate id!", new NullPointerException("Argument id is null!"));
+        if (itemID == null) {
+            throw new NotAvailableException("itemID");
         }
-        return executeCommand(deviceId, command, OpenhabCommandType.OpenhabCommand.ExecutionType.SYNCHRONOUS);
+        return executeCommand(itemID, command, OpenhabCommandType.OpenhabCommand.ExecutionType.SYNCHRONOUS);
     }
 
     public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder command, final OpenhabCommandType.OpenhabCommand.ExecutionType type) throws CouldNotPerformException {
@@ -58,7 +58,7 @@ public class OpenHABServiceImpl<ST extends Service & UnitInterface> {
             throw new CouldNotPerformException("Skip sending command, binding not ready!", new NullPointerException("Argument rsbBinding is null!"));
         }
 
-        logger.debug("Execute command: Setting item [" + deviceId + "] to [" + command.getType().toString() + "]");
+        logger.debug("Execute command: Setting item [" + itemID + "] to [" + command.getType().toString() + "]");
         command.setItem(itemName).setExecutionType(type);
         return openhabBinding.executeCommand(command.build());
     }

@@ -44,8 +44,8 @@ public class HM_ReedSwitchController extends AbstractOpenHABDeviceController<HM_
         data.setId(id);
         this.reedSwitch = new ReedSwitchController(COMPONENT_REED_SWITCH, label, this, data.getReedSwitchBuilder());
         this.battery = new BatteryController(COMPONENT_BATTERY, label, this, data.getBatteryBuilder());
-        this.register(reedSwitch);
-        this.register(battery);
+        this.registerUnit(reedSwitch);
+        this.registerUnit(battery);
     }
 
     @Override

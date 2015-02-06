@@ -11,6 +11,6 @@ package de.citec.dal.hal.unit;
  */
 public interface UnitInterface {
     
-    public String getId();
+    public String getName();
     
 }

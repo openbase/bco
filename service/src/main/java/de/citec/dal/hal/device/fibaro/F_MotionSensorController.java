@@ -54,11 +54,11 @@ public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_
         this.brightnessSensor = new BrightnessSensorController(UNIT_BRIGHTNESS_SENSOR, label, this, data.getBrightnessSensorBuilder());
         this.tamperSwitch = new TamperSwitchController(UNIT_TAMPER_SWITCH, label, this, data.getTamperSwitchBuilder());
         this.battery = new BatteryController(UNIT_BATTERY, label, this, data.getBatteryBuilder());
-        this.register(motionSensor);
-        this.register(temperatureSensor);
-        this.register(brightnessSensor);
-        this.register(tamperSwitch);
-        this.register(battery);
+        this.registerUnit(motionSensor);
+        this.registerUnit(temperatureSensor);
+        this.registerUnit(brightnessSensor);
+        this.registerUnit(tamperSwitch);
+        this.registerUnit(battery);
     }
 
     @Override

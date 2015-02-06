@@ -67,18 +67,18 @@ public class HA_TYA606EController extends AbstractOpenHABDeviceController<HA_TYA
         this.powerConsumptionSensor_3 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_3", label, this, data.getPowerConsumptionSensor3Builder());
         this.powerConsumptionSensor_4 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_4", label, this, data.getPowerConsumptionSensor4Builder());
         this.powerConsumptionSensor_5 = new PowerConsumptionSensorController(COMPONENT_POWER_CONSUMPTION_SENSOR + "_5", label, this, data.getPowerConsumptionSensor5Builder());
-        this.register(powerPlug_0);
-        this.register(powerPlug_1);
-        this.register(powerPlug_2);
-        this.register(powerPlug_3);
-        this.register(powerPlug_4);
-        this.register(powerPlug_5);
-        this.register(powerConsumptionSensor_0);
-        this.register(powerConsumptionSensor_1);
-        this.register(powerConsumptionSensor_2);
-        this.register(powerConsumptionSensor_3);
-        this.register(powerConsumptionSensor_4);
-        this.register(powerConsumptionSensor_5);
+        this.registerUnit(powerPlug_0);
+        this.registerUnit(powerPlug_1);
+        this.registerUnit(powerPlug_2);
+        this.registerUnit(powerPlug_3);
+        this.registerUnit(powerPlug_4);
+        this.registerUnit(powerPlug_5);
+        this.registerUnit(powerConsumptionSensor_0);
+        this.registerUnit(powerConsumptionSensor_1);
+        this.registerUnit(powerConsumptionSensor_2);
+        this.registerUnit(powerConsumptionSensor_3);
+        this.registerUnit(powerConsumptionSensor_4);
+        this.registerUnit(powerConsumptionSensor_5);
     }
 
     @Override

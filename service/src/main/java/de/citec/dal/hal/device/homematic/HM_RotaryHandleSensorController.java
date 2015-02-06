@@ -43,8 +43,8 @@ public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceContro
         data.setId(id);
         this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, label, this, data.getHandleSensorBuilder());
         this.battery = new BatteryController(COMPONENT_BATTERY, label, this, data.getBatteryBuilder());
-        this.register(handleSensor);
-        this.register(battery);
+        this.registerUnit(handleSensor);
+        this.registerUnit(battery);
     }
 
     @Override

@@ -31,19 +31,19 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public final static String TYPE_FILED_ID = "id";
     public final static String TYPE_FILED_LABEL = "label";
 
-    protected final String id;
+    protected final String name;
     protected final String label;
     private final DeviceInterface device;
     private List<Service> serviceList;
 
-    public AbstractUnitController(final String id, final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
-        super(generateScope(id, label, device), builder);
-        this.id = id;
+    public AbstractUnitController(final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
+        super(generateScope(generateName(getClass()), label, device), builder);
+        this.name = generateName();
         this.label = label;
         this.device = device;
         this.serviceList = new ArrayList<>();
         
-        setField(TYPE_FILED_ID, id);
+        setField(TYPE_FILED_ID, name); //TODO Tamino: Fix RST Types.
         setField(TYPE_FILED_LABEL, label);
 
         try {
@@ -54,8 +54,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public String getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 
     public String getLable() {
@@ -74,17 +74,21 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         serviceList.add(service);
     }
     
+    public final String generateName(Class clazz) {
+        return clazz.getSimpleName().replace("Controller", "");
+    }
+    
     public Scope generateScope() {
-        return generateScope(id, label, device);
+        return generateScope(generateName(), label, device);
     }
 
-    public static Scope generateScope(final String id, final String label, final DeviceInterface device) {
-        return device.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + id).concat(new Scope(ScopeProvider.SEPARATOR + label)));
+    public static Scope generateScope(final String name, final String label, final DeviceInterface device) {
+        return device.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + name).concat(new Scope(ScopeProvider.SEPARATOR + label)));
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + id + "[" + label + "]]";
+        return getClass().getSimpleName() + "[" + name + "[" + label + "]]";
     }
 
     @Override
