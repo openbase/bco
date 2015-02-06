@@ -27,10 +27,6 @@ public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug> i
     public PowerPlugRemote() {
     }
 
-    public void setPowerState(final PowerType.Power state) throws CouldNotPerformException {
-        callMethodAsync("setPowerState", state);
-    }
-
     @Override
     public void notifyUpdated(PowerPlugType.PowerPlug data) {
     }

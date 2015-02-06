@@ -28,14 +28,14 @@ import rst.homeautomation.states.ShutterType;
  */
 public class RollershutterRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
+    private static final Location LOCATION = new Location("paradise");
+    private static final String LABEL = "Rollershutter_Unit_Test";
+    private static final String[] ROLLERSHUTTER = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
 
-    private final RollershutterRemote rollershutterRemote = new RollershutterRemote();
-    private DALService dalService = new DALService(new RollershutterRemoteTest.DeviceInitializerImpl());
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollershutterRemoteTest.class);
 
-    private static final Location location = new Location("paradise");
-    private static final String label = "Rollershutter_Unit_Test";
-    private static final String[] unitLabel = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
+    private RollershutterRemote rollershutterRemote;
+    private DALService dalService;
 
     public RollershutterRemoteTest() {
     }
@@ -50,11 +50,12 @@ public class RollershutterRemoteTest {
 
     @Before
     public void setUp() {
-        JPService.registerProperty(JPHardwareSimulationMode.class, false);
-        dalService = new DALService();
+        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        dalService = new DALService(new RollershutterRemoteTest.DeviceInitializerImpl());
         dalService.activate();
 
-        rollershutterRemote.init((label+unitLabel[0]), location);
+        rollershutterRemote = new RollershutterRemote();
+        rollershutterRemote.init(ROLLERSHUTTER[0], LOCATION);
         rollershutterRemote.activate();
     }
 
@@ -64,7 +65,7 @@ public class RollershutterRemoteTest {
         try {
             rollershutterRemote.deactivate();
         } catch (InterruptedException ex) {
-            logger.warn("Could not deactivate ambient light remote: ", ex);
+            logger.warn("Could not deactivate rollershutter remote: ", ex);
         }
     }
 
@@ -78,10 +79,10 @@ public class RollershutterRemoteTest {
         System.out.println("setShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
         rollershutterRemote.setShutterState(state);
-        while (!rollershutterRemote.getData().getShutterState().equals(state)) {
+        while (!rollershutterRemote.getData().getShutterState().getState().equals(state)) {
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getData().getShutterState().equals(state));
+        assertTrue("Color has not been set in time!", rollershutterRemote.getData().getShutterState().getState().equals(state));
     }
 
     /**
@@ -113,7 +114,7 @@ public class RollershutterRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new HA_TYA628CController("HA_TYA628C_000", label, unitLabel, location));
+                registry.register(new HA_TYA628CController("HA_TYA628C_000", LABEL, ROLLERSHUTTER, LOCATION));
             } catch (InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
