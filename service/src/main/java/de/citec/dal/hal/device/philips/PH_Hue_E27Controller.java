@@ -9,7 +9,6 @@ import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.HSVColorTransformer;
 import de.citec.dal.data.transform.PowerStateTransformer;
-import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.jul.exception.CouldNotPerformException;
