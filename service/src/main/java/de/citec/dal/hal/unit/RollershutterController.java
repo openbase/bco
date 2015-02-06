@@ -5,8 +5,8 @@
  */
 package de.citec.dal.hal.unit;
 
+import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractUnitController;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import de.citec.jul.rsb.RSBCommunicationService;

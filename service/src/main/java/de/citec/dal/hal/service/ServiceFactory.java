@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.unit.DeviceInterface;
+import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.jul.exception.InstantiationException;
 
 /**

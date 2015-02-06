@@ -9,7 +9,7 @@ import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
-import de.citec.dal.hal.unit.DeviceInterface;
+import de.citec.dal.hal.device.DeviceInterface;
 
 /**
  *

@@ -5,7 +5,7 @@
  */
 package de.citec.dal.util;
 
-import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.jul.rsb.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

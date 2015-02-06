@@ -5,7 +5,7 @@
  */
 package de.citec.dal;
 
-import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.dal.visual.unit.AmbientLightView;
 import de.citec.dal.util.DALRegistry;

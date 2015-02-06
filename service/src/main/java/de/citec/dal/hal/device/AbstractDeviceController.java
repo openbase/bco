@@ -3,15 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal;
+package de.citec.dal.hal.device;
 
 import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
+import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;

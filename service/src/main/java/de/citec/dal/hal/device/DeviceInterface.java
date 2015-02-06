@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.unit;
+package de.citec.dal.hal.device;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.ServiceFactory;

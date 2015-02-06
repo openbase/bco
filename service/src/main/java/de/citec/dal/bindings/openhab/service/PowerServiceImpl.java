@@ -5,18 +5,20 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
-import de.citec.dal.bindings.openhab.OpenHABServiceImpl;
-import de.citec.dal.hal.unit.DeviceInterface;
+import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.service.PowerService;
+import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rst.homeautomation.states.PowerType;
 
 /**
  *
  * @author mpohling
+ * @param <ST> Related service type.
  */
-public class PowerServiceImpl extends OpenHABServiceImpl<de.citec.dal.hal.service.PowerService> implements de.citec.dal.hal.service.PowerService {
+public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends OpenHABServiceImpl<ST> implements de.citec.dal.hal.service.PowerService {
 
-    public PowerServiceImpl(DeviceInterface device, de.citec.dal.hal.service.PowerService unit) {
+    public PowerServiceImpl(DeviceInterface device, ST unit) {
         super(device, unit);
     }
 

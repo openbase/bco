@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
@@ -21,7 +21,7 @@ import rsb.patterns.EventCallback;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.AmbientLightType;
 import rst.homeautomation.states.PowerType;
-import rst.vision.HSVColorType.HSVColor;
+import rst.vision.HSVColorType.HSVColor; 
 
 /**
  *

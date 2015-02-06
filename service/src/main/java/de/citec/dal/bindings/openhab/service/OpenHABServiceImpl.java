@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.bindings.openhab;
+package de.citec.dal.bindings.openhab.service;
 
-import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.bindings.openhab.OpenhabBinding;
+import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.unit.DeviceInterface;
+import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -20,12 +21,12 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  * @author mpohling
  * @param <ST> related service type
  */
-public class OpenHABServiceImpl<ST extends Service> {
-    
+public class OpenHABServiceImpl<ST extends Service & UnitInterface> {
+
     private static final OpenhabBindingInterface openhabBinding = OpenhabBinding.getInstance();
-    
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     protected final DeviceInterface device;
     protected final ST unit;
     private final String deviceId;
@@ -35,9 +36,10 @@ public class OpenHABServiceImpl<ST extends Service> {
         this.unit = unit;
         this.deviceId = generateHardwareId();
     }
-    
+
     public final String generateHardwareId() {
-        return device.getId() + "_" + unit;
+        logger.info(" ==== generateHardwareId[[" + device.getId() + "]+[" + unit + "]=[" + device.getId() + "_" + unit + "]]");
+        return device.getId() + "_" + unit.getId();
     }
 
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand.Builder command) throws CouldNotPerformException {

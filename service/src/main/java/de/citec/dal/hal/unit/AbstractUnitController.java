@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal;
+package de.citec.dal.hal.unit;
 
+import de.citec.dal.hal.device.DeviceInterface;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
@@ -26,7 +26,7 @@ import rsb.patterns.LocalServer;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> {
+public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements UnitInterface {
 
     public final static String TYPE_FILED_ID = "id";
     public final static String TYPE_FILED_LABEL = "label";
@@ -38,12 +38,12 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     public AbstractUnitController(final String id, final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
         super(generateScope(id, label, device), builder);
-        this.id = id; // TODO mpohling: Still necessary?
+        this.id = id;
         this.label = label;
         this.device = device;
         this.serviceList = new ArrayList<>();
         
-        setField(TYPE_FILED_ID, generateScope()); // TODO mpohling: Still necessary?
+        setField(TYPE_FILED_ID, id);
         setField(TYPE_FILED_LABEL, label);
 
         try {
@@ -53,6 +53,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         }
     }
 
+    @Override
     public String getId() {
         return id;
     }

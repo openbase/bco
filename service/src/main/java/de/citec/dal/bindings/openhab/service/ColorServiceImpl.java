@@ -6,20 +6,20 @@
 package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
-import de.citec.dal.bindings.openhab.OpenHABServiceImpl;
-import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.service.ColorService;
-import de.citec.dal.hal.unit.DeviceInterface;
+import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rst.vision.HSVColorType;
 
 /**
  *
  * @author mpohling
+ * @param <ST> Related service type.
  */
-public class ColorServiceImpl extends OpenHABServiceImpl<ColorService> implements ColorService {
+public class ColorServiceImpl<ST extends ColorService & UnitInterface>  extends OpenHABServiceImpl<ST> implements ColorService {
 
-    public ColorServiceImpl(DeviceInterface device, ColorService unit) {
+    public ColorServiceImpl(DeviceInterface device, ST unit) {
         super(device, unit);
     }
 

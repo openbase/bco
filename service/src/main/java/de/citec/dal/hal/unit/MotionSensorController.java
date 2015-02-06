@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.AbstractUnitController;
+import de.citec.dal.hal.device.DeviceInterface;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;

@@ -6,6 +6,7 @@
 
 package de.citec.dal.hal;
 
+import de.citec.dal.hal.device.AbstractDeviceController;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

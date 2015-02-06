@@ -10,7 +10,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.OpenClosedTiltedStateTransformer;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.HandleSensorController;
 import de.citec.jul.exception.InstantiationException;

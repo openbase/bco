@@ -9,7 +9,7 @@ import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.bindings.openhab.service.OpenhabServiceFactory;
 import de.citec.dal.bindings.openhab.transform.OpenHABCommandTransformer;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
@@ -42,8 +42,7 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
         Method relatedMethod = halFunctionMapping.get(id_suffix);
 
         if (relatedMethod == null) {
-            logger.warn("Could not apply update: Related Method unknown!");
-            return;
+            throw new CouldNotPerformException("Could not apply update: Related Method["+id_suffix+"] unknown!");
         }
 
         try {
