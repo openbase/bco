@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.TemperatureSensorType;
@@ -23,7 +24,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
                 new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(String id, final String label, DeviceInterface hardwareUnit, TemperatureSensor.Builder builder) throws DALException {
+    public TemperatureSensorController(String id, final String label, DeviceInterface hardwareUnit, TemperatureSensor.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 

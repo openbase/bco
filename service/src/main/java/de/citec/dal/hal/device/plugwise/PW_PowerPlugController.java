@@ -5,13 +5,14 @@
  */
 package de.citec.dal.hal.device.plugwise;
 
+import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.PowerStateTransformer;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerPlugController;
+import de.citec.jul.exception.CouldNotTransformException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -23,7 +24,7 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  *
  * @author mpohling
  */
-public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlug, PW_PowerPlug.Builder> {
+public class PW_PowerPlugController extends AbstractOpenHABDeviceController<PW_PowerPlug, PW_PowerPlug.Builder> {
 
     private final static String COMPONENT_POWER_PLUG = "PowerPlug";
     private final static String COMPONENT_POWER_CONSUMPTION = "PowerConsumption";
@@ -36,7 +37,7 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
     private final PowerPlugController powerPlug;
     private final PowerConsumptionSensorController powerConsumption;
 
-    public PW_PowerPlugController(final String id, final String label, final Location location) throws VerificationFailedException, DALException {
+    public PW_PowerPlugController(final String id, final String label, final Location location) throws VerificationFailedException, InstantiationException {
         super(id, label, location, PW_PowerPlug.newBuilder());
 //        builder.setId(id); //TODO still useful or already setuped in super class?
         this.powerPlug = new PowerPlugController(COMPONENT_POWER_PLUG, label, this, data.getPowerPlugBuilder());
@@ -54,7 +55,7 @@ public class PW_PowerPlugController extends AbstractDeviceController<PW_PowerPlu
     public void updatePowerPlug(OnOff type) throws RSBBindingException {
         try {
             powerPlug.updatePowerState(PowerStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
+        } catch (CouldNotTransformException ex) {
             logger.error("Not able to transform from OnOffType to PowerState!", ex);
         }
     }

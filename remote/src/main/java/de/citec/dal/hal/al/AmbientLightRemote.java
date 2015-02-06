@@ -11,9 +11,6 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.AmbientLightInterface;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -57,19 +54,10 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public HSVColor getColor() {
-        return this.getData().getColor();
-    }
-
-    @Override
-    public void setBrightness(double brightness) throws Exception {
+    public void setBrightness(double brightness) throws CouldNotPerformException {
         callMethodAsync("setBrightness", new Double(brightness));
     }
 
-    @Override
-    public double getBrightness() throws Exception {
-        return this.getData().getColor().getValue();
-    }
 
     @Override
     public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
@@ -79,5 +67,15 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     @Override
     public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
+    }
+
+    @Override
+    public HSVColor getColor() throws CouldNotPerformException{
+            return this.getData().getColor();
+    }
+
+    @Override
+    public double getBrightness() throws CouldNotPerformException {
+        return this.getData().getColor().getValue();
     }
 }

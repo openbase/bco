@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.TamperSwitchType;
@@ -24,7 +25,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
                 new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(String id, final String label, DeviceInterface hardwareUnit, TamperSwitch.Builder builder) throws DALException {
+    public TamperSwitchController(String id, final String label, DeviceInterface hardwareUnit, TamperSwitch.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 

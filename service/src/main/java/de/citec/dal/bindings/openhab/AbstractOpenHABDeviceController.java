@@ -6,15 +6,15 @@
 package de.citec.dal.bindings.openhab;
 
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.bindings.openhab.service.OpenhabServiceFactory;
 import de.citec.dal.bindings.openhab.transform.OpenHABCommandTransformer;
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.InstantiationException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.concurrent.Future;
 import rst.homeautomation.openhab.OpenhabCommandType;
 
 /**
@@ -25,9 +25,12 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  */
 public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends AbstractDeviceController<M, MB> {
 
+    
+    private final static ServiceFactory defaultServiceFactory = new OpenhabServiceFactory();
+    
 //    private final static OpenhabBinding openhabBinding = OpenhabBinding.getInstance();
 
-    public AbstractOpenHABDeviceController(String id, String label, Location location, MB builder) throws VerificationFailedException, DALException {
+    public AbstractOpenHABDeviceController(String id, String label, Location location, MB builder) throws InstantiationException {
         super(id, label, location, builder);
     }
 
@@ -55,9 +58,16 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
             throw new CouldNotPerformException("Fatal invocation error!", ex);
         }
     }
+    
+    
 
 //    public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder commandBuilder, final OpenhabCommandType.OpenhabCommand.ExecutionType type) throws CouldNotPerformException {
 //        commandBuilder.setItem(itemName).setExecutionType(type);
 //        return openhabBinding.executeCommand(commandBuilder.build());
 //    }
+
+    @Override
+    public ServiceFactory getDefaultServiceFactory() {
+        return defaultServiceFactory;
+    }
 }

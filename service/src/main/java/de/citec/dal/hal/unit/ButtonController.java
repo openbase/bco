@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.ButtonType;
@@ -26,7 +27,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
                 new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(String id, final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws DALException {
+    public ButtonController(String id, final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 

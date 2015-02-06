@@ -7,12 +7,12 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,7 +96,7 @@ public class PowerPlugRemoteTest {
 
             try {
                 registry.register(new PW_PowerPlugController("PW_PowerPlug_000", label, location));
-            } catch (DALException | VerificationFailedException ex) {
+            } catch (VerificationFailedException | InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

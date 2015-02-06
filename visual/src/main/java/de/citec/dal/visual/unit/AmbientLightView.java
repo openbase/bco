@@ -10,7 +10,6 @@ import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.AmbientLightRemote;
 import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -35,7 +34,7 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
                     public void stateChanged(ChangeEvent e) {
                         try {
                             getRemoteService().setColor(colorChooser.getColor());
-                        } catch (CouldNotPerformException | NotAvailableException ex) {
+                        } catch (CouldNotPerformException ex) {
                             logger.error("Could not set color value!", ex);
                         }
                     }

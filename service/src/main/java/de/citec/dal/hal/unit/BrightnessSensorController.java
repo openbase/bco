@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.BrightnessSensorType;
@@ -23,7 +24,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
                 new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
     }
 
-    public BrightnessSensorController(String id, final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws DALException {
+    public BrightnessSensorController(String id, final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws InstantiationException {
         super(id, label, hardwareUnit, builder);
     }
 

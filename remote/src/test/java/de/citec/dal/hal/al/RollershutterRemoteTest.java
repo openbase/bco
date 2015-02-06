@@ -7,12 +7,11 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.device.hager.HA_TYA628CController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
-import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -115,7 +114,7 @@ public class RollershutterRemoteTest {
 
             try {
                 registry.register(new HA_TYA628CController("HA_TYA628C_000", label, unitLabel, location));
-            } catch (DALException | VerificationFailedException ex) {
+            } catch (InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

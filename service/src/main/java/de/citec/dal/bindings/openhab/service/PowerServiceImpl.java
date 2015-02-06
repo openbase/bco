@@ -6,7 +6,7 @@
 package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABServiceImpl;
-import de.citec.dal.hal.AbstractDeviceController;
+import de.citec.dal.hal.unit.DeviceInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rst.homeautomation.states.PowerType;
 
@@ -16,7 +16,7 @@ import rst.homeautomation.states.PowerType;
  */
 public class PowerServiceImpl extends OpenHABServiceImpl<de.citec.dal.hal.service.PowerService> implements de.citec.dal.hal.service.PowerService {
 
-    public PowerServiceImpl(AbstractDeviceController device, de.citec.dal.hal.service.PowerService unit) {
+    public PowerServiceImpl(DeviceInterface device, de.citec.dal.hal.service.PowerService unit) {
         super(device, unit);
     }
 
@@ -27,6 +27,6 @@ public class PowerServiceImpl extends OpenHABServiceImpl<de.citec.dal.hal.servic
 
     @Override
     public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
     }
 }

@@ -7,12 +7,11 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
-import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.InstantiationException;
 import java.awt.Color;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,13 +30,13 @@ import rst.vision.HSVColorType;
  */
 public class AmbientLightRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
-
-    private final AmbientLightRemote ambientLightRemote = new AmbientLightRemote();
-    private DALService dalService = new DALService(new DeviceInitializerImpl());
+    private static final Location LOCATION = new Location("paradise");
+    private static final String LABEL = "Ambient_Light_Unit_Test";
     
-    private static final Location location = new Location("paradise");
-    private static final String label = "Ambient_Light_Unit_Test";
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
+    private AmbientLightRemote ambientLightRemote;
+    private DALService dalService;
+    
 
     public AmbientLightRemoteTest() {
     }
@@ -54,10 +53,11 @@ public class AmbientLightRemoteTest {
     @Before
     public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, false);
-        dalService = new DALService();
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
-        ambientLightRemote.init(label, location);
+        ambientLightRemote = new AmbientLightRemote();
+        ambientLightRemote.init(LABEL, LOCATION);
         ambientLightRemote.activate();
     }
 
@@ -196,8 +196,8 @@ public class AmbientLightRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", label, location));
-            } catch (DALException | VerificationFailedException ex) {
+                registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", LABEL, LOCATION));
+            } catch (InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

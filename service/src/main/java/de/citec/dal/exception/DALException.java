@@ -8,7 +8,9 @@ package de.citec.dal.exception;
 /**
  *
  * @author mpohling
+ * @deprecated use jul Exceptions instead!
  */
+@Deprecated
 public class DALException extends Exception {
 
     public DALException(String message) {

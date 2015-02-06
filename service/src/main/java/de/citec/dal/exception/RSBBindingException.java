@@ -13,7 +13,9 @@ package de.citec.dal.exception;
 /**
  *
  * @author Divine <DivineThreepwood@gmail.com>
+ * @deprecated use jul Exceptions instead!
  */
+@Deprecated
 public class RSBBindingException extends Exception {
 
 	public RSBBindingException(String message) {

@@ -5,28 +5,28 @@
  */
 package de.citec.dal.hal.device.fibaro;
 
+import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.data.transform.MotionStateTransformer;
 import de.citec.dal.data.transform.TamperStateTransformer;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.AbstractDeviceController;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.hal.unit.MotionSensorController;
 import de.citec.dal.hal.unit.TamperSwitchController;
 import de.citec.dal.hal.unit.TemperatureSensorController;
-import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;
 import rst.devices.fibaro.F_MotionSensorType.F_MotionSensor;
+import de.citec.jul.exception.InstantiationException;
 
 /**
  *
  * @author mpohling
  */
-public class F_MotionSensorController extends AbstractDeviceController<F_MotionSensor, F_MotionSensor.Builder> {
+public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_MotionSensor, F_MotionSensor.Builder> {
 
     private final static String UNIT_MOTION_SENSOR = "MotionSensor";
     private final static String UNIT_TEMPERATURE_SENSOR = "TemperatureSensor";
@@ -45,7 +45,7 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
 
-    public F_MotionSensorController(final String id, String label, final Location location) throws VerificationFailedException, DALException  {
+    public F_MotionSensorController(final String id, String label, final Location location) throws InstantiationException  {
         super(id, label, location, F_MotionSensor.newBuilder());
 
         data.setId(id);
@@ -70,11 +70,11 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
         halFunctionMapping.put(UNIT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
     }
 
-    public void updateMotionSensor(double type) {
+    public void updateMotionSensor(double type) throws CouldNotPerformException {
         try {
             motionSensor.updateMotionState(MotionStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from DecimalType to MotionState!", ex);
+            throw new CouldNotPerformException("Could not updateMotionSensor!", ex);
         }
     }
 
@@ -86,11 +86,11 @@ public class F_MotionSensorController extends AbstractDeviceController<F_MotionS
         brightnessSensor.updateBrightness((float) type);
     }
 
-    public void updateTamperSwitch(double type) {
+    public void updateTamperSwitch(double type) throws CouldNotPerformException {
         try {
             tamperSwitch.updateTamperState(TamperStateTransformer.transform(type));
         } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from DecimalType to TamperState!", ex);
+            throw new CouldNotPerformException("Could not updateTamperSwitch!", ex);
         }
     }
 
