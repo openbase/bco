@@ -3,17 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.service;
+package de.citec.dal.hal.provider;
 
-import de.citec.dal.hal.provider.ColorProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import rst.vision.HSVColorType;
 
 /**
  *
- * @author mpohling
+ * @author thuxohl
  */
-public interface ColorService extends Service, ColorProvider {
-
-    public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException;
+public interface ColorProvider extends Provider {
+    
+    public HSVColorType.HSVColor getColor() throws CouldNotPerformException;
 }

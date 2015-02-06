@@ -76,7 +76,7 @@ public class RollershutterRemoteTest {
     @Test(timeout = 3000)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
-        ShutterType.Shutter state = ShutterType.Shutter.newBuilder().setState(ShutterType.Shutter.ShutterState.DOWN).build();
+        ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
         rollershutterRemote.setShutterState(state);
         while (!rollershutterRemote.getData().getShutterState().equals(state)) {
             Thread.yield();
@@ -92,12 +92,12 @@ public class RollershutterRemoteTest {
     @Test(timeout = 3000)
     public void testSetPosition() throws Exception {
         System.out.println("setPosition");
-        float position = 34.0F;
-        rollershutterRemote.setPosition(position);
-        while (!(rollershutterRemote.getData().getOpeningRatio() == position)) {
+        double openingRatio = 34.0D;
+        rollershutterRemote.setOpeningRatio(openingRatio);
+        while (!(rollershutterRemote.getData().getOpeningRatio() == openingRatio)) {
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == position);
+        assertTrue("Color has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == openingRatio);
     }
 
     /**

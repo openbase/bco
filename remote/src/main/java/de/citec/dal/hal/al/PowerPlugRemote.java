@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
+import de.citec.dal.hal.unit.PowerPlugInterface;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
@@ -16,8 +17,8 @@ import rst.homeautomation.states.PowerType;
  *
  * @author thuxohl
  */
-public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug>{
-    
+public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug> implements PowerPlugInterface {
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerPlugType.PowerPlug.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
@@ -29,9 +30,19 @@ public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug>{
     public void setPowerState(final PowerType.Power state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", state);
     }
-    
+
     @Override
     public void notifyUpdated(PowerPlugType.PowerPlug data) {
-    } 
-    
+    }
+
+    @Override
+    public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
+        callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
+    }
+
+    @Override
+    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+        return this.getData().getPowerState().getState();
+    }
+
 }

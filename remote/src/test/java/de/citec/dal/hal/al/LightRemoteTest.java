@@ -73,7 +73,7 @@ public class LightRemoteTest {
     @Ignore
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerType.Power state = PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build();
+        PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         lightRemote.setPowerState(state);
         while (!lightRemote.getData().getPowerState().equals(state)) {
             Thread.yield();

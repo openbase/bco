@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
@@ -21,7 +22,7 @@ import rst.homeautomation.states.OpenClosedTiltedType.OpenClosedTilted.OpenClose
  *
  * @author thuxohl
  */
-public class HandleSensorController extends AbstractUnitController<HandleSensor, HandleSensor.Builder> {
+public class HandleSensorController extends AbstractUnitController<HandleSensor, HandleSensor.Builder> implements HandleSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -37,7 +38,8 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         notifyChange();
     }
 
-    public OpenClosedTiltedState getRotaryHandleState() {
+    @Override
+    public OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException{
         logger.debug("Getting [" + id + "] State: [" + data.getHandleState() + "]");
         return data.getHandleState().getState();
     }

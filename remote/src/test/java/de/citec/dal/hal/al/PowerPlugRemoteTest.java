@@ -74,7 +74,7 @@ public class PowerPlugRemoteTest {
     @Test(timeout = 3000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerType.Power state = PowerType.Power.newBuilder().setState(PowerType.Power.PowerState.ON).build();
+        PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         powerPlugRemote.setPowerState(state);
         while (!powerPlugRemote.getData().getPowerState().equals(state)) {
             Thread.yield();

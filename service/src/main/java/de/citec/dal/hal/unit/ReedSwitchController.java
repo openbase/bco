@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
@@ -21,7 +22,7 @@ import rst.homeautomation.states.OpenClosedType.OpenClosed.OpenClosedState;
  *
  * @author thuxohl
  */
-public class ReedSwitchController extends AbstractUnitController<ReedSwitch, ReedSwitch.Builder> {
+public class ReedSwitchController extends AbstractUnitController<ReedSwitch, ReedSwitch.Builder> implements ReedSwitchInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -37,7 +38,8 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         notifyChange();
     }
 
-    public OpenClosedState getReedSwitchState() {
+    @Override
+    public OpenClosedState getReedSwitchState() throws CouldNotPerformException{
         logger.debug("Getting [" + id + "] State: [" + data.getReedSwitchState() + "]");
         return data.getReedSwitchState().getState();
     }

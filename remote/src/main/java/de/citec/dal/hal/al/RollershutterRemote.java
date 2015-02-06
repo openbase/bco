@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.al;
 
+import de.citec.dal.hal.unit.RollershutterInterface;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
@@ -16,7 +17,7 @@ import rst.homeautomation.states.ShutterType;
  *
  * @author thuxohl
  */
-public class RollershutterRemote extends RSBRemoteService<RollershutterType.Rollershutter> {
+public class RollershutterRemote extends RSBRemoteService<RollershutterType.Rollershutter> implements RollershutterInterface {
 
 	static {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
@@ -26,16 +27,28 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
 	public RollershutterRemote() {
 	}
 
-	public void setShutterState(final ShutterType.Shutter state) throws CouldNotPerformException {
-		callMethodAsync("setShutterState", state);
-	}
-
-	public void setPosition(final float position) throws CouldNotPerformException {
-		callMethodAsync("setPosition", position);
-	}
-
 	@Override
 	public void notifyUpdated(RollershutterType.Rollershutter data) {
 	}
+
+    @Override
+    public void setShutterState(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+        callMethodAsync("setShutterState", ShutterType.Shutter.newBuilder().setState(state).build());
+    }
+
+    @Override
+    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException {
+        return this.getData().getShutterState().getState();
+    }
+
+    @Override
+    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
+        callMethodAsync("setPosition", new Double(openingRatio));
+    }
+
+    @Override
+    public double getOpeningRatio() throws CouldNotPerformException {
+        return this.getData().getOpeningRatio();
+    }
 
 }

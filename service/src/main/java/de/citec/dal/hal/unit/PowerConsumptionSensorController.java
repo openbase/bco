@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.Event;
 import rsb.RSBException;
@@ -21,7 +22,7 @@ import rst.homeautomation.PowerConsumptionSensorType.PowerConsumptionSensor;
  *
  * @author mpohling
  */
-public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensor, PowerConsumptionSensor.Builder> {
+public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensor, PowerConsumptionSensor.Builder> implements PowerConsumptionSensorInterface{
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -42,7 +43,8 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         notifyChange();
     }
 
-    public float getPowerConsumption() {
+    @Override
+    public float getPowerConsumption() throws CouldNotPerformException {
         logger.debug("Getting [" + id + "] Consumption: [" + data.getConsumption() + "]");
         return data.getConsumption();
     }

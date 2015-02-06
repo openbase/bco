@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.AbstractUnitController;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -17,7 +18,7 @@ import rst.homeautomation.BrightnessSensorType.BrightnessSensor;
  *
  * @author thuxohl
  */
-public class BrightnessSensorController extends AbstractUnitController<BrightnessSensor, BrightnessSensor.Builder> {
+public class BrightnessSensorController extends AbstractUnitController<BrightnessSensor, BrightnessSensor.Builder> implements BrightnessSensorInterface{
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -31,5 +32,10 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
     public void updateBrightness(final float brightness) {
         data.setBrightness(brightness);
         notifyChange();
+    }
+
+    @Override
+    public double getBrightness() throws CouldNotPerformException {
+        return data.getBrightness();
     }
 }
