@@ -92,13 +92,8 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-<<<<<<< HEAD
-    @Test(timeout = 30000)
-    public void testGSetColor_HSVColorTypeHSVColor() throws Exception {
-=======
     @Test(timeout = 3000)
     public void testSetColor_HSVColorTypeHSVColor() throws Exception {
->>>>>>> e2d31e8be2a5e335f8b48bff20922ced54b6c779
         System.out.println("setColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(50).setSaturation(50).setValue(50).build();
         ambientLightRemote.setColor(color);
