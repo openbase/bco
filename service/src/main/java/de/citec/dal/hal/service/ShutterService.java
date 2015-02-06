@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.provider.ShutterStateProvider;
+import de.citec.dal.hal.provider.ShutterProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import rst.homeautomation.states.ShutterType;
 
@@ -13,7 +13,7 @@ import rst.homeautomation.states.ShutterType;
  *
  * @author thuxohl
  */
-public interface ShutterService extends Service, ShutterStateProvider {
+public interface ShutterService extends Service, ShutterProvider {
     
     public void setShutterState(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
 }

@@ -14,6 +14,7 @@ import rst.homeautomation.openhab.HSBType;
 import rst.homeautomation.openhab.OnOffHolderType;
 import rst.homeautomation.openhab.OpenhabCommandType;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
+import rst.homeautomation.openhab.PercentType;
 import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType;
 
@@ -45,4 +46,11 @@ public class OpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.ONOFF).setOnOff(state);
     }
     
+    public static OpenhabCommandType.OpenhabCommand.Builder newBrightnessCommand(final float brightness) {
+        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(PercentType.Percent.newBuilder().setValue((int) brightness).build());
+    }
+    
+    public static OpenhabCommandType.OpenhabCommand.Builder newBrightnessCommand(final PercentType.Percent percent) {
+        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(percent);
+    }
 }

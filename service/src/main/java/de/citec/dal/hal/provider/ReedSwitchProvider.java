@@ -6,13 +6,13 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.homeautomation.states.ClickType;
+import rst.homeautomation.states.OpenClosedType;
 
 /**
  *
  * @author thuxohl
  */
-public interface ButtonStateProvider extends Provider {
-
-    public ClickType.Click.ClickState getButtonState() throws CouldNotPerformException;
+public interface ReedSwitchProvider extends Provider {
+    
+    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitchState() throws CouldNotPerformException;
 }

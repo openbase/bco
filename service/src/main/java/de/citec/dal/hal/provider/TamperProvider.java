@@ -6,13 +6,13 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.homeautomation.states.MotionType;
+import rst.homeautomation.states.TamperType;
 
 /**
  *
  * @author thuxohl
  */
-public interface MotionStateProvider extends Provider {
-    
-    public MotionType.Motion.MotionState getMotionState() throws CouldNotPerformException;
+public interface TamperProvider extends Provider {
+
+    public TamperType.Tamper.TamperState getTamperState() throws CouldNotPerformException;
 }

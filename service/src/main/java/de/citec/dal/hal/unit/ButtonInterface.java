@@ -5,12 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.ButtonStateProvider;
+import de.citec.dal.hal.provider.ButtonProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface ButtonInterface extends ButtonStateProvider {
+public interface ButtonInterface extends ButtonProvider {
     
 }

@@ -6,13 +6,12 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.homeautomation.states.ShutterType;
 
 /**
  *
  * @author thuxohl
  */
-public interface ShutterStateProvider extends Provider {
-    
-    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException;
+public interface BatteryProvider extends Provider {
+
+    public double getBattaryLevel() throws CouldNotPerformException;
 }

@@ -5,6 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
+import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.unit.UnitInterface;
@@ -28,7 +29,6 @@ public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface>
 
     @Override
     public void setBrightness(double brightness) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet.");
-//            setColor(cloneBuilder().getColorBuilder().setValue(brightness).build());
+        executeCommand(OpenHABCommandFactory.newBrightnessCommand((float) brightness));
     }
 }

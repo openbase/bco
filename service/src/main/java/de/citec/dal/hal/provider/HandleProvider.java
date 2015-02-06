@@ -12,7 +12,7 @@ import rst.homeautomation.states.OpenClosedTiltedType;
  *
  * @author thuxohl
  */
-public interface HandleStateProvider extends Provider {
+public interface HandleProvider extends Provider {
     
     public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException;
 }
