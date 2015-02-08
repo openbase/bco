@@ -42,27 +42,28 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
         String unitName = pattern[0];
         String serviceName = pattern[1];
 
-        Object commandData = OpenHABCommandTransformer.getCommandData(command);
+        Object serviceData = OpenHABCommandTransformer.getServiceData(command, serviceName);
         AbstractUnitController unit;
         Method relatedMethod;
+
         try {
             unit = getUnitByName(unitName);
             
             String methodName = "set" + serviceName;
             try {
-                relatedMethod = unit.getClass().getMethod(methodName, commandData.getClass());
+                relatedMethod = unit.getClass().getMethod(methodName, serviceData.getClass());
                 if (relatedMethod == null) {
                     throw new NotAvailableException(relatedMethod);
                 }
             } catch (Exception ex) {
-                throw new NotAvailableException("Methode " + unit + "." + methodName + "(" + commandData.getClass() + ")");
+                throw new NotAvailableException("Methcode " + unit + "." + methodName + "(" + serviceData.getClass() + ")", ex);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Unit not compatible!", ex);
         }
 
         try {
-            relatedMethod.invoke(unit, commandData);
+            relatedMethod.invoke(unit, serviceData);
         } catch (IllegalAccessException ex) {
             throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
         } catch (IllegalArgumentException ex) {

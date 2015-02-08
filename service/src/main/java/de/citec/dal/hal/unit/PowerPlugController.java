@@ -31,7 +31,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
                 new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
     }
 
-    public PowerPlugController(String id, final String label, DeviceInterface hardwareUnit, PowerPlug.Builder builder) throws InstantiationException {
+    public PowerPlugController(final String label, DeviceInterface hardwareUnit, PowerPlug.Builder builder) throws InstantiationException {
         super(PowerPlugController.class, label, hardwareUnit, builder);
     }
 

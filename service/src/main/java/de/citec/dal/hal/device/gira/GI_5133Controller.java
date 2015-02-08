@@ -8,7 +8,7 @@ package de.citec.dal.hal.device.gira;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.data.transform.ButtonStateTransformer;
+import de.citec.dal.bindings.openhab.transform.ButtonStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.ButtonController;
 import de.citec.jul.exception.CouldNotPerformException;

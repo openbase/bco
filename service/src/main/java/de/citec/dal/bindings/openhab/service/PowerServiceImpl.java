@@ -17,7 +17,7 @@ import rst.homeautomation.states.PowerType;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends OpenHABServiceImpl<ST> implements de.citec.dal.hal.service.PowerService {
+public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends OpenHABService<ST> implements de.citec.dal.hal.service.PowerService {
 
     public PowerServiceImpl(DeviceInterface device, ST unit) {
         super(device, unit);

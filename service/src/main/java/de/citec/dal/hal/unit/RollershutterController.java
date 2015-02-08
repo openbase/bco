@@ -32,7 +32,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
                 new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
     }
 
-    public RollershutterController(String id, final String label, DeviceInterface hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
+    public RollershutterController(final String label, DeviceInterface hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
         super(RollershutterController.class, label, hardwareUnit, builder);
     }
 

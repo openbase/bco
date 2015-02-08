@@ -27,7 +27,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
                 new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(String id, final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws InstantiationException {
+    public ButtonController(final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws InstantiationException {
         super(ButtonController.class, label, hardwareUnit, builder);
     }
 

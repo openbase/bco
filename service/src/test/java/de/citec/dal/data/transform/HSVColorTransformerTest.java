@@ -6,6 +6,7 @@
 
 package de.citec.dal.data.transform;
 
+import de.citec.dal.bindings.openhab.transform.HSVColorTransformer;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

@@ -7,8 +7,8 @@ package de.citec.dal.hal.device.philips;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.data.transform.HSVColorTransformer;
-import de.citec.dal.data.transform.PowerStateTransformer;
+import de.citec.dal.bindings.openhab.transform.HSVColorTransformer;
+import de.citec.dal.bindings.openhab.transform.PowerStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -26,9 +26,6 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  */
 public class PH_Hue_GU10Controller extends AbstractOpenHABDeviceController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
 
-    private final static String COMPONENT_AMBIENT_LIGHT = "AmbientLight";
-    private final static String COMPONENT_POWER_SWITCH = "PowerSwitch";
-
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(PH_Hue_GU10Type.PH_Hue_GU10.getDefaultInstance()));
@@ -39,14 +36,8 @@ public class PH_Hue_GU10Controller extends AbstractOpenHABDeviceController<PH_Hu
     public PH_Hue_GU10Controller(final String id, final String label,final Location location) throws InstantiationException  {
         super(id, label,location, PH_Hue_GU10.newBuilder());
         super.data.setId(id);
-        this.ambientLight = new AmbientLightController(COMPONENT_AMBIENT_LIGHT, label,this, data.getAmbientLightBuilder());
+        this.ambientLight = new AmbientLightController(label,this, data.getAmbientLightBuilder());
         this.registerUnit(ambientLight);
-    }
-
-    @Override
-    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_AMBIENT_LIGHT, getClass().getMethod("updateAmbientLight", HSB.class));
-        halFunctionMapping.put(COMPONENT_POWER_SWITCH, getClass().getMethod("updatePowerSwitch", OnOff.class));
     }
 
     public void updateAmbientLight(final HSB type) throws RSBBindingException {

@@ -28,7 +28,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
                 new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(String id, final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws InstantiationException {
+    public HandleSensorController(final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws InstantiationException {
         super(HandleSensorController.class, label, hardwareUnit, builder);
     }
 

@@ -6,7 +6,6 @@
 package de.citec.dal.hal.device;
 
 import com.google.protobuf.GeneratedMessage;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
@@ -69,11 +68,11 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             throw new InstantiationException("Could not init RSBCommunicationService!", ex);
         }
 
-        try {
-            initHardwareMapping();
-        } catch (Exception ex) {
-            throw new InstantiationException("Could not apply hardware mapping for " + getClass().getSimpleName() + "!", ex);
-        }
+//        try {
+//            initHardwareMapping();
+//        } catch (Exception ex) {
+//            throw new InstantiationException("Could not apply hardware mapping for " + getClass().getSimpleName() + "!", ex);
+//        }
     }
 
     public final static String parseDeviceId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificationFailedException {

@@ -7,7 +7,7 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
+import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;

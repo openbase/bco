@@ -7,8 +7,8 @@ package de.citec.dal.hal.device.fibaro;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.data.transform.MotionStateTransformer;
-import de.citec.dal.data.transform.TamperStateTransformer;
+import de.citec.dal.bindings.openhab.transform.MotionStateTransformer;
+import de.citec.dal.bindings.openhab.transform.TamperStateTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.BrightnessSensorController;

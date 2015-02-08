@@ -28,7 +28,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
                 new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(String id, final String label, DeviceInterface hardwareUnit, ReedSwitch.Builder builder) throws InstantiationException {
+    public ReedSwitchController(final String label, DeviceInterface hardwareUnit, ReedSwitch.Builder builder) throws InstantiationException {
         super(ReedSwitchController.class, label, hardwareUnit, builder);
     }
 

@@ -5,8 +5,8 @@
  */
 package de.citec.dal.bindings.openhab;
 
-import de.citec.dal.data.transform.HSVColorTransformer;
-import de.citec.dal.data.transform.PowerStateTransformer;
+import de.citec.dal.bindings.openhab.transform.HSVColorTransformer;
+import de.citec.dal.bindings.openhab.transform.PowerStateTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

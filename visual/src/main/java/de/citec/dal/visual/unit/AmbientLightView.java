@@ -5,7 +5,7 @@
  */
 package de.citec.dal.visual.unit;
 
-import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
+import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.al.AmbientLightRemote;
 import de.citec.dal.visual.util.RSBRemoteView;

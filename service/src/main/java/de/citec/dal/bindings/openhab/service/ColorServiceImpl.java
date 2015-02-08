@@ -17,7 +17,7 @@ import rst.vision.HSVColorType;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class ColorServiceImpl<ST extends ColorService & UnitInterface>  extends OpenHABServiceImpl<ST> implements ColorService {
+public class ColorServiceImpl<ST extends ColorService & UnitInterface>  extends OpenHABService<ST> implements ColorService {
 
     public ColorServiceImpl(DeviceInterface device, ST unit) {
         super(device, unit);

@@ -7,7 +7,7 @@ package de.citec.dal.hal.device.homematic;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.data.transform.OpenClosedTiltedStateTransformer;
+import de.citec.dal.bindings.openhab.transform.OpenClosedTiltedStateTransformer;
 import de.citec.dal.exception.DALException;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.device.AbstractDeviceController;
@@ -26,8 +26,8 @@ import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
  */
 public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
 
-    private final static String COMPONENT_HANDLE_SENSOR = "HandleSensor";
-    private final static String COMPONENT_BATTERY = "Battery";
+//    private final static String COMPONENT_HANDLE_SENSOR = "HandleSensor";
+//    private final static String COMPONENT_BATTERY = "Battery";
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
@@ -41,17 +41,17 @@ public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceContro
         super(id, label, location, HM_RotaryHandleSensor.newBuilder());
 
         data.setId(id);
-        this.handleSensor = new HandleSensorController(COMPONENT_HANDLE_SENSOR, label, this, data.getHandleSensorBuilder());
-        this.battery = new BatteryController(COMPONENT_BATTERY, label, this, data.getBatteryBuilder());
+        this.handleSensor = new HandleSensorController(label, this, data.getHandleSensorBuilder());
+        this.battery = new BatteryController(label, this, data.getBatteryBuilder());
         this.registerUnit(handleSensor);
         this.registerUnit(battery);
     }
 
-    @Override
-    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", String.class));
-        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
-    }
+//    @Override
+//    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
+//        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", String.class));
+//        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
+//    }
 
     public void updateHandleSensor(String type) {
         try {

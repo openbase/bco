@@ -28,7 +28,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
                 new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(String id, final String label, DeviceInterface hardwareUnit, PowerConsumptionSensor.Builder builder) throws InstantiationException {
+    public PowerConsumptionSensorController(final String label, DeviceInterface hardwareUnit, PowerConsumptionSensor.Builder builder) throws InstantiationException {
         super(PowerConsumptionSensorController.class, label, hardwareUnit, builder);
     }
 

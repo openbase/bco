@@ -6,7 +6,7 @@
 package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
-import de.citec.dal.data.transform.HSVColorToRGBColorTransformer;
+import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.AmbientLightInterface;
 import de.citec.jul.rsb.RSBRemoteService;

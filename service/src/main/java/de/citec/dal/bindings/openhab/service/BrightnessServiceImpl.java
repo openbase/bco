@@ -16,7 +16,7 @@ import de.citec.jul.exception.CouldNotPerformException;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface> extends OpenHABServiceImpl<ST> implements BrightnessService {
+public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface> extends OpenHABService<ST> implements BrightnessService {
 
     public BrightnessServiceImpl(DeviceInterface device, ST unit) {
         super(device, unit);
