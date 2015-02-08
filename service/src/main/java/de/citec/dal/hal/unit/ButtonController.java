@@ -6,7 +6,6 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
-import de.citec.dal.exception.DALException;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -29,7 +28,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
     }
 
     public ButtonController(String id, final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(ButtonController.class, label, hardwareUnit, builder);
     }
 
     public void updateButtonState(final ClickType.Click.ClickState state) {

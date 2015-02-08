@@ -11,8 +11,10 @@ import de.citec.dal.bindings.openhab.transform.OpenHABCommandTransformer;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -25,10 +27,8 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  */
 public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends AbstractDeviceController<M, MB> {
 
-    private String ITEM_ID_DELIMITER = "_";
+    private static final String ITEM_ID_DELIMITER = "_";
     private final static ServiceFactory defaultServiceFactory = new OpenhabServiceFactory();
-    
-//    private final static OpenhabBinding openhabBinding = OpenhabBinding.getInstance();
 
     public AbstractOpenHABDeviceController(String id, String label, Location location, MB builder) throws InstantiationException {
         super(id, label, location, builder);
@@ -41,17 +41,28 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
         String[] pattern = unitServicePattern.split(ITEM_ID_DELIMITER);
         String unitName = pattern[0];
         String serviceName = pattern[1];
-        
-        
-        //TODO mpohling: Resolve mapping by service not by unit type.
-        Method relatedMethod = halFunctionMapping.get(unitName);
 
-        if (relatedMethod == null) {
-            throw new CouldNotPerformException("Could not apply update: Related Method["+id_suffix+"] unknown!");
+        Object commandData = OpenHABCommandTransformer.getCommandData(command);
+        AbstractUnitController unit;
+        Method relatedMethod;
+        try {
+            unit = getUnitByName(unitName);
+            
+            String methodName = "set" + serviceName;
+            try {
+                relatedMethod = unit.getClass().getMethod(methodName, commandData.getClass());
+                if (relatedMethod == null) {
+                    throw new NotAvailableException(relatedMethod);
+                }
+            } catch (Exception ex) {
+                throw new NotAvailableException("Methode " + unit + "." + methodName + "(" + commandData.getClass() + ")");
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Unit not compatible!", ex);
         }
 
         try {
-            relatedMethod.invoke(this, OpenHABCommandTransformer.getCommandData(command));
+            relatedMethod.invoke(unit, commandData);
         } catch (IllegalAccessException ex) {
             throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
         } catch (IllegalArgumentException ex) {
@@ -62,13 +73,6 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
             throw new CouldNotPerformException("Fatal invocation error!", ex);
         }
     }
-    
-    
-
-//    public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder commandBuilder, final OpenhabCommandType.OpenhabCommand.ExecutionType type) throws CouldNotPerformException {
-//        commandBuilder.setItem(itemName).setExecutionType(type);
-//        return openhabBinding.executeCommand(commandBuilder.build());
-//    }
 
     @Override
     public ServiceFactory getDefaultServiceFactory() {

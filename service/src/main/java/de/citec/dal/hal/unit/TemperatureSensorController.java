@@ -24,8 +24,8 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
                 new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(String id, final String label, DeviceInterface hardwareUnit, TemperatureSensor.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+    public TemperatureSensorController(final String label, DeviceInterface hardwareUnit, TemperatureSensor.Builder builder) throws InstantiationException {
+        super(TemperatureSensorController.class, label, hardwareUnit, builder);
     }
 
     public void updateTemperature(final float temperature) {
@@ -35,7 +35,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
 
     @Override
     public float getTemperature() throws CouldNotPerformException {
-        logger.debug("Getting [" + id + "] Temperature: [" + data.getTemperature() + "]");
+        logger.debug("Getting [" + label + "] Temperature: [" + data.getTemperature() + "]");
         return data.getTemperature();
     }
 }

@@ -29,7 +29,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
     }
 
     public PowerConsumptionSensorController(String id, final String label, DeviceInterface hardwareUnit, PowerConsumptionSensor.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(PowerConsumptionSensorController.class, label, hardwareUnit, builder);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
 
     @Override
     public float getPowerConsumption() throws CouldNotPerformException {
-        logger.debug("Getting [" + id + "] Consumption: [" + data.getConsumption() + "]");
+        logger.debug("Getting [" + label + "] Consumption: [" + data.getConsumption() + "]");
         return data.getConsumption();
     }
 
@@ -55,7 +55,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
             try {
                 return new Event(Float.class, PowerConsumptionSensorController.this.getPowerConsumption());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + PowerConsumptionSensorController.this.getId() + "}", ex);
+                logger.warn("Could not invoke method for [" + PowerConsumptionSensorController.this.getName()+ "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

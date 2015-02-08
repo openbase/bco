@@ -29,7 +29,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
     }
 
     public HandleSensorController(String id, final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(HandleSensorController.class, label, hardwareUnit, builder);
     }
 
     public void updateOpenClosedTiltedState(final OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state) {
@@ -39,7 +39,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
 
     @Override
     public OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException{
-        logger.debug("Getting [" + id + "] State: [" + data.getHandleState() + "]");
+        logger.debug("Getting [" + label + "] State: [" + data.getHandleState() + "]");
         return data.getHandleState().getState();
     }
 
@@ -50,7 +50,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
             try {
                 return new Event(OpenClosedTiltedState.class, HandleSensorController.this.getRotaryHandleState());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + HandleSensorController.this.getId() + "}", ex);
+                logger.warn("Could not invoke method for [" + HandleSensorController.this.getName()+ "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

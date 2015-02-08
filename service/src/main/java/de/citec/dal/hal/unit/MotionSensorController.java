@@ -27,8 +27,8 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
                 new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(final String id, final String label, final DeviceInterface hardwareUnit, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException {
-        super(id, label, hardwareUnit, builder);
+    public MotionSensorController(final String label, final DeviceInterface hardwareUnit, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException {
+        super(MotionSensorController.class, label, hardwareUnit, builder);
         
     }
 
@@ -39,7 +39,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     @Override
     public MotionState getMotionState() throws CouldNotPerformException{
-        logger.debug("Getting [" + id + "] State: [" + data.getMotionState() + "]");
+        logger.debug("Getting [" + label + "] State: [" + data.getMotionState() + "]");
         return data.getMotionState().getState();
     }
 
@@ -50,7 +50,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
             try {
                 return new Event(MotionState.class, MotionSensorController.this.getMotionState());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + MotionSensorController.this.getId() + "}", ex);
+                logger.warn("Could not invoke method for [" + MotionSensorController.this.getName()+ "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

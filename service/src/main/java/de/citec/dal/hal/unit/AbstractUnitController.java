@@ -36,8 +36,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final DeviceInterface device;
     private List<Service> serviceList;
 
-    public AbstractUnitController(final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
-        super(generateScope(generateName(getClass()), label, device), builder);
+    public AbstractUnitController(final Class unitClass, final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
+        super(generateScope(generateName(unitClass), label, device), builder);
         this.name = generateName();
         this.label = label;
         this.device = device;
@@ -74,7 +74,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         serviceList.add(service);
     }
     
-    public final String generateName(Class clazz) {
+    public final String generateName() {
+        return generateName(getClass());
+    }
+    
+    public static final String generateName(Class clazz) {
         return clazz.getSimpleName().replace("Controller", "");
     }
     

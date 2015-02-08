@@ -39,7 +39,7 @@ public abstract class OpenHABServiceImpl<ST extends Service & UnitInterface> {
     }
 
     public final String generateItemId() {
-        return device.getId() + "_" + unit.getId() + "_" + getClass().getSimpleName().replaceAll("Service", "").replaceAll("Provider", "");
+        return device.getId() + "_" + unit.getName() + "_" + getClass().getSimpleName().replaceAll("Service", "").replaceAll("Provider", "");
     }
 
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand.Builder command) throws CouldNotPerformException {

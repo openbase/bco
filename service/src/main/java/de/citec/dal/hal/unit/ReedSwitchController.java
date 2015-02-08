@@ -29,7 +29,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
     }
 
     public ReedSwitchController(String id, final String label, DeviceInterface hardwareUnit, ReedSwitch.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(ReedSwitchController.class, label, hardwareUnit, builder);
     }
 
     public void updateOpenClosedState(final OpenClosedType.OpenClosed.OpenClosedState state) {
@@ -39,7 +39,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
 
     @Override
     public OpenClosedState getReedSwitchState() throws CouldNotPerformException{
-        logger.debug("Getting [" + id + "] State: [" + data.getReedSwitchState() + "]");
+        logger.debug("Getting [" + label + "] State: [" + data.getReedSwitchState() + "]");
         return data.getReedSwitchState().getState();
     }
 
@@ -50,7 +50,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
             try {
                 return new Event(OpenClosedState.class, ReedSwitchController.this.getReedSwitchState());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + ReedSwitchController.this.getId() + "}", ex);
+                logger.warn("Could not invoke method for [" + ReedSwitchController.this.getName()+ "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

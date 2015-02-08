@@ -44,12 +44,14 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     }
     
     public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
-        super(label, device, builder);
+        super(AmbientLightController.class , label, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
         this.colorService = serviceFactory.newColorService(device, this);
         this.brightnessService = serviceFactory.newBrightnessService(device, this);
     }
 
+    
+    //TODO: mpohling: generate methods registering and implement one callback per service not within unit.
     @Override
     public void registerMethods(final LocalServer server) throws RSBException {
         server.addMethod("setColor", new SetColorCallback());
@@ -100,7 +102,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     @Override
     public void setColor(final HSVColor color) throws CouldNotPerformException {
-        logger.debug("Setting [" + id + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
+        logger.debug("Set "+name+"[" + label + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
         colorService.setColor(color);
     }
 
@@ -125,7 +127,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
     @Override
     public void setBrightness(double brightness) throws CouldNotPerformException {
-        logger.debug("Setting [" + id + "] to Brightness[" + brightness + "]");
+        logger.debug("Set "+name+"[" + label + "] to Brightness[" + brightness + "]");
         brightnessService.setBrightness(brightness);
     }
 

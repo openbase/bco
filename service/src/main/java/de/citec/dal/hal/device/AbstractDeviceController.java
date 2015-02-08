@@ -21,6 +21,7 @@ import java.util.Collections;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 
 /**
  *
@@ -39,7 +40,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     protected final String hardware_id;
     protected final String instance_id;
     protected final Location location;
-    protected final Map<String, Method> halFunctionMapping;
+//    protected final Map<String, Method> halFunctionMapping;
     protected final Map<String, AbstractUnitController> unitMap;
     protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
 
@@ -49,7 +50,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.label = label;
         this.location = location;
         this.unitMap = new HashMap<>();
-        this.halFunctionMapping = new HashMap<>();
+//        this.halFunctionMapping = new HashMap<>();
         this.unitServiceHardwareMap = new HashMap<>();
 
         try {
@@ -107,11 +108,15 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         return instanceId;
     }
 
-    protected <U extends AbstractUnitController> void registerUnit(final U hardware) {
-        
-        
-        
-        unitMap.put(hardware.getId(), hardware);
+    protected <U extends AbstractUnitController> void registerUnit(final U unit) {
+        unitMap.put(unit.getName(), unit);
+    }
+    
+    public AbstractUnitController getUnitByName(final String name) throws NotAvailableException {
+        if(!unitMap.containsKey(name)) {
+            throw new NotAvailableException("Unit["+name+"]", this+" has no registed unit with given name!");
+        }
+        return unitMap.get(name);
     }
 
     @Override
@@ -168,7 +173,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         return instance_id;
     }
 
-    protected abstract void initHardwareMapping() throws NoSuchMethodException, SecurityException;
+//    protected abstract void initHardwareMapping() throws NoSuchMethodException, SecurityException;
 
     @Override
     public String toString() {

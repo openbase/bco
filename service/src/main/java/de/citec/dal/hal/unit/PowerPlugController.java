@@ -32,7 +32,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
     }
 
     public PowerPlugController(String id, final String label, DeviceInterface hardwareUnit, PowerPlug.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(PowerPlugController.class, label, hardwareUnit, builder);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     @Override
     public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
+        logger.debug("Setting [" + label + "] to PowerState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
 //        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
@@ -67,7 +67,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
                 PowerPlugController.this.setPowerState(((PowerType.Power) request.getData()).getState());
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + PowerPlugController.this.getId() + "}", ex);
+                logger.warn("Could not invoke method for [" + PowerPlugController.this.getName()+ "}", ex);
                 return new Event(String.class, "Failed");
             }
         }

@@ -26,7 +26,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
     }
 
     public LightController(String id, final String label, DeviceInterface hardwareUnit, LightType.Light.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(LightController.class, label, hardwareUnit, builder);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
 
     @Override
     public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + id + "] to PowerState [" + state.name() + "]");
+        logger.debug("Setting [" + label + "] to PowerState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
 //        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);
@@ -62,7 +62,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
 //                LightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
 //                return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [setPowerState] for [" + LightController.this.getId() + "]", ex);
+                logger.warn("Could not invoke method [setPowerState] for [" + LightController.this.getName()+ "]", ex);
                 throw ex;
             }
         }

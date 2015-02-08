@@ -28,12 +28,6 @@ import de.citec.jul.exception.InstantiationException;
  */
 public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_MotionSensor, F_MotionSensor.Builder> {
 
-    private final static String UNIT_MOTION_SENSOR = "MotionSensor";
-    private final static String UNIT_TEMPERATURE_SENSOR = "TemperatureSensor";
-    private final static String UNIT_BRIGHTNESS_SENSOR = "BrightnessSensor";
-    private final static String UNIT_TAMPER_SWITCH = "TamperSwitch";
-    private final static String UNIT_BATTERY = "Battery";
-
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
@@ -45,29 +39,20 @@ public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_
     private final TamperSwitchController tamperSwitch;
     private final BatteryController battery;
 
-    public F_MotionSensorController(final String id, String label, final Location location) throws InstantiationException  {
+    public F_MotionSensorController(final String id, String label, final Location location) throws InstantiationException {
         super(id, label, location, F_MotionSensor.newBuilder());
 
         data.setId(id);
-        this.motionSensor = new MotionSensorController(UNIT_MOTION_SENSOR, label, this, data.getMotionSensorBuilder());
-        this.temperatureSensor = new TemperatureSensorController(UNIT_TEMPERATURE_SENSOR, label, this, data.getTemperatureSensorBuilder());
-        this.brightnessSensor = new BrightnessSensorController(UNIT_BRIGHTNESS_SENSOR, label, this, data.getBrightnessSensorBuilder());
-        this.tamperSwitch = new TamperSwitchController(UNIT_TAMPER_SWITCH, label, this, data.getTamperSwitchBuilder());
-        this.battery = new BatteryController(UNIT_BATTERY, label, this, data.getBatteryBuilder());
+        this.motionSensor = new MotionSensorController(label, this, data.getMotionSensorBuilder());
+        this.temperatureSensor = new TemperatureSensorController(label, this, data.getTemperatureSensorBuilder());
+        this.brightnessSensor = new BrightnessSensorController(label, this, data.getBrightnessSensorBuilder());
+        this.tamperSwitch = new TamperSwitchController(label, this, data.getTamperSwitchBuilder());
+        this.battery = new BatteryController(label, this, data.getBatteryBuilder());
         this.registerUnit(motionSensor);
         this.registerUnit(temperatureSensor);
         this.registerUnit(brightnessSensor);
         this.registerUnit(tamperSwitch);
         this.registerUnit(battery);
-    }
-
-    @Override
-    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(UNIT_MOTION_SENSOR, getClass().getMethod("updateMotionSensor", double.class));
-        halFunctionMapping.put(UNIT_TEMPERATURE_SENSOR, getClass().getMethod("updateTemperature", double.class));
-        halFunctionMapping.put(UNIT_BRIGHTNESS_SENSOR, getClass().getMethod("updateBrightness", double.class));
-        halFunctionMapping.put(UNIT_TAMPER_SWITCH, getClass().getMethod("updateTamperSwitch", double.class));
-        halFunctionMapping.put(UNIT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
     }
 
     public void updateMotionSensor(double type) throws CouldNotPerformException {

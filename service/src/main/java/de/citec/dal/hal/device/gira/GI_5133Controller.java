@@ -25,13 +25,6 @@ import rst.homeautomation.openhab.OnOffHolderType.OnOffHolder.OnOff;
  */
 public class GI_5133Controller extends AbstractOpenHABDeviceController<GI_5133Type.GI_5133, GI_5133Type.GI_5133.Builder> {
 
-    private final static String COMPONENT_BUTTON_0 = "Button_0";
-    private final static String COMPONENT_BUTTON_1 = "Button_1";
-    private final static String COMPONENT_BUTTON_2 = "Button_2";
-    private final static String COMPONENT_BUTTON_3 = "Button_3";
-    private final static String COMPONENT_BUTTON_4 = "Button_4";
-    private final static String COMPONENT_BUTTON_5 = "Button_5";
-
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(
                 new ProtocolBufferConverter<>(GI_5133Type.GI_5133.getDefaultInstance()));
@@ -48,28 +41,18 @@ public class GI_5133Controller extends AbstractOpenHABDeviceController<GI_5133Ty
         super(id, label, location, GI_5133Type.GI_5133.newBuilder());
 
         data.setId(id);
-        this.button_0 = new ButtonController(COMPONENT_BUTTON_0, unitLabel[0], this, data.getButton0Builder());
-        this.button_1 = new ButtonController(COMPONENT_BUTTON_1, unitLabel[1], this, data.getButton1Builder());
-        this.button_2 = new ButtonController(COMPONENT_BUTTON_2, unitLabel[2], this, data.getButton2Builder());
-        this.button_3 = new ButtonController(COMPONENT_BUTTON_3, unitLabel[3], this, data.getButton3Builder());
-        this.button_4 = new ButtonController(COMPONENT_BUTTON_4, unitLabel[4], this, data.getButton4Builder());
-        this.button_5 = new ButtonController(COMPONENT_BUTTON_5, unitLabel[5], this, data.getButton5Builder());
+        this.button_0 = new ButtonController(unitLabel[0], this, data.getButton0Builder());
+        this.button_1 = new ButtonController(unitLabel[1], this, data.getButton1Builder());
+        this.button_2 = new ButtonController(unitLabel[2], this, data.getButton2Builder());
+        this.button_3 = new ButtonController( unitLabel[3], this, data.getButton3Builder());
+        this.button_4 = new ButtonController(unitLabel[4], this, data.getButton4Builder());
+        this.button_5 = new ButtonController(unitLabel[5], this, data.getButton5Builder());
         this.registerUnit(button_0);
         this.registerUnit(button_1);
         this.registerUnit(button_2);
         this.registerUnit(button_3);
         this.registerUnit(button_4);
         this.registerUnit(button_5);
-    }
-
-    @Override
-    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-        halFunctionMapping.put(COMPONENT_BUTTON_0, getClass().getMethod("updateButton_0", OnOff.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_1, getClass().getMethod("updateButton_1", OnOff.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_2, getClass().getMethod("updateButton_2", OnOff.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_3, getClass().getMethod("updateButton_3", OnOff.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_4, getClass().getMethod("updateButton_4", OnOff.class));
-        halFunctionMapping.put(COMPONENT_BUTTON_5, getClass().getMethod("updateButton_5", OnOff.class));
     }
 
     public void updateButton_0(OnOff type) throws CouldNotPerformException {

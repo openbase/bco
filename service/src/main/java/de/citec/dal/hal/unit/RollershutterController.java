@@ -33,7 +33,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     public RollershutterController(String id, final String label, DeviceInterface hardwareUnit, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+        super(RollershutterController.class, label, hardwareUnit, builder);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     @Override
     public void setShutterState(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + id + "] to ShutterState [" + state.name() + "]");
+        logger.debug("Setting [" + label + "] to ShutterState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //		OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
 //        newBuilder.setUpDown(UpDownStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.UPDOWN);
@@ -83,7 +83,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
                 RollershutterController.this.setShutterState(((ShutterType.Shutter) request.getData()).getState());
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [setUpDownState] for [" + RollershutterController.this.getId() + "]", ex);
+                logger.warn("Could not invoke method [setUpDownState] for [" + RollershutterController.this.getName()+ "]", ex);
                 throw ex;
             }
         }
@@ -95,7 +95,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     public void setPosition(final float position) throws RSBBindingException {
-        logger.debug("Setting [" + id + "] to Position [" + position + "]");
+        logger.debug("Setting [" + label + "] to Position [" + position + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
 //        newBuilder.setDecimal(position).setType(OpenhabCommand.CommandType.DECIMAL);

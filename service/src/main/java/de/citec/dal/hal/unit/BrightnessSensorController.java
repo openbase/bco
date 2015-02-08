@@ -24,8 +24,8 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
                 new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
     }
 
-    public BrightnessSensorController(String id, final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+    public BrightnessSensorController(final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws InstantiationException {
+        super(BrightnessSensorController.class, label, hardwareUnit, builder);
     }
 
     public void updateBrightness(final float brightness) {

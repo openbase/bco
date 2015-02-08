@@ -24,8 +24,8 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
                 new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(String id, final String label, DeviceInterface hardwareUnit, Battery.Builder builder) throws InstantiationException {
-        super(id, label, hardwareUnit, builder);
+    public BatteryController(final String label, DeviceInterface hardwareUnit, Battery.Builder builder) throws InstantiationException {
+        super(BatteryController.class, label, hardwareUnit, builder);
     }
 
     public void updateBatteryLevel(final double batteryState) {
