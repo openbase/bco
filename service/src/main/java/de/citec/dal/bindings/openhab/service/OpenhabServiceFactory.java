@@ -10,6 +10,10 @@ import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.service.Service;
+import de.citec.dal.hal.service.ServiceType;
+import de.citec.dal.hal.unit.AmbientLightController;
+import rsb.patterns.LocalServer;
 
 /**
  *
@@ -30,5 +34,15 @@ public class OpenhabServiceFactory implements ServiceFactory {
     @Override
     public PowerService newPowerService(DeviceInterface device, PowerService unit) {
         return new PowerServiceImpl(device, unit);
+    }
+
+    @Override
+    public void registerServiceMethods(LocalServer server, Service service) {
+        for(ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
+            server.addMethod(Service.SET, null);
+        }
+        server.addMethod("setColor", new AmbientLightController.SetColorCallback());
+        server.addMethod("setPower", new AmbientLightController.SetPowerCallback());
+        server.addMethod("setBrightness", new AmbientLightController.SetBrightnessCallback());
     }
 }

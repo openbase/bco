@@ -33,7 +33,7 @@ public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug> i
 
     @Override
     public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
+        callMethodAsync("setPower", PowerType.Power.newBuilder().setState(state).build());
     }
 
     @Override

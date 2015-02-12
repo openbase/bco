@@ -5,11 +5,13 @@
  */
 package de.citec.dal.hal.unit;
 
+import de.citec.dal.hal.service.Service;
+
 /**
  *
  * @author mpohling
  */
-public interface UnitInterface {
+public interface UnitInterface extends Service {
     
     public String getName();
     

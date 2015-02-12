@@ -12,6 +12,7 @@ import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -79,7 +80,15 @@ public class LightRemoteTest {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         lightRemote.setPower(state);
-        while (!lightRemote.getData().getPowerState().getState().equals(state)) {
+        
+         while (true) {
+            try {
+                if (lightRemote.getData().getPowerState().getState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("Color has not been set in time!", lightRemote.getData().getPowerState().getState().equals(state));

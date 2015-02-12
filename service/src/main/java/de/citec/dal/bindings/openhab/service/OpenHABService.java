@@ -12,7 +12,6 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.NotSupportedException;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,19 +23,6 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  * @param <ST> related service type
  */
 public abstract class OpenHABService<ST extends Service & UnitInterface> {
-
-	public enum SupportedServiceType {
-
-		BRIGHTNESS, COLOR, POWER;
-
-		public static SupportedServiceType valueOfByServiceName(String serviceName) throws NotSupportedException {
-			try {
-				return valueOf(serviceName.toUpperCase());
-			} catch (IllegalArgumentException ex) {
-				throw new NotSupportedException(serviceName, OpenHABService.class.getSimpleName());
-			}
-		}
-	}
 
 	private static final OpenhabBindingInterface openhabBinding = OpenhabBinding.getInstance();
 

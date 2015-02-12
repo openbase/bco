@@ -37,7 +37,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     @Override
     public void registerMethods(final LocalServer server) throws RSBException {
-        server.addMethod("setPowerState", new SetPowerStateCallback());
+        server.addMethod("setPower", new SetPowerStateCallback());
     }
 
     public void updatePowerState(final PowerType.Power.PowerState state) {
@@ -47,7 +47,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     @Override
     public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + label + "] to PowerState [" + state.name() + "]");
+        logger.debug("Setting [" + label + "] to Power [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
 //        newBuilder.setOnOff(PowerStateTransformer.transform(state)).setType(OpenhabCommand.CommandType.ONOFF);

@@ -6,12 +6,11 @@
 package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.dal.bindings.openhab.OpenhabBinding;
-import de.citec.dal.bindings.openhab.service.OpenHABService;
+import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
-import javax.naming.OperationNotSupportedException;
 import rst.homeautomation.openhab.OpenhabCommandType;
 
 /**
@@ -23,9 +22,9 @@ public final class OpenhabCommandTransformer {
 	public static Object getServiceData(OpenhabCommandType.OpenhabCommand command, String serviceName) throws CouldNotPerformException {
 
 		// Detect service type
-		OpenHABService.SupportedServiceType serviceType;
+		ServiceType serviceType;
 		try {
-			serviceType = OpenHABService.SupportedServiceType.valueOfByServiceName(serviceName);
+			serviceType = ServiceType.valueOfByServiceName(serviceName);
 		} catch (CouldNotPerformException ex) {
 			throw new NotAvailableException("ServiceData", ex);
 		}

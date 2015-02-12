@@ -14,11 +14,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.Event;
-import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
-import rsb.patterns.LocalServer;
 import rst.homeautomation.AmbientLightType;
 import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType.HSVColor; 
@@ -44,19 +42,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
     }
     
     public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
-        super(AmbientLightController.class , label, device, builder);
+        super(AmbientLightController.class , label, device, builder, serviceFactory);
         this.powerService = serviceFactory.newPowerService(device, this);
         this.colorService = serviceFactory.newColorService(device, this);
         this.brightnessService = serviceFactory.newBrightnessService(device, this);
-    }
-
-    
-    //TODO: mpohling: generate methods registering and implement one callback per service not within unit.
-    @Override
-    public void registerMethods(final LocalServer server) throws RSBException {
-        server.addMethod("setColor", new SetColorCallback());
-        server.addMethod("setPowerState", new SetPowerStateCallback());
-        server.addMethod("setBrightness", new SetBrightnessCallback());
     }
 
     public void updatePower(final PowerType.Power.PowerState state) {
@@ -76,7 +65,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         return data.getPowerState().getState();
     }
 
-    public class SetPowerStateCallback extends EventCallback {
+    public class SetPowerCallback extends EventCallback {
 
         @Override
         public Event invoke(final Event request) throws Throwable {
