@@ -7,7 +7,7 @@ package de.citec.dal.bindings.openhab;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.bindings.openhab.service.OpenhabServiceFactory;
-import de.citec.dal.bindings.openhab.transform.OpenHABCommandTransformer;
+import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.service.ServiceFactory;
@@ -42,14 +42,15 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
         String unitName = pattern[0];
         String serviceName = pattern[1];
 
-        Object serviceData = OpenHABCommandTransformer.getServiceData(command, serviceName);
+        Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceName);
         AbstractUnitController unit;
         Method relatedMethod;
+
 
         try {
             unit = getUnitByName(unitName);
             
-            String methodName = "set" + serviceName;
+            String methodName = "update" + serviceName;
             try {
                 relatedMethod = unit.getClass().getMethod(methodName, serviceData.getClass());
                 if (relatedMethod == null) {

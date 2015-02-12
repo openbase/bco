@@ -5,7 +5,9 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.CouldNotTransformException;
+import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.states.OpenClosedType;
 import rst.homeautomation.openhab.OpenClosedHolderType;
@@ -16,27 +18,32 @@ import rst.homeautomation.openhab.OpenClosedHolderType;
  */
 public class OpenClosedStateTransformer {
 
-	public static OpenClosedType.OpenClosed.OpenClosedState transform(OpenClosedHolderType.OpenClosedHolder.OpenClosed openClosedType) throws RSBBindingException {
+	public static OpenClosedType.OpenClosed.OpenClosedState transform(OpenClosedHolderType.OpenClosedHolder.OpenClosed openClosedType) throws CouldNotTransformException {
 		switch (openClosedType) {
 			case CLOSED:
 				return OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
 			case OPEN:
 				return OpenClosedType.OpenClosed.OpenClosedState.OPEN;
 			default:
-				throw new RSBBindingException("Could not transform " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getName() + "! " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getSimpleName() + "[" + openClosedType.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getName() + "! " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getSimpleName() + "[" + openClosedType.name() + "] is unknown!");
 		}
 	}
 
-	public static OpenClosedHolderType.OpenClosedHolder transform(OpenClosedType.OpenClosed.OpenClosedState openClosedState) throws TypeNotSupportedException, RSBBindingException {
-		switch (openClosedState) {
-			case CLOSED:
-				return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.CLOSED).build();
-			case OPEN:
-				return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.OPEN).build();
-			case UNKNOWN:
-				throw new TypeNotSupportedException(openClosedState, OpenClosedHolderType.OpenClosedHolder.OpenClosed.class);
-			default:
-				throw new RSBBindingException("Could not transform " + OpenClosedType.OpenClosed.OpenClosedState.class.getName() + "! " + OpenClosedType.OpenClosed.OpenClosedState.class.getSimpleName() + "[" + openClosedState.name() + "] is unknown!");
+	public static OpenClosedHolderType.OpenClosedHolder transform(OpenClosedType.OpenClosed.OpenClosedState openClosedState) throws CouldNotTransformException {
+		try {
+			switch (openClosedState) {
+				case CLOSED:
+					return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.CLOSED).build();
+				case OPEN:
+					return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.OPEN).build();
+				case UNKNOWN:
+					throw new InvalidStateException("Unknown state is invalid!");
+				default:
+					throw new TypeNotSupportedException(openClosedState, OpenClosedHolderType.OpenClosedHolder.class);
+			}
+		} catch (CouldNotPerformException ex) {
+			throw new CouldNotTransformException("Could not transform " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getName() + "!", ex);
 		}
+
 	}
 }

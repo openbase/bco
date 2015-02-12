@@ -50,15 +50,15 @@ public class HM_ReedSwitchController extends AbstractOpenHABDeviceController<HM_
 //        halFunctionMapping.put(COMPONENT_REED_SWITCH, getClass().getMethod("updateReedSwitch", OpenClosed.class));
 //        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
 //    }
-	public void updateReedSwitch(OpenClosed type) {
-		try {
-			reedSwitch.updateOpenClosedState(OpenClosedStateTransformer.transform(type));
-		} catch (RSBBindingException ex) {
-			logger.error("Not able to transform from OpenClosedType(openhab) to OpenClosedState!", ex);
-		}
-	}
-
-	public void updateBatteryLevel(double value) {
-		battery.updateBatteryLevel((float) value);
-	}
+//	public void updateReedSwitch(OpenClosed type) {
+//		try {
+//			reedSwitch.updateOpenClosedState(OpenClosedStateTransformer.transform(type));
+//		} catch (RSBBindingException ex) {
+//			logger.error("Not able to transform from OpenClosedType(openhab) to OpenClosedState!", ex);
+//		}
+//	}
+//
+//	public void updateBatteryLevel(double value) {
+//		battery.updateBatteryLevel((float) value);
+//	}
 }

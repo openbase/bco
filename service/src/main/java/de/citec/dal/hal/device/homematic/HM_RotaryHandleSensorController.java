@@ -7,10 +7,7 @@ package de.citec.dal.hal.device.homematic;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.bindings.openhab.transform.OpenClosedTiltedStateTransformer;
 import de.citec.dal.exception.DALException;
-import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.HandleSensorController;
 import de.citec.jul.exception.InstantiationException;
@@ -53,15 +50,15 @@ public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceContro
 //        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
 //    }
 
-    public void updateHandleSensor(String type) {
-        try {
-            handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            logger.error("Not able to transform from StringType to OpenClosedTiltedState!", ex);
-        }
-    }
-
-    public void updateBatteryLevel(double value) {
-        battery.updateBatteryLevel((float) value);
-    }
+//    public void updateHandleSensor(String type) {
+//        try {
+//            handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
+//        } catch (RSBBindingException ex) {
+//            logger.error("Not able to transform from StringType to OpenClosedTiltedState!", ex);
+//        }
+//    }
+//
+//    public void updateBatteryLevel(double value) {
+//        battery.updateBatteryLevel((float) value);
+//    }
 }

@@ -7,15 +7,11 @@ package de.citec.dal.hal.device.fibaro;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.bindings.openhab.transform.MotionStateTransformer;
-import de.citec.dal.bindings.openhab.transform.TamperStateTransformer;
-import de.citec.dal.exception.RSBBindingException;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.hal.unit.MotionSensorController;
 import de.citec.dal.hal.unit.TamperSwitchController;
 import de.citec.dal.hal.unit.TemperatureSensorController;
-import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;
@@ -29,8 +25,7 @@ import de.citec.jul.exception.InstantiationException;
 public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_MotionSensor, F_MotionSensor.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
     }
 
     private final MotionSensorController motionSensor;
@@ -55,31 +50,31 @@ public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_
         this.registerUnit(battery);
     }
 
-    public void updateMotionSensor(double type) throws CouldNotPerformException {
-        try {
-            motionSensor.updateMotionState(MotionStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            throw new CouldNotPerformException("Could not updateMotionSensor!", ex);
-        }
-    }
-
-    public void updateTemperature(double type) {
-        temperatureSensor.updateTemperature((float) type);
-    }
-
-    public void updateBrightness(double type) {
-        brightnessSensor.updateBrightness((float) type);
-    }
-
-    public void updateTamperSwitch(double type) throws CouldNotPerformException {
-        try {
-            tamperSwitch.updateTamperState(TamperStateTransformer.transform(type));
-        } catch (RSBBindingException ex) {
-            throw new CouldNotPerformException("Could not updateTamperSwitch!", ex);
-        }
-    }
-
-    public void updateBatteryLevel(double value) {
-        battery.updateBatteryLevel(value);
-    }
+//    public void updateMotionSensor(double type) throws CouldNotPerformException {
+//        try {
+//            motionSensor.updateMotionState(MotionStateTransformer.transform(type));
+//        } catch (CouldNotTransformException ex) {
+//            throw new CouldNotPerformException("Could not updateMotionSensor!", ex);
+//        }
+//    }
+//
+//    public void updateTemperature(double type) {
+//        temperatureSensor.updateTemperature((float) type);
+//    }
+//
+//    public void updateBrightness(double type) {
+//        brightnessSensor.updateBrightness((float) type);
+//    }
+//
+//    public void updateTamperSwitch(double type) throws CouldNotPerformException {
+//        try {
+//            tamperSwitch.updateTamperState(TamperStateTransformer.transform(type));
+//        } catch (CouldNotTransformException ex) {
+//            throw new CouldNotPerformException("Could not updateTamperSwitch!", ex);
+//        }
+//    }
+//
+//    public void updateBatteryLevel(double value) {
+//        battery.updateBatteryLevel(value);
+//    }
 }

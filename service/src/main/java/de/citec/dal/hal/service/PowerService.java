@@ -17,6 +17,6 @@ public interface PowerService extends Service, PowerProvider {
 
     
 
-    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException;
+    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException;
 
 }

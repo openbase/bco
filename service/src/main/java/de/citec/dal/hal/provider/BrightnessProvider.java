@@ -13,5 +13,5 @@ import de.citec.jul.exception.CouldNotPerformException;
  */
 public interface BrightnessProvider {
 
-    public double getBrightness() throws CouldNotPerformException;
+    public Double getBrightness() throws CouldNotPerformException;
 }

@@ -29,9 +29,9 @@
         <module>visual</module>
     </modules>
     
-<!--    <properties>
+    <properties>
         <skipTests>true</skipTests>
-    </properties>-->
+    </properties>
     
     <dependencies>
         <dependency>

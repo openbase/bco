@@ -29,7 +29,7 @@ public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends O
     }
 
     @Override
-    public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
         executeCommand(OpenHABCommandFactory.newOnOffCommand(state));
     }
 }

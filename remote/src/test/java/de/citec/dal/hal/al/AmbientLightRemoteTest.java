@@ -37,23 +37,15 @@ public class AmbientLightRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
 
-    private AmbientLightRemote ambientLightRemote;
-    private DALService dalService;
+    private static AmbientLightRemote ambientLightRemote;
+    private static DALService dalService;
 
     public AmbientLightRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+		 JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new AmbientLightRemoteTest.DeviceInitializerImpl());
         dalService.activate();
 
@@ -62,14 +54,24 @@ public class AmbientLightRemoteTest {
         ambientLightRemote.activate();
     }
 
-    @After
-    public void tearDown() {
-        dalService.deactivate();
+    @AfterClass
+    public static void tearDownClass() {
+		dalService.deactivate();
         try {
             ambientLightRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate ambient light remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+       
+    }
+
+    @After
+    public void tearDown() {
+        
     }
 
     /**
@@ -88,7 +90,7 @@ public class AmbientLightRemoteTest {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }
@@ -111,7 +113,7 @@ public class AmbientLightRemoteTest {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }
@@ -134,7 +136,7 @@ public class AmbientLightRemoteTest {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }
@@ -150,14 +152,14 @@ public class AmbientLightRemoteTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
-        ambientLightRemote.setPowerState(state);
+        ambientLightRemote.setPower(state);
         while (true) {
             try {
                 if (ambientLightRemote.getData().getPowerState().getState().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }
@@ -173,14 +175,14 @@ public class AmbientLightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ambientLightRemote.setPowerState(state);
+        ambientLightRemote.setPower(state);
         while (true) {
             try {
                 if (ambientLightRemote.getPowerState().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }
@@ -203,7 +205,7 @@ public class AmbientLightRemoteTest {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+				logger.debug("Not ready yet");
             }
             Thread.yield();
         }
@@ -226,7 +228,7 @@ public class AmbientLightRemoteTest {
                     break;
                 }
             } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet", ex);
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }

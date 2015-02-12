@@ -80,7 +80,7 @@ public class PowerPlugRemoteTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
-        powerPlugRemote.setPowerState(state);
+        powerPlugRemote.setPower(state);
         while (!powerPlugRemote.getData().getPowerState().getState().equals(state)) {
             Thread.yield();
         }
@@ -96,7 +96,7 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).setPowerState(state);
+        ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).setPower(state);
         while (!powerPlugRemote.getPowerState().equals(state)) {
             Thread.yield();
         }

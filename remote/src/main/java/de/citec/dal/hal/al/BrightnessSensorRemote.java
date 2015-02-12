@@ -30,7 +30,7 @@ public class BrightnessSensorRemote extends RSBRemoteService<BrightnessSensorTyp
     }
 
     @Override
-    public double getBrightness() throws CouldNotPerformException {
-        return this.getData().getBrightness();
+    public Double getBrightness() throws CouldNotPerformException {
+        return (double) this.getData().getBrightness();
     }
 }

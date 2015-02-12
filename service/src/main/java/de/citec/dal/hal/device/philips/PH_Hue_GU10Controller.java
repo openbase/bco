@@ -50,7 +50,7 @@ public class PH_Hue_GU10Controller extends AbstractOpenHABDeviceController<PH_Hu
 
     public void updatePowerSwitch(final OnOff type) throws RSBBindingException {
         try {
-            ambientLight.updatePowerState(PowerStateTransformer.transform(type));
+            ambientLight.updatePower(PowerStateTransformer.transform(type));
         } catch (CouldNotPerformException ex) {
             logger.error("Not able to transform from OnOffType to PowerState!", ex);
         }

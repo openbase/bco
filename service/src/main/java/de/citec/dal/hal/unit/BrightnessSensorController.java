@@ -17,24 +17,24 @@ import rst.homeautomation.BrightnessSensorType.BrightnessSensor;
  *
  * @author thuxohl
  */
-public class BrightnessSensorController extends AbstractUnitController<BrightnessSensor, BrightnessSensor.Builder> implements BrightnessSensorInterface{
+public class BrightnessSensorController extends AbstractUnitController<BrightnessSensor, BrightnessSensor.Builder> implements BrightnessSensorInterface {
 
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
-    }
+	static {
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(
+				new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
+	}
 
-    public BrightnessSensorController(final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws InstantiationException {
-        super(BrightnessSensorController.class, label, hardwareUnit, builder);
-    }
+	public BrightnessSensorController(final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws InstantiationException {
+		super(BrightnessSensorController.class, label, hardwareUnit, builder);
+	}
 
-    public void updateBrightness(final float brightness) {
-        data.setBrightness(brightness);
-        notifyChange();
-    }
+	public void updateBrightness(final float brightness) {
+		data.setBrightness(brightness);
+		notifyChange();
+	}
 
-    @Override
-    public double getBrightness() throws CouldNotPerformException {
-        return data.getBrightness();
-    }
+	@Override
+	public Double getBrightness() throws CouldNotPerformException {
+		return (double) data.getBrightness();
+	}
 }

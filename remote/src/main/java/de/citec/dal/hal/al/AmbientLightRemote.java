@@ -54,8 +54,8 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public void setBrightness(double brightness) throws CouldNotPerformException {
-        callMethodAsync("setBrightness", new Double(brightness));
+    public void setBrightness(Double brightness) throws CouldNotPerformException {
+        callMethodAsync("setBrightness", brightness);
     }
 
 
@@ -65,7 +65,7 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
     }
 
@@ -75,7 +75,7 @@ public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public double getBrightness() throws CouldNotPerformException {
+    public Double getBrightness() throws CouldNotPerformException {
         return this.getData().getColor().getValue();
     }
 }

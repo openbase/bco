@@ -110,7 +110,9 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     protected <U extends AbstractUnitController> void registerUnit(final U unit) {
         unitMap.put(unit.getName(), unit);
     }
-    
+
+
+	//TODO mpohling: how to handle multi unit with same name.
     public AbstractUnitController getUnitByName(final String name) throws NotAvailableException {
         if(!unitMap.containsKey(name)) {
             throw new NotAvailableException("Unit["+name+"]", this+" has no registed unit with given name!");

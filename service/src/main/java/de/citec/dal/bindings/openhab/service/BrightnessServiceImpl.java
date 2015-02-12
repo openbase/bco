@@ -23,12 +23,12 @@ public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface>
     }
 
     @Override
-    public double getBrightness() throws CouldNotPerformException {
+    public Double getBrightness() throws CouldNotPerformException {
         return unit.getBrightness();
     }
 
     @Override
-    public void setBrightness(double brightness) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newBrightnessCommand((float) brightness));
+    public void setBrightness(Double brightness) throws CouldNotPerformException {
+        executeCommand(OpenHABCommandFactory.newBrightnessCommand(brightness));
     }
 }

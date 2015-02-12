@@ -59,16 +59,16 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         server.addMethod("setBrightness", new SetBrightnessCallback());
     }
 
-    public void updatePowerState(final PowerType.Power.PowerState state) {
+    public void updatePower(final PowerType.Power.PowerState state) {
         logger.debug("Update "+name+"[" + label + "] to PowerState [" + state.name() + "]");
         data.getPowerStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         logger.debug("Set "+name+"[" + label + "] to PowerState [" + state.name() + "]");
-        powerService.setPowerState(state);
+        powerService.setPower(state);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                AmbientLightController.this.setPowerState(((PowerType.Power) request.getData()).getState());
+                AmbientLightController.this.setPower(((PowerType.Power) request.getData()).getState());
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setPowerState] for [" + AmbientLightController.this.getName()+ "]", ex);
@@ -119,14 +119,18 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
             }
         }
     }
+	
+    public void updateBrightness(Double value) {
+        updateColor(data.getColor().newBuilderForType().setValue(value).build());
+    }
 
     @Override
-    public double getBrightness() {
+    public Double getBrightness() {
         return data.getColor().getValue();
     }
 
     @Override
-    public void setBrightness(double brightness) throws CouldNotPerformException {
+    public void setBrightness(Double brightness) throws CouldNotPerformException {
         logger.debug("Set "+name+"[" + label + "] to Brightness[" + brightness + "]");
         brightnessService.setBrightness(brightness);
     }

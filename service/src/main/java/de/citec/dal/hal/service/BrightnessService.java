@@ -14,5 +14,5 @@ import de.citec.jul.exception.CouldNotPerformException;
  */
 public interface BrightnessService extends Service, BrightnessProvider {
 
-    public void setBrightness(double brightness) throws CouldNotPerformException;
+    public void setBrightness(Double brightness) throws CouldNotPerformException;
 }

@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.states.TamperType;
 
@@ -15,18 +15,18 @@ import rst.homeautomation.states.TamperType;
  */
 public class TamperStateTransformer {
 
-	public static TamperType.Tamper.TamperState transform(final double state) throws RSBBindingException {
+	public static TamperType.Tamper.TamperState transform(final double state) throws CouldNotTransformException {
 		switch ((int) state) {
 			case 0:
 				return TamperType.Tamper.TamperState.NO_TAMPER;
 			case 255:
 				return TamperType.Tamper.TamperState.TAMPER;
 			default:
-				throw new RSBBindingException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + state + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + state + "] is unknown!");
 		}
 	}
 
-	public static double transform(final TamperType.Tamper.TamperState tamperState) throws TypeNotSupportedException, RSBBindingException {
+	public static double transform(final TamperType.Tamper.TamperState tamperState) throws TypeNotSupportedException, CouldNotTransformException {
 		switch (tamperState) {
 			case NO_TAMPER:
 				return 0d;
@@ -35,7 +35,7 @@ public class TamperStateTransformer {
 			case UNKNOWN:
 				throw new TypeNotSupportedException(tamperState, Double.class);
 			default:
-				throw new RSBBindingException("Could not transform " + TamperType.Tamper.TamperState.class.getName() + "! " + TamperType.Tamper.TamperState.class.getSimpleName() + "[" + tamperState.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + TamperType.Tamper.TamperState.class.getName() + "! " + TamperType.Tamper.TamperState.class.getSimpleName() + "[" + tamperState.name() + "] is unknown!");
 		}
 	}
 }

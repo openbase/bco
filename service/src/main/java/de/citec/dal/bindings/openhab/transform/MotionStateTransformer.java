@@ -5,7 +5,9 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.CouldNotTransformException;
+import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.states.MotionType;
 
@@ -15,27 +17,31 @@ import rst.homeautomation.states.MotionType;
  */
 public class MotionStateTransformer {
 
-	public static MotionType.Motion.MotionState transform(final double decimalType) throws RSBBindingException {
+	public static MotionType.Motion.MotionState transform(final double decimalType) throws CouldNotTransformException {
 		switch ((int) decimalType) {
 			case 0:
 				return MotionType.Motion.MotionState.NO_MOVEMENT;
 			case 1:
 				return MotionType.Motion.MotionState.MOVEMENT;
 			default:
-				throw new RSBBindingException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + decimalType + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + decimalType + "] is unknown!");
 		}
 	}
 
-	public static double transform(final MotionType.Motion.MotionState motionState) throws TypeNotSupportedException, RSBBindingException {
-		switch (motionState) {
-			case NO_MOVEMENT:
-				return 0d;
-			case MOVEMENT:
-				return 1d;
-			case UNKNOWN:
-				throw new TypeNotSupportedException(motionState, Double.class);
-			default:
-				throw new RSBBindingException("Could not transform " + MotionType.Motion.MotionState.class.getName() + "! " + MotionType.Motion.MotionState.class.getSimpleName() + "[" + motionState.name() + "] is unknown!");
+	public static double transform(final MotionType.Motion.MotionState motionState) throws CouldNotTransformException {
+		try {
+			switch (motionState) {
+				case NO_MOVEMENT:
+					return 0d;
+				case MOVEMENT:
+					return 1d;
+				case UNKNOWN:
+					throw new InvalidStateException("Unknown state is invalid!");
+				default:
+					throw new TypeNotSupportedException(MotionType.Motion.MotionState.class, Double.class);
+			}
+		} catch (CouldNotPerformException ex) {
+			throw new CouldNotTransformException("Could not transform " + MotionType.Motion.MotionState.class.getName() + "!", ex);
 		}
 	}
 }

@@ -32,7 +32,7 @@ public class LightRemote extends RSBRemoteService<LightType.Light> implements Li
     }
 
     @Override
-    public void setPowerState(PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
         callMethodAsync("setPowerState", PowerType.Power.newBuilder().setState(state).build());
     }
 

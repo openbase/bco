@@ -46,7 +46,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
     }
 
     @Override
-    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + label + "] to PowerState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();
@@ -64,7 +64,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                PowerPlugController.this.setPowerState(((PowerType.Power) request.getData()).getState());
+                PowerPlugController.this.setPower(((PowerType.Power) request.getData()).getState());
                 return new Event(String.class, "Ok");
             } catch (Exception ex) {
                 logger.warn("Could not invoke method for [" + PowerPlugController.this.getName()+ "}", ex);

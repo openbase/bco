@@ -40,7 +40,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
     }
 
     @Override
-    public void setPowerState(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + label + "] to PowerState [" + state.name() + "]");
         throw new UnsupportedOperationException("Not supported yet.");
 //        OpenhabCommand.Builder newBuilder = OpenhabCommand.newBuilder();

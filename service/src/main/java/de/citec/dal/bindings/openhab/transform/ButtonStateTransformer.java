@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.states.ClickType;
 import rst.homeautomation.openhab.OnOffHolderType;
@@ -16,18 +16,18 @@ import rst.homeautomation.openhab.OnOffHolderType;
  */
 public class ButtonStateTransformer {
 
-	public static ClickType.Click.ClickState transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws RSBBindingException {
+	public static ClickType.Click.ClickState transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws CouldNotTransformException {
 		switch (onOffType) {
 			case OFF:
 				return ClickType.Click.ClickState.RELEASED;
 			case ON:
 				return ClickType.Click.ClickState.CLICKED;
 			default:
-				throw new RSBBindingException("Could not transform " + OnOffHolderType.OnOffHolder.OnOff.class.getName() + "! " + OnOffHolderType.OnOffHolder.OnOff.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + OnOffHolderType.OnOffHolder.OnOff.class.getName() + "! " + OnOffHolderType.OnOffHolder.OnOff.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
 		}
 	}
 
-	public static OnOffHolderType.OnOffHolder transform(ClickType.Click.ClickState clickState) throws TypeNotSupportedException, RSBBindingException {
+	public static OnOffHolderType.OnOffHolder transform(ClickType.Click.ClickState clickState) throws TypeNotSupportedException, CouldNotTransformException {
 		switch (clickState) {
 			case RELEASED:
 				return OnOffHolderType.OnOffHolder.newBuilder().setState(OnOffHolderType.OnOffHolder.OnOff.OFF).build();
@@ -36,7 +36,7 @@ public class ButtonStateTransformer {
 			case UNKNOWN:
 				throw new TypeNotSupportedException(clickState, OnOffHolderType.OnOffHolder.OnOff.class);
 			default:
-				throw new RSBBindingException("Could not transform " + ClickType.Click.ClickState.class.getName() + "! " + ClickType.Click.ClickState.class.getSimpleName() + "[" + clickState.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + ClickType.Click.ClickState.class.getName() + "! " + ClickType.Click.ClickState.class.getSimpleName() + "[" + clickState.name() + "] is unknown!");
 		}
 	}
 }

@@ -46,8 +46,8 @@ public class OpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.ONOFF).setOnOff(state);
     }
     
-    public static OpenhabCommandType.OpenhabCommand.Builder newBrightnessCommand(final float brightness) {
-        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(PercentType.Percent.newBuilder().setValue((int) brightness).build());
+    public static OpenhabCommandType.OpenhabCommand.Builder newBrightnessCommand(final Double brightness) {
+        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(PercentType.Percent.newBuilder().setValue((int) (brightness*100)).build());
     }
     
     public static OpenhabCommandType.OpenhabCommand.Builder newBrightnessCommand(final PercentType.Percent percent) {
