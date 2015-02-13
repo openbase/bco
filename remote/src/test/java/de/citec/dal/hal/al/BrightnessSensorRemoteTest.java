@@ -12,6 +12,7 @@ import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -82,7 +83,14 @@ public class BrightnessSensorRemoteTest {
         System.out.println("getBrightness");
         double brightness = 0.5;
         ((BrightnessSensorController) dalService.getRegistry().getUnits(BrightnessSensorController.class).iterator().next()).updateBrightness((float) brightness);
-        while (!(brightnessSensorRemote.getBrightness() == brightness)) {
+        while (true) {
+            try {
+                if (brightnessSensorRemote.getBrightness() == brightness) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the brightness returns the wrong value!", brightnessSensorRemote.getBrightness() == brightness);

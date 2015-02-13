@@ -12,6 +12,7 @@ import de.citec.dal.hal.unit.ReedSwitchController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -86,7 +87,14 @@ public class ReedSwitchRemoteTest {
         System.out.println("getReedSwitchState");
         OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
         ((ReedSwitchController) dalService.getRegistry().getUnits(ReedSwitchController.class).iterator().next()).updateOpenClosedState(state);
-        while (!reedSwitchRemote.getReedSwitchState().equals(state)) {
+        while (true) {
+            try {
+                if (reedSwitchRemote.getReedSwitchState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the reed switch state returns the wrong value!", reedSwitchRemote.getReedSwitchState().equals(state));

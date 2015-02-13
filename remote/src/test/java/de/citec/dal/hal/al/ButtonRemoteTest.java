@@ -7,15 +7,13 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.device.gira.GI_5142Controller;
 import de.citec.dal.hal.unit.ButtonController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -90,7 +88,14 @@ public class ButtonRemoteTest {
         System.out.println("getButtonState");
         ClickType.Click.ClickState state = ClickType.Click.ClickState.DOUBLE_CLICKED;
         ((ButtonController) dalService.getRegistry().getUnits(ButtonController.class).iterator().next()).updateButtonState(state);
-        while (!buttonRemote.getButtonState().equals(state)) {
+        while (true) {
+            try {
+                if (buttonRemote.getButtonState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the button returns the wrong value!", buttonRemote.getButtonState().equals(state));

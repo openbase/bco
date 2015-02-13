@@ -12,6 +12,7 @@ import de.citec.dal.hal.unit.TemperatureSensorController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -84,7 +85,14 @@ public class TemperatureSensorRemoteTest {
         System.out.println("getTemperature");
         float temperature = 37.0F;
         ((TemperatureSensorController) dalService.getRegistry().getUnits(TemperatureSensorController.class).iterator().next()).updateTemperature(temperature);
-        while (!(temperatureSensorRemote.getTemperature() == temperature)) {
+        while (true) {
+            try {
+                if (temperatureSensorRemote.getTemperature() == temperature) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the tamper switch state returns the wrong value!", temperatureSensorRemote.getTemperature() == temperature);

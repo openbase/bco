@@ -12,6 +12,7 @@ import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -84,7 +85,14 @@ public class BatteryRemoteTest {
         System.out.println("getBattaryLevel");
         double level = 34.0;
         ((BatteryController) dalService.getRegistry().getUnits(BatteryController.class).iterator().next()).updateBatteryLevel(level);
-        while (!(batteryRemote.getBattaryLevel() == level)) {
+        while (true) {
+            try {
+                if (batteryRemote.getBattaryLevel() == level) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the battery level returns the wrong value!", batteryRemote.getBattaryLevel() == level);

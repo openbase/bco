@@ -12,6 +12,7 @@ import de.citec.dal.hal.unit.MotionSensorController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -80,12 +81,19 @@ public class MotionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 3000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionType.Motion.MotionState state = MotionType.Motion.MotionState.MOVEMENT;
         ((MotionSensorController) dalService.getRegistry().getUnits(MotionSensorController.class).iterator().next()).updateMotionState(state);
-        while (!motionSensorRemote.getMotionState().equals(state)) {
+        while (true) {
+            try {
+                if (motionSensorRemote.getMotionState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotionState().equals(state));

@@ -13,6 +13,7 @@ import de.citec.dal.hal.unit.HandleSensorController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -82,12 +83,19 @@ public class HandleSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 3000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
         ((HandleSensorController) dalService.getRegistry().getUnits(HandleSensorController.class).iterator().next()).updateOpenClosedTiltedState(state);
-        while (!handleSensorRemote.getRotaryHandleState().equals(state)) {
+        while (true) {
+            try {
+                if (handleSensorRemote.getRotaryHandleState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the handle state returns the wrong value!", handleSensorRemote.getRotaryHandleState().equals(state));

@@ -14,6 +14,7 @@ import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -81,7 +82,14 @@ public class PowerPlugRemoteTest {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         powerPlugRemote.setPower(state);
-        while (!powerPlugRemote.getData().getPowerState().getState().equals(state)) {
+        while (true) {
+            try {
+                if (powerPlugRemote.getData().getPowerState().getState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("Power state has not been set in time!", powerPlugRemote.getData().getPowerState().getState().equals(state));
@@ -97,7 +105,14 @@ public class PowerPlugRemoteTest {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).setPower(state);
-        while (!powerPlugRemote.getPowerState().equals(state)) {
+        while (true) {
+            try {
+                if (powerPlugRemote.getPowerState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the power state returns the wrong value!", powerPlugRemote.getPowerState().equals(state));

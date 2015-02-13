@@ -7,12 +7,12 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -82,12 +82,19 @@ public class PowerConsumptionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 3000)
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;
         ((PowerConsumptionSensorController) dalService.getRegistry().getUnits(PowerConsumptionSensorController.class).iterator().next()).updatePowerConsumption(consumption);
-        while (!(powerConsumptionRemote.getPowerConsumption() == consumption)) {
+        while (true) {
+            try {
+                if (powerConsumptionRemote.getPowerConsumption() == consumption) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the power consumption returns the wrong value!", powerConsumptionRemote.getPowerConsumption() == consumption);

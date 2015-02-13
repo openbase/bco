@@ -7,13 +7,10 @@ package de.citec.dal.hal.al;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.DALException;
-import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -105,7 +102,7 @@ public class LightRemoteTest {
 
         @Override
         public void initDevices(final DALRegistry registry) {
-
+            // TODO: register a device that contains a light unit
 //            try {
 //                registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", label, location));
 //            } catch (DALException | VerificationFailedException ex) {

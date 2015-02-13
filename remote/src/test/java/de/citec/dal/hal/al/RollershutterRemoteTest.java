@@ -12,6 +12,7 @@ import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -79,26 +80,87 @@ public class RollershutterRemoteTest {
         System.out.println("setShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
         rollershutterRemote.setShutterState(state);
-        while (!rollershutterRemote.getData().getShutterState().getState().equals(state)) {
+        while (true) {
+            try {
+                if (rollershutterRemote.getData().getShutterState().getState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("Color has not been set in time!", rollershutterRemote.getData().getShutterState().getState().equals(state));
     }
 
     /**
-     * Test of setPosition method, of class RollershutterRemote.
+     * Test of getShutterState method, of class RollershutterRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 3000)
-    public void testSetPosition() throws Exception {
-        System.out.println("setPosition");
+    public void testGetShutterState() throws Exception {
+        System.out.println("getShutterState");
+        ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
+        rollershutterRemote.setShutterState(state);
+        while (true) {
+            try {
+                if (rollershutterRemote.getShutterState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
+            Thread.yield();
+        }
+        assertTrue("Color has not been set in time!", rollershutterRemote.getShutterState().equals(state));
+    }
+    
+    
+    /**
+     * Test of setOpeningRatio method, of class RollershutterRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 3000)
+    public void testSetOpeningRatio() throws Exception {
+        System.out.println("setOpeningRatio");
         double openingRatio = 34.0D;
         rollershutterRemote.setOpeningRatio(openingRatio);
-        while (!(rollershutterRemote.getData().getOpeningRatio() == openingRatio)) {
+        while (true) {
+            try {
+                if (rollershutterRemote.getData().getOpeningRatio() == openingRatio) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("Color has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == openingRatio);
+    }
+    
+    /**
+     * Test of setOpeningRatio method, of class RollershutterRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 3000)
+    public void testGetOpeningRatio() throws Exception {
+        System.out.println("getOpeningRatio");
+        double openingRatio = 70.0D;
+        rollershutterRemote.setOpeningRatio(openingRatio);
+        while (true) {
+            try {
+                if (rollershutterRemote.getOpeningRatio() == openingRatio) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
+            Thread.yield();
+        }
+        assertTrue("Color has not been set in time!", rollershutterRemote.getOpeningRatio() == openingRatio);
     }
 
     /**

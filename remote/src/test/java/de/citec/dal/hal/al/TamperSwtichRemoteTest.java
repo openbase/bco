@@ -12,6 +12,7 @@ import de.citec.dal.hal.unit.TamperSwitchController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -85,7 +86,14 @@ public class TamperSwtichRemoteTest {
         System.out.println("getTamperState");
         TamperType.Tamper.TamperState state = TamperType.Tamper.TamperState.TAMPER;
         ((TamperSwitchController) dalService.getRegistry().getUnits(TamperSwitchController.class).iterator().next()).updateTamperState(state);
-        while (!tamperSwitchRemote.getTamperState().equals(state)) {
+        while (true) {
+            try {
+                if (tamperSwitchRemote.getTamperState().equals(state)) {
+                    break;
+                }
+            } catch (NotAvailableException ex) {
+                logger.debug("Not ready yet");
+            }
             Thread.yield();
         }
         assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamperState().equals(state));
