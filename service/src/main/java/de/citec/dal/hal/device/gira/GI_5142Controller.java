@@ -26,7 +26,6 @@ public class GI_5142Controller extends AbstractOpenHABDeviceController<GI_5142Ty
 
     public GI_5142Controller(final String id, final String label, final String[] unitLabel, final Location location) throws VerificationFailedException, InstantiationException {
         super(id, label, location, GI_5142Type.GI_5142.newBuilder());
-        data.setId(id);
         this.registerUnit(new ButtonController(unitLabel[0], this, data.getButton0Builder()));
         this.registerUnit(new ButtonController(unitLabel[1], this, data.getButton0Builder()));
 		this.registerUnit(new ButtonController(unitLabel[2], this, data.getButton0Builder()));

@@ -12,7 +12,6 @@ import de.citec.jul.exception.NotSupportedException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.RSBException;
@@ -27,7 +26,9 @@ public enum ServiceType {
 
 	BRIGHTNESS(BrightnessService.class),
 	COLOR(ColorService.class),
-	POWER(PowerService.class);
+	POWER(PowerService.class),
+    SHUTTER(ShutterService.class),
+    OPENINGRATIO(OpeningRatioService.class);
 
 	private static final Logger logger = LoggerFactory.getLogger(ServiceType.class);
 

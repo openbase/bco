@@ -77,6 +77,7 @@ public class BrightnessSensorRemoteTest {
 
     /**
      * Test of getBrightness method, of class BrightnessSensorRemote.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 3000)
     public void testGetBrightness() throws Exception {

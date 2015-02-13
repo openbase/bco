@@ -10,6 +10,9 @@ import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.service.OpeningRatioService;
+import de.citec.dal.hal.service.ShutterService;
+import de.citec.jul.exception.InstantiationException;
 
 /**
  *
@@ -30,5 +33,15 @@ public class OpenhabServiceFactory implements ServiceFactory {
     @Override
     public PowerService newPowerService(DeviceInterface device, PowerService unit) {
         return new PowerServiceImpl(device, unit);
+    }
+
+    @Override
+    public OpeningRatioService newOpeningRatioService(DeviceInterface device, OpeningRatioService unit) throws InstantiationException {
+        return new OpeningRatioServiceImpl(device, unit);
+    }
+
+    @Override
+    public ShutterService newShutterService(DeviceInterface device, ShutterService unit) throws InstantiationException {
+        return new ShutterServiceImpl(device, unit);
     }
 }

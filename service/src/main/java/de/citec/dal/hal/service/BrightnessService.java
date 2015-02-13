@@ -23,7 +23,7 @@ public interface BrightnessService extends Service, BrightnessProvider {
 
 	public class SetBrightnessCallback extends EventCallback {
 
-		private static final Logger logger = LoggerFactory.getLogger(BrightnessService.class);
+		private static final Logger logger = LoggerFactory.getLogger(SetBrightnessCallback.class);
 
 		private final BrightnessService service;
 

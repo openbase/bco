@@ -8,13 +8,10 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
-import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.patterns.EventCallback;
 import rst.homeautomation.HandleSensorType;
 import rst.homeautomation.HandleSensorType.HandleSensor;
-import rst.homeautomation.states.OpenClosedTiltedType;
 import rst.homeautomation.states.OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState;
 
 /**
@@ -24,35 +21,21 @@ import rst.homeautomation.states.OpenClosedTiltedType.OpenClosedTilted.OpenClose
 public class HandleSensorController extends AbstractUnitController<HandleSensor, HandleSensor.Builder> implements HandleSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(final String label, DeviceInterface hardwareUnit, HandleSensor.Builder builder) throws InstantiationException {
-        super(HandleSensorController.class, label, hardwareUnit, builder);
+    public HandleSensorController(final String label, DeviceInterface device, HandleSensor.Builder builder) throws InstantiationException {
+        super(HandleSensorController.class, label, device, builder);
     }
 
-    public void updateOpenClosedTiltedState(final OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state) {
+    public void updateOpenClosedTiltedState(final OpenClosedTiltedState state) {
         data.getHandleStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException{
+    public OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException {
         logger.debug("Getting [" + label + "] State: [" + data.getHandleState() + "]");
         return data.getHandleState().getState();
-    }
-
-    public class GetRotaryHandleState extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                return new Event(OpenClosedTiltedState.class, HandleSensorController.this.getRotaryHandleState());
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + HandleSensorController.this.getName()+ "}", ex);
-                return new Event(String.class, "Failed");
-            }
-        }
     }
 }

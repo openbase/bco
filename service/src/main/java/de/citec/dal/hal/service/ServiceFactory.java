@@ -7,7 +7,6 @@ package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.jul.exception.InstantiationException;
-import rsb.patterns.LocalServer;
 
 /**
  *
@@ -20,8 +19,8 @@ public interface ServiceFactory {
     public abstract ColorService newColorService(DeviceInterface device, ColorService unit) throws InstantiationException;
 
     public abstract PowerService newPowerService(DeviceInterface device, PowerService unit) throws InstantiationException;
-//    
-//    public abstract OpeningRatioService newOpeningRatioService(DeviceInterface device, OpeningRatioService unit) throws InstantiationException;
-//    
-//    public abstract ShutterService newShutterService(DeviceInterface device, ShutterService unit) throws InstantiationException;
+    
+    public abstract OpeningRatioService newOpeningRatioService(DeviceInterface device, OpeningRatioService unit) throws InstantiationException;
+    
+    public abstract ShutterService newShutterService(DeviceInterface device, ShutterService unit) throws InstantiationException;
 }

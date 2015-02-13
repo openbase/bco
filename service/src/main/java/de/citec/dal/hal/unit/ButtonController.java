@@ -18,22 +18,19 @@ import rst.homeautomation.states.ClickType;
  *
  * @author mpohling
  */
-public class ButtonController extends AbstractUnitController<Button, Button.Builder> implements ButtonInterface{
+public class ButtonController extends AbstractUnitController<Button, Button.Builder> implements ButtonInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(ButtonType.Button.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonType.Button.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(final String label, DeviceInterface hardwareUnit, Button.Builder builder) throws InstantiationException {
-        super(ButtonController.class, label, hardwareUnit, builder);
+    public ButtonController(final String label, DeviceInterface device, Button.Builder builder) throws InstantiationException {
+        super(ButtonController.class, label, device, builder);
     }
 
     public void updateButtonState(final ClickType.Click.ClickState state) {
         data.getButtonStateBuilder().setState(state);
-        logger.debug("Updatet Button State. Sending rsb messsage...");
         notifyChange();
     }
 

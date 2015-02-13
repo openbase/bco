@@ -15,26 +15,26 @@ import rsb.patterns.EventCallback;
  *
  * @author thuxohl
  */
-public interface PowerConsumptionProvider extends Provider {
+public interface OpeningRatioProvider extends Provider {
 
-    public float getPowerConsumption() throws CouldNotPerformException;
+    public double getOpeningRatio() throws CouldNotPerformException;
 
-    public class GetPowerConsumptionCallback extends EventCallback {
+    public class GetOpeningRatioCallback extends EventCallback {
 
-        private static final Logger logger = LoggerFactory.getLogger(GetPowerConsumptionCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(GetOpeningRatioCallback.class);
 
-        private final PowerConsumptionProvider provider;
+        private final OpeningRatioProvider provider;
 
-        public GetPowerConsumptionCallback(final PowerConsumptionProvider provider) {
+        public GetOpeningRatioCallback(final OpeningRatioProvider provider) {
             this.provider = provider;
         }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(Float.class, provider.getPowerConsumption());
+                return new Event(Double.class, provider.getOpeningRatio());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [getPowerConsumption] for [" + provider + "].", ex);
+                logger.warn("Could not invoke method [getOpeningRatio] for [" + provider + "].", ex);
                 throw ex;
             }
         }

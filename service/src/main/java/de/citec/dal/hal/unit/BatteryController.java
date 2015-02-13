@@ -20,12 +20,11 @@ import rst.homeautomation.BatteryType.Battery;
 public class BatteryController extends AbstractUnitController<Battery, Battery.Builder> implements BatteryInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
 
-    public BatteryController(final String label, DeviceInterface hardwareUnit, Battery.Builder builder) throws InstantiationException {
-        super(BatteryController.class, label, hardwareUnit, builder);
+    public BatteryController(final String label, DeviceInterface device, Battery.Builder builder) throws InstantiationException {
+        super(BatteryController.class, label, device, builder);
     }
 
     public void updateBatteryLevel(final double batteryState) {

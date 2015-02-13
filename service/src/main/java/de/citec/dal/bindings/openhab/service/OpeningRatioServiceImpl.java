@@ -6,29 +6,29 @@
 package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
-import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 
 /**
  *
- * @author mpohling
+ * @author thuxohl
  * @param <ST> Related service type.
  */
-public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface> extends OpenHABService<ST> implements BrightnessService {
+public class OpeningRatioServiceImpl<ST extends OpeningRatioService & UnitInterface>  extends OpenHABService<ST> implements OpeningRatioService {
 
-    public BrightnessServiceImpl(DeviceInterface device, ST unit) {
+    public OpeningRatioServiceImpl(DeviceInterface device, ST unit) {
         super(device, unit);
     }
 
     @Override
-    public Double getBrightness() throws CouldNotPerformException {
-        return unit.getBrightness();
+    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
+        executeCommand(OpenHABCommandFactory.newPercentCommand(openingRatio));
     }
 
     @Override
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newPercentCommand(brightness));
+    public double getOpeningRatio() throws CouldNotPerformException {
+        return unit.getOpeningRatio();
     }
 }

@@ -20,12 +20,11 @@ import rst.homeautomation.TemperatureSensorType.TemperatureSensor;
 public class TemperatureSensorController extends AbstractUnitController<TemperatureSensor, TemperatureSensor.Builder> implements TemperatureSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(final String label, DeviceInterface hardwareUnit, TemperatureSensor.Builder builder) throws InstantiationException {
-        super(TemperatureSensorController.class, label, hardwareUnit, builder);
+    public TemperatureSensorController(final String label, DeviceInterface device, TemperatureSensor.Builder builder) throws InstantiationException {
+        super(TemperatureSensorController.class, label, device, builder);
     }
 
     public void updateTemperature(final float temperature) {

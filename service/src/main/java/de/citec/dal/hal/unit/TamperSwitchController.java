@@ -21,12 +21,11 @@ import rst.homeautomation.states.TamperType;
 public class TamperSwitchController extends AbstractUnitController<TamperSwitch, TamperSwitch.Builder> implements TamperSwitchInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(final String label, DeviceInterface hardwareUnit, TamperSwitch.Builder builder) throws InstantiationException {
-        super(TamperSwitchController.class, label, hardwareUnit, builder);
+    public TamperSwitchController(final String label, DeviceInterface device, TamperSwitch.Builder builder) throws InstantiationException {
+        super(TamperSwitchController.class, label, device, builder);
     }
 
     public void updateTamperState(final TamperType.Tamper.TamperState state) {
@@ -38,5 +37,4 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
     public TamperType.Tamper.TamperState getTamperState() throws CouldNotPerformException {
         return data.getTamperState().getState();
     }
-
 }

@@ -28,53 +28,12 @@ public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
     }
 
-    private final MotionSensorController motionSensor;
-    private final TemperatureSensorController temperatureSensor;
-    private final BrightnessSensorController brightnessSensor;
-    private final TamperSwitchController tamperSwitch;
-    private final BatteryController battery;
-
     public F_MotionSensorController(final String id, String label, final Location location) throws InstantiationException {
         super(id, label, location, F_MotionSensor.newBuilder());
-
-        data.setId(id);
-        this.motionSensor = new MotionSensorController(label, this, data.getMotionSensorBuilder());
-        this.temperatureSensor = new TemperatureSensorController(label, this, data.getTemperatureSensorBuilder());
-        this.brightnessSensor = new BrightnessSensorController(label, this, data.getBrightnessSensorBuilder());
-        this.tamperSwitch = new TamperSwitchController(label, this, data.getTamperSwitchBuilder());
-        this.battery = new BatteryController(label, this, data.getBatteryBuilder());
-        this.registerUnit(motionSensor);
-        this.registerUnit(temperatureSensor);
-        this.registerUnit(brightnessSensor);
-        this.registerUnit(tamperSwitch);
-        this.registerUnit(battery);
+        registerUnit(new MotionSensorController(label, this, data.getMotionSensorBuilder()));
+        registerUnit(new TemperatureSensorController(label, this, data.getTemperatureSensorBuilder()));
+        registerUnit(new BrightnessSensorController(label, this, data.getBrightnessSensorBuilder()));
+        registerUnit(new TamperSwitchController(label, this, data.getTamperSwitchBuilder()));
+        registerUnit(new BatteryController(label, this, data.getBatteryBuilder()));
     }
-
-//    public void updateMotionSensor(double type) throws CouldNotPerformException {
-//        try {
-//            motionSensor.updateMotionState(MotionStateTransformer.transform(type));
-//        } catch (CouldNotTransformException ex) {
-//            throw new CouldNotPerformException("Could not updateMotionSensor!", ex);
-//        }
-//    }
-//
-//    public void updateTemperature(double type) {
-//        temperatureSensor.updateTemperature((float) type);
-//    }
-//
-//    public void updateBrightness(double type) {
-//        brightnessSensor.updateBrightness((float) type);
-//    }
-//
-//    public void updateTamperSwitch(double type) throws CouldNotPerformException {
-//        try {
-//            tamperSwitch.updateTamperState(TamperStateTransformer.transform(type));
-//        } catch (CouldNotTransformException ex) {
-//            throw new CouldNotPerformException("Could not updateTamperSwitch!", ex);
-//        }
-//    }
-//
-//    public void updateBatteryLevel(double value) {
-//        battery.updateBatteryLevel(value);
-//    }
 }

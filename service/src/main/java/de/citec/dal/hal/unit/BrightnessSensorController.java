@@ -20,12 +20,11 @@ import rst.homeautomation.BrightnessSensorType.BrightnessSensor;
 public class BrightnessSensorController extends AbstractUnitController<BrightnessSensor, BrightnessSensor.Builder> implements BrightnessSensorInterface {
 
 	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-				new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
 	}
 
-	public BrightnessSensorController(final String label, DeviceInterface hardwareUnit, BrightnessSensor.Builder builder) throws InstantiationException {
-		super(BrightnessSensorController.class, label, hardwareUnit, builder);
+	public BrightnessSensorController(final String label, DeviceInterface device, BrightnessSensor.Builder builder) throws InstantiationException {
+		super(BrightnessSensorController.class, label, device, builder);
 	}
 
 	public void updateBrightness(final float brightness) {

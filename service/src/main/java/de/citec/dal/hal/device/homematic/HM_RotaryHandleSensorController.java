@@ -23,42 +23,13 @@ import rst.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
  */
 public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceController<HM_RotaryHandleSensor, HM_RotaryHandleSensor.Builder> {
 
-//    private final static String COMPONENT_HANDLE_SENSOR = "HandleSensor";
-//    private final static String COMPONENT_BATTERY = "Battery";
-
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(HM_RotaryHandleSensorType.HM_RotaryHandleSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HM_RotaryHandleSensorType.HM_RotaryHandleSensor.getDefaultInstance()));
     }
-
-    private final HandleSensorController handleSensor;
-    private final BatteryController battery;
 
     public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, DALException, InstantiationException {
         super(id, label, location, HM_RotaryHandleSensor.newBuilder());
-
-        data.setId(id);
-        this.handleSensor = new HandleSensorController(label, this, data.getHandleSensorBuilder());
-        this.battery = new BatteryController(label, this, data.getBatteryBuilder());
-        this.registerUnit(handleSensor);
-        this.registerUnit(battery);
+        this.registerUnit(new HandleSensorController(label, this, data.getHandleSensorBuilder()));
+        this.registerUnit(new BatteryController(label, this, data.getBatteryBuilder()));
     }
-
-//    @Override
-//    protected void initHardwareMapping() throws NoSuchMethodException, SecurityException {
-//        halFunctionMapping.put(COMPONENT_HANDLE_SENSOR, getClass().getMethod("updateHandleSensor", String.class));
-//        halFunctionMapping.put(COMPONENT_BATTERY, getClass().getMethod("updateBatteryLevel", double.class));
-//    }
-
-//    public void updateHandleSensor(String type) {
-//        try {
-//            handleSensor.updateOpenClosedTiltedState(OpenClosedTiltedStateTransformer.transform(type));
-//        } catch (RSBBindingException ex) {
-//            logger.error("Not able to transform from StringType to OpenClosedTiltedState!", ex);
-//        }
-//    }
-//
-//    public void updateBatteryLevel(double value) {
-//        battery.updateBatteryLevel((float) value);
-//    }
 }

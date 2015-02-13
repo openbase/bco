@@ -6,6 +6,10 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rsb.Event;
+import rsb.patterns.EventCallback;
 import rst.homeautomation.states.OpenClosedType;
 
 /**
@@ -13,6 +17,27 @@ import rst.homeautomation.states.OpenClosedType;
  * @author thuxohl
  */
 public interface ReedSwitchProvider extends Provider {
-    
+
     public OpenClosedType.OpenClosed.OpenClosedState getReedSwitchState() throws CouldNotPerformException;
+
+    public class GetReedSwitchCallback extends EventCallback {
+
+        private static final Logger logger = LoggerFactory.getLogger(GetReedSwitchCallback.class);
+
+        private final ReedSwitchProvider provider;
+
+        public GetReedSwitchCallback(final ReedSwitchProvider provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                return new Event(OpenClosedType.OpenClosed.OpenClosedState.class, provider.getReedSwitchState());
+            } catch (Exception ex) {
+                logger.warn("Could not invoke method [getReedSwitchState] for [" + provider + "].", ex);
+                throw ex;
+            }
+        }
+    }
 }

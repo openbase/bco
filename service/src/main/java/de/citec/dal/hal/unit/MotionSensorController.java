@@ -7,10 +7,8 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import rsb.Event;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.patterns.EventCallback;
 import rst.homeautomation.MotionSensorType;
 import rst.homeautomation.MotionSensorType.MotionSensor;
 import rst.homeautomation.states.MotionType;
@@ -23,12 +21,11 @@ import rst.homeautomation.states.MotionType.Motion.MotionState;
 public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> implements MotionSensorInterface{
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-                new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(final String label, final DeviceInterface hardwareUnit, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException {
-        super(MotionSensorController.class, label, hardwareUnit, builder);
+    public MotionSensorController(final String label, final DeviceInterface device, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException {
+        super(MotionSensorController.class, label, device, builder);
         
     }
 
@@ -41,18 +38,5 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
     public MotionState getMotionState() throws CouldNotPerformException{
         logger.debug("Getting [" + label + "] State: [" + data.getMotionState() + "]");
         return data.getMotionState().getState();
-    }
-
-    public class GetMotionState extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                return new Event(MotionState.class, MotionSensorController.this.getMotionState());
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method for [" + MotionSensorController.this.getName()+ "}", ex);
-                return new Event(String.class, "Failed");
-            }
-        }
     }
 }
