@@ -6,7 +6,6 @@
 package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.PowerProvider;
-import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import org.slf4j.Logger;
@@ -21,19 +20,17 @@ import rst.homeautomation.states.PowerType;
  */
 public interface PowerService extends Service, PowerProvider {
 
-    
-
     public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException;
 
-	public class SetPowerCallback extends EventCallback {
+    public class SetPowerCallback extends EventCallback {
 
-		private static final Logger logger = LoggerFactory.getLogger(SetPowerCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(SetPowerCallback.class);
 
-		private final PowerService service;
+        private final PowerService service;
 
-		public SetPowerCallback(final PowerService service) {
-			this.service = service;
-		}
+        public SetPowerCallback(final PowerService service) {
+            this.service = service;
+        }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
@@ -41,7 +38,7 @@ public interface PowerService extends Service, PowerProvider {
                 service.setPower(((PowerType.Power) request.getData()).getState());
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [setPowerState] for [" + service+ "]", ex);
+                logger.warn("Could not invoke method [setPowerState] for [" + service + "]", ex);
                 throw ex;
             }
         }

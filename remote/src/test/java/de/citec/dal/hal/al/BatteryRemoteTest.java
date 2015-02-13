@@ -33,22 +33,14 @@ public class BatteryRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BatteryRemoteTest.class);
 
-    private BatteryRemote batteryRemote;
-    private DALService dalService;
+    private static BatteryRemote batteryRemote;
+    private static DALService dalService;
 
     public BatteryRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new BatteryRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -58,14 +50,22 @@ public class BatteryRemoteTest {
         batteryRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             batteryRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate battery remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -81,13 +81,13 @@ public class BatteryRemoteTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 3000)
-    public void testGetBattaryLevel() throws Exception {
-        System.out.println("getBattaryLevel");
+    public void testGetBatteryLevel() throws Exception {
+        System.out.println("getBatteryLevel");
         double level = 34.0;
-        ((BatteryController) dalService.getRegistry().getUnits(BatteryController.class).iterator().next()).updateBatteryLevel(level);
+        ((BatteryController) dalService.getRegistry().getUnits(BatteryController.class).iterator().next()).updateBattery(level);
         while (true) {
             try {
-                if (batteryRemote.getBattaryLevel() == level) {
+                if (batteryRemote.getBattery() == level) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -95,7 +95,7 @@ public class BatteryRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the battery level returns the wrong value!", batteryRemote.getBattaryLevel() == level);
+        assertTrue("The getter for the battery level returns the wrong value!", batteryRemote.getBattery() == level);
     }
 
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {

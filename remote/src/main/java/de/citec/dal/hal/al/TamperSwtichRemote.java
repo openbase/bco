@@ -31,7 +31,7 @@ public class TamperSwtichRemote extends RSBRemoteService<TamperSwitchType.Tamper
     }
 
     @Override
-    public TamperType.Tamper.TamperState getTamperState() throws CouldNotPerformException {
+    public TamperType.Tamper.TamperState getTamper() throws CouldNotPerformException {
         return this.getData().getTamperState().getState();
     }
     

@@ -58,7 +58,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 	}
 
 	@Override
-	public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+	public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
 		return data.getPowerState().getState();
 	}
 

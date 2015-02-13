@@ -18,7 +18,7 @@ import rst.homeautomation.states.PowerType;
  */
 public interface PowerProvider extends Provider {
 
-    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException;
+    public PowerType.Power.PowerState getPower() throws CouldNotPerformException;
     
     public class GetPowerCallback extends EventCallback {
 
@@ -33,7 +33,7 @@ public interface PowerProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(PowerType.Power.PowerState.class, provider.getPowerState());
+                return new Event(PowerType.Power.PowerState.class, provider.getPower());
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [getPowerState] for [" + provider + "].", ex);
                 throw ex;

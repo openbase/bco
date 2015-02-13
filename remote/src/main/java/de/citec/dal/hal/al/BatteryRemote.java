@@ -32,7 +32,7 @@ public class BatteryRemote extends RSBRemoteService<BatteryType.Battery> impleme
     }
 
     @Override
-    public double getBattaryLevel() throws CouldNotPerformException {
+    public double getBattery() throws CouldNotPerformException {
         return this.getData().getBatteryState().getLevel();
     }
 }

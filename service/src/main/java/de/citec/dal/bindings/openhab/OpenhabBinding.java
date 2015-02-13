@@ -53,12 +53,9 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	private final DALRegistry registry;
 
 	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-				new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-				new ProtocolBufferConverter<>(RSBBindingType.RSBBinding.getDefaultInstance()));
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(
-				new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RSBBindingType.RSBBinding.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
 	}
 
 	public synchronized static OpenhabBinding getInstance() {

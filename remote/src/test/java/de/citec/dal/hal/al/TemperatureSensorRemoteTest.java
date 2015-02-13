@@ -33,22 +33,14 @@ public class TemperatureSensorRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TemperatureSensorRemoteTest.class);
 
-    private TemperatureSensorRemote temperatureSensorRemote;
-    private DALService dalService;
+    private static TemperatureSensorRemote temperatureSensorRemote;
+    private static DALService dalService;
 
     public TemperatureSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new TemperatureSensorRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -58,14 +50,22 @@ public class TemperatureSensorRemoteTest {
         temperatureSensorRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             temperatureSensorRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate temperature sensor remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**

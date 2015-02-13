@@ -10,6 +10,5 @@ package de.citec.dal.hal.service;
  * @author Divine <DivineThreepwood@gmail.com>
  */
 public interface Service {
-    public static final String SET = "set";
-    public static final String UPDATE = "update";
+    
 }

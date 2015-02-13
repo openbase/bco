@@ -34,22 +34,14 @@ public class MotionSensorRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MotionSensorRemoteTest.class);
 
-    private MotionSensorRemote motionSensorRemote;
-    private DALService dalService;
+    private static MotionSensorRemote motionSensorRemote;
+    private static DALService dalService;
 
     public MotionSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new MotionSensorRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -59,14 +51,22 @@ public class MotionSensorRemoteTest {
         motionSensorRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             motionSensorRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate motion sensor remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -85,10 +85,10 @@ public class MotionSensorRemoteTest {
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionType.Motion.MotionState state = MotionType.Motion.MotionState.MOVEMENT;
-        ((MotionSensorController) dalService.getRegistry().getUnits(MotionSensorController.class).iterator().next()).updateMotionState(state);
+        ((MotionSensorController) dalService.getRegistry().getUnits(MotionSensorController.class).iterator().next()).updateMotion(state);
         while (true) {
             try {
-                if (motionSensorRemote.getMotionState().equals(state)) {
+                if (motionSensorRemote.getMotion().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -96,7 +96,7 @@ public class MotionSensorRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotionState().equals(state));
+        assertTrue("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotion().equals(state));
     }
 
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {

@@ -14,6 +14,7 @@ import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
+import java.util.Iterator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,39 +37,39 @@ public class ButtonRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ButtonRemoteTest.class);
 
-    private ButtonRemote buttonRemote;
-    private DALService dalService;
+    private static ButtonRemote buttonRemote;
+    private static DALService dalService;
 
     public ButtonRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new ButtonRemoteTest.DeviceInitializerImpl());
         dalService.activate();
 
         buttonRemote = new ButtonRemote();
-        buttonRemote.init(BUTTONS[0], LOCATION);
+        buttonRemote.init(BUTTONS[BUTTONS.length-1], LOCATION);
         buttonRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             buttonRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate button remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -87,10 +88,10 @@ public class ButtonRemoteTest {
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
         ClickType.Click.ClickState state = ClickType.Click.ClickState.DOUBLE_CLICKED;
-        ((ButtonController) dalService.getRegistry().getUnits(ButtonController.class).iterator().next()).updateButtonState(state);
+        ((ButtonController) dalService.getRegistry().getUnits(ButtonController.class).iterator().next()).updateButton(state);
         while (true) {
             try {
-                if (buttonRemote.getButtonState().equals(state)) {
+                if (buttonRemote.getButton().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -98,7 +99,7 @@ public class ButtonRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the button returns the wrong value!", buttonRemote.getButtonState().equals(state));
+        assertTrue("The getter for the button returns the wrong value!", buttonRemote.getButton().equals(state));
     }
 
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {

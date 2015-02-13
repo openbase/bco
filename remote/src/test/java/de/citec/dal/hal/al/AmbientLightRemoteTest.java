@@ -45,7 +45,7 @@ public class AmbientLightRemoteTest {
 
     @BeforeClass
     public static void setUpClass() {
-		 JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new AmbientLightRemoteTest.DeviceInitializerImpl());
         dalService.activate();
 
@@ -56,7 +56,7 @@ public class AmbientLightRemoteTest {
 
     @AfterClass
     public static void tearDownClass() {
-		dalService.deactivate();
+        dalService.deactivate();
         try {
             ambientLightRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -66,12 +66,10 @@ public class AmbientLightRemoteTest {
 
     @Before
     public void setUp() {
-       
     }
 
     @After
     public void tearDown() {
-        
     }
 
     /**
@@ -178,7 +176,7 @@ public class AmbientLightRemoteTest {
         ambientLightRemote.setPower(state);
         while (true) {
             try {
-                if (ambientLightRemote.getPowerState().equals(state)) {
+                if (ambientLightRemote.getPower().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -186,7 +184,7 @@ public class AmbientLightRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Power state has not been set in time or the return value from the getter is different!", ambientLightRemote.getPowerState().equals(state));
+        assertTrue("Power state has not been set in time or the return value from the getter is different!", ambientLightRemote.getPower().equals(state));
     }
 
     /**
@@ -205,7 +203,7 @@ public class AmbientLightRemoteTest {
                     break;
                 }
             } catch (NotAvailableException ex) {
-				logger.debug("Not ready yet");
+                logger.debug("Not ready yet");
             }
             Thread.yield();
         }

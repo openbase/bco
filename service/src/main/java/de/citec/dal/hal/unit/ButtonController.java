@@ -29,13 +29,13 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         super(ButtonController.class, label, device, builder);
     }
 
-    public void updateButtonState(final ClickType.Click.ClickState state) {
+    public void updateButton(final ClickType.Click.ClickState state) {
         data.getButtonStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public ClickType.Click.ClickState getButtonState() throws CouldNotPerformException {
+    public ClickType.Click.ClickState getButton() throws CouldNotPerformException {
         return data.getButtonState().getState();
     }
 }

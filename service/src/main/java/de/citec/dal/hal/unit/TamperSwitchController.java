@@ -28,13 +28,13 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         super(TamperSwitchController.class, label, device, builder);
     }
 
-    public void updateTamperState(final TamperType.Tamper.TamperState state) {
+    public void updateTamper(final TamperType.Tamper.TamperState state) {
         data.getTamperStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public TamperType.Tamper.TamperState getTamperState() throws CouldNotPerformException {
+    public TamperType.Tamper.TamperState getTamper() throws CouldNotPerformException {
         return data.getTamperState().getState();
     }
 }

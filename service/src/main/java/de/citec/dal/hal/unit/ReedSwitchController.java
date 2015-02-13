@@ -29,13 +29,13 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         super(ReedSwitchController.class, label, device, builder);
     }
 
-    public void updateOpenClosedState(final OpenClosedType.OpenClosed.OpenClosedState state) {
+    public void updateReedSwitch(final OpenClosedType.OpenClosed.OpenClosedState state) {
         data.getReedSwitchStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public OpenClosedState getReedSwitchState() throws CouldNotPerformException {
+    public OpenClosedState getReedSwitch() throws CouldNotPerformException {
         logger.debug("Getting [" + label + "] State: [" + data.getReedSwitchState() + "]");
         return data.getReedSwitchState().getState();
     }

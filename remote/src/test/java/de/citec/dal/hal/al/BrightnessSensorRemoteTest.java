@@ -33,22 +33,14 @@ public class BrightnessSensorRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BrightnessSensorRemoteTest.class);
 
-    private BrightnessSensorRemote brightnessSensorRemote;
-    private DALService dalService;
+    private static BrightnessSensorRemote brightnessSensorRemote;
+    private static DALService dalService;
 
     public BrightnessSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new BrightnessSensorRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -58,14 +50,22 @@ public class BrightnessSensorRemoteTest {
         brightnessSensorRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             brightnessSensorRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate brightness sensor remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**

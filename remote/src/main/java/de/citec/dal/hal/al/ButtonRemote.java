@@ -32,7 +32,7 @@ public class ButtonRemote extends RSBRemoteService<ButtonType.Button> implements
     }
 
     @Override
-    public ClickType.Click.ClickState getButtonState() throws CouldNotPerformException {
+    public ClickType.Click.ClickState getButton() throws CouldNotPerformException {
         return this.getData().getButtonState().getState();
     }
 }

@@ -34,22 +34,14 @@ public class TamperSwtichRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperSwtichRemoteTest.class);
 
-    private TamperSwtichRemote tamperSwitchRemote;
-    private DALService dalService;
+    private static TamperSwtichRemote tamperSwitchRemote;
+    private static DALService dalService;
 
     public TamperSwtichRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new TamperSwtichRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -59,14 +51,22 @@ public class TamperSwtichRemoteTest {
         tamperSwitchRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             tamperSwitchRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate tamper switch remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -85,10 +85,10 @@ public class TamperSwtichRemoteTest {
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperType.Tamper.TamperState state = TamperType.Tamper.TamperState.TAMPER;
-        ((TamperSwitchController) dalService.getRegistry().getUnits(TamperSwitchController.class).iterator().next()).updateTamperState(state);
+        ((TamperSwitchController) dalService.getRegistry().getUnits(TamperSwitchController.class).iterator().next()).updateTamper(state);
         while (true) {
             try {
-                if (tamperSwitchRemote.getTamperState().equals(state)) {
+                if (tamperSwitchRemote.getTamper().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -96,7 +96,7 @@ public class TamperSwtichRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamperState().equals(state));
+        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().equals(state));
     }
 
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {

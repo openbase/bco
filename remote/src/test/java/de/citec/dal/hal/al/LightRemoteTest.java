@@ -31,22 +31,14 @@ public class LightRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
 
-    private LightRemote lightRemote;
-    private DALService dalService;
+    private static LightRemote lightRemote;
+    private static DALService dalService;
 
     public LightRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new LightRemoteTest.DeviceInitializerImpl());
         dalService = new DALService();
@@ -57,14 +49,22 @@ public class LightRemoteTest {
         lightRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             lightRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate light remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -77,8 +77,8 @@ public class LightRemoteTest {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         lightRemote.setPower(state);
-        
-         while (true) {
+
+        while (true) {
             try {
                 if (lightRemote.getData().getPowerState().getState().equals(state)) {
                     break;

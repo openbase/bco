@@ -31,7 +31,7 @@ public class MotionSensorRemote extends RSBRemoteService<MotionSensorType.Motion
     }
 
     @Override
-    public MotionType.Motion.MotionState getMotionState() throws CouldNotPerformException {
+    public MotionType.Motion.MotionState getMotion() throws CouldNotPerformException {
         return this.getData().getMotionState().getState();
     }
 

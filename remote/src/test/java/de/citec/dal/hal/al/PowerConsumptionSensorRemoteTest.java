@@ -34,22 +34,14 @@ public class PowerConsumptionSensorRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerConsumptionSensorRemoteTest.class);
 
-    private PowerConsumptionSensorRemote powerConsumptionRemote;
-    private DALService dalService;
+    private static PowerConsumptionSensorRemote powerConsumptionRemote;
+    private static DALService dalService;
 
     public PowerConsumptionSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new PowerConsumptionSensorRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -59,14 +51,22 @@ public class PowerConsumptionSensorRemoteTest {
         powerConsumptionRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             powerConsumptionRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate power consumption remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**

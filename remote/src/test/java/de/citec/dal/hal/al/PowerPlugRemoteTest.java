@@ -36,25 +36,16 @@ public class PowerPlugRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerPlugRemoteTest.class);
 
-    private PowerPlugRemote powerPlugRemote;
-    private DALService dalService;
+    private static PowerPlugRemote powerPlugRemote;
+    private static DALService dalService;
 
     public PowerPlugRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
+    public static void setUpClass() {       
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new PowerPlugRemoteTest.DeviceInitializerImpl());
-        dalService = new DALService();
         dalService.activate();
 
         powerPlugRemote = new PowerPlugRemote();
@@ -62,14 +53,22 @@ public class PowerPlugRemoteTest {
         powerPlugRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             powerPlugRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate power plug remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -104,10 +103,10 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).setPower(state);
+        ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).updatePower(state);
         while (true) {
             try {
-                if (powerPlugRemote.getPowerState().equals(state)) {
+                if (powerPlugRemote.getPower().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -115,7 +114,7 @@ public class PowerPlugRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the power state returns the wrong value!", powerPlugRemote.getPowerState().equals(state));
+        assertTrue("The getter for the power state returns the wrong value!", powerPlugRemote.getPower().equals(state));
     }
 
     /**

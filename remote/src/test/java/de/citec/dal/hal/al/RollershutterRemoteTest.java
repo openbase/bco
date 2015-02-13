@@ -8,6 +8,7 @@ package de.citec.dal.hal.al;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.hager.HA_TYA628CController;
+import de.citec.dal.hal.unit.RollershutterController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -35,39 +36,39 @@ public class RollershutterRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollershutterRemoteTest.class);
 
-    private RollershutterRemote rollershutterRemote;
-    private DALService dalService;
+    private static RollershutterRemote rollershutterRemote;
+    private static DALService dalService;
 
     public RollershutterRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new RollershutterRemoteTest.DeviceInitializerImpl());
         dalService.activate();
 
         rollershutterRemote = new RollershutterRemote();
-        rollershutterRemote.init(ROLLERSHUTTER[0], LOCATION);
+        rollershutterRemote.init(ROLLERSHUTTER[ROLLERSHUTTER.length-1], LOCATION);
         rollershutterRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             rollershutterRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate rollershutter remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -79,7 +80,7 @@ public class RollershutterRemoteTest {
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
-        rollershutterRemote.setShutterState(state);
+        rollershutterRemote.setShutter(state);
         while (true) {
             try {
                 if (rollershutterRemote.getData().getShutterState().getState().equals(state)) {
@@ -102,10 +103,10 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
-        rollershutterRemote.setShutterState(state);
+        ((RollershutterController) dalService.getRegistry().getUnits(RollershutterController.class).iterator().next()).updateShutter(state);
         while (true) {
             try {
-                if (rollershutterRemote.getShutterState().equals(state)) {
+                if (rollershutterRemote.getShutter().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -113,10 +114,9 @@ public class RollershutterRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getShutterState().equals(state));
+        assertTrue("Color has not been set in time!", rollershutterRemote.getShutter().equals(state));
     }
-    
-    
+
     /**
      * Test of setOpeningRatio method, of class RollershutterRemote.
      *
@@ -139,7 +139,7 @@ public class RollershutterRemoteTest {
         }
         assertTrue("Color has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == openingRatio);
     }
-    
+
     /**
      * Test of setOpeningRatio method, of class RollershutterRemote.
      *
@@ -149,7 +149,7 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         double openingRatio = 70.0D;
-        rollershutterRemote.setOpeningRatio(openingRatio);
+        ((RollershutterController) dalService.getRegistry().getUnits(RollershutterController.class).iterator().next()).updateOpeningRatio((float)openingRatio);
         while (true) {
             try {
                 if (rollershutterRemote.getOpeningRatio() == openingRatio) {

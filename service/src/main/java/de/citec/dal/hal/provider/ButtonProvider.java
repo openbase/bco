@@ -18,7 +18,7 @@ import rst.homeautomation.states.ClickType;
  */
 public interface ButtonProvider extends Provider {
 
-    public ClickType.Click.ClickState getButtonState() throws CouldNotPerformException;
+    public ClickType.Click.ClickState getButton() throws CouldNotPerformException;
 
     public class GetButtonCallback extends EventCallback {
 
@@ -33,7 +33,7 @@ public interface ButtonProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(ClickType.Click.ClickState.class, provider.getButtonState());
+                return new Event(ClickType.Click.ClickState.class, provider.getButton());
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [getButtonState] for [" + provider + "].", ex);
                 throw ex;

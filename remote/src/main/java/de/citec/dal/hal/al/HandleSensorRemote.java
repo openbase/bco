@@ -31,7 +31,7 @@ public class HandleSensorRemote extends RSBRemoteService<HandleSensorType.Handle
     }
 
     @Override
-    public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException {
+    public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getHandle() throws CouldNotPerformException {
         return this.getData().getHandleState().getState();
     }
 

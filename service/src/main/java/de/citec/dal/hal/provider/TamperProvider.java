@@ -18,7 +18,7 @@ import rst.homeautomation.states.TamperType;
  */
 public interface TamperProvider extends Provider {
 
-    public TamperType.Tamper.TamperState getTamperState() throws CouldNotPerformException;
+    public TamperType.Tamper.TamperState getTamper() throws CouldNotPerformException;
 
     public class GetTamperCallback extends EventCallback {
 
@@ -33,7 +33,7 @@ public interface TamperProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(TamperType.Tamper.TamperState.class, provider.getTamperState());
+                return new Event(TamperType.Tamper.TamperState.class, provider.getTamper());
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [getTamperState] for [" + provider + "].", ex);
                 throw ex;

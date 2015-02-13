@@ -18,7 +18,7 @@ import rst.homeautomation.states.ShutterType;
  */
 public interface ShutterProvider extends Provider {
 
-    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException;
+    public ShutterType.Shutter.ShutterState getShutter() throws CouldNotPerformException;
 
     public class GetShutterCallback extends EventCallback {
 
@@ -33,7 +33,7 @@ public interface ShutterProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(ShutterType.Shutter.ShutterState.class, provider.getShutterState());
+                return new Event(ShutterType.Shutter.ShutterState.class, provider.getShutter());
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [getShutterState] for [" + provider + "].", ex);
                 throw ex;

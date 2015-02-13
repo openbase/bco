@@ -18,7 +18,7 @@ import rst.homeautomation.states.OpenClosedTiltedType;
  */
 public interface HandleProvider extends Provider {
 
-    public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException;
+    public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getHandle() throws CouldNotPerformException;
 
     public class GetHandleCallback extends EventCallback {
 
@@ -33,7 +33,7 @@ public interface HandleProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.class, provider.getRotaryHandleState());
+                return new Event(OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.class, provider.getHandle());
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [getRotaryHandleState] for [" + provider + "].", ex);
                 throw ex;

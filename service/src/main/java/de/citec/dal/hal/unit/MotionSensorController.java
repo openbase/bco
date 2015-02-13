@@ -29,13 +29,13 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         
     }
 
-    public void updateMotionState(final MotionType.Motion.MotionState state) {
+    public void updateMotion(final MotionType.Motion.MotionState state) {
         data.getMotionStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public MotionState getMotionState() throws CouldNotPerformException{
+    public MotionState getMotion() throws CouldNotPerformException{
         logger.debug("Getting [" + label + "] State: [" + data.getMotionState() + "]");
         return data.getMotionState().getState();
     }

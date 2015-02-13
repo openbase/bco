@@ -6,7 +6,12 @@
 package de.citec.dal.hal.service;
 
 import de.citec.dal.bindings.openhab.service.OpenHABService;
-import de.citec.dal.hal.unit.AmbientLightController;
+import de.citec.dal.hal.provider.BatteryProvider;
+import de.citec.dal.hal.provider.ButtonProvider;
+import de.citec.dal.hal.provider.HandleProvider;
+import de.citec.dal.hal.provider.MotionProvider;
+import de.citec.dal.hal.provider.TamperProvider;
+import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
@@ -24,12 +29,21 @@ import rsb.patterns.LocalServer;
  * @author mpohling
  */
 public enum ServiceType {
-
+    
+    BATTERY(BatteryProvider.class),
 	BRIGHTNESS(BrightnessService.class),
+    BUTTON(ButtonProvider.class),
 	COLOR(ColorService.class),
+    HANDLE(HandleProvider.class),
+    TAMPER(TamperProvider.class),
+    TEMPERATURE(TemperatureProvider.class),
 	POWER(PowerService.class),
     SHUTTER(ShutterService.class),
-    OPENINGRATIO(OpeningRatioService.class);
+    OPENING_RATIO(OpeningRatioService.class),
+    MOTION(MotionProvider.class);
+    
+    public static final String SET = "set";
+    public static final String UPDATE = "update";
 
 	private static final Logger logger = LoggerFactory.getLogger(ServiceType.class);
 
@@ -45,9 +59,15 @@ public enum ServiceType {
 		return serviceClass;
 	}
 
+    public String getUpdateMethod() {
+        String methodName = UPDATE + this.name().charAt(0) + this.name().toLowerCase().substring(1);
+        return methodName;
+    }
+    
 	public Method[] getDeclaredMethods() {
 		return methodDeclarations;
 	}
+    
 
 	public static List<ServiceType> getServiceTypeList(final Service service) {
 		List<ServiceType> serviceTypeList = new ArrayList<>();

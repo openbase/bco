@@ -31,7 +31,7 @@ public class ReedSwitchRemote extends RSBRemoteService<ReedSwitchType.ReedSwitch
     }
 
     @Override
-    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitchState() throws CouldNotPerformException {
+    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitch() throws CouldNotPerformException {
         return this.getData().getReedSwitchState().getState();
     }
      

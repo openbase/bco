@@ -35,22 +35,14 @@ public class ReedSwitchRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ReedSwitchRemoteTest.class);
 
-    private ReedSwitchRemote reedSwitchRemote;
-    private DALService dalService;
+    private static ReedSwitchRemote reedSwitchRemote;
+    private static DALService dalService;
 
     public ReedSwitchRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new ReedSwitchRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -60,14 +52,22 @@ public class ReedSwitchRemoteTest {
         reedSwitchRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             reedSwitchRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate reed switch remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -86,10 +86,10 @@ public class ReedSwitchRemoteTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
-        ((ReedSwitchController) dalService.getRegistry().getUnits(ReedSwitchController.class).iterator().next()).updateOpenClosedState(state);
+        ((ReedSwitchController) dalService.getRegistry().getUnits(ReedSwitchController.class).iterator().next()).updateReedSwitch(state);
         while (true) {
             try {
-                if (reedSwitchRemote.getReedSwitchState().equals(state)) {
+                if (reedSwitchRemote.getReedSwitch().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -97,7 +97,7 @@ public class ReedSwitchRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the reed switch state returns the wrong value!", reedSwitchRemote.getReedSwitchState().equals(state));
+        assertTrue("The getter for the reed switch state returns the wrong value!", reedSwitchRemote.getReedSwitch().equals(state));
     }
 
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
@@ -106,7 +106,7 @@ public class ReedSwitchRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new HM_ReedSwitchController("HM_ReedSwtich_000", LABEL, LOCATION));
+                registry.register(new HM_ReedSwitchController("HM_ReedSwitch_000", LABEL, LOCATION));
             } catch (VerificationFailedException | de.citec.jul.exception.InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }

@@ -9,14 +9,18 @@ import de.citec.dal.hal.device.DeviceInterface;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
+import de.citec.jps.exception.ValidationException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
 import de.citec.jul.exception.InstantiationException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;
@@ -43,7 +47,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         this.label = label;
         this.device = device;
         this.serviceList = new ArrayList<>();
-        
+
         setField(TYPE_FILED_ID, name); //TODO Tamino: Fix RST Types.
         setField(TYPE_FILED_LABEL, label);
 
@@ -51,6 +55,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             init(RSBInformerInterface.InformerType.Distributed);
         } catch (RSBException ex) {
             throw new InstantiationException("Could not init RSBCommunicationService!", ex);
+        }
+        try {
+            validateUpdateServices();
+        } catch (ValidationException ex) {
+            logger.warn("", ex);
         }
     }
 
@@ -66,23 +75,23 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public DeviceInterface getDevice() {
         return device;
     }
-    
+
     public Collection<Service> getServices() {
         return Collections.unmodifiableList(serviceList);
     }
-    
+
     public void registerService(final Service service) {
         serviceList.add(service);
     }
-    
+
     public final String generateName() {
         return generateName(getClass());
     }
-    
+
     public static final String generateName(Class clazz) {
         return clazz.getSimpleName().replace("Controller", "");
     }
-    
+
     public Scope generateScope() {
         return generateScope(generateName(), label, device);
     }
@@ -99,5 +108,25 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public void registerMethods(LocalServer server) throws RSBException {
         ServiceType.registerServiceMethods(server, this);
+    }
+
+    private void validateUpdateServices() throws ValidationException {
+        System.out.println("validating unit update methods");
+        boolean contains;
+        List<ServiceType> serviceTypeList = ServiceType.getServiceTypeList(this);
+        for (ServiceType service : serviceTypeList) {
+            System.out.println("Service [" + service.name() + "]");
+            System.out.println("Method [" + service.getUpdateMethod() + "]");
+            contains = false;
+            for (Method method : getClass().getMethods()) {
+                if (service.getUpdateMethod().equals(method.getName())) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
+                throw new ValidationException("[" + this + "] dose not contain service method [" + service.getUpdateMethod() + "]");
+            }
+        }
     }
 }

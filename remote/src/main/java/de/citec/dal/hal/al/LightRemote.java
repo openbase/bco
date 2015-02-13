@@ -37,7 +37,7 @@ public class LightRemote extends RSBRemoteService<LightType.Light> implements Li
     }
 
     @Override
-    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
         return this.getData().getPowerState().getState();
     }
 }

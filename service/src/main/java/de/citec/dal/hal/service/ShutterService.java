@@ -20,7 +20,7 @@ import rst.homeautomation.states.ShutterType;
  */
 public interface ShutterService extends Service, ShutterProvider {
     
-    public void setShutterState(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
+    public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
     
     public class SetShutterCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface ShutterService extends Service, ShutterProvider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setShutterState(((ShutterType.Shutter.ShutterState) request.getData()));
+                service.setShutter(((ShutterType.Shutter.ShutterState) request.getData()));
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [setShutterState] for [" + service + "].", ex);

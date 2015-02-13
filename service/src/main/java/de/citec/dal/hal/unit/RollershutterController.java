@@ -40,19 +40,19 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         this.openingRatioService = serviceFactory.newOpeningRatioService(device, this);
     }
 
-    public void updateShutterState(final ShutterType.Shutter.ShutterState state) {
+    public void updateShutter(final ShutterType.Shutter.ShutterState state) {
         data.getShutterStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public void setShutterState(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+    public void setShutter(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
         logger.debug("Setting [" + label + "] to ShutterState [" + state.name() + "]");
-        this.shutterService.setShutterState(state);
+        this.shutterService.setShutter(state);
     }
 
     @Override
-    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException {
+    public ShutterType.Shutter.ShutterState getShutter() throws CouldNotPerformException {
         return data.getShutterState().getState();
     }
 

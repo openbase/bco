@@ -18,7 +18,7 @@ import rst.homeautomation.states.OpenClosedType;
  */
 public interface ReedSwitchProvider extends Provider {
 
-    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitchState() throws CouldNotPerformException;
+    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitch() throws CouldNotPerformException;
 
     public class GetReedSwitchCallback extends EventCallback {
 
@@ -33,7 +33,7 @@ public interface ReedSwitchProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(OpenClosedType.OpenClosed.OpenClosedState.class, provider.getReedSwitchState());
+                return new Event(OpenClosedType.OpenClosed.OpenClosedState.class, provider.getReedSwitch());
             } catch (Exception ex) {
                 logger.warn("Could not invoke method [getReedSwitchState] for [" + provider + "].", ex);
                 throw ex;

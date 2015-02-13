@@ -24,8 +24,8 @@ public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends O
     }
 
     @Override
-    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
-        return unit.getPowerState();
+    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
+        return unit.getPower();
     }
 
     @Override

@@ -28,13 +28,13 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         super(HandleSensorController.class, label, device, builder);
     }
 
-    public void updateOpenClosedTiltedState(final OpenClosedTiltedState state) {
+    public void updateHandle(final OpenClosedTiltedState state) {
         data.getHandleStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
-    public OpenClosedTiltedState getRotaryHandleState() throws CouldNotPerformException {
+    public OpenClosedTiltedState getHandle() throws CouldNotPerformException {
         logger.debug("Getting [" + label + "] State: [" + data.getHandleState() + "]");
         return data.getHandleState().getState();
     }

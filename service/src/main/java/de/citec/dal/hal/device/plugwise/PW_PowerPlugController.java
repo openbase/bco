@@ -7,6 +7,7 @@ package de.citec.dal.hal.device.plugwise;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
+import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerPlugController;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
@@ -28,5 +29,6 @@ public class PW_PowerPlugController extends AbstractOpenHABDeviceController<PW_P
     public PW_PowerPlugController(final String id, final String label, final Location location) throws VerificationFailedException, InstantiationException {
         super(id, label, location, PW_PowerPlug.newBuilder());
         this.registerUnit(new PowerPlugController(label, this, data.getPowerPlugBuilder(), getDefaultServiceFactory()));
+        this.registerUnit(new PowerConsumptionSensorController(label, this, data.getPowerConsumptionBuilder()));
     }
 }

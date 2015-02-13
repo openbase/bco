@@ -17,7 +17,7 @@ import rsb.patterns.EventCallback;
  */
 public interface BatteryProvider extends Provider {
 
-    public double getBattaryLevel() throws CouldNotPerformException;
+    public double getBattery() throws CouldNotPerformException;
     
     public class GetBatteryCallback extends EventCallback {
 
@@ -32,7 +32,7 @@ public interface BatteryProvider extends Provider {
 		@Override
 		public Event invoke(final Event request) throws Throwable {
 			try {
-				return new Event(Double.class, provider.getBattaryLevel());
+				return new Event(Double.class, provider.getBattery());
 			} catch (Exception ex) {
 				logger.warn("Could not invoke method [getBattaryLevel] for [" + provider + "].", ex);
 				throw ex;

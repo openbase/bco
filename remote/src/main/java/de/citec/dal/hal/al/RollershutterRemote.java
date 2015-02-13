@@ -32,12 +32,12 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
 	}
 
     @Override
-    public void setShutterState(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+    public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
         callMethodAsync("setShutterState", ShutterType.Shutter.newBuilder().setState(state).build());
     }
 
     @Override
-    public ShutterType.Shutter.ShutterState getShutterState() throws CouldNotPerformException {
+    public ShutterType.Shutter.ShutterState getShutter() throws CouldNotPerformException {
         return this.getData().getShutterState().getState();
     }
 

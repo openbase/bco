@@ -36,22 +36,14 @@ public class HandleSensorRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(HandleSensorRemoteTest.class);
 
-    private HandleSensorRemote handleSensorRemote;
-    private DALService dalService;
+    private static HandleSensorRemote handleSensorRemote;
+    private static DALService dalService;
 
     public HandleSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new HandleSensorRemoteTest.DeviceInitializerImpl());
         dalService.activate();
@@ -61,14 +53,22 @@ public class HandleSensorRemoteTest {
         handleSensorRemote.activate();
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDownClass() {
         dalService.deactivate();
         try {
             handleSensorRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate handle sensor remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
     }
 
     /**
@@ -87,10 +87,10 @@ public class HandleSensorRemoteTest {
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
-        ((HandleSensorController) dalService.getRegistry().getUnits(HandleSensorController.class).iterator().next()).updateOpenClosedTiltedState(state);
+        ((HandleSensorController) dalService.getRegistry().getUnits(HandleSensorController.class).iterator().next()).updateHandle(state);
         while (true) {
             try {
-                if (handleSensorRemote.getRotaryHandleState().equals(state)) {
+                if (handleSensorRemote.getHandle().equals(state)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -98,7 +98,7 @@ public class HandleSensorRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("The getter for the handle state returns the wrong value!", handleSensorRemote.getRotaryHandleState().equals(state));
+        assertTrue("The getter for the handle state returns the wrong value!", handleSensorRemote.getHandle().equals(state));
     }
 
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
@@ -107,7 +107,7 @@ public class HandleSensorRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new HM_RotaryHandleSensorController("HM_HandleSensor_000", LABEL, LOCATION));
+                registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_000", LABEL, LOCATION));
             } catch (de.citec.jul.exception.InstantiationException | VerificationFailedException | DALException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }

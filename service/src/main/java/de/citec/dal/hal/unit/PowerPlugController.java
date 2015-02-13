@@ -38,7 +38,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
         this.powerService = serviceFactory.newPowerService(device, this);
     }
 
-    public void updatePowerState(final PowerType.Power.PowerState state) {
+    public void updatePower(final PowerType.Power.PowerState state) {
         data.getPowerStateBuilder().setState(state);
         notifyChange();
     }
@@ -50,7 +50,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
     }
 
     @Override
-    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
         return data.getPowerState().getState();
     }
 }
