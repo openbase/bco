@@ -6,13 +6,13 @@
 package de.citec.dal.hal.service;
 
 import de.citec.dal.bindings.openhab.service.OpenHABService;
+import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.RSBException;
@@ -50,7 +50,7 @@ public enum ServiceType {
 	public static List<ServiceType> getServiceTypeList(final Service service) {
 		List<ServiceType> serviceTypeList = new ArrayList<>();
 		for (ServiceType serviceType : values()) {
-			if (service.getClass().isAssignableFrom(serviceType.getServiceClass())) {
+			if (serviceType.getServiceClass().isAssignableFrom(service.getClass())) {
 				serviceTypeList.add(serviceType);
 			}
 		}
@@ -80,9 +80,9 @@ public enum ServiceType {
 	private static Callback getCallback(final Method method, final Service service, final ServiceType serviceType) throws CouldNotPerformException {
 		String callbackName = method.getName().concat(Callback.class.getSimpleName());
 		try {
-			for (Class callbackClass : serviceType.getClass().getDeclaredClasses()) {
+			for (Class callbackClass : serviceType.getServiceClass().getDeclaredClasses()) {
 				if (callbackClass.getSimpleName().equalsIgnoreCase(callbackName)) {
-					return (Callback) callbackClass.getConstructor(callbackClass, serviceType.getClass()).newInstance(service);
+					return (Callback) callbackClass.getConstructor(serviceType.getServiceClass()).newInstance(service);
 				}
 			}
 		} catch (Exception ex) {
