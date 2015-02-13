@@ -49,7 +49,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	private static OpenhabBinding instance;
 
 	private final RSBRemoteService<RSBBinding> openhabRemoteService;
-	private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalService;
+	private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
 	private final DALRegistry registry;
 
 	static {
@@ -77,7 +77,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		};
 		openhabRemoteService.init(SCOPE_OPENHAB);
 
-		dalService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
+		dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
 
 			@Override
 			public void registerMethods(LocalServer server) throws RSBException {
@@ -85,13 +85,13 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 			}
 		};
 		try {
-			dalService.init(InformerType.Single);
+			dalCommunicationService.init(InformerType.Single);
 		} catch (RSBException ex) {
 			logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]", ex);
 		}
 
 		openhabRemoteService.activate();
-		dalService.activate();
+		dalCommunicationService.activate();
 	}
 
 	public final void notifyUpdated(RSBBinding data) {

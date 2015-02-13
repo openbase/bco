@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DALRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
+    private static final Logger logger = LoggerFactory.getLogger(DALRegistry.class);
 	private static DALRegistry instance;
 
     public synchronized static DALRegistry getInstance() {
@@ -46,6 +46,10 @@ public class DALRegistry {
         this.deviceRegistry = new TreeMap<>();
         this.unitRegistry = new TreeMap<>();
         this.registeredUnitClasses = new HashMap<>();
+    }
+    
+    public static void destroy() {
+        instance = null;
     }
 
     public void register(AbstractDeviceController hardware) {

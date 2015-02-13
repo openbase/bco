@@ -19,21 +19,12 @@ public class ConnectionManager implements Activatable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 
-    private static ConnectionManager instance;
-
     private final Object SYNC_LOCK = new Object();
     private boolean active;
     private final DALRegistry registry;
 
-    public synchronized static ConnectionManager getInstance() {
-        if (instance == null) {
-            instance = new ConnectionManager();
-        }
-        return instance;
-    }
-
-    private ConnectionManager() {
-        this.registry = DALRegistry.getInstance();
+    public ConnectionManager(final DALRegistry registry) {
+        this.registry = registry;
     }
 
     @Override
