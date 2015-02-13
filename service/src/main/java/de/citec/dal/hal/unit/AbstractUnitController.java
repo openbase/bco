@@ -8,7 +8,7 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.DeviceInterface;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
@@ -34,16 +34,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     protected final String name;
     protected final String label;
-    private final ServiceFactory serviceFactory;
     private final DeviceInterface device;
     private List<Service> serviceList;
 
-    public AbstractUnitController(final Class unitClass, final String label, final DeviceInterface device, final MB builder, final ServiceFactory serviceFactory) throws InstantiationException {
+    public AbstractUnitController(final Class unitClass, final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
         super(generateScope(generateName(unitClass), label, device), builder);
         this.name = generateName();
         this.label = label;
         this.device = device;
-        this.serviceFactory = serviceFactory;
         this.serviceList = new ArrayList<>();
         
         setField(TYPE_FILED_ID, name); //TODO Tamino: Fix RST Types.
@@ -100,6 +98,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public void registerMethods(LocalServer server) throws RSBException {
-        serviceFactory.registerServiceMethods(server, this);
+        ServiceType.registerServiceMethods(server, this);
     }
 }

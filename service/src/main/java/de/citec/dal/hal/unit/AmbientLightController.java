@@ -19,7 +19,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
 import rst.homeautomation.AmbientLightType;
 import rst.homeautomation.states.PowerType;
-import rst.vision.HSVColorType.HSVColor; 
+import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
@@ -27,114 +27,73 @@ import rst.vision.HSVColorType.HSVColor;
  */
 public class AmbientLightController extends AbstractUnitController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> implements AmbientLightInterface {
 
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
-    }
+	static {
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+	}
 
-    private final ColorService colorService;
-    private final BrightnessService brightnessService;
-    private final PowerService powerService;
+	private final ColorService colorService;
+	private final BrightnessService brightnessService;
+	private final PowerService powerService;
 
-    public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
-        this(label, device, builder, device.getDefaultServiceFactory());
-    }
-    
-    public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
-        super(AmbientLightController.class , label, device, builder, serviceFactory);
-        this.powerService = serviceFactory.newPowerService(device, this);
-        this.colorService = serviceFactory.newColorService(device, this);
-        this.brightnessService = serviceFactory.newBrightnessService(device, this);
-    }
+	public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
+		this(label, device, builder, device.getDefaultServiceFactory());
+	}
 
-    public void updatePower(final PowerType.Power.PowerState state) {
-        logger.debug("Update "+name+"[" + label + "] to PowerState [" + state.name() + "]");
-        data.getPowerStateBuilder().setState(state);
-        notifyChange();
-    }
+	public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
+		super(AmbientLightController.class, label, device, builder);
+		this.powerService = serviceFactory.newPowerService(device, this);
+		this.colorService = serviceFactory.newColorService(device, this);
+		this.brightnessService = serviceFactory.newBrightnessService(device, this);
+	}
 
-    @Override
-    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Set "+name+"[" + label + "] to PowerState [" + state.name() + "]");
-        powerService.setPower(state);
-    }
+	public void updatePower(final PowerType.Power.PowerState state) {
+		logger.debug("Update " + name + "[" + label + "] to PowerState [" + state.name() + "]");
+		data.getPowerStateBuilder().setState(state);
+		notifyChange();
+	}
 
-    @Override
-    public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
-        return data.getPowerState().getState();
-    }
+	@Override
+	public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+		logger.debug("Set " + name + "[" + label + "] to PowerState [" + state.name() + "]");
+		powerService.setPower(state);
+	}
 
-    public class SetPowerCallback extends EventCallback {
+	@Override
+	public PowerType.Power.PowerState getPowerState() throws CouldNotPerformException {
+		return data.getPowerState().getState();
+	}
 
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                AmbientLightController.this.setPower(((PowerType.Power) request.getData()).getState());
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setPowerState] for [" + AmbientLightController.this.getName()+ "]", ex);
-                throw ex;
-            }
-        }
-    }
+	public void updateColor(final HSVColor color) {
+		data.setColor(color);
+		notifyChange();
+	}
 
-    public void updateColor(final HSVColor color) {
-        data.setColor(color);
-        notifyChange();
-    }
+	@Override
+	public void setColor(final HSVColor color) throws CouldNotPerformException {
+		logger.debug("Set " + name + "[" + label + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
+		colorService.setColor(color);
+	}
 
-    @Override
-    public HSVColor getColor() {
-        return data.getColor();
-    }
+	@Override
+	public HSVColor getColor() {
+		return data.getColor();
+	}
 
-    @Override
-    public void setColor(final HSVColor color) throws CouldNotPerformException {
-        logger.debug("Set "+name+"[" + label + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
-        colorService.setColor(color);
-    }
+	public void updateBrightness(Double value) {
+		updateColor(data.getColor().newBuilderForType().setValue(value).build());
+	}
 
-    public class SetColorCallback extends EventCallback {
+	@Override
+	public void setBrightness(Double brightness) throws CouldNotPerformException {
+		logger.debug("Set " + name + "[" + label + "] to Brightness[" + brightness + "]");
+		brightnessService.setBrightness(brightness);
+	}
 
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                AmbientLightController.this.setColor(((HSVColor) request.getData()));
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setColor] for " + AmbientLightController.this, ex);
-                throw ex;
-            }
-        }
-    }
-	
-    public void updateBrightness(Double value) {
-        updateColor(data.getColor().newBuilderForType().setValue(value).build());
-    }
+	@Override
+	public Double getBrightness() {
+		return data.getColor().getValue();
+	}
 
-    @Override
-    public Double getBrightness() {
-        return data.getColor().getValue();
-    }
-
-    @Override
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
-        logger.debug("Set "+name+"[" + label + "] to Brightness[" + brightness + "]");
-        brightnessService.setBrightness(brightness);
-    }
-
-    public class SetBrightnessCallback extends EventCallback {
-
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                AmbientLightController.this.setBrightness(((double) request.getData()));
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setBrightness] for " + AmbientLightController.this, ex);
-                throw ex;
-            }
-        }
-    }
 }

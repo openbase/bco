@@ -7,6 +7,11 @@ package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.ColorProvider;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.rsb.RSBCommunicationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rsb.Event;
+import rsb.patterns.EventCallback;
 import rst.vision.HSVColorType;
 
 /**
@@ -16,4 +21,26 @@ import rst.vision.HSVColorType;
 public interface ColorService extends Service, ColorProvider {
 
     public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException;
+
+	public class SetColorCallback extends EventCallback {
+
+		private static final Logger logger = LoggerFactory.getLogger(SetColorCallback.class);
+
+		private final ColorService service;
+
+		public SetColorCallback(final ColorService service) {
+			this.service = service;
+		}
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                service.setColor(((HSVColorType.HSVColor) request.getData()));
+                return RSBCommunicationService.RPC_FEEDBACK_OK;
+            } catch (Exception ex) {
+                logger.warn("Could not invoke method [setColor] for [" + service + "].", ex);
+                throw ex;
+            }
+        }
+    }
 }

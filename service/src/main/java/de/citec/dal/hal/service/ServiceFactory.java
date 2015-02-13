@@ -20,8 +20,6 @@ public interface ServiceFactory {
     public abstract ColorService newColorService(DeviceInterface device, ColorService unit) throws InstantiationException;
 
     public abstract PowerService newPowerService(DeviceInterface device, PowerService unit) throws InstantiationException;
-    
-    public void registerServiceMethods(final LocalServer server, Service service);
 //    
 //    public abstract OpeningRatioService newOpeningRatioService(DeviceInterface device, OpeningRatioService unit) throws InstantiationException;
 //    
