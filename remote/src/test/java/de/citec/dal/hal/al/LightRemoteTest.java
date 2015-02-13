@@ -40,7 +40,7 @@ public class LightRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new LightRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService = new DALService();
         dalService.activate();
 

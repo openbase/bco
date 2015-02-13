@@ -28,8 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BatteryRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Battery_Unit_Test";
+    public static final String LABEL = "Battery_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BatteryRemoteTest.class);
 
@@ -42,11 +41,11 @@ public class BatteryRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new BatteryRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         batteryRemote = new BatteryRemote();
-        batteryRemote.init(LABEL, LOCATION);
+        batteryRemote.init(LABEL, TestConfiguration.LOCATION);
         batteryRemote.activate();
     }
 
@@ -84,7 +83,7 @@ public class BatteryRemoteTest {
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         double level = 34.0;
-        ((BatteryController) dalService.getRegistry().getUnits(BatteryController.class).iterator().next()).updateBattery(level);
+        ((BatteryController) dalService.getRegistry().getUnit(LABEL, TestConfiguration.LOCATION, BatteryController.class)).updateBattery(level);
         while (true) {
             try {
                 if (batteryRemote.getBattery() == level) {
@@ -104,7 +103,7 @@ public class BatteryRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new F_MotionSensorController("F_MotionSensor_000", LABEL, LOCATION));
+                registry.register(new F_MotionSensorController("F_MotionSensor_000", LABEL, TestConfiguration.LOCATION));
             } catch (de.citec.jul.exception.InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }

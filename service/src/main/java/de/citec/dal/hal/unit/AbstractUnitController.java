@@ -7,6 +7,7 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.DeviceInterface;
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jps.exception.ValidationException;
@@ -97,7 +98,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     public static Scope generateScope(final String name, final String label, final DeviceInterface device) {
-        return device.getLocation().getScope().concat(new Scope(ScopeProvider.SEPARATOR + name).concat(new Scope(ScopeProvider.SEPARATOR + label)));
+        return generateScope(name, label, device.getLocation());
+    }
+    
+    public static Scope generateScope(final String name, final String label, final Location location) {
+        return location.getScope().concat(new Scope(ScopeProvider.SEPARATOR + name).concat(new Scope(ScopeProvider.SEPARATOR + label)));
     }
 
     @Override

@@ -27,23 +27,23 @@ import rst.homeautomation.states.TamperType;
  *
  * @author thuxohl
  */
-public class TamperSwtichRemoteTest {
+public class TamperSwitchRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Tamper_Switch_Unit_Test";
+    public static final String LABEL = "Tamper_Switch_Unit_Test";
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperSwtichRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperSwitchRemoteTest.class);
 
     private static TamperSwtichRemote tamperSwitchRemote;
     private static DALService dalService;
 
-    public TamperSwtichRemoteTest() {
+    public TamperSwitchRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TamperSwtichRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         tamperSwitchRemote = new TamperSwtichRemote();
@@ -85,7 +85,7 @@ public class TamperSwtichRemoteTest {
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperType.Tamper.TamperState state = TamperType.Tamper.TamperState.TAMPER;
-        ((TamperSwitchController) dalService.getRegistry().getUnits(TamperSwitchController.class).iterator().next()).updateTamper(state);
+        ((TamperSwitchController) dalService.getRegistry().getUnit(LABEL, LOCATION, TamperSwitchController.class)).updateTamper(state);
         while (true) {
             try {
                 if (tamperSwitchRemote.getTamper().equals(state)) {

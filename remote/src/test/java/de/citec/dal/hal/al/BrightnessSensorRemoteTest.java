@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class BrightnessSensorRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Brightness_Sensor_Unit_Test";
+    public static final String LABEL = "Brightness_Sensor_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BrightnessSensorRemoteTest.class);
 
@@ -42,7 +42,7 @@ public class BrightnessSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new BrightnessSensorRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         brightnessSensorRemote = new BrightnessSensorRemote();
@@ -83,7 +83,7 @@ public class BrightnessSensorRemoteTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         double brightness = 0.5;
-        ((BrightnessSensorController) dalService.getRegistry().getUnits(BrightnessSensorController.class).iterator().next()).updateBrightness((float) brightness);
+        ((BrightnessSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, BrightnessSensorController.class)).updateBrightness((float) brightness);
         while (true) {
             try {
                 if (brightnessSensorRemote.getBrightness() == brightness) {

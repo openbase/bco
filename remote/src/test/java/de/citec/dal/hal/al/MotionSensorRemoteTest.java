@@ -30,7 +30,7 @@ import rst.homeautomation.states.MotionType;
 public class MotionSensorRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Motion_Sensor_Unit_Test";
+    public static final String LABEL = "Motion_Sensor_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MotionSensorRemoteTest.class);
 
@@ -43,7 +43,7 @@ public class MotionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new MotionSensorRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         motionSensorRemote = new MotionSensorRemote();
@@ -85,7 +85,7 @@ public class MotionSensorRemoteTest {
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionType.Motion.MotionState state = MotionType.Motion.MotionState.MOVEMENT;
-        ((MotionSensorController) dalService.getRegistry().getUnits(MotionSensorController.class).iterator().next()).updateMotion(state);
+        ((MotionSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, MotionSensorController.class)).updateMotion(state);
         while (true) {
             try {
                 if (motionSensorRemote.getMotion().equals(state)) {

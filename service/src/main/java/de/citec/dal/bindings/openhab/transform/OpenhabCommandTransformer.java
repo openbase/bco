@@ -50,7 +50,7 @@ public final class OpenhabCommandTransformer {
 				return OpenClosedStateTransformer.transform(command.getOpenClosed().getState());
 			case PERCENT:
 				// native int type
-				return command.getPercent().getValue();
+				return new Double(command.getPercent().getValue());
 			case STOPMOVE:
 				return StopMoveStateTransformer.transform(command.getStopMove().getState());
 			case STRING:

@@ -29,6 +29,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
     }
 
     public void updateTamper(final TamperType.Tamper.TamperState state) {
+        logger.debug("Updating tamper of ["+this+"] to ["+state+"]");
         data.getTamperStateBuilder().setState(state);
         notifyChange();
     }

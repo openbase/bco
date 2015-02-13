@@ -31,7 +31,7 @@ import rst.homeautomation.states.OpenClosedType;
 public class ReedSwitchRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Reed_Switch_Unit_Test";
+    public static final String LABEL = "Reed_Switch_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ReedSwitchRemoteTest.class);
 
@@ -44,7 +44,7 @@ public class ReedSwitchRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new ReedSwitchRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         reedSwitchRemote = new ReedSwitchRemote();
@@ -86,7 +86,7 @@ public class ReedSwitchRemoteTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
-        ((ReedSwitchController) dalService.getRegistry().getUnits(ReedSwitchController.class).iterator().next()).updateReedSwitch(state);
+        ((ReedSwitchController) dalService.getRegistry().getUnit(LABEL, LOCATION, ReedSwitchController.class)).updateReedSwitch(state);
         while (true) {
             try {
                 if (reedSwitchRemote.getReedSwitch().equals(state)) {

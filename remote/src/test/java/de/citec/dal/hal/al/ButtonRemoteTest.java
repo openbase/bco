@@ -14,7 +14,6 @@ import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
-import java.util.Iterator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,8 +31,8 @@ import rst.homeautomation.states.ClickType;
 public class ButtonRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Button_Unit_Test";
-    private static final String[] BUTTONS = {"Button_1", "Button_2", "Button_3", "Button_4"};
+    public static final String LABEL = "Button_Unit_Test";
+    public static final String[] BUTTONS = {"Button_1", "Button_2", "Button_3", "Button_4"};
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ButtonRemoteTest.class);
 
@@ -46,7 +45,7 @@ public class ButtonRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new ButtonRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         buttonRemote = new ButtonRemote();
@@ -88,7 +87,7 @@ public class ButtonRemoteTest {
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
         ClickType.Click.ClickState state = ClickType.Click.ClickState.DOUBLE_CLICKED;
-        ((ButtonController) dalService.getRegistry().getUnits(ButtonController.class).iterator().next()).updateButton(state);
+        ((ButtonController) dalService.getRegistry().getUnit(LABEL, LOCATION, ButtonController.class)).updateButton(state);
         while (true) {
             try {
                 if (buttonRemote.getButton().equals(state)) {

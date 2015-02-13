@@ -31,8 +31,8 @@ import rst.homeautomation.states.ShutterType;
 public class RollershutterRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Rollershutter_Unit_Test";
-    private static final String[] ROLLERSHUTTER = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
+    public static final String LABEL = "Rollershutter_Unit_Test";
+    public static final String[] ROLLERSHUTTER = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollershutterRemoteTest.class);
 
@@ -45,7 +45,7 @@ public class RollershutterRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new RollershutterRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         rollershutterRemote = new RollershutterRemote();
@@ -103,7 +103,7 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
-        ((RollershutterController) dalService.getRegistry().getUnits(RollershutterController.class).iterator().next()).updateShutter(state);
+        ((RollershutterController) dalService.getRegistry().getUnit(LABEL, LOCATION, RollershutterController.class)).updateShutter(state);
         while (true) {
             try {
                 if (rollershutterRemote.getShutter().equals(state)) {
@@ -149,7 +149,7 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         double openingRatio = 70.0D;
-        ((RollershutterController) dalService.getRegistry().getUnits(RollershutterController.class).iterator().next()).updateOpeningRatio((float)openingRatio);
+        ((RollershutterController) dalService.getRegistry().getUnit(LABEL, LOCATION, RollershutterController.class)).updateOpeningRatio((float)openingRatio);
         while (true) {
             try {
                 if (rollershutterRemote.getOpeningRatio() == openingRatio) {

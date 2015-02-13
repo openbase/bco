@@ -32,7 +32,7 @@ import rst.homeautomation.states.OpenClosedTiltedType;
 public class HandleSensorRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Handle_Sensor_Unit_Test";
+    public static final String LABEL = "Handle_Sensor_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(HandleSensorRemoteTest.class);
 
@@ -45,7 +45,7 @@ public class HandleSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new HandleSensorRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         handleSensorRemote = new HandleSensorRemote();
@@ -87,7 +87,7 @@ public class HandleSensorRemoteTest {
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
-        ((HandleSensorController) dalService.getRegistry().getUnits(HandleSensorController.class).iterator().next()).updateHandle(state);
+        ((HandleSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, HandleSensorController.class)).updateHandle(state);
         while (true) {
             try {
                 if (handleSensorRemote.getHandle().equals(state)) {

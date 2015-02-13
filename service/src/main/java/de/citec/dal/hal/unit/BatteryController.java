@@ -12,7 +12,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.BatteryType;
 import rst.homeautomation.BatteryType.Battery;
-import rst.homeautomation.states.EnergyType;
 
 /**
  *

@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class PowerConsumptionSensorRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Power_Consumption_Unit_Test";
+    public static final String LABEL = "Power_Consumption_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerConsumptionSensorRemoteTest.class);
 
@@ -43,7 +43,7 @@ public class PowerConsumptionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new PowerConsumptionSensorRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         powerConsumptionRemote = new PowerConsumptionSensorRemote();
@@ -86,7 +86,7 @@ public class PowerConsumptionSensorRemoteTest {
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;
-        ((PowerConsumptionSensorController) dalService.getRegistry().getUnits(PowerConsumptionSensorController.class).iterator().next()).updatePowerConsumption(consumption);
+        ((PowerConsumptionSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, PowerConsumptionSensorController.class)).updatePowerConsumption(consumption);
         while (true) {
             try {
                 if (powerConsumptionRemote.getPowerConsumption() == consumption) {

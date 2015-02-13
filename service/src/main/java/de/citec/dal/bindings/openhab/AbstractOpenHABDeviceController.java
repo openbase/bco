@@ -11,6 +11,7 @@ import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.dal.hal.service.ServiceType;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
@@ -50,7 +51,7 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
         try {
             unit = getUnitByName(unitName);
             
-            String methodName = "update" + serviceName;
+            String methodName = ServiceType.UPDATE + serviceName;
             try {
                 relatedMethod = unit.getClass().getMethod(methodName, serviceData.getClass());
                 if (relatedMethod == null) {

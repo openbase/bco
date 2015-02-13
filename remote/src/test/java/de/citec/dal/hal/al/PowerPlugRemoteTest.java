@@ -32,7 +32,7 @@ import rst.homeautomation.states.PowerType;
 public class PowerPlugRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Power_Plug_Unit_Test";
+    public static final String LABEL = "Power_Plug_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerPlugRemoteTest.class);
 
@@ -45,7 +45,7 @@ public class PowerPlugRemoteTest {
     @BeforeClass
     public static void setUpClass() {       
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new PowerPlugRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         powerPlugRemote = new PowerPlugRemote();
@@ -103,7 +103,7 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((PowerPlugController) dalService.getRegistry().getUnits(PowerPlugController.class).iterator().next()).updatePower(state);
+        ((PowerPlugController) dalService.getRegistry().getUnit(LABEL, LOCATION, PowerPlugController.class)).updatePower(state);
         while (true) {
             try {
                 if (powerPlugRemote.getPower().equals(state)) {

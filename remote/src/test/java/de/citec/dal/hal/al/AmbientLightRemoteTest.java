@@ -32,8 +32,7 @@ import rst.vision.HSVColorType;
  */
 public class AmbientLightRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Ambient_Light_Unit_Test";
+    public static final String LABEL = "Ambient_Light_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
 
@@ -46,11 +45,11 @@ public class AmbientLightRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new AmbientLightRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         ambientLightRemote = new AmbientLightRemote();
-        ambientLightRemote.init(LABEL, LOCATION);
+        ambientLightRemote.init(LABEL, TestConfiguration.LOCATION);
         ambientLightRemote.activate();
     }
 
@@ -222,7 +221,7 @@ public class AmbientLightRemoteTest {
         ambientLightRemote.setBrightness(brightness);
         while (true) {
             try {
-                if (ambientLightRemote.getBrightness() == brightness) {
+                if (ambientLightRemote.getBrightness().equals(brightness)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -230,7 +229,7 @@ public class AmbientLightRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Brightness has not been set in time or the return value from the getter is different!", ambientLightRemote.getBrightness() == brightness);
+        assertTrue("Brightness has not been set in time or the return value from the getter is different!", ambientLightRemote.getBrightness().equals(brightness));
     }
 
     /**
@@ -246,7 +245,7 @@ public class AmbientLightRemoteTest {
         public void initDevices(final DALRegistry registry) {
 
             try {
-                registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", LABEL, LOCATION));
+                registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", LABEL, TestConfiguration.LOCATION));
             } catch (InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }

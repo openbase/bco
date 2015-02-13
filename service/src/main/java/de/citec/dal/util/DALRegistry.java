@@ -6,7 +6,7 @@
  */
 package de.citec.dal.util;
 
-import de.citec.dal.bindings.openhab.OpenhabBinding;
+import de.citec.dal.data.Location;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeMap;
@@ -27,13 +27,13 @@ import org.slf4j.LoggerFactory;
 public class DALRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(DALRegistry.class);
-	private static DALRegistry instance;
+    private static DALRegistry instance;
 
     public synchronized static DALRegistry getInstance() {
-		if(instance == null) {
-			logger.debug("Registry not initialized. Create new instance...");
-			instance = new DALRegistry();
-		}
+        if (instance == null) {
+            logger.debug("Registry not initialized. Create new instance...");
+            instance = new DALRegistry();
+        }
         return instance;
     }
 
@@ -47,7 +47,7 @@ public class DALRegistry {
         this.unitRegistry = new TreeMap<>();
         this.registeredUnitClasses = new HashMap<>();
     }
-    
+
     public static void destroy() {
         instance = null;
     }
@@ -79,22 +79,37 @@ public class DALRegistry {
     public Collection<Class<? extends AbstractUnitController>> getRegisteredUnitClasses() {
         return Collections.unmodifiableSet(registeredUnitClasses.keySet());
     }
-    
+
     public Collection<AbstractUnitController> getUnits(final Class<? extends AbstractUnitController> unitClass) throws NotAvailableException {
-        if(!registeredUnitClasses.containsKey(unitClass)) {
+        if (!registeredUnitClasses.containsKey(unitClass)) {
             throw new NotAvailableException(unitClass.getSimpleName());
         }
         return Collections.unmodifiableCollection(registeredUnitClasses.get(unitClass));
     }
-    
+
+    public AbstractUnitController getUnit(String label, Location location, Class<? extends AbstractUnitController> unitClass) throws NotAvailableException {
+        AbstractUnitController unit;
+        String scope = AbstractUnitController.generateScope(AbstractUnitController.generateName(unitClass), label, location).toString().toLowerCase();
+        try {
+            Map.Entry<String, AbstractUnitController> floorEntry = unitRegistry.floorEntry(scope);
+            unit = floorEntry.getValue();
+        } catch (NullPointerException ex) {
+            throw new NotAvailableException("Unit[" + scope + "] not registered!", ex);
+        }
+        for(AbstractUnitController units : unitRegistry.values()) {
+            System.out.println(units.getScope());
+        }
+        return unit;
+    }
+
     public AbstractDeviceController getDevice(String unitName) throws NotAvailableException {
         AbstractDeviceController device;
-            try {
-                Map.Entry<String, AbstractDeviceController> floorEntry = deviceRegistry.floorEntry(unitName);
-                device = floorEntry.getValue();
-            } catch (NullPointerException ex) {
-                throw new NotAvailableException("Item[" + unitName + "] not registered!", ex);
-            }
+        try {
+            Map.Entry<String, AbstractDeviceController> floorEntry = deviceRegistry.floorEntry(unitName);
+            device = floorEntry.getValue();
+        } catch (NullPointerException ex) {
+            throw new NotAvailableException("Item[" + unitName + "] not registered!", ex);
+        }
         if (!unitName.startsWith(device.getId())) {
             throw new NotAvailableException("Skip item update [" + unitName + "]: Item is not registered.");
         }

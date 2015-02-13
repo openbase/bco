@@ -52,7 +52,7 @@ public class OpenHABCommandFactory {
     }
 
     public static OpenhabCommandType.OpenhabCommand.Builder newPercentCommand(final double value) {
-        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(PercentType.Percent.newBuilder().setValue((int) (value * 100)).build());
+        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(PercentType.Percent.newBuilder().setValue((int) (value)).build());
     }
 
     public static OpenhabCommandType.OpenhabCommand.Builder newPercentCommand(final PercentType.Percent percent) {

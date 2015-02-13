@@ -8,6 +8,7 @@ package de.citec.dal.hal.al;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
+import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.TemperatureSensorController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
@@ -29,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class TemperatureSensorRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
-    private static final String LABEL = "Temperature_Sensor_Unit_Test";
+    public static final String LABEL = "Temperature_Sensor_Unit_Test";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TemperatureSensorRemoteTest.class);
 
@@ -42,7 +43,7 @@ public class TemperatureSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TemperatureSensorRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService(new TestConfiguration());
         dalService.activate();
 
         temperatureSensorRemote = new TemperatureSensorRemote();
@@ -84,7 +85,7 @@ public class TemperatureSensorRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         float temperature = 37.0F;
-        ((TemperatureSensorController) dalService.getRegistry().getUnits(TemperatureSensorController.class).iterator().next()).updateTemperature(temperature);
+        ((TemperatureSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, TemperatureSensorController.class)).updateTemperature(temperature);
         while (true) {
             try {
                 if (temperatureSensorRemote.getTemperature() == temperature) {
