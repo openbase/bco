@@ -12,6 +12,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.BatteryType;
 import rst.homeautomation.BatteryType.Battery;
+import rst.homeautomation.states.EnergyType;
 
 /**
  *
@@ -29,7 +30,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     
     public void updateBattery(final double batteryState) {
         logger.debug("Updating Battery level of [" + this.getClass().getSimpleName() + "] to [" + batteryState + "]");
-        data.setBatteryState(data.getBatteryStateBuilder().setLevel(batteryState));
+        data.getBatteryStateBuilder().setLevel(batteryState);
         notifyChange();
     }
     

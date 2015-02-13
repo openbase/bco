@@ -33,7 +33,7 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
 
     @Override
     public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
-        callMethodAsync("setShutterState", ShutterType.Shutter.newBuilder().setState(state).build());
+        callMethodAsync("setShutter", ShutterType.Shutter.newBuilder().setState(state).build());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
 
     @Override
     public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
-        callMethodAsync("setPosition", new Double(openingRatio));
+        callMethodAsync("setOpeningRatio", new Double(openingRatio));
     }
 
     @Override

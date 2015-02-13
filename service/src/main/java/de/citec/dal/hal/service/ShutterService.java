@@ -35,10 +35,10 @@ public interface ShutterService extends Service, ShutterProvider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setShutter(((ShutterType.Shutter.ShutterState) request.getData()));
+                service.setShutter(((ShutterType.Shutter) request.getData()).getState());
                 return RSBCommunicationService.RPC_FEEDBACK_OK;
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [setShutterState] for [" + service + "].", ex);
+                logger.warn("Could not invoke method [setShutter] for [" + service + "].", ex);
                 throw ex;
             }
         }
