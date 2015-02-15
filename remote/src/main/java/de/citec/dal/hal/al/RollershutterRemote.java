@@ -42,12 +42,12 @@ public class RollershutterRemote extends RSBRemoteService<RollershutterType.Roll
     }
 
     @Override
-    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
-        callMethodAsync("setOpeningRatio", new Double(openingRatio));
+    public void setOpeningRatio(final Double openingRatio) throws CouldNotPerformException {
+        callMethodAsync("setOpeningRatio", openingRatio);
     }
 
     @Override
-    public double getOpeningRatio() throws CouldNotPerformException {
+    public Double getOpeningRatio() throws CouldNotPerformException {
         return this.getData().getOpeningRatio();
     }
 

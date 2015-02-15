@@ -14,7 +14,7 @@ import rsb.patterns.EventCallback;
  */
 public interface OpeningRatioService extends Service, OpeningRatioProvider{
     
-    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException;
+    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException;
     
     public class SetOpeningRatioCallback extends EventCallback {
 

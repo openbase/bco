@@ -23,12 +23,12 @@ public class OpeningRatioServiceImpl<ST extends OpeningRatioService & UnitInterf
     }
 
     @Override
-    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
+    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         executeCommand(OpenHABCommandFactory.newPercentCommand(openingRatio));
     }
 
     @Override
-    public double getOpeningRatio() throws CouldNotPerformException {
+    public Double getOpeningRatio() throws CouldNotPerformException {
         return unit.getOpeningRatio();
     }
 }

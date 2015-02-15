@@ -148,11 +148,11 @@ public class RollershutterRemoteTest {
     @Test(timeout = 3000)
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
-        double openingRatio = 70.0D;
-        ((RollershutterController) dalService.getRegistry().getUnit(LABEL, LOCATION, RollershutterController.class)).updateOpeningRatio((float)openingRatio);
+        Double openingRatio = 70.0D;
+        ((RollershutterController) dalService.getRegistry().getUnit(LABEL, LOCATION, RollershutterController.class)).updateOpeningRatio(openingRatio);
         while (true) {
             try {
-                if (rollershutterRemote.getOpeningRatio() == openingRatio) {
+                if (rollershutterRemote.getOpeningRatio().equals(openingRatio)) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -160,7 +160,7 @@ public class RollershutterRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getOpeningRatio() == openingRatio);
+        assertTrue("Color has not been set in time!", rollershutterRemote.getOpeningRatio().equals(openingRatio));
     }
 
     /**

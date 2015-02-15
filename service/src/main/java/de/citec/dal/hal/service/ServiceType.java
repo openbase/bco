@@ -23,27 +23,30 @@ import org.slf4j.LoggerFactory;
 import rsb.RSBException;
 import rsb.patterns.Callback;
 import rsb.patterns.LocalServer;
+import sun.util.logging.LoggingSupport;
 
 /**
  *
  * @author mpohling
  */
 public enum ServiceType {
-    
-    BATTERY(BatteryProvider.class),
+
+	BATTERY(BatteryProvider.class),
 	BRIGHTNESS(BrightnessService.class),
-    BUTTON(ButtonProvider.class),
+	BUTTON(ButtonProvider.class),
 	COLOR(ColorService.class),
-    HANDLE(HandleProvider.class),
-    TAMPER(TamperProvider.class),
-    TEMPERATURE(TemperatureProvider.class),
+	HANDLE(HandleProvider.class),
+	TAMPER(TamperProvider.class),
+	TEMPERATURE(TemperatureProvider.class),
 	POWER(PowerService.class),
-    SHUTTER(ShutterService.class),
-    OPENING_RATIO(OpeningRatioService.class),
-    MOTION(MotionProvider.class);
-    
-    public static final String SET = "set";
-    public static final String UPDATE = "update";
+	SHUTTER(ShutterService.class),
+	OPENING_RATIO(OpeningRatioService.class),
+	MOTION(MotionProvider.class);
+
+	public static final String SET = "set";
+	public static final String UPDATE = "update";
+	public static final String PROVIDER = "Provider";
+	public static final String SERVICE = "Service";
 
 	private static final Logger logger = LoggerFactory.getLogger(ServiceType.class);
 
@@ -59,15 +62,24 @@ public enum ServiceType {
 		return serviceClass;
 	}
 
-    public String getUpdateMethod() {
-        String methodName = UPDATE + this.name().charAt(0) + this.name().toLowerCase().substring(1);
-        return methodName;
-    }
-    
+	public List<String> getUpdateMethods() {
+		final List<String> updateMethodList = new ArrayList<>();
+		for (Method method : getDeclaredMethods()) {
+			if (!method.getName().startsWith(SET)) {
+				continue;
+			}
+			updateMethodList.add(UPDATE + method.getName().replaceFirst(SET, ""));
+		}
+		return updateMethodList;
+	}
+
 	public Method[] getDeclaredMethods() {
 		return methodDeclarations;
 	}
-    
+
+	public String getServiceName() {
+		return getServiceClass().getSimpleName().replace(PROVIDER, "").replace(SERVICE, "");
+	}
 
 	public static List<ServiceType> getServiceTypeList(final Service service) {
 		List<ServiceType> serviceTypeList = new ArrayList<>();
@@ -82,7 +94,7 @@ public enum ServiceType {
 	public static List<Class<? extends Service>> getServiceClassList(final Service service) {
 		List<Class<? extends Service>> serviceClassList = new ArrayList<>();
 		for (ServiceType serviceType : getServiceTypeList(service)) {
-			serviceClassList.add(serviceType.serviceClass);
+			serviceClassList.add(serviceType.getServiceClass());
 		}
 		return serviceClassList;
 	}
@@ -115,8 +127,13 @@ public enum ServiceType {
 
 	public static ServiceType valueOfByServiceName(String serviceName) throws NotSupportedException {
 		try {
-			return valueOf(serviceName.toUpperCase());
-		} catch (IllegalArgumentException ex) {
+			for (ServiceType serviceType : ServiceType.values()) {
+				if (serviceType.getServiceName().equalsIgnoreCase(serviceName)) {
+					return serviceType;
+				}
+			}
+			throw new NotAvailableException(serviceName);
+		} catch (IllegalArgumentException | CouldNotPerformException ex) {
 			throw new NotSupportedException(serviceName, OpenHABService.class.getSimpleName());
 		}
 	}

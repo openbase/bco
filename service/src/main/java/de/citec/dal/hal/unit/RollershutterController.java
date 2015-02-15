@@ -56,19 +56,19 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         return data.getShutterState().getState();
     }
 
-    public void updateOpeningRatio(final float openingRatio) {
+    public void updateOpeningRatio(final Double openingRatio) {
         data.setOpeningRatio(openingRatio);
         notifyChange();
     }
 
     @Override
-    public void setOpeningRatio(double openingRatio) throws CouldNotPerformException {
+    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         logger.debug("Setting [" + label + "] to OpeningRatio [" + openingRatio + "]");
         this.openingRatioService.setOpeningRatio(openingRatio);
     }
 
     @Override
-    public double getOpeningRatio() throws CouldNotPerformException {
+    public Double getOpeningRatio() throws CouldNotPerformException {
         return data.getOpeningRatio();
     }
 }

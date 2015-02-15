@@ -12,6 +12,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.BatteryType;
 import rst.homeautomation.BatteryType.Battery;
+import rst.homeautomation.states.EnergyType;
 
 /**
  *
@@ -29,6 +30,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     
     public void updateBattery(final double batteryState) {
         logger.debug("Updating Battery level of [" + this.getClass().getSimpleName() + "] to [" + batteryState + "]");
+        data.getBatteryStateBuilder().setState(EnergyType.Energy.EnergyState.OK);  // TODO Tamino, remove this line after removinge "required" attribute of state variable in rst type Battery.
         data.getBatteryStateBuilder().setLevel(batteryState);
         notifyChange();
     }
