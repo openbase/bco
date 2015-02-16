@@ -19,10 +19,10 @@ import rst.homeautomation.states.ShutterType;
  * @author thuxohl
  */
 public interface ShutterService extends Service, ShutterProvider {
-    
-    public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
-    
-    public class SetShutterCallback extends EventCallback {
+
+	public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
+
+	public class SetShutterCallback extends EventCallback {
 
 		private static final Logger logger = LoggerFactory.getLogger(SetShutterCallback.class);
 
@@ -32,15 +32,15 @@ public interface ShutterService extends Service, ShutterProvider {
 			this.service = service;
 		}
 
-        @Override
-        public Event invoke(final Event request) throws Throwable {
-            try {
-                service.setShutter(((ShutterType.Shutter) request.getData()).getState());
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
-            } catch (Exception ex) {
-                logger.warn("Could not invoke method [setShutter] for [" + service + "].", ex);
-                throw ex;
-            }
-        }
-    }
+		@Override
+		public Event invoke(final Event request) throws Throwable {
+			try {
+				service.setShutter(((ShutterType.Shutter) request.getData()).getState());
+				return RSBCommunicationService.RPC_FEEDBACK_OK;
+			} catch (Exception ex) {
+				logger.warn("Could not invoke method [setShutter] for [" + service + "].", ex);
+				throw ex;
+			}
+		}
+	}
 }

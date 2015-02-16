@@ -62,4 +62,30 @@ public final class OpenhabCommandTransformer {
 				throw new CouldNotTransformException("No corresponding data found for " + command + ".");
 		}
 	}
+
+	public static Object getCommandData(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
+
+		switch (command.getType()) {
+			case DECIMAL:
+				return command.getDecimal();
+			case HSB:
+				return command.getHsb();
+			case INCREASEDECREASE:
+				return command.getIncreaseDecrease();
+			case ONOFF:
+				return command.getOnOff();
+			case OPENCLOSED:
+				return command.getOpenClosed();
+			case PERCENT:
+				return command.getPercent();
+			case STOPMOVE:
+				return command.getStopMove();
+			case STRING:
+				return command.getText();
+			case UPDOWN:
+				return command.getUpDown();
+			default:
+				throw new CouldNotTransformException("No corresponding data found for " + command + ".");
+		}
+	}
 }

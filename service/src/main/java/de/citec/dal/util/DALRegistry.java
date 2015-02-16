@@ -111,7 +111,7 @@ public class DALRegistry {
             throw new NotAvailableException("Item[" + unitName + "] not registered!", ex);
         }
         if (!unitName.startsWith(device.getId())) {
-            throw new NotAvailableException("Skip item update [" + unitName + "]: Item is not registered.");
+            throw new NotAvailableException("Item[" + unitName + "] not registered!");
         }
         return device;
     }

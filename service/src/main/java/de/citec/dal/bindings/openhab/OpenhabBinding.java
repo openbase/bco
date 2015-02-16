@@ -5,6 +5,7 @@
  */
 package de.citec.dal.bindings.openhab;
 
+import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
@@ -125,7 +126,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 				throw new CouldNotPerformException("Resolved device is not supported by " + this + "!", ex);
 			}
 		} catch (Exception ex) {
-			throw new CouldNotPerformException("Skip item update [" + command.getItem() + "=" + command.getType() + "]!", ex);
+			throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + OpenhabCommandTransformer.getCommandData(command) + "]!", ex);
 		}
 	}
 
@@ -133,7 +134,12 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 		@Override
 		public Event invoke(final Event request) throws Throwable {
-			OpenhabBinding.instance.internalReceiveUpdate((OpenhabCommand) request.getData());
+			try {
+				OpenhabBinding.instance.internalReceiveUpdate((OpenhabCommand) request.getData());
+			} catch (Throwable th) {
+				logger.error("Could handle openhab update!", th) ;
+				throw th;
+			}
 			return RSBCommunicationService.RPC_FEEDBACK_OK;
 		}
 	}
