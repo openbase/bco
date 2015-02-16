@@ -26,7 +26,6 @@ public class ShutterServiceImpl<ST extends ShutterService & UnitInterface> exten
     @Override
     public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
         executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
-        executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
     }
 
     @Override
