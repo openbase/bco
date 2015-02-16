@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import rsb.RSBException;
 import rsb.patterns.Callback;
 import rsb.patterns.LocalServer;
-import sun.util.logging.LoggingSupport;
 
 /**
  *
