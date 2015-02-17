@@ -38,10 +38,10 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
     public void receiveUpdate(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
         logger.debug("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
 
-        String unitServicePattern = command.getItem().replaceFirst(id + "_", "");
+        String unitServicePattern = command.getItem().replaceFirst(id + ITEM_ID_DELIMITER, "");
         String[] pattern = unitServicePattern.split(ITEM_ID_DELIMITER);
         String unitName = pattern[0];
-        String serviceName = pattern[1];
+        String serviceName = pattern[pattern.length-1];
 
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceName);
         AbstractUnitController unit;
@@ -57,7 +57,7 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
                 if (relatedMethod == null) {
                     throw new NotAvailableException(relatedMethod);
                 }
-            } catch (Exception ex) {
+            } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
                 throw new NotAvailableException("Methcode " + unit + "." + methodName + "(" + serviceData.getClass() + ")", ex);
             }
         } catch (CouldNotPerformException ex) {
@@ -72,8 +72,8 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
             throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
         } catch (InvocationTargetException ex) {
             throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Fatal invocation error!", ex);
+        } catch (Throwable cause) {
+            throw new CouldNotPerformException("Fatal invocation error!", cause);
         }
     }
 
