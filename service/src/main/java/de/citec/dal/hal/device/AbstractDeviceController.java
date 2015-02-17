@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import rsb.RSBException;
-import rsb.patterns.LocalServer;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import rsb.patterns.LocalServer;
 
 /**
  *
@@ -39,7 +39,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     protected final String hardware_id;
     protected final String instance_id;
     protected final Location location;
-//    protected final Map<String, Method> halFunctionMapping;
     protected final Map<String, AbstractUnitController> unitMap;
     protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
 
@@ -49,7 +48,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.label = label;
         this.location = location;
         this.unitMap = new HashMap<>();
-//        this.halFunctionMapping = new HashMap<>();
         this.unitServiceHardwareMap = new HashMap<>();
 
         try {
@@ -67,12 +65,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         } catch (RSBException ex) {
             throw new InstantiationException("Could not init RSBCommunicationService!", ex);
         }
-
-//        try {
-//            initHardwareMapping();
-//        } catch (Exception ex) {
-//            throw new InstantiationException("Could not apply hardware mapping for " + getClass().getSimpleName() + "!", ex);
-//        }
     }
 
     public final static String parseDeviceId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificationFailedException {
@@ -173,9 +165,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     public String getInstance_id() {
         return instance_id;
     }
-
-//    protected abstract void initHardwareMapping() throws NoSuchMethodException, SecurityException;
-
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[id:" + id + "|scope:" + getLocation().getScope() + "]";

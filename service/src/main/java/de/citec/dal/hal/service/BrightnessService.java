@@ -7,6 +7,8 @@ package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.BrightnessProvider;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,27 +21,26 @@ import rsb.patterns.EventCallback;
  */
 public interface BrightnessService extends Service, BrightnessProvider {
 
-	public void setBrightness(Double brightness) throws CouldNotPerformException;
+    public void setBrightness(Double brightness) throws CouldNotPerformException;
 
-	public class SetBrightnessCallback extends EventCallback {
+    public class SetBrightnessCallback extends EventCallback {
 
-		private static final Logger logger = LoggerFactory.getLogger(SetBrightnessCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(SetBrightnessCallback.class);
 
-		private final BrightnessService service;
+        private final BrightnessService service;
 
-		public SetBrightnessCallback(final BrightnessService service) {
-			this.service = service;
-		}
+        public SetBrightnessCallback(final BrightnessService service) {
+            this.service = service;
+        }
 
-		@Override
-		public Event invoke(final Event request) throws Throwable {
-			try {
-				service.setBrightness(((double) request.getData()));
-				return RSBCommunicationService.RPC_FEEDBACK_OK;
-			} catch (Exception ex) {
-				logger.warn("Could not invoke method [setBrightness] for [" + service + "].", ex);
-				throw ex;
-			}
-		}
-	}
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                service.setBrightness(((double) request.getData()));
+            } catch (Exception ex) {
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
+            }
+            return RSBCommunicationService.RPC_SUCCESS;
+        }
+    }
 }

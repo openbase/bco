@@ -7,6 +7,8 @@ package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.ShutterProvider;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,27 +22,26 @@ import rst.homeautomation.states.ShutterType;
  */
 public interface ShutterService extends Service, ShutterProvider {
 
-	public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
+    public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException;
 
-	public class SetShutterCallback extends EventCallback {
+    public class SetShutterCallback extends EventCallback {
 
-		private static final Logger logger = LoggerFactory.getLogger(SetShutterCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(SetShutterCallback.class);
 
-		private final ShutterService service;
+        private final ShutterService service;
 
-		public SetShutterCallback(final ShutterService service) {
-			this.service = service;
-		}
+        public SetShutterCallback(final ShutterService service) {
+            this.service = service;
+        }
 
-		@Override
-		public Event invoke(final Event request) throws Throwable {
-			try {
-				service.setShutter(((ShutterType.Shutter) request.getData()).getState());
-				return RSBCommunicationService.RPC_FEEDBACK_OK;
-			} catch (Exception ex) {
-				logger.warn("Could not invoke method [setShutter] for [" + service + "].", ex);
-				throw ex;
-			}
-		}
-	}
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                service.setShutter(((ShutterType.Shutter) request.getData()).getState());
+            } catch (Exception ex) {
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
+            }
+            return RSBCommunicationService.RPC_SUCCESS;
+        }
+    }
 }

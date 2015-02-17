@@ -6,6 +6,8 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvocationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -35,8 +37,7 @@ public interface ShutterProvider extends Provider {
             try {
                 return new Event(ShutterType.Shutter.ShutterState.class, provider.getShutter());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [getShutterState] for [" + provider + "].", ex);
-                throw ex;
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

@@ -6,6 +6,8 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvocationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -35,8 +37,7 @@ public interface HandleProvider extends Provider {
             try {
                 return new Event(OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.class, provider.getHandle());
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [getRotaryHandleState] for [" + provider + "].", ex);
-                throw ex;
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

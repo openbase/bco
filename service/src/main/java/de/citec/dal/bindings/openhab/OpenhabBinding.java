@@ -13,7 +13,9 @@ import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.InvocationFailedException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -136,11 +138,10 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		public Event invoke(final Event request) throws Throwable {
 			try {
 				OpenhabBinding.instance.internalReceiveUpdate((OpenhabCommand) request.getData());
-			} catch (Throwable th) {
-				logger.error("Could handle openhab update!", th) ;
-				throw th;
+			} catch (Throwable cause) {
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenhabBinding.instance, cause));
 			}
-			return RSBCommunicationService.RPC_FEEDBACK_OK;
+			return RSBCommunicationService.RPC_SUCCESS;
 		}
 	}
 

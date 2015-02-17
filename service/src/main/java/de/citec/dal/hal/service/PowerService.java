@@ -7,6 +7,8 @@ package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.PowerProvider;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +38,9 @@ public interface PowerService extends Service, PowerProvider {
         public Event invoke(final Event request) throws Throwable {
             try {
                 service.setPower(((PowerType.Power) request.getData()).getState());
-                return RSBCommunicationService.RPC_FEEDBACK_OK;
+                return RSBCommunicationService.RPC_SUCCESS;
             } catch (Exception ex) {
-                logger.warn("Could not invoke method [setPowerState] for [" + service + "]", ex);
-                throw ex;
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
             }
         }
     }

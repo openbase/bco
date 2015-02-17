@@ -6,6 +6,8 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvocationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -34,8 +36,7 @@ public interface BrightnessProvider {
 			try {
 				return new Event(Double.class, provider.getBrightness());
 			} catch (Exception ex) {
-				logger.warn("Could not invoke method [getBrightness] for [" + provider + "].", ex);
-				throw ex;
+				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
 			}
 		}
 	}
