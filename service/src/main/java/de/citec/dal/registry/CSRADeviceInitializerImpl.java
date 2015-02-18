@@ -14,7 +14,6 @@ import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.device.philips.PH_Hue_GU10Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.dal.util.DeviceInitializer;
-import de.citec.jul.exception.VerificationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,35 +86,34 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "Interaction_0", sports));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_007", "Interaction_1", sports));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "TestUnit_0", control));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_006", "TestUnit_0", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_010", "SLamp_Left_Window1", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_011", "SLamp_Left_Window2", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_012", "SLamp_Right_Window1", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_013", "SLamp_Right_Window2", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_014", "SLamp_Right1", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_015", "SLamp_Right2", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_016", "SLamp_Window1", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_017", "SLamp_Window2", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_018", "SLamp_Mirror1", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_019", "SLamp_Mirror2", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_020", "LLamp_Left_Window1", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_021", "LLamp_Left_Window2", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_022", "LLamp_Left_Window3", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_023", "LLamp_Left_Window4", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_024", "LLamp_Left_Window5", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_025", "LLamp_Left_Window6", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_026", "LLamp_Entrance1", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_027", "LLamp_Entrance2", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_028", "LLamp_Entrance3", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_029", "LLamp_Entrance4", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_030", "LLamp_Entrance5", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_031", "LLamp_Entrance6", bath));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_032", "LLamp_Entrance1", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_033", "LLamp_Entrance2", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_034", "LLamp_Entrance3", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_035", "LLamp_Entrance4", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_036", "LLamp_Entrance5", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_037", "LLamp_Entrance6", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_010", "SLamp_Left_Window1", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_011", "SLamp_Left_Window2", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_012", "SLamp_Right_Window1", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_013", "SLamp_Right_Window2", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_014", "SLamp_Right1", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_015", "SLamp_Right2", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_016", "SLamp_Window1", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_017", "SLamp_Window2", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_018", "SLamp_Mirror1", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_019", "SLamp_Mirror2", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_020", "LLamp_Left_Window1", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_021", "LLamp_Left_Window2", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_022", "LLamp_Left_Window3", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_023", "LLamp_Left_Window4", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_024", "LLamp_Left_Window5", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_025", "LLamp_Left_Window6", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_026", "LLamp_Entrance1", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_027", "LLamp_Entrance2", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_028", "LLamp_Entrance3", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_029", "LLamp_Entrance4", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_030", "LLamp_Entrance5", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_031", "LLamp_Entrance6", bath));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_032", "LLamp_Entrance1", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_033", "LLamp_Entrance2", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_034", "LLamp_Entrance3", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_035", "LLamp_Entrance4", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_036", "LLamp_Entrance5", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_037", "LLamp_Entrance6", sports));
 
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_000", "Global_0", kitchen));
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_001", "Global_1", kitchen));
@@ -157,7 +155,7 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 
             String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
             registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
-        } catch (de.citec.jul.exception.InstantiationException | VerificationFailedException ex) {
+        } catch (de.citec.jul.exception.InstantiationException ex) {
             logger.warn("Could not initialize devices!", ex);
         }
     }

@@ -10,7 +10,6 @@ import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.ButtonController;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.gira.GI_5133Type;
@@ -25,7 +24,7 @@ public class GI_5133Controller extends AbstractOpenHABDeviceController<GI_5133Ty
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GI_5133Type.GI_5133.getDefaultInstance()));
     }
 
-    public GI_5133Controller(final String id, final String label, final String[] unitLabel, final Location location) throws VerificationFailedException, InstantiationException {
+    public GI_5133Controller(final String id, final String label, final String[] unitLabel, final Location location) throws InstantiationException {
         super(id, label, location, GI_5133Type.GI_5133.newBuilder());
         this.registerUnit(new ButtonController(unitLabel[0], this, data.getButton0Builder()));
         this.registerUnit(new ButtonController(unitLabel[1], this, data.getButton1Builder()));

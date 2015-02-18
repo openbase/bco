@@ -113,7 +113,7 @@ public class ButtonRemoteTest {
 
             try {
                 registry.register(new GI_5142Controller("GI_5142_000", LABEL, BUTTONS, LOCATION));
-            } catch (de.citec.jul.exception.InstantiationException | VerificationFailedException ex) {
+            } catch (de.citec.jul.exception.InstantiationException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }
