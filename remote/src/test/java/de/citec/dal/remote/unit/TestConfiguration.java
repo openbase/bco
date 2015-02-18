@@ -29,6 +29,12 @@ public class TestConfiguration implements de.citec.dal.util.DeviceInitializer {
 
     public static final Location LOCATION = new Location("paradise");
 
+	public TestConfiguration() {
+//		DALRegistry.destroy();
+	}
+
+
+
     @Override
     public void initDevices(final DALRegistry registry) {
 

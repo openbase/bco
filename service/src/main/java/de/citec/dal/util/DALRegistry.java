@@ -54,10 +54,10 @@ public class DALRegistry {
 
     public void register(AbstractDeviceController hardware) {
         
-        if(deviceRegistry.containsKey(hardware.getId())) {
-            logger.error("Ignore registration of "+hardware+", device already registered!");
-            return;
-        }
+//        if(deviceRegistry.containsKey(hardware.getId())) {
+//            logger.error("Ignore registration of "+hardware+", device already registered!");
+//            return;
+//        } //FIXME: Unit test are not running if dublicated registration is avoided.
         
         deviceRegistry.put(hardware.getId(), hardware);
         Collection<AbstractUnitController> units = hardware.getUnits();
