@@ -5,11 +5,9 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.dal.remote.unit.ButtonRemote;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.gira.GI_5142Controller;
-import de.citec.dal.hal.unit.ButtonController;
 import de.citec.dal.hal.unit.ButtonController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
@@ -18,7 +16,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
