@@ -7,7 +7,9 @@ package de.citec.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.jul.rsb.RSBRemoteService;
-import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -76,23 +78,28 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
         return getRemoteService().getData();
     }
 
-    public void setScope(final Scope scope) throws DALException {
-        logger.info("Update Scope: "+scope);
-        
+    public void setScope(final Scope scope) throws CouldNotPerformException {
+        logger.info("Update Scope: " + scope);
+
         R service;
 
-        if (remoteServiceClass == null) {
-            throw new DALException("Could not setup scope! RemoteService is not configurated!");
-        }
         try {
-            service = remoteServiceClass.newInstance();
-            service.init(scope);
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new DALException("Could not setup scope! RemoteService could not be instaniated!", ex);
-        }
-        
-        service.activate();
+            if (remoteServiceClass == null) {
+                throw new InvalidStateException("RemoteService is not configurated!");
+            }
 
+            try {
+                service = remoteServiceClass.newInstance();
+                service.init(scope);
+            } catch (java.lang.InstantiationException | IllegalAccessException ex) {
+                throw new InstantiationException("RemoteService could not be instaniated!", ex);
+            }
+            
+        } catch (InstantiationException | InvalidStateException ex) {
+            throw new CouldNotPerformException("Could not setup scope!", ex);
+        }
+
+        service.activate();
         setRemoteService(service);
     }
 

@@ -6,10 +6,10 @@
 package de.citec.dal.visual.unit;
 
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
-import de.citec.dal.exception.RSBBindingException;
-import de.citec.dal.hal.al.AmbientLightRemote;
+import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -43,13 +43,12 @@ public class AmbientLightView extends RSBRemoteView<AmbientLightType.AmbientLigh
     }
 
     @Override
-
     protected void updateDynamicComponents(AmbientLightType.AmbientLight data) {
         try {
             colorPreviewPanel.setBackground(HSVColorToRGBColorTransformer.transform(data.getColor()));
-        } catch (RSBBindingException | TypeNotSupportedException ex) {
+        } catch (TypeNotSupportedException | CouldNotTransformException ex) {
             logger.error("Could not update color value!", ex);
-        }
+        } 
     }
 
     /**

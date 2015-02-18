@@ -7,7 +7,6 @@ package de.citec.dal.hal.device.homematic;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.exception.DALException;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.HandleSensorController;
 import de.citec.jul.exception.InstantiationException;
@@ -27,7 +26,7 @@ public class HM_RotaryHandleSensorController extends AbstractOpenHABDeviceContro
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HM_RotaryHandleSensorType.HM_RotaryHandleSensor.getDefaultInstance()));
     }
 
-    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, DALException, InstantiationException {
+    public HM_RotaryHandleSensorController(final String id, final String label, final Location location) throws VerificationFailedException, InstantiationException {
         super(id, label, location, HM_RotaryHandleSensor.newBuilder());
         this.registerUnit(new HandleSensorController(label, this, data.getHandleSensorBuilder()));
         this.registerUnit(new BatteryController(label, this, data.getBatteryBuilder()));

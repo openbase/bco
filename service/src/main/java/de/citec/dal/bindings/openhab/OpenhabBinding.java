@@ -14,6 +14,7 @@ import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.InvocationFailedException;
 import java.util.concurrent.ExecutionException;
@@ -34,6 +35,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.openhab.RSBBindingType;
 import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
+import rst.homeautomation.states.ActiveDeactiveType;
 
 /**
  * @author thuxohl
@@ -61,14 +63,15 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
 	}
 
-	public synchronized static OpenhabBinding getInstance() {
+	public synchronized static OpenhabBinding getInstance() throws InstantiationException {
 		if (instance == null) {
 			instance = new OpenhabBinding();
 		}
 		return instance;
 	}
 
-	private OpenhabBinding() {
+	private OpenhabBinding() throws InstantiationException {
+        try {
 		this.registry = DALRegistry.getInstance();
 
 		openhabRemoteService = new RSBRemoteService<RSBBinding>() {
@@ -95,18 +98,24 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 		openhabRemoteService.activate();
 		dalCommunicationService.activate();
+        
+        dalCommunicationService.getData().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
+		dalCommunicationService.notifyChange();
+        } catch (CouldNotPerformException ex) {
+            throw new de.citec.jul.exception.InstantiationException(this, ex); 
+        }
 	}
 
 	public final void notifyUpdated(RSBBinding data) {
 		switch (data.getState().getState()) {
 			case ACTIVE:
-				logger.debug("Active dal binding state!");
+				logger.info("Active dal binding state!");
 				break;
 			case DEACTIVE:
-				logger.debug("Deactive dal binding state!");
+				logger.info("Deactive dal binding state!");
 				break;
 			case UNKNOWN:
-				logger.debug("Unkown dal binding state!");
+				logger.info("Unkown dal binding state!");
 				break;
 		}
 	}

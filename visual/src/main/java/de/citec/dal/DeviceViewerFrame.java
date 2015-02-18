@@ -7,16 +7,18 @@ package de.citec.dal;
 
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.AmbientLightController;
+import de.citec.dal.registry.CSRADeviceInitializerImpl;
 import de.citec.dal.visual.unit.AmbientLightView;
 import de.citec.dal.util.DALRegistry;
 import de.citec.dal.visual.util.RSBRemoteView;
-import de.citec.dal.exception.DALException;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import de.citec.jul.exception.InstantiationException;
 
 /**
  *
@@ -26,22 +28,28 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
 
     private final Object REMOTE_VIEW_LOCK = new Object();
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(DeviceViewerFrame.class);
 
     private RSBRemoteView remoteView;
     private final DALRegistry registry = DALRegistry.getInstance();
 
     /**
      * Creates new form DeviceViewerFrame
+     *
+     * @throws de.citec.jul.exception.InstantiationException
      */
-    public DeviceViewerFrame() {
-        initComponents();
-        initTypeComboBox();
-        setRemoteView(new AmbientLightView());
-        unitPanel.addObserver(this);
+    public DeviceViewerFrame() throws InstantiationException {
+        try {
+            initComponents();
+            initTypeComboBox();
+            setRemoteView(new AmbientLightView());
+            unitPanel.addObserver(this);
+        } catch (CouldNotPerformException ex) {
+            throw new de.citec.jul.exception.InstantiationException(this, ex);
+        }
     }
 
-    public final void setRemoteView(RSBRemoteView remoteView) {
+    public final void setRemoteView(RSBRemoteView remoteView) throws CouldNotPerformException {
         synchronized (REMOTE_VIEW_LOCK) {
             logger.info("Set remote view: " + remoteView.getClass().getSimpleName());
 
@@ -54,8 +62,8 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             this.remoteView = remoteView;
             try {
                 remoteView.setScope(unitPanel.getScope());
-            } catch (DALException ex) {
-                logger.error("Could not setup remote view!", ex);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not setup remote view!", ex);
             }
 
             // Setup context panel
@@ -102,7 +110,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     }
 
     @Override
-    public synchronized void update(final Observable<Scope> source, final Scope scope) throws DALException {
+    public synchronized void update(final Observable<Scope> source, final Scope scope) throws CouldNotPerformException {
         if (remoteView == null) {
             return;
         }
@@ -110,7 +118,6 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         remoteView.setEnabled(false);
         remoteView.setScope(scope);
         remoteView.setEnabled(true);
-
     }
 
     /**
@@ -221,24 +228,24 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DeviceViewerFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | java.lang.InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.warn("Could not setup look and feel!", ex);
         }
+        //</editor-fold>
+        
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-
-                new DALService(); // TODO mpohling: load devices, remove aftern device manager does this job!!!
-                new DeviceViewerFrame().setVisible(true);
+                new CSRADeviceInitializerImpl().initDevices(DALRegistry.getInstance()); // TODO mpohling: load devices, remove aftern device manager does this job!!!
+                try {
+                    new DeviceViewerFrame().setVisible(true);
+                } catch (InstantiationException ex) {
+                    logger.error("Could not setup gui!", ex);
+                    System.exit(1);
+                }
             }
         });
     }

@@ -11,8 +11,10 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -24,7 +26,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  */
 public abstract class OpenHABService<ST extends Service & UnitInterface> {
 
-	private static final OpenhabBindingInterface openhabBinding = OpenhabBinding.getInstance();
+	private OpenhabBindingInterface openhabBinding;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -36,6 +38,12 @@ public abstract class OpenHABService<ST extends Service & UnitInterface> {
 		this.device = device;
 		this.unit = unit;
 		this.itemID = generateItemId();
+        
+        try {
+            this.openhabBinding = OpenhabBinding.getInstance();
+        } catch (InstantiationException ex) {
+            logger.error("Could not access "+OpenhabBinding.class.getSimpleName(), ex);
+        }
 	}
 
 	public final String generateItemId() {

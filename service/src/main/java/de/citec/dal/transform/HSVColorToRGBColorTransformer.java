@@ -5,7 +5,7 @@
  */
 package de.citec.dal.transform;
 
-import de.citec.dal.exception.RSBBindingException;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import java.awt.Color;
 import rst.vision.HSVColorType;
@@ -17,21 +17,21 @@ import rst.vision.HSVColorType.HSVColor;
  */
 public class HSVColorToRGBColorTransformer {
 
-    public static HSVColorType.HSVColor transform(Color color) throws RSBBindingException {
+    public static HSVColorType.HSVColor transform(Color color) throws CouldNotTransformException {
         try {
             float[] hsb = new float[3];
             Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
             return HSVColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setValue(hsb[2] * 100).build();
         } catch (Exception ex) {
-            throw new RSBBindingException("Could not transform " + Color.class.getName() + " to " + HSVColorType.HSVColor.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + Color.class.getName() + " to " + HSVColorType.HSVColor.class.getName() + "!", ex);
         }
     }
     
-    public static Color transform(HSVColorType.HSVColor color) throws TypeNotSupportedException, RSBBindingException {
+    public static Color transform(HSVColorType.HSVColor color) throws TypeNotSupportedException, CouldNotTransformException {
         try {
             return Color.getHSBColor((((float)color.getHue()) / 360f), (((float)color.getSaturation()) / 100f), (((float)color.getValue()) / 100f));
         } catch (Exception ex) {
-            throw new RSBBindingException("Could not transform " + HSVColorType.HSVColor.class.getName() + " to " + Color.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + HSVColorType.HSVColor.class.getName() + " to " + Color.class.getName() + "!", ex);
         }
     }
 }
