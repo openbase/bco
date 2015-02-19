@@ -33,7 +33,7 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
         Location bath = new Location("bath");
         Location control = new Location("control");
 
-//        try {
+        try {
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_001", "USBCharger_2", control));
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_002", "USBCharger_3", control));
@@ -74,7 +74,7 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 //            registry.register(new F_MotionSensorController("F_MotionSensor_014", "TestUnit_1", control));
 //            registry.register(new F_MotionSensorController("F_MotionSensor_015", "Entrance", outdoor));
 //
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", "Hallway_0", wardrobe));
+            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", "Hallway_0", wardrobe));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_001", "Hallway_1", wardrobe));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_002", "Table_0", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_003", "Table_1", living));
@@ -152,8 +152,8 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 //
 //            String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
 //            registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
-//        } catch (de.citec.jul.exception.InstantiationException ex) {
-//            logger.warn("Could not initialize devices!", ex);
-//        }
+        } catch (de.citec.jul.exception.InstantiationException ex) {
+            logger.warn("Could not initialize devices!", ex);
+        }
     }
 }
