@@ -11,6 +11,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jps.exception.ValidationException;
+import de.citec.jul.exception.InitializationException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.ScopeProvider;
@@ -55,7 +56,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
 		try {
 			init(RSBInformerInterface.InformerType.Distributed);
-		} catch (RSBException ex) {
+		} catch (InitializationException ex) {
 			throw new InstantiationException("Could not init RSBCommunicationService!", ex);
 		}
 		try {

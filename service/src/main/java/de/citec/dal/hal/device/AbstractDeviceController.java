@@ -11,6 +11,7 @@ import java.util.Map;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.service.Service;
+import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
@@ -62,7 +63,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
         try {
             init(InformerType.Distributed);
-        } catch (RSBException ex) {
+        } catch (InitializationException ex) {
             throw new InstantiationException("Could not init RSBCommunicationService!", ex);
         }
     }

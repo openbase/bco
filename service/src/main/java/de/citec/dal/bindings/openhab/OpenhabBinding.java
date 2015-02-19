@@ -71,39 +71,36 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	}
 
 	private OpenhabBinding() throws InstantiationException {
-        try {
-		this.registry = DALRegistry.getInstance();
-
-		openhabRemoteService = new RSBRemoteService<RSBBinding>() {
-
-			@Override
-			public void notifyUpdated(RSBBinding data) {
-				OpenhabBinding.this.notifyUpdated(data);
-			}
-		};
-		openhabRemoteService.init(SCOPE_OPENHAB);
-
-		dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
-
-			@Override
-			public void registerMethods(LocalServer server) throws RSBException {
-				OpenhabBinding.this.registerMethods(server);
-			}
-		};
 		try {
-			dalCommunicationService.init(InformerType.Single);
-		} catch (RSBException ex) {
-			logger.warn("Unable to initialize the communication service in [" + getClass().getSimpleName() + "]", ex);
-		}
+			this.registry = DALRegistry.getInstance();
 
-		openhabRemoteService.activate();
-		dalCommunicationService.activate();
-        
-        dalCommunicationService.getData().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
-		dalCommunicationService.notifyChange();
-        } catch (CouldNotPerformException ex) {
-            throw new de.citec.jul.exception.InstantiationException(this, ex); 
-        }
+			openhabRemoteService = new RSBRemoteService<RSBBinding>() {
+
+				@Override
+				public void notifyUpdated(RSBBinding data) {
+					OpenhabBinding.this.notifyUpdated(data);
+				}
+			};
+			openhabRemoteService.init(SCOPE_OPENHAB);
+
+			dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
+
+				@Override
+				public void registerMethods(LocalServer server) throws RSBException {
+					OpenhabBinding.this.registerMethods(server);
+				}
+			};
+
+			dalCommunicationService.init(InformerType.Single);
+
+			openhabRemoteService.activate();
+			dalCommunicationService.activate();
+
+			dalCommunicationService.getData().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
+			dalCommunicationService.notifyChange();
+		} catch (CouldNotPerformException ex) {
+			throw new de.citec.jul.exception.InstantiationException(this, ex);
+		}
 	}
 
 	public final void notifyUpdated(RSBBinding data) {
@@ -148,7 +145,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 			try {
 				OpenhabBinding.instance.internalReceiveUpdate((OpenhabCommand) request.getData());
 			} catch (Throwable cause) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenhabBinding.instance, cause));
+				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenhabBinding.instance, cause));
 			}
 			return RSBCommunicationService.RPC_SUCCESS;
 		}
