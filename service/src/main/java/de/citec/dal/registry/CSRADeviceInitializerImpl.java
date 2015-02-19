@@ -7,9 +7,6 @@ package de.citec.dal.registry;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
-import de.citec.dal.hal.device.gira.GI_5133Controller;
-import de.citec.dal.hal.device.gira.GI_5142Controller;
-import de.citec.dal.hal.device.hager.HA_TYA628CController;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.device.philips.PH_Hue_GU10Controller;
 import de.citec.dal.util.DALRegistry;
@@ -81,11 +78,11 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_001", "Hallway_1", wardrobe));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_002", "Table_0", living));
             registry.register(new PH_Hue_E27Controller("PH_Hue_E27_003", "Table_1", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_004", "Couch", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_005", "Media", living));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "Interaction_0", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_007", "Interaction_1", sports));
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "TestUnit_0", control));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_004", "Couch", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_005", "Media", living));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "Interaction_0", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_007", "Interaction_1", sports));
+//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "TestUnit_0", control));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_010", "SLamp_Left_Window1", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_011", "SLamp_Left_Window2", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_012", "SLamp_Right_Window1", living));
@@ -119,10 +116,10 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_001", "Global_1", kitchen));
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_002", "Global_2", kitchen));
             registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_003", "Global_3", kitchen));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_004", "Global_0", bath));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_005", "Global_1", bath));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_006", "Global_2", bath));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_007", "Global_3", bath));
+//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_004", "Global_0", bath));
+//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_005", "Global_1", bath));
+//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_006", "Global_2", bath));
+//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_007", "Global_3", bath));
 
 //				registry.register(new HA_TYA606EController("HA_TYA606E_000", "1", control));
 //				registry.register(new HA_TYA606EController("HA_TYA606E_001", "2", control));
@@ -135,26 +132,26 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 //				registry.register(new HA_TYA606EController("HA_TYA606E_008", "9", control));
 //				registry.register(new HA_TYA606EController("HA_TYA606E_009", "10", control));
 //				registry.register(new HA_TYA606EController("HA_TYA606E_010", "11", control));
-            String[] giraLabel0 = {"Button_1", "Button_2", "Button_3", "Button_4"};
-            registry.register(new GI_5142Controller("GI_5142_000", "Entrance", giraLabel0, bath));
-            registry.register(new GI_5142Controller("GI_5142_001", "Control", giraLabel0, living));
-            registry.register(new GI_5142Controller("GI_5142_002", "Pathway", giraLabel0, sports));
-
-            String[] giraLabel1 = {"Button_1", "Button_2", "Button_3", "Button_4", "Button_5", "Button_6"};
-            registry.register(new GI_5133Controller("GI_5133_000", "Door", giraLabel1, kitchen));
-            registry.register(new GI_5133Controller("GI_5133_001", "Entrance", giraLabel1, wardrobe));
-            registry.register(new GI_5133Controller("GI_5133_002", "Hallway", giraLabel1, wardrobe));
-            registry.register(new GI_5133Controller("GI_5133_005", "Media", giraLabel1, living));
-
-            String[] giraLabel2 = {"Button_5", "Button_6", "Button_7", "Button_8", "Button_9", "Button_10"};
-            registry.register(new GI_5133Controller("GI_5133_004", "Control", giraLabel2, living));
-            registry.register(new GI_5133Controller("GI_5133_006", "Pathway", giraLabel2, sports));
-
-            String[] giraLabel3 = {"Button_7", "Button_8", "Button_9", "Button_10", "Button_11", "Button_12"};
-            registry.register(new GI_5133Controller("GI_5133_003", "Hallway", giraLabel3, wardrobe));
-
-            String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
-            registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
+//            String[] giraLabel0 = {"Button_1", "Button_2", "Button_3", "Button_4"};
+//            registry.register(new GI_5142Controller("GI_5142_000", "Entrance", giraLabel0, bath));
+//            registry.register(new GI_5142Controller("GI_5142_001", "Control", giraLabel0, living));
+//            registry.register(new GI_5142Controller("GI_5142_002", "Pathway", giraLabel0, sports));
+//
+//            String[] giraLabel1 = {"Button_1", "Button_2", "Button_3", "Button_4", "Button_5", "Button_6"};
+//            registry.register(new GI_5133Controller("GI_5133_000", "Door", giraLabel1, kitchen));
+//            registry.register(new GI_5133Controller("GI_5133_001", "Entrance", giraLabel1, wardrobe));
+//            registry.register(new GI_5133Controller("GI_5133_002", "Hallway", giraLabel1, wardrobe));
+//            registry.register(new GI_5133Controller("GI_5133_005", "Media", giraLabel1, living));
+//
+//            String[] giraLabel2 = {"Button_5", "Button_6", "Button_7", "Button_8", "Button_9", "Button_10"};
+//            registry.register(new GI_5133Controller("GI_5133_004", "Control", giraLabel2, living));
+//            registry.register(new GI_5133Controller("GI_5133_006", "Pathway", giraLabel2, sports));
+//
+//            String[] giraLabel3 = {"Button_7", "Button_8", "Button_9", "Button_10", "Button_11", "Button_12"};
+//            registry.register(new GI_5133Controller("GI_5133_003", "Hallway", giraLabel3, wardrobe));
+//
+//            String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
+//            registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
         } catch (de.citec.jul.exception.InstantiationException ex) {
             logger.warn("Could not initialize devices!", ex);
         }
