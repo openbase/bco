@@ -7,11 +7,7 @@ package de.citec.dal.hal.device.fibaro;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.unit.BatteryController;
-import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.hal.unit.MotionSensorController;
-import de.citec.dal.hal.unit.TamperSwitchController;
-import de.citec.dal.hal.unit.TemperatureSensorController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;
@@ -31,9 +27,9 @@ public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_
     public F_MotionSensorController(final String id, String label, final Location location) throws InstantiationException {
         super(id, label, location, F_MotionSensor.newBuilder());
         registerUnit(new MotionSensorController(label, this, data.getMotionSensorBuilder()));
-        registerUnit(new TemperatureSensorController(label, this, data.getTemperatureSensorBuilder()));
-        registerUnit(new BrightnessSensorController(label, this, data.getBrightnessSensorBuilder()));
-        registerUnit(new TamperSwitchController(label, this, data.getTamperSwitchBuilder()));
-        registerUnit(new BatteryController(label, this, data.getBatteryBuilder()));
+//        registerUnit(new TemperatureSensorController(label, this, data.getTemperatureSensorBuilder()));
+//        registerUnit(new BrightnessSensorController(label, this, data.getBrightnessSensorBuilder()));
+//        registerUnit(new TamperSwitchController(label, this, data.getTamperSwitchBuilder()));
+//        registerUnit(new BatteryController(label, this, data.getBatteryBuilder()));
     }
 }
