@@ -28,13 +28,14 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
     @Override
     public void initDevices(final DALRegistry registry) {
         logger.info("Init devices...");
-        Location outdoor = new Location("outdoor");
-        Location kitchen = new Location("kitchen");
-        Location wardrobe = new Location("wardrobe");
-        Location living = new Location("living");
-        Location sports = new Location("sports");
-        Location bath = new Location("bath");
-        Location control = new Location("control");
+		Location home = new Location("home");
+        Location outdoor = new Location("outdoor", home);
+        Location kitchen = new Location("kitchen", home);
+        Location wardrobe = new Location("wardrobe", home);
+        Location living = new Location("living", home);
+        Location sports = new Location("sports", home);
+        Location bath = new Location("bath", home);
+        Location control = new Location("control", home);
 
         try {
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));
