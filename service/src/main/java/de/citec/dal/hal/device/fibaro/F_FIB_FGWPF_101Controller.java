@@ -17,13 +17,13 @@ import rst.devices.fibaro.F_FIB_FGWPF_101Type;
  *
  * @author thuxohl
  */
-public class F_FIB_FGWPF_101 extends AbstractOpenHABDeviceController<F_FIB_FGWPF_101Type.F_FIB_FGWPF_101 , F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.Builder> {
+public class F_FIB_FGWPF_101Controller extends AbstractOpenHABDeviceController<F_FIB_FGWPF_101Type.F_FIB_FGWPF_101 , F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.getDefaultInstance()));
     }
 
-    public F_FIB_FGWPF_101(final String id, String label, final Location location) throws de.citec.jul.exception.InstantiationException {
+    public F_FIB_FGWPF_101Controller(final String id, String label, final Location location) throws de.citec.jul.exception.InstantiationException {
         super(id, label, location, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.newBuilder());
         registerUnit(new PowerPlugController(label, this, data.getPowerPlugBuilder()));
         registerUnit(new PowerConsumptionSensorController(label, this, data.getPowerConsumptionBuilder()));

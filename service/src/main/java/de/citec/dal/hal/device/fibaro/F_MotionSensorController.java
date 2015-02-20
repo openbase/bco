@@ -7,7 +7,11 @@ package de.citec.dal.hal.device.fibaro;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
+import de.citec.dal.hal.unit.BatteryController;
+import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.hal.unit.MotionSensorController;
+import de.citec.dal.hal.unit.TamperSwitchController;
+import de.citec.dal.hal.unit.TemperatureSensorController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.devices.fibaro.F_MotionSensorType;

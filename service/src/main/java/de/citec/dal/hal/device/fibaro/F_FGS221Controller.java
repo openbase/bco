@@ -18,17 +18,17 @@ import rst.devices.fibaro.F_MotionSensorType;
  *
  * @author mpohling
  */
-public class F_FGS221 extends AbstractOpenHABDeviceController<F_FGS_221Type.F_FGS_221, F_FGS_221Type.F_FGS_221.Builder> {
+public class F_FGS221Controller extends AbstractOpenHABDeviceController<F_FGS_221Type.F_FGS_221, F_FGS_221Type.F_FGS_221.Builder> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
     }
 
-    public F_FGS221(final String id, String label, String[] unitlabel, final Location location) throws de.citec.jul.exception.InstantiationException {
+    public F_FGS221Controller(final String id, String label, String[] unitlabel, final Location location) throws de.citec.jul.exception.InstantiationException {
         super(id, label, location, F_FGS_221Type.F_FGS_221.newBuilder());
         registerUnit(new LightController(unitlabel[0], this, data.getLight0Builder()));
         registerUnit(new LightController(unitlabel[1], this, data.getLight1Builder()));
-        registerUnit(new ButtonController(unitlabel[0], this, data.getButton0Builder()));
-        registerUnit(new ButtonController(unitlabel[1], this, data.getButton1Builder()));
+        registerUnit(new ButtonController(unitlabel[2], this, data.getButton0Builder()));
+        registerUnit(new ButtonController(unitlabel[3], this, data.getButton1Builder()));
     }
 }
