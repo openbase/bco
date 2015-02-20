@@ -3,10 +3,10 @@
 
     <groupId>de.unibi.csra.config</groupId>
     <artifactId>device-manager</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
     <packaging>jar</packaging>
 
-    <name>device-manager</name>
+    <name>DeviceManager</name>
     <url>http://maven.apache.org</url>
     <build>
         <plugins>
