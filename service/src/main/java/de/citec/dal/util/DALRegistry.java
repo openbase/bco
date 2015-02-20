@@ -101,9 +101,9 @@ public class DALRegistry {
             unit = floorEntry.getValue();
         } catch (NullPointerException ex) {
             throw new NotAvailableException("Unit[" + scope + "] not registered!", ex);
-        }
-        for(AbstractUnitController units : unitRegistry.values()) {
-            System.out.println(units.getScope());
+        } 
+        for(AbstractUnitController test : unitRegistry.values()) {
+            System.out.println(test.getScope());
         }
         return unit;
     }

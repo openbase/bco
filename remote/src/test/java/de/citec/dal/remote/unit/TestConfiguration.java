@@ -52,7 +52,7 @@ public class TestConfiguration implements de.citec.dal.util.DeviceInitializer {
             registry.register(new HA_TYA628CController("HA_TYA628C_009", RollershutterRemoteTest.LABEL, RollershutterRemoteTest.ROLLERSHUTTER, LOCATION));
             registry.register(new F_MotionSensorController("F_MotionSensor_010", TamperSwitchRemoteTest.LABEL, LOCATION));
             registry.register(new F_MotionSensorController("F_MotionSensor_011", TemperatureSensorRemoteTest.LABEL, LOCATION));
-            registry.register(new F_FGS221Controller("F_FGS221_000", LightRemoteTest.LABEL, LightRemoteTest.UNITS, LOCATION));
+            registry.register(new F_FGS221Controller("F_FGS221_012", LightRemoteTest.LABEL, LightRemoteTest.UNITS, LOCATION));
         } catch (de.citec.jul.exception.InstantiationException ex) {
             logger.warn("Could not initialize unit test device!", ex);
         } catch (VerificationFailedException ex) {

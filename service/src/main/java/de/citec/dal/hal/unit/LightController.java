@@ -33,6 +33,7 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
     }
 
     public void updatePower(final PowerType.Power.PowerState state) {
+        logger.debug("Updating [" + label + "] to Power [" + state.name() + "]");
         data.getPowerStateBuilder().setState(state);
         notifyChange();
     }

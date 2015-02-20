@@ -101,7 +101,12 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     protected <U extends AbstractUnitController> void registerUnit(final U unit) {
-        unitMap.put(unit.getName(), unit);
+        for(String key : unitMap.keySet()) {
+            if(key.equals(unit.getScope().toString())) {
+                logger.debug("Registering the unit["+unit+"] overrides the registration of the unit["+unitMap.get(key)+"]");
+            }
+        }
+        unitMap.put(unit.getScope().toString(), unit);
     }
 
 

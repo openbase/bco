@@ -30,7 +30,7 @@ import rst.homeautomation.states.PowerType;
 public class LightRemoteTest {
 
     public static final String LABEL = "Light_Unit_Test";
-    public static final String[] UNITS = {"Button_0", "Button_1", "Light_0", "Light_1"};
+    public static final String[] UNITS = {"Light_1", "Light_2","testButton_1","testButton_2"};
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
 
@@ -47,7 +47,7 @@ public class LightRemoteTest {
         dalService.activate();
 
         lightRemote = new LightRemote();
-        lightRemote.init(UNITS[UNITS.length - 1], TestConfiguration.LOCATION);
+        lightRemote.init(UNITS[0], TestConfiguration.LOCATION);
         lightRemote.activate();
     }
 
@@ -101,7 +101,8 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        LightController test = ((LightController) dalService.getRegistry().getUnit(UNITS[UNITS.length-1], TestConfiguration.LOCATION, LightController.class));
+        LightController test = ((LightController) dalService.getRegistry().getUnit(UNITS[0], TestConfiguration.LOCATION, LightController.class));
+        test.updatePower(state);
         System.out.println(test.getScope() + "," + test.getLable());
         while (true) {
             try {
