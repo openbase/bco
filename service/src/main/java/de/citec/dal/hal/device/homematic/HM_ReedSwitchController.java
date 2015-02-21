@@ -13,8 +13,8 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.homematic.HM_ReedSwitchType;
-import rst.devices.homematic.HM_ReedSwitchType.HM_ReedSwitch;
+import rst.homeautomation.devices.homematic.HM_ReedSwitchType;
+import rst.homeautomation.devices.homematic.HM_ReedSwitchType.HM_ReedSwitch;
 
 /**
  *

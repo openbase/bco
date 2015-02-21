@@ -13,8 +13,8 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.plugwise.PW_PowerPlugType;
-import rst.devices.plugwise.PW_PowerPlugType.PW_PowerPlug;
+import rst.homeautomation.devices.plugwise.PW_PowerPlugType;
+import rst.homeautomation.devices.plugwise.PW_PowerPlugType.PW_PowerPlug;
 
 /**
  *

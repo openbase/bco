@@ -11,7 +11,6 @@ import de.citec.dal.hal.unit.ButtonController;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.gira.GI_5142Type;
 
 /**
  *

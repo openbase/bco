@@ -9,7 +9,7 @@ import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.hager.HA_TYA663AType;
+import rst.homeautomation.devices.hager.HA_TYA663AType;
 
 /**
  *

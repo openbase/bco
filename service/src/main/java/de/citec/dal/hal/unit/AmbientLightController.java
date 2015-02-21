@@ -14,13 +14,14 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.AmbientLightType;
+import rst.homeautomation.units.AmbientLightType;
 import rst.homeautomation.states.PowerType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
- * @author nuc
+ * @author Tamino Huxohl
+ * @author Marian Pohling
  */
 public class AmbientLightController extends AbstractUnitController<AmbientLightType.AmbientLight, AmbientLightType.AmbientLight.Builder> implements AmbientLightInterface {
 

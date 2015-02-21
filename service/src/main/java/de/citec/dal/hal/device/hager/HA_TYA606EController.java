@@ -13,7 +13,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.hager.HA_TYA606EType;
+import rst.homeautomation.devices.hager.HA_TYA606EType;
 
 /**
  *

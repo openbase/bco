@@ -11,8 +11,8 @@ import de.citec.dal.hal.unit.ButtonController;
 import de.citec.dal.hal.unit.LightController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.fibaro.F_FGS_221Type;
-import rst.devices.fibaro.F_MotionSensorType;
+import rst.homeautomation.devices.fibaro.F_FGS_221Type;
+import rst.homeautomation.devices.fibaro.F_MotionSensorType;
 
 /**
  *

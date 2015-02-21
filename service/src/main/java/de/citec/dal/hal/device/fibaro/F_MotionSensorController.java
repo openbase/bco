@@ -14,8 +14,6 @@ import de.citec.dal.hal.unit.TamperSwitchController;
 import de.citec.dal.hal.unit.TemperatureSensorController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.fibaro.F_MotionSensorType;
-import rst.devices.fibaro.F_MotionSensorType.F_MotionSensor;
 import de.citec.jul.exception.InstantiationException;
 
 /**

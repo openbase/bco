@@ -11,7 +11,7 @@ import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerPlugController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.devices.fibaro.F_FIB_FGWPF_101Type;
+import rst.homeautomation.devices.fibaro.F_FIB_FGWPF_101Type;
 
 /**
  *
