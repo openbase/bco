@@ -10,9 +10,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.BatteryType;
-import rst.homeautomation.BatteryType.Battery;
-import rst.homeautomation.states.EnergyType;
+import rst.homeautomation.state.EnergyType;
+import rst.homeautomation.unit.BatteryType;
+import rst.homeautomation.unit.BatteryType.Battery;
 
 /**
  *

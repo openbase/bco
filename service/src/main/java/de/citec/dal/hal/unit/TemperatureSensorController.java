@@ -10,8 +10,8 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.TemperatureSensorType;
-import rst.homeautomation.TemperatureSensorType.TemperatureSensor;
+import rst.homeautomation.unit.TemperatureSensorType;
+import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
 
 /**
  *

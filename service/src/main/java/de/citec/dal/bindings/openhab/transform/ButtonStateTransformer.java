@@ -7,8 +7,11 @@ package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.states.ClickType;
 import rst.homeautomation.openhab.OnOffHolderType;
+import rst.homeautomation.state.ClickType;
+import static rst.homeautomation.state.ClickType.Click.ClickState.CLICKED;
+import static rst.homeautomation.state.ClickType.Click.ClickState.RELEASED;
+import static rst.homeautomation.state.PowerType.Power.PowerState.UNKNOWN;
 
 /**
  *

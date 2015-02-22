@@ -13,8 +13,8 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.VerificationFailedException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.devices.homematic.HM_RotaryHandleSensorType;
-import rst.homeautomation.devices.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
+import rst.homeautomation.device.homematic.HM_RotaryHandleSensorType;
+import rst.homeautomation.device.homematic.HM_RotaryHandleSensorType.HM_RotaryHandleSensor;
 
 /**
  *

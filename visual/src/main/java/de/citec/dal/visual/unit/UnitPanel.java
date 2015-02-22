@@ -48,7 +48,7 @@ public class UnitPanel extends javax.swing.JPanel {
 		try {
 			ArrayList<UnitContainer> unitNames = new ArrayList<>();
 			for (AbstractUnitController unit : registry.getUnits(unitClass)) {
-				unitNames.add(new UnitContainer(unit, unit.getLable()));
+				unitNames.add(new UnitContainer(unit, unit.getLabel()));
 			}
 			unitComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitNames.toArray()));
 			unitComboBox.setSelectedItem(0);

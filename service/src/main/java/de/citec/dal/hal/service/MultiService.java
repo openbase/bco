@@ -9,6 +9,6 @@ package de.citec.dal.hal.service;
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public interface Service {
-	public ServiceType getServiceType();
+public interface MultiService extends Service {
+
 }

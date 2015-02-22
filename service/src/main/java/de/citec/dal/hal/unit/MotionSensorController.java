@@ -9,10 +9,10 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.MotionSensorType;
-import rst.homeautomation.MotionSensorType.MotionSensor;
-import rst.homeautomation.states.MotionType;
-import rst.homeautomation.states.MotionType.Motion.MotionState;
+import rst.homeautomation.state.MotionType;
+import rst.homeautomation.state.MotionType.Motion.MotionState;
+import rst.homeautomation.unit.MotionSensorType;
+import rst.homeautomation.unit.MotionSensorType.MotionSensor;
 
 /**
  *

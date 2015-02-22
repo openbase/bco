@@ -20,7 +20,7 @@ import rst.vision.HSVColorType;
  *
  * @author mpohling
  */
-public interface ColorService extends Service, ColorProvider {
+public interface ColorService extends ColorProvider {
 
     public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException;
 

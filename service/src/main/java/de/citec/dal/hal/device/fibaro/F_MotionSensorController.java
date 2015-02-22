@@ -15,6 +15,8 @@ import de.citec.dal.hal.unit.TemperatureSensorController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import de.citec.jul.exception.InstantiationException;
+import rst.homeautomation.device.fibaro.F_MotionSensorType;
+import rst.homeautomation.device.fibaro.F_MotionSensorType.F_MotionSensor;
 
 /**
  *

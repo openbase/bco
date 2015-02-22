@@ -10,9 +10,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.TamperSwitchType;
-import rst.homeautomation.TamperSwitchType.TamperSwitch;
-import rst.homeautomation.states.TamperType;
+import rst.homeautomation.state.TamperType;
+import rst.homeautomation.unit.TamperSwitchType;
+import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
 
 /**
  *

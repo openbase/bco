@@ -25,7 +25,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.states.ShutterType;
+import rst.homeautomation.state.ShutterType;
 
 /**
  *

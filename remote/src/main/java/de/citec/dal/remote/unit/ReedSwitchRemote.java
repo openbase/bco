@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.ReedSwitchInterface;
-import de.citec.dal.hal.unit.ReedSwitchInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.ReedSwitchType;
-import rst.homeautomation.states.OpenClosedType;
+import rst.homeautomation.state.OpenClosedType;
+import rst.homeautomation.unit.ReedSwitchType;
 
 /**
  *

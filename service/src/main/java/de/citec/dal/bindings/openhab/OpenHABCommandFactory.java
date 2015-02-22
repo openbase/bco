@@ -19,8 +19,8 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
 import rst.homeautomation.openhab.PercentType;
 import rst.homeautomation.openhab.StopMoveHolderType;
 import rst.homeautomation.openhab.UpDownHolderType;
-import rst.homeautomation.states.PowerType;
-import rst.homeautomation.states.ShutterType;
+import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.ShutterType;
 import rst.vision.HSVColorType;
 
 /**
@@ -29,7 +29,7 @@ import rst.vision.HSVColorType;
  */
 public class OpenHABCommandFactory {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static OpenhabCommandType.OpenhabCommand.Builder getCommandBuilder() {
         return OpenhabCommandType.OpenhabCommand.newBuilder();

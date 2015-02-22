@@ -11,7 +11,7 @@ import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerPlugController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.devices.fibaro.F_FIB_FGWPF_101Type;
+import rst.homeautomation.device.fibaro.F_FIB_FGWPF_101Type;
 
 /**
  *
@@ -23,8 +23,8 @@ public class F_FIB_FGWPF_101Controller extends AbstractOpenHABDeviceController<F
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.getDefaultInstance()));
     }
 
-    public F_FIB_FGWPF_101Controller(final String id, String label, final Location location) throws de.citec.jul.exception.InstantiationException {
-        super(id, label, location, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.newBuilder());
+    public F_FIB_FGWPF_101Controller(final String name, String label, final Location location) throws de.citec.jul.exception.InstantiationException {
+        super(name, label, location, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.newBuilder());
         registerUnit(new PowerPlugController(label, this, data.getPowerPlugBuilder()));
         registerUnit(new PowerConsumptionSensorController(label, this, data.getPowerConsumptionBuilder()));
     }

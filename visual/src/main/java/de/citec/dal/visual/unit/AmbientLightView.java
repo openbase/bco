@@ -13,7 +13,7 @@ import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import rst.homeautomation.AmbientLightType;
+import rst.homeautomation.unit.AmbientLightType;
 
 /**
  *

@@ -10,8 +10,8 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.PowerConsumptionSensorType;
-import rst.homeautomation.PowerConsumptionSensorType.PowerConsumptionSensor;
+import rst.homeautomation.unit.PowerConsumptionSensorType;
+import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
 
 /**
  *

@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.TamperSwitchInterface;
-import de.citec.dal.hal.unit.TamperSwitchInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.TamperSwitchType;
-import rst.homeautomation.states.TamperType;
+import rst.homeautomation.state.TamperType;
+import rst.homeautomation.unit.TamperSwitchType;
 
 /**
  *

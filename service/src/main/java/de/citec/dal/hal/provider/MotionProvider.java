@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.states.MotionType;
+import rst.homeautomation.state.MotionType;
 
 /**
  *

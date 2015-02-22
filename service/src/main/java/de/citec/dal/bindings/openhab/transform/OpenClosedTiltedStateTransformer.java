@@ -9,7 +9,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.states.OpenClosedTiltedType;
+import rst.homeautomation.state.OpenClosedTiltedType;
 
 /**
  *

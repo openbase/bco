@@ -10,7 +10,7 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.homeautomation.states.PowerType;
+import rst.homeautomation.state.PowerType;
 
 /**
  *

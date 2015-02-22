@@ -6,12 +6,11 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.BrightnessSensorInterface;
-import de.citec.dal.hal.unit.BrightnessSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.BrightnessSensorType;
+import rst.homeautomation.unit.BrightnessSensorType;
 
 /**
  *

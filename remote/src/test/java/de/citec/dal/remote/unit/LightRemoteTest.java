@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.states.PowerType;
+import rst.homeautomation.state.PowerType;
 
 /**
  *
@@ -103,7 +103,7 @@ public class LightRemoteTest {
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         LightController test = ((LightController) dalService.getRegistry().getUnit(UNITS[0], TestConfiguration.LOCATION, LightController.class));
         test.updatePower(state);
-        System.out.println(test.getScope() + "," + test.getLable());
+        System.out.println(test.getScope() + "," + test.getLabel());
         while (true) {
             try {
                 if (lightRemote.getPower().equals(state)) {

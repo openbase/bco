@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.MotionSensorInterface;
-import de.citec.dal.hal.unit.MotionSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.MotionSensorType;
-import rst.homeautomation.states.MotionType;
+import rst.homeautomation.state.MotionType;
+import rst.homeautomation.unit.MotionSensorType;
 
 /**
  *

@@ -9,7 +9,7 @@ import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.openhab.StopMoveHolderType;
 import static rst.homeautomation.openhab.StopMoveHolderType.StopMoveHolder.StopMove.STOP;
-import rst.homeautomation.states.ShutterType.Shutter;
+import rst.homeautomation.state.ShutterType.Shutter;
 
 /**
  *

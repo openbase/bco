@@ -7,7 +7,7 @@ package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.states.TamperType;
+import rst.homeautomation.state.TamperType;
 
 /**
  *

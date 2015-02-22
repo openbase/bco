@@ -11,7 +11,7 @@ import de.citec.dal.hal.unit.RollershutterController;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.devices.hager.HA_TYA628CType;
+import rst.homeautomation.device.hager.HA_TYA628CType;
 
 /**
  *

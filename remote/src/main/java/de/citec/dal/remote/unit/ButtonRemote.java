@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.ButtonInterface;
-import de.citec.dal.hal.unit.ButtonInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.ButtonType;
-import rst.homeautomation.states.ClickType;
+import rst.homeautomation.state.ClickType;
+import rst.homeautomation.unit.ButtonType;
 
 /**
  *

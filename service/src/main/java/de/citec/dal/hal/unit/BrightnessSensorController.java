@@ -10,8 +10,8 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.BrightnessSensorType;
-import rst.homeautomation.BrightnessSensorType.BrightnessSensor;
+import rst.homeautomation.unit.BrightnessSensorType;
+import rst.homeautomation.unit.BrightnessSensorType.BrightnessSensor;
 
 /**
  *

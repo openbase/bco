@@ -10,9 +10,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.ButtonType;
-import rst.homeautomation.ButtonType.Button;
-import rst.homeautomation.states.ClickType;
+import rst.homeautomation.state.ClickType;
+import rst.homeautomation.unit.ButtonType;
+import rst.homeautomation.unit.ButtonType.Button;
 
 /**
  *

@@ -30,6 +30,7 @@ import rsb.patterns.LocalServer;
  */
 public enum ServiceType {
 
+	MULTI(MultiService.class),
 	BATTERY(BatteryProvider.class),
 	BRIGHTNESS(BrightnessService.class),
 	BUTTON(ButtonProvider.class),

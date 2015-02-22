@@ -8,7 +8,7 @@ package de.citec.dal.bindings.openhab.transform;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.openhab.UpDownHolderType;
-import rst.homeautomation.states.ShutterType.Shutter;
+import rst.homeautomation.state.ShutterType.Shutter;
 
 /**
  *

@@ -11,8 +11,8 @@ import de.citec.dal.hal.unit.ButtonController;
 import de.citec.dal.hal.unit.LightController;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.devices.fibaro.F_FGS_221Type;
-import rst.homeautomation.devices.fibaro.F_MotionSensorType;
+import rst.homeautomation.device.fibaro.F_FGS_221Type;
+import rst.homeautomation.device.fibaro.F_MotionSensorType;
 
 /**
  *
@@ -25,7 +25,7 @@ public class F_FGS221Controller extends AbstractOpenHABDeviceController<F_FGS_22
     }
 
     public F_FGS221Controller(final String id, String label, String[] unitlabel, final Location location) throws de.citec.jul.exception.InstantiationException {
-        super(id, label, location, F_FGS_221Type.F_FGS_221.newBuilder());
+        super(label, location, F_FGS_221Type.F_FGS_221.newBuilder());
         registerUnit(new LightController(unitlabel[0], this, data.getLight0Builder()));
         registerUnit(new LightController(unitlabel[1], this, data.getLight1Builder()));
         registerUnit(new ButtonController(unitlabel[2], this, data.getButton0Builder()));

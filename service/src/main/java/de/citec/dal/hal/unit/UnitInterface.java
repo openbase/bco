@@ -5,14 +5,22 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.service.Service;
+import de.citec.dal.data.Location;
+import de.citec.dal.hal.service.MultiService;
+import de.citec.jul.rsb.ScopeProvider;
 
 /**
  *
  * @author mpohling
  */
-public interface UnitInterface extends Service {
+public interface UnitInterface extends MultiService, ScopeProvider {
     
+    public String getId();
+
     public String getName();
+
+	public String getLabel();
+
+    public Location getLocation();
     
 }

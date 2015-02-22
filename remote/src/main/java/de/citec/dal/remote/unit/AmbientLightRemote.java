@@ -13,8 +13,8 @@ import de.citec.jul.exception.CouldNotPerformException;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.AmbientLightType;
-import rst.homeautomation.states.PowerType;
+import rst.homeautomation.unit.AmbientLightType;
+import rst.homeautomation.state.PowerType;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 

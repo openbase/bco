@@ -50,7 +50,7 @@ public class AbstractHardwareControllerTest {
         String id = "PW_PowerPlug_014";
         Class<? extends AbstractDeviceController> hardware = PW_PowerPlugController.class;
         String expResult = "PW_PowerPlug";
-        String result = AbstractDeviceController.parseDeviceId(id, hardware);
+        String result = AbstractDeviceController.parseDeviceName(id, hardware);
         assertEquals(expResult, result);
     }
 

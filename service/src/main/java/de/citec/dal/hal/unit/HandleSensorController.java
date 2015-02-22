@@ -10,9 +10,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.HandleSensorType;
-import rst.homeautomation.HandleSensorType.HandleSensor;
-import rst.homeautomation.states.OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState;
+import rst.homeautomation.state.OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState;
+import rst.homeautomation.unit.HandleSensorType;
+import rst.homeautomation.unit.HandleSensorType.HandleSensor;
 
 /**
  *

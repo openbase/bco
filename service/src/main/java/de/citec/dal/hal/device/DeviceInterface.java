@@ -7,20 +7,21 @@ package de.citec.dal.hal.device;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.jul.rsb.ScopeProvider;
 
 /**
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public interface DeviceInterface {
+public interface DeviceInterface extends ScopeProvider{
 
     public String getId();
 
+    public String getName();
+
+	public String getLabel();
+
     public Location getLocation();
-
-    public String getHardware_id();
-
-    public String getInstance_id();
     
     public ServiceFactory getDefaultServiceFactory();
 }

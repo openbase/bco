@@ -12,9 +12,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.PowerPlugType;
-import rst.homeautomation.PowerPlugType.PowerPlug;
-import rst.homeautomation.states.PowerType;
+import rst.homeautomation.state.PowerType;
+import rst.homeautomation.unit.PowerPlugType;
+import rst.homeautomation.unit.PowerPlugType.PowerPlug;
 
 /**
  *

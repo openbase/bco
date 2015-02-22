@@ -10,7 +10,7 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.homeautomation.states.ShutterType;
+import rst.homeautomation.state.ShutterType;
 
 /**
  *

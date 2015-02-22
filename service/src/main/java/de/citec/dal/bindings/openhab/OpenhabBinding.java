@@ -5,7 +5,9 @@
  */
 package de.citec.dal.bindings.openhab;
 
+import de.citec.dal.bindings.openhab.transform.ItemTransformer;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
+import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
@@ -35,7 +37,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.openhab.RSBBindingType;
 import rst.homeautomation.openhab.RSBBindingType.RSBBinding;
-import rst.homeautomation.states.ActiveDeactiveType;
+import rst.homeautomation.state.ActiveDeactiveType;
 
 /**
  * @author thuxohl
@@ -55,7 +57,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 	private final RSBRemoteService<RSBBinding> openhabRemoteService;
 	private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
-	private final DALRegistry registry;
+	private final UnitRegistry unitRegistry;
 
 	static {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
@@ -72,12 +74,12 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 	private OpenhabBinding() throws InstantiationException {
 		try {
-			this.registry = DALRegistry.getInstance();
+			this.unitRegistry = UnitRegistry.getInstance();
 
 			openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
 				@Override
-				public void notifyUpdated(RSBBinding data) {
+				public void notifyUpdated(final RSBBinding data) {
 					OpenhabBinding.this.notifyUpdated(data);
 				}
 			};
@@ -103,7 +105,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		}
 	}
 
-	public final void notifyUpdated(RSBBinding data) {
+	public final void notifyUpdated(final RSBBinding data) {
 		switch (data.getState().getState()) {
 			case ACTIVE:
 				logger.info("Active dal binding state!");
@@ -117,7 +119,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		}
 	}
 
-	public final void registerMethods(LocalServer server) {
+	public final void registerMethods(final LocalServer server) {
 		try {
 			server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
 		} catch (RSBException ex) {
@@ -126,9 +128,14 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	}
 
 	@Override
-	public void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException {
+	public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
 		try {
 			try {
+
+				unitRegistry.getUnit(ItemTransformer.generateUnitID(command));
+
+
+
 				((AbstractOpenHABDeviceController) registry.getDevice(command.getItem())).receiveUpdate(command);
 			} catch (ClassCastException ex) {
 				throw new CouldNotPerformException("Resolved device is not supported by " + this + "!", ex);
@@ -152,7 +159,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	}
 
 	@Override
-	public Future executeCommand(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
+	public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
 		try {
 			if (JPService.getAttribute(JPHardwareSimulationMode.class).getValue()) {
 				internalReceiveUpdate(command);

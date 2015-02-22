@@ -9,7 +9,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.states.MotionType;
+import rst.homeautomation.state.MotionType;
+import static rst.homeautomation.state.MotionType.Motion.MotionState.MOVEMENT;
+import static rst.homeautomation.state.MotionType.Motion.MotionState.NO_MOVEMENT;
 
 /**
  *

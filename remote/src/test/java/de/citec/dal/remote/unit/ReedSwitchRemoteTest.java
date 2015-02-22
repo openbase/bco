@@ -5,11 +5,9 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.dal.remote.unit.ReedSwitchRemote;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.homematic.HM_ReedSwitchController;
-import de.citec.dal.hal.unit.ReedSwitchController;
 import de.citec.dal.hal.unit.ReedSwitchController;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
@@ -27,7 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.states.OpenClosedType;
+import rst.homeautomation.state.OpenClosedType;
 
 /**
  *

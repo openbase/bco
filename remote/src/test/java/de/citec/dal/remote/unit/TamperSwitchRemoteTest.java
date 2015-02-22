@@ -24,7 +24,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.states.TamperType;
+import rst.homeautomation.state.TamperType;
 
 /**
  *

@@ -69,7 +69,7 @@ public class Location implements ScopeProvider {
 
 	public static Scope generateScope(final Location location) {
 		if (location.isRootLocation()) {
-			return new Scope(ScopeProvider.SEPARATOR + location.getName().toLowerCase());
+			return new Scope(Scope.COMPONENT_SEPARATOR + location.getName().toLowerCase());
 		}
 
 		try {

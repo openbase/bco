@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.HandleSensorInterface;
-import de.citec.dal.hal.unit.HandleSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.HandleSensorType;
-import rst.homeautomation.states.OpenClosedTiltedType;
+import rst.homeautomation.state.OpenClosedTiltedType;
+import rst.homeautomation.unit.HandleSensorType;
 
 /**
  *

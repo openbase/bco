@@ -32,3 +32,4 @@ public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface>
         executeCommand(OpenHABCommandFactory.newPercentCommand(brightness));
     }
 }
+

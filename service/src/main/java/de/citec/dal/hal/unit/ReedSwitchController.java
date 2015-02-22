@@ -10,10 +10,10 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.ReedSwitchType;
-import rst.homeautomation.ReedSwitchType.ReedSwitch;
-import rst.homeautomation.states.OpenClosedType;
-import rst.homeautomation.states.OpenClosedType.OpenClosed.OpenClosedState;
+import rst.homeautomation.state.OpenClosedType;
+import rst.homeautomation.state.OpenClosedType.OpenClosed.OpenClosedState;
+import rst.homeautomation.unit.ReedSwitchType;
+import rst.homeautomation.unit.ReedSwitchType.ReedSwitch;
 
 /**
  *

@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.PowerPlugInterface;
-import de.citec.dal.hal.unit.PowerPlugInterface;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.PowerPlugType;
-import rst.homeautomation.states.PowerType;
+import rst.homeautomation.state.PowerType;
+import rst.homeautomation.unit.PowerPlugType;
 
 /**
  *

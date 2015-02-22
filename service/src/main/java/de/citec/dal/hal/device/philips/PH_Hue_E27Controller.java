@@ -11,8 +11,8 @@ import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.devices.philips.PH_Hue_E27Type;
-import rst.homeautomation.devices.philips.PH_Hue_E27Type.PH_Hue_E27;
+import rst.homeautomation.device.philips.PH_Hue_E27Type;
+import rst.homeautomation.device.philips.PH_Hue_E27Type.PH_Hue_E27;
 
 /**
  *

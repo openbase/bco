@@ -6,13 +6,12 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.RollershutterInterface;
-import de.citec.dal.hal.unit.RollershutterInterface;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.RollershutterType;
-import rst.homeautomation.states.ShutterType;
+import rst.homeautomation.state.ShutterType;
+import rst.homeautomation.unit.RollershutterType;
 
 /**
  *

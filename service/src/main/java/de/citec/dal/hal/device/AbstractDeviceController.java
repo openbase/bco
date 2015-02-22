@@ -12,15 +12,14 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.service.Service;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import rsb.RSBException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import rsb.Scope;
 import rsb.patterns.LocalServer;
 
 /**
@@ -31,152 +30,118 @@ import rsb.patterns.LocalServer;
  */
 public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements DeviceInterface {
 
-    public final static String ID_SEPERATOR = "_";
-    public final static String TYPE_FILED_ID = "id";
-    public final static String TYPE_FILED_LABEL = "label";
+	public final static String TYPE_FILED_ID = "id";
+	public final static String TYPE_FILED_NAME = "name";
+	public final static String TYPE_FILED_LABEL = "label";
 
-    protected final String id;
-    protected final String label;
-    protected final String hardware_id;
-    protected final String instance_id;
-    protected final Location location;
-    protected final Map<String, AbstractUnitController> unitMap;
-    protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
+	protected final String id;
+	protected final String name;
+	protected final String label;
+	protected final Location location;
 
-    public AbstractDeviceController(final String id, final String label, final Location location, final MB builder) throws InstantiationException {
-        super(generateScope(id, location), builder);
-        this.id = id;
-        this.label = label;
-        this.location = location;
-        this.unitMap = new HashMap<>();
-        this.unitServiceHardwareMap = new HashMap<>();
+	protected final Map<String, AbstractUnitController> unitMap;
+	protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
 
-        try {
-            this.hardware_id = parseDeviceId(id, getClass());
-            this.instance_id = parseInstanceId(id);
-        } catch (VerificationFailedException ex) {
-            throw new InstantiationException("Unable to generate id fields.", this, ex);
-        }
+	public AbstractDeviceController(final String label, final Location location, final MB builder) throws InstantiationException {
+		super(generateScope(generateName(builder.getClass().getDeclaringClass()), label, location), builder);
+		this.id = generateId(scope);
+		this.name = generateName(builder.getClass().getDeclaringClass());
+		this.label = label;
+		this.location = location;
+		this.unitMap = new HashMap<>();
+		this.unitServiceHardwareMap = new HashMap<>();
 
-        setField(TYPE_FILED_ID, id);
-        setField(TYPE_FILED_LABEL, label);
+		setField(TYPE_FILED_ID, id);
+		setField(TYPE_FILED_NAME, name);
+		setField(TYPE_FILED_LABEL, label);
 
-        try {
-            init(InformerType.Distributed);
-        } catch (InitializationException ex) {
-            throw new InstantiationException("Could not init RSBCommunicationService!", ex);
-        }
-    }
+		try {
+			init(InformerType.Distributed);
+		} catch (InitializationException ex) {
+			throw new InstantiationException("Could not init RSBCommunicationService!", ex);
+		}
+	}
 
-    public final static String parseDeviceId(String id, Class<? extends AbstractDeviceController> hardware) throws VerificationFailedException {
-        assert id != null;
-        assert hardware != null;
-        String hardwareId = hardware.getSimpleName().replace("Controller", "");
+	public final static String generateId(final Scope scope) {
+		return scope.toString();
+	}
 
-        /* verify given id */
-        if (!id.startsWith(hardwareId)) {
-            throw new VerificationFailedException("Given id [" + id + "] does not start with prefix [" + hardwareId + "]!");
-        }
+	public final static String generateName(final Class hardware) {
+		return hardware.getSimpleName().replace("Controller", "");
+	}
 
-        return hardwareId;
-    }
+	protected <U extends AbstractUnitController> void registerUnit(final U unit) {
+		for (String key : unitMap.keySet()) {
+			if (key.equals(unit.getScope().toString())) {
+				logger.debug("Registering the unit[" + unit + "] overrides the registration of the unit[" + unitMap.get(key) + "]");
+			}
+		}
+		unitMap.put(unit.getName(), unit);
+	}
 
-    public final static String parseInstanceId(String id) throws VerificationFailedException {
-        String[] split = id.split(ID_SEPERATOR);
-        String instanceId;
+	public AbstractUnitController getUnit(final String id) throws NotAvailableException {
+		if (!unitMap.containsKey(id)) {
+			throw new NotAvailableException("Unit[" + id + "]", this + " has no registered unit with given name!");
+		}
+		return unitMap.get(name);
+	}
 
-        try {
-            instanceId = split[split.length - 1];
-        } catch (IndexOutOfBoundsException ex) {
-            throw new VerificationFailedException("Given id [" + id + "] does not contain saperator [" + ID_SEPERATOR + "]");
-        }
+	@Override
+	public Location getLocation() {
+		return location;
+	}
 
-        /* verify instance id */
-        try {
-            Integer.parseInt(instanceId);
-        } catch (NumberFormatException ex) {
-            throw new VerificationFailedException("Given id [" + id + "] does not end with a instance nubmer!");
-        }
-        return instanceId;
-    }
+	public void registerService(Service service, AbstractUnitController unit) {
+		if (!unitServiceHardwareMap.containsKey(unit)) {
+			unitServiceHardwareMap.put(unit, new ArrayList<Service>());
+		}
+		unitServiceHardwareMap.get(unit).add(service);
+	}
 
-    protected <U extends AbstractUnitController> void registerUnit(final U unit) {
-        for(String key : unitMap.keySet()) {
-            if(key.equals(unit.getScope().toString())) {
-                logger.debug("Registering the unit["+unit+"] overrides the registration of the unit["+unitMap.get(key)+"]");
-            }
-        }
-        unitMap.put(unit.getScope().toString(), unit);
-    }
+	@Override
+	public String getId() {
+		return id;
+	}
 
+	@Override
+	public String getName() {
+		return name;
+	}
 
-	//TODO mpohling: how to handle multi unit with same name.
-    public AbstractUnitController getUnitByName(final String name) throws NotAvailableException {
-        if(!unitMap.containsKey(name)) {
-            throw new NotAvailableException("Unit["+name+"]", this+" has no registed unit with given name!");
-        }
-        return unitMap.get(name);
-    }
+	@Override
+	public String getLabel() {
+		return label;
+	}
 
-    @Override
-    public Location getLocation() {
-        return location;
-    }
+	@Override
+	public void activate() {
+		super.activate();
 
-    public void registerService(Service service, AbstractUnitController unit) {
-        if (!unitServiceHardwareMap.containsKey(unit)) {
-            unitServiceHardwareMap.put(unit, new ArrayList<Service>());
-        }
-        unitServiceHardwareMap.get(unit).add(service);
-    }
+		for (AbstractUnitController unit : unitMap.values()) {
+			unit.activate();
+		}
+	}
 
-    @Override
-    public String getId() {
-        return id;
-    }
+	@Override
+	public void deactivate() throws InterruptedException {
+		super.deactivate();
 
-    public String getLable() {
-        return label;
-    }
+		for (AbstractUnitController unit : unitMap.values()) {
+			unit.deactivate();
+		}
+	}
 
-    @Override
-    public void activate() {
-        super.activate();
+	@Override
+	public void registerMethods(LocalServer server) {
+		// dummy construct: For registering methods overwrite this method.
+	}
 
-        for (AbstractUnitController controller : unitMap.values()) {
-            controller.activate();
-        }
-    }
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "["+id+"]";
+	}
 
-    @Override
-    public void deactivate() throws InterruptedException {
-        super.deactivate();
-
-        for (AbstractUnitController controller : unitMap.values()) {
-            controller.deactivate();
-        }
-    }
-
-    @Override
-    public void registerMethods(LocalServer server) {
-        // dummy construct: For registering methods overwrite this method.
-    }
-
-    @Override
-    public String getHardware_id() {
-        return hardware_id;
-    }
-
-    @Override
-    public String getInstance_id() {
-        return instance_id;
-    }
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[id:" + id + "|scope:" + getLocation().getScope() + "]";
-    }
-
-    public Collection<AbstractUnitController> getUnits() {
-        return Collections.unmodifiableCollection(unitMap.values());
-    }
+	public Collection<AbstractUnitController> getUnits() {
+		return Collections.unmodifiableCollection(unitMap.values());
+	}
 }
