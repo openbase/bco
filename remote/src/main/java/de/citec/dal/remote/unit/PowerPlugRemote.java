@@ -6,7 +6,6 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.PowerPlugInterface;
-import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.PowerPlugType;
  *
  * @author thuxohl
  */
-public class PowerPlugRemote extends RSBRemoteService<PowerPlugType.PowerPlug> implements PowerPlugInterface {
+public class PowerPlugRemote extends DALRemoteService<PowerPlugType.PowerPlug> implements PowerPlugInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerPlugType.PowerPlug.getDefaultInstance()));

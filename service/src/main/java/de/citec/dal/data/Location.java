@@ -73,7 +73,7 @@ public class Location implements ScopeProvider {
 		}
 
 		try {
-			return location.getParent().getScope();
+			return generateScope(location.getParent()).concat(new Scope(Scope.COMPONENT_SEPARATOR + location.getName().toLowerCase()));
 		} catch (NotAvailableException ex) {
 			throw new AssertionError("Parent location must be available for non root location!", ex);
 		}

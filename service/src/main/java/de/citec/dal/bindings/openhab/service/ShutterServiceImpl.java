@@ -10,6 +10,7 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 import rst.homeautomation.state.ShutterType;
 
 /**
@@ -19,7 +20,7 @@ import rst.homeautomation.state.ShutterType;
  */
 public class ShutterServiceImpl<ST extends ShutterService & UnitInterface> extends OpenHABService<ST> implements ShutterService {
 
-    public ShutterServiceImpl(DeviceInterface device, ST unit) {
+    public ShutterServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.MotionSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionType;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.MotionSensorType;
  *
  * @author thuxohl
  */
-public class MotionSensorRemote extends RSBRemoteService<MotionSensorType.MotionSensor> implements MotionSensorInterface {
+public class MotionSensorRemote extends DALRemoteService<MotionSensorType.MotionSensor> implements MotionSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));

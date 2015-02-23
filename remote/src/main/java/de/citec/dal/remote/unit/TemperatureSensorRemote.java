@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.TemperatureSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.TemperatureSensorType;
@@ -16,7 +15,7 @@ import rst.homeautomation.unit.TemperatureSensorType;
  *
  * @author thuxohl
  */
-public class TemperatureSensorRemote extends RSBRemoteService<TemperatureSensorType.TemperatureSensor> implements TemperatureSensorInterface {
+public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensorType.TemperatureSensor> implements TemperatureSensorInterface {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));

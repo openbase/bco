@@ -7,16 +7,21 @@ package de.citec.dal.bindings.openhab;
 
 import static de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController.ITEM_ID_DELIMITER;
 import de.citec.dal.bindings.openhab.transform.ItemTransformer;
+import static de.citec.dal.bindings.openhab.transform.ItemTransformer.ITEM_SEGMENT_DELIMITER;
+import static de.citec.dal.bindings.openhab.transform.ItemTransformer.ITEM_SUBSEGMENT_DELIMITER;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.dal.hal.unit.AbstractUnitController;
+import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.registry.UnitRegistry;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rsb.Scope;
 import rst.homeautomation.openhab.OpenhabCommandType;
 
 /**
@@ -27,44 +32,54 @@ public class OpenHABCommandExecutor {
 
 	private static final Logger logger = LoggerFactory.getLogger(OpenHABCommandExecutor.class);
 
-	public void receiveUpdate(OpenhabCommandType.OpenhabCommand command, Unit) throws CouldNotPerformException {
-        logger.debug("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
+	private final UnitRegistry unitRegistry;
 
-        String unitServicePattern = command.getItem().replaceFirst(name + ITEM_ID_DELIMITER, "");
-        String[] pattern = unitServicePattern.split(ITEM_ID_DELIMITER);
-        String unitName = pattern[0];
-        String serviceName = pattern[pattern.length-1];
+	public OpenHABCommandExecutor(UnitRegistry unitRegistry) {
+		this.unitRegistry = unitRegistry;
+	}
 
-        Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceName);
-        AbstractUnitController unit;
-        Method relatedMethod;
+	public void receiveUpdate(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
+		logger.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
 
-        try {
-            unit = getUnitByName(unitName);
+		String[] nameSegment = command.getItem().split(ITEM_SEGMENT_DELIMITER);
+		String location = nameSegment[1].replace(ITEM_SUBSEGMENT_DELIMITER, Scope.COMPONENT_SEPARATOR);
+		String unitId = (Scope.COMPONENT_SEPARATOR + location + Scope.COMPONENT_SEPARATOR + nameSegment[2] + Scope.COMPONENT_SEPARATOR + nameSegment[3] + Scope.COMPONENT_SEPARATOR).toLowerCase();
+		String serviceName = nameSegment[4];
 
-            String methodName = ServiceType.UPDATE + serviceName;
-            try {
-                relatedMethod = unit.getClass().getMethod(methodName, serviceData.getClass());
-                if (relatedMethod == null) {
-                    throw new NotAvailableException(relatedMethod);
-                }
-            } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
-                throw new NotAvailableException("Methcode " + unit + "." + methodName + "(" + serviceData.getClass() + ")", ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Unit not compatible!", ex);
-        }
+//        String unitServicePattern = command.getItem().replaceFirst(name + ITEM_ID_DELIMITER, "");
+//        String[] pattern = unitServicePattern.split(ITEM_ID_DELIMITER);
+//        String unitName = pattern[0];
+//        String serviceName = pattern[pattern.length-1];
+		Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceName);
+		Method relatedMethod;
+		UnitInterface unit;
 
-        try {
-            relatedMethod.invoke(unit, serviceData);
-        } catch (IllegalAccessException ex) {
-            throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
-        } catch (IllegalArgumentException ex) {
-            throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
-        } catch (InvocationTargetException ex) {
-            throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
-        } catch (Throwable cause) {
-            throw new CouldNotPerformException("Fatal invocation error!", cause);
-        }
-    }
+		try {
+			unit = unitRegistry.getUnit(unitId);
+
+			String methodName = ServiceType.UPDATE + serviceName;
+			try {
+				relatedMethod = unit.getClass().getMethod(methodName, serviceData.getClass());
+				if (relatedMethod == null) {
+					throw new NotAvailableException(relatedMethod);
+				}
+			} catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
+				throw new NotAvailableException("Method " + unit + "." + methodName + "(" + serviceData.getClass() + ")", ex);
+			}
+		} catch (CouldNotPerformException ex) {
+			throw new CouldNotPerformException("Unit not compatible!", ex);
+		}
+
+		try {
+			relatedMethod.invoke(unit, serviceData);
+		} catch (IllegalAccessException ex) {
+			throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
+		} catch (IllegalArgumentException ex) {
+			throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
+		} catch (InvocationTargetException ex) {
+			throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
+		} catch (Throwable cause) {
+			throw new CouldNotPerformException("Fatal invocation error!", cause);
+		}
+	}
 }

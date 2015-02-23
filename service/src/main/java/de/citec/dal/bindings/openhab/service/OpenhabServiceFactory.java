@@ -21,17 +21,17 @@ import de.citec.jul.exception.InstantiationException;
 public class OpenhabServiceFactory implements ServiceFactory {
 
     @Override
-    public BrightnessService newBrightnessService(DeviceInterface device, BrightnessService unit) {
+    public BrightnessService newBrightnessService(DeviceInterface device, BrightnessService unit) throws InstantiationException {
         return new BrightnessServiceImpl(device, unit);
     }
 
     @Override
-    public ColorService newColorService(DeviceInterface device, ColorService unit) {
+    public ColorService newColorService(DeviceInterface device, ColorService unit) throws InstantiationException {
         return new ColorServiceImpl(device, unit);
     }
 
     @Override
-    public PowerService newPowerService(DeviceInterface device, PowerService unit) {
+    public PowerService newPowerService(DeviceInterface device, PowerService unit) throws InstantiationException {
         return new PowerServiceImpl(device, unit);
     }
 

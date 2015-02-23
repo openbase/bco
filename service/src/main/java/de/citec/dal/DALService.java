@@ -5,12 +5,12 @@
  */
 package de.citec.dal;
 
-import de.citec.dal.bindings.openhab.OpenhabBinding;
 import de.citec.dal.registry.CSRADeviceInitializerImpl;
 import de.citec.dal.util.DALRegistry;
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.util.DeviceInitializer;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +66,7 @@ public class DALService {
 	public static void main(String[] args) {
 		/* Setup CLParser */
 		JPService.setApplicationName("DeviceManager");
+		JPService.registerProperty(JPDebugMode.class);
 		JPService.registerProperty(JPHardwareSimulationMode.class);
 		JPService.parseAndExitOnError(args);
 

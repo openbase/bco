@@ -114,7 +114,7 @@ public class LightRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", lightRemote.getPower().equals(state));
+        assertTrue("Light has not been set in time!", lightRemote.getPower().equals(state));
     }
 
     /**

@@ -10,6 +10,7 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 import rst.homeautomation.state.PowerType;
 
 /**
@@ -19,7 +20,7 @@ import rst.homeautomation.state.PowerType;
  */
 public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends OpenHABService<ST> implements de.citec.dal.hal.service.PowerService {
 
-    public PowerServiceImpl(DeviceInterface device, ST unit) {
+    public PowerServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.ReedSwitchInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.OpenClosedType;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.ReedSwitchType;
  *
  * @author thuxohl
  */
-public class ReedSwitchRemote extends RSBRemoteService<ReedSwitchType.ReedSwitch> implements ReedSwitchInterface {
+public class ReedSwitchRemote extends DALRemoteService<ReedSwitchType.ReedSwitch> implements ReedSwitchInterface {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));

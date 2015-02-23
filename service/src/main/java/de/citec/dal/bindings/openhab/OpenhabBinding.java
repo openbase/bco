@@ -54,10 +54,10 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
 
 	private static OpenhabBinding instance;
+	private OpenHABCommandExecutor commandExecutor;
 
 	private final RSBRemoteService<RSBBinding> openhabRemoteService;
 	private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
-	private final UnitRegistry unitRegistry;
 
 	static {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
@@ -74,7 +74,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 	private OpenhabBinding() throws InstantiationException {
 		try {
-			this.unitRegistry = UnitRegistry.getInstance();
+			this.commandExecutor = new OpenHABCommandExecutor(UnitRegistry.getInstance());
 
 			openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
@@ -130,16 +130,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	@Override
 	public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
 		try {
-			try {
-
-				unitRegistry.getUnit(ItemTransformer.generateUnitID(command));
-
-
-
-				((AbstractOpenHABDeviceController) registry.getDevice(command.getItem())).receiveUpdate(command);
-			} catch (ClassCastException ex) {
-				throw new CouldNotPerformException("Resolved device is not supported by " + this + "!", ex);
-			}
+			commandExecutor.receiveUpdate(command);
 		} catch (Exception ex) {
 			throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + OpenhabCommandTransformer.getCommandData(command) + "]!", ex);
 		}

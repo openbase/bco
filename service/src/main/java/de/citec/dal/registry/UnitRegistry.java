@@ -8,8 +8,7 @@ package de.citec.dal.registry;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.TreeMap;
 
 /**
  *
@@ -19,11 +18,11 @@ public class UnitRegistry {
 
 	private static UnitRegistry instance;
 
-	private final Map<String, UnitInterface> unitMap;
+	private final TreeMap<String, UnitInterface> unitMap;
 
 	private UnitRegistry() {
 		instance = this;
-		this.unitMap = new HashMap<>();
+		this.unitMap = new TreeMap<>();
 	}
 
 	public static synchronized UnitRegistry getInstance() {
@@ -34,15 +33,15 @@ public class UnitRegistry {
 	}
 
 	public void registerUnit(final UnitInterface unit) throws CouldNotPerformException {
-		if (unitMap.containsKey(unit.getId())) {
-			throw new CouldNotPerformException("Could not register " + unit + "! Unit with same id already registered!");
-		}
+//		if (unitMap.containsKey(unit.getId())) {
+//			throw new CouldNotPerformException("Could not register " + unit + "! Unit with same id already registered!");
+//		}
 		unitMap.put(unit.getId(), unit);
 	}
 
-	public UnitInterface getUnit(String id) throws NotAvailableException {
-		if (unitMap.containsKey(id)) {
-			throw new NotAvailableException("Unit[" + id + "]");
+	public UnitInterface getUnit(final String id) throws NotAvailableException {
+		if (!unitMap.containsKey(id)) {
+			throw new NotAvailableException("Unit[" + id + "]", "Nearest neighbor is Unit["+unitMap.floorKey(id)+"] or Unit["+unitMap.ceilingKey(id)+"].");
 		}
 		return unitMap.get(id);
 	}

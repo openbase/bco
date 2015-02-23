@@ -10,6 +10,7 @@ import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.util.DALRegistry;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
@@ -47,6 +48,7 @@ public class AmbientLightRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        JPService.registerProperty(JPDebugMode.class, true);
         dalService = new DALService(new TestConfiguration());
         dalService.activate();
 

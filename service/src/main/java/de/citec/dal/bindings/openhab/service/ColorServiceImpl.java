@@ -10,6 +10,7 @@ import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 import rst.vision.HSVColorType;
 
 /**
@@ -19,7 +20,7 @@ import rst.vision.HSVColorType;
  */
 public class ColorServiceImpl<ST extends ColorService & UnitInterface>  extends OpenHABService<ST> implements ColorService {
 
-    public ColorServiceImpl(DeviceInterface device, ST unit) {
+    public ColorServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

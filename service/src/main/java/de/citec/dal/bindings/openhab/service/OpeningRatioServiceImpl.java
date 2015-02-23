@@ -10,6 +10,7 @@ import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 
 /**
  *
@@ -18,7 +19,7 @@ import de.citec.jul.exception.CouldNotPerformException;
  */
 public class OpeningRatioServiceImpl<ST extends OpeningRatioService & UnitInterface>  extends OpenHABService<ST> implements OpeningRatioService {
 
-    public OpeningRatioServiceImpl(DeviceInterface device, ST unit) {
+    public OpeningRatioServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

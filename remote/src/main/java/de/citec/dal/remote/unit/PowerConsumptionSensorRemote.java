@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.PowerConsumptionSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.PowerConsumptionSensorType;
@@ -16,7 +15,7 @@ import rst.homeautomation.unit.PowerConsumptionSensorType;
  *
  * @author thuxohl
  */
-public class PowerConsumptionSensorRemote extends RSBRemoteService<PowerConsumptionSensorType.PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
+public class PowerConsumptionSensorRemote extends DALRemoteService<PowerConsumptionSensorType.PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));

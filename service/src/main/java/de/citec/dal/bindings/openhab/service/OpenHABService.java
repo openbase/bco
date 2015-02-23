@@ -17,6 +17,7 @@ import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.NotSupportedException;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,21 +39,20 @@ public abstract class OpenHABService<ST extends Service & UnitInterface> impleme
 	private final String itemName;
 	private final ServiceType serviceType;
 
-	public OpenHABService(final DeviceInterface device, final ST unit) {
-		this.device = device;
-		this.unit = unit;
-		this.serviceType = detectServiceType();
-		this.itemName = ItemTransformer.generateItemName(device, unit, this);
-
+	public OpenHABService(final DeviceInterface device, final ST unit) throws InstantiationException {
 		try {
+			this.device = device;
+			this.unit = unit;
+			this.serviceType = detectServiceType();
+			this.itemName = ItemTransformer.generateItemName(device, unit, this);
 			this.openhabBinding = OpenhabBinding.getInstance();
-		} catch (InstantiationException ex) {
-			logger.error("Could not access " + OpenhabBinding.class.getSimpleName(), ex);
+		} catch (CouldNotPerformException ex) {
+			throw new InstantiationException(this, ex);
 		}
 	}
 
-	public final ServiceType detectServiceType() {
-		return ServiceType.valueOf(getClass().getSimpleName().replaceFirst("Service", "").replaceFirst("Provider", "").replaceFirst("Impl", ""));
+	public final ServiceType detectServiceType() throws NotSupportedException {
+		return ServiceType.valueOfByServiceName(getClass().getSimpleName().replaceFirst("Service", "").replaceFirst("Provider", "").replaceFirst("Impl", ""));
 	}
 
 	public DeviceInterface getDevice() {

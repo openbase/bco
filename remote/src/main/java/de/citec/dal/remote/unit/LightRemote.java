@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.LightInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.LightType;
  *
  * @author thuxohl
  */
-public class LightRemote extends RSBRemoteService<LightType.Light> implements LightInterface {
+public class LightRemote extends DALRemoteService<LightType.Light> implements LightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightType.Light.getDefaultInstance()));

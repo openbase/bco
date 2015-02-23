@@ -16,7 +16,7 @@ import rst.homeautomation.unit.BatteryType;
  *
  * @author thuxohl
  */
-public class BatteryRemote extends RSBRemoteService<BatteryType.Battery> implements BatteryInterface {
+public class BatteryRemote extends DALRemoteService<BatteryType.Battery> implements BatteryInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));

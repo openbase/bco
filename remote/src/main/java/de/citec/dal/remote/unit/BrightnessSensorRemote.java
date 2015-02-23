@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.BrightnessSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BrightnessSensorType;
@@ -16,7 +15,7 @@ import rst.homeautomation.unit.BrightnessSensorType;
  *
  * @author thuxohl
  */
-public class BrightnessSensorRemote extends RSBRemoteService<BrightnessSensorType.BrightnessSensor> implements BrightnessSensorInterface {
+public class BrightnessSensorRemote extends DALRemoteService<BrightnessSensorType.BrightnessSensor> implements BrightnessSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));

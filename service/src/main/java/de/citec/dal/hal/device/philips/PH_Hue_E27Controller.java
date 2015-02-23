@@ -24,6 +24,12 @@ public class PH_Hue_E27Controller extends AbstractOpenHABDeviceController<PH_Hue
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PH_Hue_E27Type.PH_Hue_E27.getDefaultInstance()));
     }
 
+    public PH_Hue_E27Controller(final String label, final Location location) throws InstantiationException {
+		super(label, location, PH_Hue_E27.newBuilder());
+        this.registerUnit(new AmbientLightController(label, this, data.getAmbientLightBuilder(), getDefaultServiceFactory()));
+	}
+	
+	@Deprecated
     public PH_Hue_E27Controller(final String id, final String label, final Location location) throws InstantiationException {
         super(id, label, location, PH_Hue_E27.newBuilder());
         this.registerUnit(new AmbientLightController(label, this, data.getAmbientLightBuilder(), getDefaultServiceFactory()));

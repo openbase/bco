@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.TamperSwitchInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperType;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.TamperSwitchType;
  *
  * @author thuxohl
  */
-public class TamperSwtichRemote extends RSBRemoteService<TamperSwitchType.TamperSwitch> implements TamperSwitchInterface {
+public class TamperSwtichRemote extends DALRemoteService<TamperSwitchType.TamperSwitch> implements TamperSwitchInterface {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));

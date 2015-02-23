@@ -5,14 +5,11 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import static de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController.ITEM_ID_DELIMITER;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.NotAvailableException;
-import java.lang.reflect.Method;
 import rsb.Scope;
 import rst.homeautomation.openhab.OpenhabCommandType;
 
@@ -26,7 +23,7 @@ public class ItemTransformer {
 	public static final String ITEM_SEGMENT_DELIMITER = "__";
 
 	public static String generateItemName(final DeviceInterface device, final UnitInterface unit, final Service service) {
-		return device.getId()
+		return device.getName()
 				+ ITEM_SEGMENT_DELIMITER
 				+ generateLocationName(unit.getLocation())
 				+ ITEM_SEGMENT_DELIMITER
@@ -34,28 +31,27 @@ public class ItemTransformer {
 				+ ITEM_SEGMENT_DELIMITER
 				+ unit.getLabel()
 				+ ITEM_SEGMENT_DELIMITER
-				+ service.getServiceType().name();
+				+ service.getServiceType().getServiceName();
 	}
 
 	public static String generateLocationName(final Location location) {
-		String location_id = location.getName();
+		String location_id = "";
 		Location parentLocation;
 
 		try {
 			parentLocation = location.getParent();
 			while (true) {
-				location_id += ITEM_SUBSEGMENT_DELIMITER + parentLocation.getName();
+				location_id += parentLocation.getName() + ITEM_SUBSEGMENT_DELIMITER;
 				parentLocation = parentLocation.getParent();
 			}
 		} catch (NotAvailableException ex) {
-			return location_id;
+			return location_id + location.getName();
 		}
 	}
 
 	public static String generateUnitID(final OpenhabCommandType.OpenhabCommand command) {
 		return generateUnitID(command.getItem());
 	}
-
 
 	public static String generateUnitID(final String itemName) {
 		String[] nameSegment = itemName.split(ITEM_SEGMENT_DELIMITER);

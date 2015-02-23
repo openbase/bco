@@ -6,7 +6,6 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.RollershutterInterface;
-import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.RollershutterType;
  *
  * @author thuxohl
  */
-public class RollershutterRemote extends RSBRemoteService<RollershutterType.Rollershutter> implements RollershutterInterface {
+public class RollershutterRemote extends DALRemoteService<RollershutterType.Rollershutter> implements RollershutterInterface {
 
 	static {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));

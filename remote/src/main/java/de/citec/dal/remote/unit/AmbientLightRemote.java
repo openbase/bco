@@ -8,7 +8,6 @@ package de.citec.dal.remote.unit;
 import de.citec.dal.DALService;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.unit.AmbientLightInterface;
-import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
@@ -22,7 +21,7 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author mpohling
  */
-public class AmbientLightRemote extends RSBRemoteService<AmbientLightType.AmbientLight> implements AmbientLightInterface {
+public class AmbientLightRemote extends DALRemoteService<AmbientLightType.AmbientLight> implements AmbientLightInterface {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
 

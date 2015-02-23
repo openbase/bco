@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.HandleSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.OpenClosedTiltedType;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.HandleSensorType;
  *
  * @author thuxohl
  */
-public class HandleSensorRemote extends RSBRemoteService<HandleSensorType.HandleSensor> implements HandleSensorInterface {
+public class HandleSensorRemote extends DALRemoteService<HandleSensorType.HandleSensor> implements HandleSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));

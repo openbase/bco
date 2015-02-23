@@ -17,7 +17,7 @@ import rsb.patterns.EventCallback;
  *
  * @author thuxohl
  */
-public interface BrightnessProvider {
+public interface BrightnessProvider extends Provider {
 
     public Double getBrightness() throws CouldNotPerformException;
     

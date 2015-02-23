@@ -10,6 +10,7 @@ import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.device.DeviceInterface;
 import de.citec.dal.hal.unit.UnitInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InstantiationException;
 
 /**
  *
@@ -18,7 +19,7 @@ import de.citec.jul.exception.CouldNotPerformException;
  */
 public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface> extends OpenHABService<ST> implements BrightnessService {
 
-    public BrightnessServiceImpl(DeviceInterface device, ST unit) {
+    public BrightnessServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

@@ -7,7 +7,6 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.ButtonInterface;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBRemoteService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ClickType;
@@ -17,7 +16,7 @@ import rst.homeautomation.unit.ButtonType;
  *
  * @author thuxohl
  */
-public class ButtonRemote extends RSBRemoteService<ButtonType.Button> implements ButtonInterface {
+public class ButtonRemote extends DALRemoteService<ButtonType.Button> implements ButtonInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonType.Button.getDefaultInstance()));
