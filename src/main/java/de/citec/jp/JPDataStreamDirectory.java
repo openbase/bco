@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.citec.jps.properties;
+package de.citec.jp;
 
 import de.citec.jps.preset.AbstractJPDirectory;
 import de.citec.jps.core.JPService;

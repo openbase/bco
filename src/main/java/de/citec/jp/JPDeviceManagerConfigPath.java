@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.jps.properties;
+package de.citec.jp;
 
 import de.citec.jps.preset.AbstractJPDirectory;
 import de.citec.jps.tools.FileHandler;

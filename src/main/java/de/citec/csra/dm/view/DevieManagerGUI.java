@@ -7,13 +7,13 @@
 package de.citec.csra.dm.view;
 
 import de.citec.csra.dm.view.struct.DeviceClassOverviewPanel;
-import de.citec.csra.dm.DeviceManager;
+import de.citec.csra.dm.OldDeviceManager;
 import de.citec.csra.dm.view.struct.DataStreamOverviewPanel;
 import de.citec.csra.dm.view.struct.DeviceConfigOverviewPanel;
 import de.citec.csra.dm.view.struct.DeviceInstanceOverviewPanel;
 import de.citec.csra.dm.view.struct.GlobalConfigOverviewPanel;
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPReadOnly;
+import de.citec.jp.JPReadOnly;
 
 /**
  *
@@ -21,7 +21,7 @@ import de.citec.jps.properties.JPReadOnly;
  */
 public class DevieManagerGUI extends javax.swing.JFrame {
 
-	private DeviceManager deviceManager = DeviceManager.getInstance();
+	private OldDeviceManager deviceManager = OldDeviceManager.getInstance();
 	
 	private static DevieManagerGUI instance;
 	

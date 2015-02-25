@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.citec.jps.properties;
+package de.citec.jp;
 
 import de.citec.jps.preset.AbstractJPDirectory;
 import de.citec.jps.core.JPService;
@@ -15,25 +15,25 @@ import java.io.File;
  *
  * @author mpohling
  */
-public class JPDeviceClassDirectory extends AbstractJPDirectory {
+public class JPDeviceInstanceDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--deviceClassDirectory"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--deviceInstanceDirectory"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
 
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
 	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 	
-	public JPDeviceClassDirectory() {
+	public JPDeviceInstanceDirectory() {
 		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
 	}
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue(), "device-class");
+		return new File(JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue(), "device-instance");
 	}
 
 	@Override
 	public String getDescription() {
-		return "Specifies the DeviceClass directory name.";
+		return "Specifies the DeviceInstance directory name.";
 	}
 }

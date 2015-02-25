@@ -6,7 +6,7 @@
 package de.citec.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPDeviceClassDirectory;
+import de.citec.jp.JPDeviceClassDirectory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;

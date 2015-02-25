@@ -3,7 +3,7 @@
 
     <groupId>de.unibi.csra.config</groupId>
     <artifactId>device-manager</artifactId>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DeviceManager</name>
@@ -51,10 +51,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 	
-	<scm>
-		<developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
-		<url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
-	</scm>
+    <scm>
+        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
+        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -62,11 +62,6 @@
             <artifactId>junit</artifactId>
             <version>3.8.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.cit-ec</groupId>
-            <artifactId>jps</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -79,6 +74,26 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.1.2</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.rsb</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.storage</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.processing</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>rsb</groupId>
+            <artifactId>rst-sandbox-csra</artifactId>
+            <version>0.11-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

@@ -6,7 +6,7 @@
 package de.citec.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPGlobalConfigDirectory;
+import de.citec.jp.JPGlobalConfigDirectory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.jps.properties;
+package de.citec.jp;
 
 import de.citec.jps.core.AbstractJavaProperty.ValueType;
 import de.citec.jps.core.JPService;

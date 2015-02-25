@@ -6,7 +6,7 @@
 package de.citec.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPDataStreamDirectory;
+import de.citec.jp.JPDataStreamDirectory;
 import static de.citec.csra.dm.struct.DataStream.RST_Type.unknown;
 import java.io.File;
 import java.util.HashMap;

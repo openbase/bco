@@ -7,7 +7,7 @@
 package de.citec.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPDeviceConfigDirectory;
+import de.citec.jp.JPDeviceConfigDirectory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

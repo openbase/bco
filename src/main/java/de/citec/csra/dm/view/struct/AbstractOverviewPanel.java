@@ -5,11 +5,11 @@
  */
 package de.citec.csra.dm.view.struct;
 
-import de.citec.csra.dm.DeviceManager;
+import de.citec.csra.dm.OldDeviceManager;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPReadOnly;
+import de.citec.jp.JPReadOnly;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -27,7 +27,7 @@ import javax.swing.table.TableModel;
  */
 public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.swing.JPanel {
 
-    protected final DeviceManager deviceManager = DeviceManager.getInstance();
+    protected final OldDeviceManager deviceManager = OldDeviceManager.getInstance();
     protected List<T> contextList;
 
     /**
@@ -39,7 +39,7 @@ public abstract class AbstractOverviewPanel<T extends Manageable> extends javax.
         deviceManager.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(DeviceManager.DATA_UPDATE)) {
+                if (evt.getPropertyName().equals(OldDeviceManager.DATA_UPDATE)) {
                     updateDynamicComponents();
                 }
             }

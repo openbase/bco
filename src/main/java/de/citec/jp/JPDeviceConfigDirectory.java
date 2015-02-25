@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.citec.jps.properties;
+package de.citec.jp;
 
 import de.citec.jps.preset.AbstractJPDirectory;
 import de.citec.jps.core.JPService;
@@ -15,25 +15,25 @@ import java.io.File;
  *
  * @author mpohling
  */
-public class JPGlobalConfigDirectory extends AbstractJPDirectory {
+public class JPDeviceConfigDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"-c", "--config","--globalConfigDirectory",};
+	public final static String[] COMMAND_IDENTIFIERS = {"--deviceConfigDirectory"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
 
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
 	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 	
-	public JPGlobalConfigDirectory() {
+	public JPDeviceConfigDirectory() {
 		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
 	}
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue(), "global-config");
+		return new File(JPService.getAttribute(JPDeviceManagerConfigPath.class).getValue(), "device-config");
 	}
 
 	@Override
 	public String getDescription() {
-		return "Specifies the GlobalConfig directory name.";
+		return "Specifies the DeviceConfig directory name.";
 	}
 }

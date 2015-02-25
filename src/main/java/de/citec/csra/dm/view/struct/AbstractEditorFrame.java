@@ -5,12 +5,12 @@
  */
 package de.citec.csra.dm.view.struct;
 
-import de.citec.csra.dm.DeviceManager;
+import de.citec.csra.dm.OldDeviceManager;
 import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
 import de.citec.jps.core.JPService;
-import de.citec.jps.properties.JPReadOnly;
+import de.citec.jp.JPReadOnly;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -32,7 +32,7 @@ public abstract class AbstractEditorFrame<T extends Manageable> extends javax.sw
     public final static String ACTION_COMMAND_TIMER_END = "TimerEnd";
     public final static String ACTION_COMMAND_TIMER_START = "TimerStart";
 
-    protected final DeviceManager deviceManager = DeviceManager.getInstance();
+    protected final OldDeviceManager deviceManager = OldDeviceManager.getInstance();
     private final JLabel typeLable;
     private int contextCounter;
     private T context;
