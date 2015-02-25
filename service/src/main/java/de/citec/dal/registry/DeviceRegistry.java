@@ -6,6 +6,7 @@
  */
 package de.citec.dal.registry;
 
+import de.citec.jul.storage.Registry;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class DeviceRegistry extends AbstractRegistry<String, Device> {
+public class DeviceRegistry extends Registry<String, Device> {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeviceRegistry.class);
 	private static DeviceRegistry instance;

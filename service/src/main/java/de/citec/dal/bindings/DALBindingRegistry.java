@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings;
 
-import de.citec.dal.registry.AbstractRegistry;
+import de.citec.jul.storage.Registry;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;
@@ -14,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author mpohling
  */
-public class DALBindingRegistry extends AbstractRegistry<Class<? extends Binding>, Binding> {
+public class DALBindingRegistry extends Registry<Class<? extends Binding>, Binding> {
 
     public <BC extends Binding> BC getBinding(Class<BC> key) throws NotAvailableException {
         return (BC) super.get(key);

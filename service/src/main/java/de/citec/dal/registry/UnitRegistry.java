@@ -5,6 +5,7 @@
  */
 package de.citec.dal.registry;
 
+import de.citec.jul.storage.Registry;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.Unit;
@@ -14,7 +15,7 @@ import de.citec.jul.exception.NotAvailableException;
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public class UnitRegistry extends AbstractRegistry<String, Unit> {
+public class UnitRegistry extends Registry<String, Unit> {
 
 //	private static UnitRegistry instance;
 
