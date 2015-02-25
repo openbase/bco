@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -24,7 +24,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(final String label, DeviceInterface device, TamperSwitch.Builder builder) throws InstantiationException {
+    public TamperSwitchController(final String label, Device device, TamperSwitch.Builder builder) throws InstantiationException {
         super(TamperSwitchController.class, label, device, builder);
     }
 

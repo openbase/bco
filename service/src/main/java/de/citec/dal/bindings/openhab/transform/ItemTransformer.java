@@ -6,9 +6,9 @@
 package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.NotAvailableException;
 import rsb.Scope;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -22,7 +22,7 @@ public class ItemTransformer {
 	public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
 	public static final String ITEM_SEGMENT_DELIMITER = "__";
 
-	public static String generateItemName(final DeviceInterface device, final UnitInterface unit, final Service service) {
+	public static String generateItemName(final Device device, final Unit unit, final Service service) {
 		return device.getName()
 				+ ITEM_SEGMENT_DELIMITER
 				+ generateLocationName(unit.getLocation())

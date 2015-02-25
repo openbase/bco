@@ -9,7 +9,8 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.homematic.HM_RotaryHandleSensorController;
 import de.citec.dal.hal.unit.HandleSensorController;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.UnitRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -47,7 +48,7 @@ public class HandleSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TestConfiguration());
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
         handleSensorRemote = new HandleSensorRemote();
@@ -57,7 +58,7 @@ public class HandleSensorRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        dalService.shutdown();
         try {
             handleSensorRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -89,7 +90,7 @@ public class HandleSensorRemoteTest {
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
-        ((HandleSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, HandleSensorController.class)).updateHandle(state);
+        ((HandleSensorController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, HandleSensorController.class)).updateHandle(state);
         while (true) {
             try {
                 if (handleSensorRemote.getHandle().equals(state)) {
@@ -106,11 +107,11 @@ public class HandleSensorRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_000", LABEL, LOCATION));
-            } catch (de.citec.jul.exception.InstantiationException | VerificationFailedException ex) {
+                registry.register(new HM_RotaryHandleSensorController(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

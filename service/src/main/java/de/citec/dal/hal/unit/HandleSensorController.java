@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -24,7 +24,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(final String label, DeviceInterface device, HandleSensor.Builder builder) throws InstantiationException {
+    public HandleSensorController(final String label, Device device, HandleSensor.Builder builder) throws InstantiationException {
         super(HandleSensorController.class, label, device, builder);
     }
 

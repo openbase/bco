@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -24,7 +24,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
     }
     
-    public BatteryController(final String label, DeviceInterface device, Battery.Builder builder) throws InstantiationException {
+    public BatteryController(final String label, Device device, Battery.Builder builder) throws InstantiationException {
         super(BatteryController.class, label, device, builder);
     }
     

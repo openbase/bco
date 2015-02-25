@@ -6,9 +6,9 @@
 package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.OpeningRatioService;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 
@@ -17,9 +17,9 @@ import de.citec.jul.exception.InstantiationException;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class OpeningRatioServiceImpl<ST extends OpeningRatioService & UnitInterface>  extends OpenHABService<ST> implements OpeningRatioService {
+public class OpeningRatioServiceImpl<ST extends OpeningRatioService & Unit>  extends OpenHABService<ST> implements OpeningRatioService {
 
-    public OpeningRatioServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
+    public OpeningRatioServiceImpl(Device device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

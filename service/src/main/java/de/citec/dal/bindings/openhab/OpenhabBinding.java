@@ -5,10 +5,9 @@
  */
 package de.citec.dal.bindings.openhab;
 
-import de.citec.dal.bindings.openhab.transform.ItemTransformer;
+import de.citec.dal.DALService;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.registry.UnitRegistry;
-import de.citec.dal.util.DALRegistry;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import de.citec.jul.rsb.RSBRemoteService;
@@ -74,8 +73,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 	private OpenhabBinding() throws InstantiationException {
 		try {
-			this.commandExecutor = new OpenHABCommandExecutor(UnitRegistry.getInstance());
-
+			this.commandExecutor = new OpenHABCommandExecutor(DALService.getRegistryProvider().getUnitRegistry());
 			openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
 				@Override

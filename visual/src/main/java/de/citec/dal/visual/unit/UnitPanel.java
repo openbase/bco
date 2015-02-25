@@ -6,12 +6,9 @@
 package de.citec.dal.visual.unit;
 
 import de.citec.dal.hal.unit.AbstractUnitController;
-import de.citec.dal.util.DALRegistry;
 import de.citec.jul.exception.MultiException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
@@ -22,8 +19,6 @@ import rsb.Scope;
 public class UnitPanel extends javax.swing.JPanel {
 
 	protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
-
-	private final DALRegistry registry = DALRegistry.getInstance();
 
 	private final Observable<Scope> observable;
 
@@ -44,17 +39,19 @@ public class UnitPanel extends javax.swing.JPanel {
 	}
 
 	public void fillComboBox(Class<? extends AbstractUnitController> unitClass) {
-		unitComboBox.removeAllItems();
-		try {
-			ArrayList<UnitContainer> unitNames = new ArrayList<>();
-			for (AbstractUnitController unit : registry.getUnits(unitClass)) {
-				unitNames.add(new UnitContainer(unit, unit.getLabel()));
-			}
-			unitComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitNames.toArray()));
-			unitComboBox.setSelectedItem(0);
-		} catch (NotAvailableException ex) {
-			logger.error("Could not fill the UnitComboBox!", ex);
-		}
+		throw new RuntimeException("Not implemented yet!");
+//		unitComboBox.removeAllItems();
+//		try {
+//			ArrayList<UnitContainer> unitNames = new ArrayList<>();
+//
+//			for (AbstractUnitController unit : registry.getUnits(unitClass)) {
+//				unitNames.add(new UnitContainer(unit, unit.getLabel()));
+//			}
+//			unitComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitNames.toArray()));
+//			unitComboBox.setSelectedItem(0);
+//		} catch (NotAvailableException ex) {
+//			logger.error("Could not fill the UnitComboBox!", ex);
+//		}
 	}
 
 	public Scope getScope() {

@@ -9,7 +9,8 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.homematic.HM_ReedSwitchController;
 import de.citec.dal.hal.unit.ReedSwitchController;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.UnitRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -47,7 +48,7 @@ public class ReedSwitchRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TestConfiguration());
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
         reedSwitchRemote = new ReedSwitchRemote();
@@ -57,7 +58,7 @@ public class ReedSwitchRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        dalService.shutdown();
         try {
             reedSwitchRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -89,7 +90,7 @@ public class ReedSwitchRemoteTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
-        ((ReedSwitchController) dalService.getRegistry().getUnit(LABEL, LOCATION, ReedSwitchController.class)).updateReedSwitch(state);
+        ((ReedSwitchController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, ReedSwitchController.class)).updateReedSwitch(state);
         while (true) {
             try {
                 if (reedSwitchRemote.getReedSwitch().equals(state)) {
@@ -106,11 +107,11 @@ public class ReedSwitchRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new HM_ReedSwitchController("HM_ReedSwitch_000", LABEL, LOCATION));
-            } catch (VerificationFailedException | de.citec.jul.exception.InstantiationException ex) {
+                registry.register(new HM_ReedSwitchController(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

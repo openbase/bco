@@ -6,7 +6,7 @@
 package de.citec.dal;
 
 import de.citec.dal.util.ConnectionManager;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -74,8 +74,8 @@ public class DALServiceTest {
     public void testGetRegistry() {
         System.out.println("getRegistry");
         DALService instance = new DALService();
-        DALRegistry expResult = null;
-        DALRegistry result = instance.getRegistry();
+        DeviceRegistry expResult = null;
+        DeviceRegistry result = instance.getDeviceRegistry();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -89,7 +89,7 @@ public class DALServiceTest {
         System.out.println("getHardwareManager");
         DALService instance = new DALService();
         ConnectionManager expResult = null;
-        ConnectionManager result = instance.getHardwareManager();
+        ConnectionManager result = instance.getConnectionManager();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

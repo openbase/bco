@@ -83,4 +83,9 @@ public class Location implements ScopeProvider {
 	public Scope getScope() {
 		return scope;
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName()+"["+scope+"]";
+	}
 }

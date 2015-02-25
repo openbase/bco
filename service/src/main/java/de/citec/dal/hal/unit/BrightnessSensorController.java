@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -23,7 +23,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
 	}
 
-	public BrightnessSensorController(final String label, DeviceInterface device, BrightnessSensor.Builder builder) throws InstantiationException {
+	public BrightnessSensorController(final String label, Device device, BrightnessSensor.Builder builder) throws InstantiationException {
 		super(BrightnessSensorController.class, label, device, builder);
 	}
 

@@ -9,7 +9,7 @@ import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.jul.exception.InstantiationException;
@@ -21,27 +21,27 @@ import de.citec.jul.exception.InstantiationException;
 public class OpenhabServiceFactory implements ServiceFactory {
 
     @Override
-    public BrightnessService newBrightnessService(DeviceInterface device, BrightnessService unit) throws InstantiationException {
+    public BrightnessService newBrightnessService(Device device, BrightnessService unit) throws InstantiationException {
         return new BrightnessServiceImpl(device, unit);
     }
 
     @Override
-    public ColorService newColorService(DeviceInterface device, ColorService unit) throws InstantiationException {
+    public ColorService newColorService(Device device, ColorService unit) throws InstantiationException {
         return new ColorServiceImpl(device, unit);
     }
 
     @Override
-    public PowerService newPowerService(DeviceInterface device, PowerService unit) throws InstantiationException {
+    public PowerService newPowerService(Device device, PowerService unit) throws InstantiationException {
         return new PowerServiceImpl(device, unit);
     }
 
     @Override
-    public OpeningRatioService newOpeningRatioService(DeviceInterface device, OpeningRatioService unit) throws InstantiationException {
+    public OpeningRatioService newOpeningRatioService(Device device, OpeningRatioService unit) throws InstantiationException {
         return new OpeningRatioServiceImpl(device, unit);
     }
 
     @Override
-    public ShutterService newShutterService(DeviceInterface device, ShutterService unit) throws InstantiationException {
+    public ShutterService newShutterService(Device device, ShutterService unit) throws InstantiationException {
         return new ShutterServiceImpl(device, unit);
     }
 }

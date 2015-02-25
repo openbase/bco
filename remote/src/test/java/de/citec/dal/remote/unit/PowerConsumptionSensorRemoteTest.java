@@ -11,7 +11,8 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.UnitRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -48,7 +49,7 @@ public class PowerConsumptionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TestConfiguration());
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
         powerConsumptionRemote = new PowerConsumptionSensorRemote();
@@ -58,7 +59,7 @@ public class PowerConsumptionSensorRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        dalService.shutdown();
         try {
             powerConsumptionRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -91,7 +92,7 @@ public class PowerConsumptionSensorRemoteTest {
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;
-        ((PowerConsumptionSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, PowerConsumptionSensorController.class)).updatePowerConsumption(consumption);
+        ((PowerConsumptionSensorController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, PowerConsumptionSensorController.class)).updatePowerConsumption(consumption);
         while (true) {
             try {
                 if (powerConsumptionRemote.getPowerConsumption() == consumption) {
@@ -108,11 +109,11 @@ public class PowerConsumptionSensorRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new PW_PowerPlugController("PW_PowerPlug_000", LABEL, LOCATION));
-            } catch (de.citec.jul.exception.InstantiationException | VerificationFailedException ex) {
+                registry.register(new PW_PowerPlugController(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

@@ -10,15 +10,14 @@ import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.AbstractUnitController;
-import de.citec.dal.hal.service.Service;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.VerificationFailedException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;
 
@@ -28,7 +27,7 @@ import rsb.patterns.LocalServer;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements DeviceInterface {
+public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements Device {
 
 	public final static String TYPE_FILED_ID = "id";
 	public final static String TYPE_FILED_NAME = "name";
@@ -39,8 +38,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	protected final String label;
 	protected final Location location;
 
-	protected final Map<String, AbstractUnitController> unitMap;
-	protected Map<AbstractUnitController, Collection<Service>> unitServiceHardwareMap;
+	private final Map<String, AbstractUnitController> unitMap;
 
 	public AbstractDeviceController(final String label, final Location location, final MB builder) throws InstantiationException {
 		super(generateScope(generateName(builder.getClass().getDeclaringClass()), label, location), builder);
@@ -49,7 +47,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		this.label = label;
 		this.location = location;
 		this.unitMap = new HashMap<>();
-		this.unitServiceHardwareMap = new HashMap<>();
 
 		setField(TYPE_FILED_ID, id);
 		setField(TYPE_FILED_NAME, name);
@@ -70,13 +67,11 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		return hardware.getSimpleName().replace("Controller", "");
 	}
 
-	protected <U extends AbstractUnitController> void registerUnit(final U unit) {
-		for (String key : unitMap.keySet()) {
-			if (key.equals(unit.getScope().toString())) {
-				logger.debug("Registering the unit[" + unit + "] overrides the registration of the unit[" + unitMap.get(key) + "]");
-			}
+	protected <U extends AbstractUnitController> void registerUnit(final U unit) throws VerificationFailedException {
+		if(unitMap.containsKey(unit.getId())) {
+			throw new VerificationFailedException("Could not register "+unit+"! Unit with same name already registered!");
 		}
-		unitMap.put(unit.getName(), unit);
+		unitMap.put(unit.getId(), unit);
 	}
 
 	public AbstractUnitController getUnit(final String id) throws NotAvailableException {
@@ -89,13 +84,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 	@Override
 	public Location getLocation() {
 		return location;
-	}
-
-	public void registerService(Service service, AbstractUnitController unit) {
-		if (!unitServiceHardwareMap.containsKey(unit)) {
-			unitServiceHardwareMap.put(unit, new ArrayList<Service>());
-		}
-		unitServiceHardwareMap.get(unit).add(service);
 	}
 
 	@Override

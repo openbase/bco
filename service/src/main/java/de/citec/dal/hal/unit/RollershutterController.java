@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.service.ShutterService;
@@ -30,11 +30,11 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     private final ShutterService shutterService;
     private final OpeningRatioService openingRatioService;
 
-    public RollershutterController(final String label, DeviceInterface device, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
+    public RollershutterController(final String label, Device device, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
         this(label, device, builder, device.getDefaultServiceFactory());
     }
 
-    public RollershutterController(final String label, DeviceInterface device, RollershutterType.Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
+    public RollershutterController(final String label, Device device, RollershutterType.Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
         super(RollershutterController.class, label, device, builder);
         this.shutterService = serviceFactory.newShutterService(device, this);
         this.openingRatioService = serviceFactory.newOpeningRatioService(device, this);

@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -23,7 +23,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(final String label, DeviceInterface device, PowerConsumptionSensor.Builder builder) throws InstantiationException {
+    public PowerConsumptionSensorController(final String label, Device device, PowerConsumptionSensor.Builder builder) throws InstantiationException {
         super(PowerConsumptionSensorController.class, label, device, builder);
     }
 

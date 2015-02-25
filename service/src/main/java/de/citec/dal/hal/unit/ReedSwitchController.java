@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -25,7 +25,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(final String label, DeviceInterface device, ReedSwitch.Builder builder) throws InstantiationException {
+    public ReedSwitchController(final String label, Device device, ReedSwitch.Builder builder) throws InstantiationException {
         super(ReedSwitchController.class, label, device, builder);
     }
 

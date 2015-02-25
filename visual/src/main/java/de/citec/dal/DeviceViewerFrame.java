@@ -7,9 +7,7 @@ package de.citec.dal;
 
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.AmbientLightController;
-import de.citec.dal.registry.CSRADeviceInitializerImpl;
 import de.citec.dal.visual.unit.AmbientLightView;
-import de.citec.dal.util.DALRegistry;
 import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.pattern.Observable;
@@ -31,7 +29,6 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     protected static final Logger logger = LoggerFactory.getLogger(DeviceViewerFrame.class);
 
     private RSBRemoteView remoteView;
-    private final DALRegistry registry = DALRegistry.getInstance();
 
     /**
      * Creates new form DeviceViewerFrame
@@ -239,7 +236,6 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new CSRADeviceInitializerImpl().initDevices(DALRegistry.getInstance()); // TODO mpohling: load devices, remove aftern device manager does this job!!!
                 try {
                     new DeviceViewerFrame().setVisible(true);
                 } catch (InstantiationException ex) {

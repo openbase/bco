@@ -11,7 +11,8 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.unit.BatteryController;
 import de.citec.dal.hal.unit.BatteryController;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.UnitRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 public class BatteryRemoteTest {
 
     public static final String LABEL = "Battery_Unit_Test";
+	public static final Location LOCATION = new Location("paradise");
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BatteryRemoteTest.class);
 
@@ -46,17 +48,17 @@ public class BatteryRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TestConfiguration());
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
         batteryRemote = new BatteryRemote();
-        batteryRemote.init(LABEL, TestConfiguration.LOCATION);
+        batteryRemote.init(LABEL, LOCATION);
         batteryRemote.activate();
     }
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        dalService.shutdown();
         try {
             batteryRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -88,7 +90,7 @@ public class BatteryRemoteTest {
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         double level = 34.0;
-        ((BatteryController) dalService.getRegistry().getUnit(LABEL, TestConfiguration.LOCATION, BatteryController.class)).updateBattery(level);
+        ((BatteryController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, BatteryController.class)).updateBattery(level);
         while (true) {
             try {
                 if (batteryRemote.getBattery() == level) {
@@ -105,12 +107,12 @@ public class BatteryRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new F_MotionSensorController("F_MotionSensor_000", LABEL, TestConfiguration.LOCATION));
-            } catch (de.citec.jul.exception.InstantiationException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
+                registry.register(new F_MotionSensorController(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
+                logger.warn("Could not register unit test device!", ex);
             }
         }
     }

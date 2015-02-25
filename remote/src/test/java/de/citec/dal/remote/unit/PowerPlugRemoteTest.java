@@ -9,7 +9,8 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 import de.citec.dal.hal.unit.PowerPlugController;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.UnitRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -48,7 +49,7 @@ public class PowerPlugRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {       
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TestConfiguration());
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
         powerPlugRemote = new PowerPlugRemote();
@@ -58,7 +59,7 @@ public class PowerPlugRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        dalService.shutdown();
         try {
             powerPlugRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -106,7 +107,7 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((PowerPlugController) dalService.getRegistry().getUnit(LABEL, LOCATION, PowerPlugController.class)).updatePower(state);
+        ((PowerPlugController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, PowerPlugController.class)).updatePower(state);
         while (true) {
             try {
                 if (powerPlugRemote.getPower().equals(state)) {
@@ -130,11 +131,11 @@ public class PowerPlugRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new PW_PowerPlugController("PW_PowerPlug_000", LABEL, LOCATION));
-            } catch (VerificationFailedException | InstantiationException ex) {
+                registry.register(new PW_PowerPlugController(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

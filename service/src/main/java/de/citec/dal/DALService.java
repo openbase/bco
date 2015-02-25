@@ -6,12 +6,15 @@
 package de.citec.dal;
 
 import de.citec.dal.registry.CSRADeviceInitializerImpl;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.DeviceRegistry;
+import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.util.DeviceInitializer;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.rsb.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,26 +22,39 @@ import org.slf4j.LoggerFactory;
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public class DALService {
+public class DALService implements RegistryProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DALService.class);
-    
-	private final DALRegistry registry;
-	private final ConnectionManager hardwareManager;
+
+	private static RegistryProvider registryProvider;
+
+	private final DeviceRegistry deviceRegistry;
+	private final UnitRegistry unitRegistry;
+	private final ConnectionManager connectionManager;
 
 	public DALService() {
 		this(new CSRADeviceInitializerImpl());
 	}
 
-	public DALService(DeviceInitializer initializer) {
-		this.registry = DALRegistry.getInstance();
-		initializer.initDevices(registry);
-		this.hardwareManager = new ConnectionManager(registry);
+	public DALService(final DeviceInitializer initializer) {
+		this.deviceRegistry = new DeviceRegistry();
+		this.unitRegistry = new UnitRegistry();
+		this.connectionManager = new ConnectionManager(deviceRegistry);
+
+		registryProvider = this;
+		initializer.initDevices(deviceRegistry);
+	}
+
+	public static RegistryProvider getRegistryProvider() throws NotAvailableException {
+		if(registryProvider == null) {
+			throw new NotAvailableException(RegistryProvider.class);
+		}
+		return registryProvider;
 	}
 
 	public void activate() {
 		try {
-			this.hardwareManager.activate();
+			this.connectionManager.activate();
 		} catch (Exception ex) {
 			logger.warn("Hardware manager could not be activated!", ex);
 		}
@@ -46,18 +62,32 @@ public class DALService {
 
 	public void deactivate() {
 		try {
-			this.hardwareManager.deactivate();
+			this.connectionManager.deactivate();
 		} catch (Exception ex) {
 			logger.warn("Hardware manager could not be deactivated!", ex);
 		}
 	}
 
-	public DALRegistry getRegistry() {
-		return registry;
+	public void shutdown() {
+		deactivate();
+		RSBInformerPool.getInstance().shutdown();
+		deviceRegistry.shutdown();
+		unitRegistry.shutdown();
+		registryProvider = null;
 	}
 
-	public ConnectionManager getHardwareManager() {
-		return hardwareManager;
+	@Override
+	public DeviceRegistry getDeviceRegistry() {
+		return deviceRegistry;
+	}
+
+	@Override
+	public UnitRegistry getUnitRegistry() {
+		return unitRegistry;
+	}
+
+	public ConnectionManager getConnectionManager() {
+		return connectionManager;
 	}
 
 	/**

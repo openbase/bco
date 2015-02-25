@@ -1,6 +1,6 @@
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -23,11 +23,11 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
 
     private final PowerService powerService;
 
-    public LightController(final String label, DeviceInterface device, LightType.Light.Builder builder) throws InstantiationException {
+    public LightController(final String label, Device device, LightType.Light.Builder builder) throws InstantiationException {
         this(label, device, builder, device.getDefaultServiceFactory());
     }
 
-    public LightController(final String label, DeviceInterface device, LightType.Light.Builder builder, ServiceFactory serviceFactory) throws InstantiationException {
+    public LightController(final String label, Device device, LightType.Light.Builder builder, ServiceFactory serviceFactory) throws InstantiationException {
         super(LightController.class, label, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
     }

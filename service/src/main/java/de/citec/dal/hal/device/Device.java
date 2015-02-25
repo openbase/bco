@@ -7,15 +7,15 @@ package de.citec.dal.hal.device;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.jul.iface.Activatable;
+import de.citec.jul.iface.Identifiable;
 import de.citec.jul.rsb.ScopeProvider;
 
 /**
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public interface DeviceInterface extends ScopeProvider{
-
-    public String getId();
+public interface Device extends ScopeProvider, Identifiable<String>, Activatable {
 
     public String getName();
 

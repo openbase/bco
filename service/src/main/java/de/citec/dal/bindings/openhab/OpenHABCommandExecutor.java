@@ -13,7 +13,7 @@ import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.dal.hal.unit.AbstractUnitController;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.dal.registry.UnitRegistry;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
@@ -52,10 +52,10 @@ public class OpenHABCommandExecutor {
 //        String serviceName = pattern[pattern.length-1];
 		Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceName);
 		Method relatedMethod;
-		UnitInterface unit;
+		Unit unit;
 
 		try {
-			unit = unitRegistry.getUnit(unitId);
+			unit = unitRegistry.get(unitId);
 
 			String methodName = ServiceType.UPDATE + serviceName;
 			try {

@@ -30,7 +30,7 @@
     </modules>
     
     <properties>
-        <skipTests>true</skipTests>
+        <skipTests>false</skipTests>
     </properties>
     
     <dependencies>

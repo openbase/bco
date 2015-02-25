@@ -6,9 +6,9 @@
 package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.PowerService;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rst.homeautomation.state.PowerType;
@@ -18,9 +18,9 @@ import rst.homeautomation.state.PowerType;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class PowerServiceImpl<ST extends PowerService & UnitInterface> extends OpenHABService<ST> implements de.citec.dal.hal.service.PowerService {
+public class PowerServiceImpl<ST extends PowerService & Unit> extends OpenHABService<ST> implements de.citec.dal.hal.service.PowerService {
 
-    public PowerServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
+    public PowerServiceImpl(Device device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

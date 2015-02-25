@@ -5,8 +5,10 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.DALService;
+import de.citec.dal.RegistryProvider;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
@@ -34,7 +36,7 @@ import rsb.patterns.LocalServer;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements UnitInterface {
+public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements Unit {
 
 	public final static String TYPE_FILED_ID = "id";
 	public final static String TYPE_FILED_NAME = "name";
@@ -44,14 +46,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 	protected final String name;
 	protected final String label;
 	protected final Location location;
-	private final DeviceInterface device;
-	private List<Service> serviceList;
+	private final Device device;
+	private final List<Service> serviceList;
 
-	public AbstractUnitController(final Class unitClass, final String label, final DeviceInterface device, final MB builder) throws InstantiationException {
+	public AbstractUnitController(final Class unitClass, final String label, final Device device, final MB builder) throws InstantiationException {
 		this(unitClass, label, device.getLocation(), device, builder);
 	}
 
-	public AbstractUnitController(final Class unitClass, final String label, final Location location, final DeviceInterface device, final MB builder) throws InstantiationException {
+	public AbstractUnitController(final Class unitClass, final String label, final Location location, final Device device, final MB builder) throws InstantiationException {
 		super(generateScope(generateName(unitClass), label, device), builder);
 		try {
 			this.id = generateID(scope);
@@ -65,8 +67,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 			setField(TYPE_FILED_NAME, name);
 			setField(TYPE_FILED_LABEL, label);
 
-			init(RSBInformerInterface.InformerType.Distributed);
-
 			try {
 				validateUpdateServices();
 			} catch (MultiException ex) {
@@ -74,7 +74,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 				ex.printExceptionStack();
 			}
 
-			UnitRegistry.getInstance().registerUnit(this);
+			DALService.getRegistryProvider().getUnitRegistry().register(this);
+
+			init(RSBInformerInterface.InformerType.Distributed);
 		} catch (CouldNotPerformException ex) {
 			throw new InstantiationException(this, ex);
 		}
@@ -100,7 +102,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 		return location;
 	}
 
-	public DeviceInterface getDevice() {
+	public Device getDevice() {
 		return device;
 	}
 
@@ -112,15 +114,19 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 		serviceList.add(service);
 	}
 
+	public static String generateID(final String label, final Location location, final Class clazz) {
+		return generateID(generateScope(generateName(clazz), label, location));
+	}
+
 	public static String generateID(final Scope scope) {
-		return scope.toString();
+		return scope.toString().toLowerCase();
 	}
 
 	public final String generateName() {
 		return generateName(getClass());
 	}
 
-	public static final String generateName(Class clazz) {
+	public static final String generateName(final Class clazz) {
 		return clazz.getSimpleName().replace("Controller", "");
 	}
 
@@ -128,7 +134,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 		return generateScope(generateName(), label, device);
 	}
 
-	public static Scope generateScope(final String name, final String label, final DeviceInterface device) {
+	public static Scope generateScope(final String name, final String label, final Device device) {
 		return generateScope(name, label, device.getLocation());
 	}
 

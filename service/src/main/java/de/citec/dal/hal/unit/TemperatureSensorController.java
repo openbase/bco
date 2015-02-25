@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -23,7 +23,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(final String label, DeviceInterface device, TemperatureSensor.Builder builder) throws InstantiationException {
+    public TemperatureSensorController(final String label, Device device, TemperatureSensor.Builder builder) throws InstantiationException {
         super(TemperatureSensorController.class, label, device, builder);
     }
 

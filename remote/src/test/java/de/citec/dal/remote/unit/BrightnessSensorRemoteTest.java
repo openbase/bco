@@ -11,7 +11,8 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.unit.BrightnessSensorController;
 import de.citec.dal.hal.unit.BrightnessSensorController;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.UnitRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -33,8 +34,8 @@ import org.slf4j.LoggerFactory;
  */
 public class BrightnessSensorRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
     public static final String LABEL = "Brightness_Sensor_Unit_Test";
+    private static final Location LOCATION = new Location("paradise");
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BrightnessSensorRemoteTest.class);
 
@@ -47,7 +48,7 @@ public class BrightnessSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new TestConfiguration());
+        dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
         brightnessSensorRemote = new BrightnessSensorRemote();
@@ -57,7 +58,7 @@ public class BrightnessSensorRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        dalService.shutdown();
         try {
             brightnessSensorRemote.deactivate();
         } catch (InterruptedException ex) {
@@ -88,7 +89,7 @@ public class BrightnessSensorRemoteTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         double brightness = 0.5;
-        ((BrightnessSensorController) dalService.getRegistry().getUnit(LABEL, LOCATION, BrightnessSensorController.class)).updateBrightness((float) brightness);
+        ((BrightnessSensorController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, BrightnessSensorController.class)).updateBrightness((float) brightness);
         while (true) {
             try {
                 if (brightnessSensorRemote.getBrightness() == brightness) {
@@ -105,11 +106,11 @@ public class BrightnessSensorRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new F_MotionSensorController("F_MotionSensor_000", LABEL, LOCATION));
-            } catch (de.citec.jul.exception.InstantiationException ex) {
+                registry.register(new F_MotionSensorController(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

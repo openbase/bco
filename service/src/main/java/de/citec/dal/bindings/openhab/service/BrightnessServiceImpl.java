@@ -7,8 +7,8 @@ package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
 import de.citec.dal.hal.service.BrightnessService;
-import de.citec.dal.hal.device.DeviceInterface;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.device.Device;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 
@@ -17,9 +17,9 @@ import de.citec.jul.exception.InstantiationException;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class BrightnessServiceImpl<ST extends BrightnessService & UnitInterface> extends OpenHABService<ST> implements BrightnessService {
+public class BrightnessServiceImpl<ST extends BrightnessService & Unit> extends OpenHABService<ST> implements BrightnessService {
 
-    public BrightnessServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
+    public BrightnessServiceImpl(Device device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

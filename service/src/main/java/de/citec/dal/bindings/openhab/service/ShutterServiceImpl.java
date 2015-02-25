@@ -6,9 +6,9 @@
 package de.citec.dal.bindings.openhab.service;
 
 import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.ShutterService;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rst.homeautomation.state.ShutterType;
@@ -18,9 +18,9 @@ import rst.homeautomation.state.ShutterType;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class ShutterServiceImpl<ST extends ShutterService & UnitInterface> extends OpenHABService<ST> implements ShutterService {
+public class ShutterServiceImpl<ST extends ShutterService & Unit> extends OpenHABService<ST> implements ShutterService {
 
-    public ShutterServiceImpl(DeviceInterface device, ST unit) throws InstantiationException {
+    public ShutterServiceImpl(Device device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

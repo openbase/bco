@@ -9,8 +9,8 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
 import de.citec.dal.hal.device.philips.PH_Hue_GU10Controller;
-import de.citec.dal.util.DALRegistry;
 import de.citec.dal.util.DeviceInitializer;
+import de.citec.jul.exception.CouldNotPerformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,21 +20,21 @@ import org.slf4j.LoggerFactory;
  */
 public class CSRADeviceInitializerImpl implements DeviceInitializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(CSRADeviceInitializerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CSRADeviceInitializerImpl.class);
 
-    @Override
-    public void initDevices(final DALRegistry registry) {
-        logger.info("Init devices...");
+	@Override
+	public void initDevices(final DeviceRegistry registry) {
+		logger.info("Init devices...");
 		Location home = new Location("home");
-        Location outdoor = new Location("outdoor", home);
-        Location kitchen = new Location("kitchen", home);
-        Location wardrobe = new Location("wardrobe", home);
-        Location living = new Location("living", home);
-        Location sports = new Location("sports", home);
-        Location bath = new Location("bath", home);
-        Location control = new Location("control", home);
+		Location outdoor = new Location("outdoor", home);
+		Location kitchen = new Location("kitchen", home);
+		Location wardrobe = new Location("wardrobe", home);
+		Location living = new Location("living", home);
+		Location sports = new Location("sports", home);
+		Location bath = new Location("bath", home);
+		Location control = new Location("control", home);
 
-        try {
+		try {
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_001", "USBCharger_2", control));
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_002", "USBCharger_3", control));
@@ -58,24 +58,24 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 //				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_000", "WindowLeft", living));
 //				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_001", "WindowRight", living));
 //				registry.register(new HM_RotaryHandleSensorController("HM_RotaryHandleSensor_002", "Window", sports));
-            registry.register(new F_MotionSensorController("F_MotionSensor_000", "Entrance", wardrobe));
-            registry.register(new F_MotionSensorController("F_MotionSensor_001", "Hallway", wardrobe));
-            registry.register(new F_MotionSensorController("F_MotionSensor_002", "Couch", living));
-            registry.register(new F_MotionSensorController("F_MotionSensor_003", "Media", living));
-            registry.register(new F_MotionSensorController("F_MotionSensor_004", "Table", living));
-            registry.register(new F_MotionSensorController("F_MotionSensor_005", "Control", living));
-            registry.register(new F_MotionSensorController("F_MotionSensor_006", "Global", kitchen));
-            registry.register(new F_MotionSensorController("F_MotionSensor_007", "Global", bath));
-            registry.register(new F_MotionSensorController("F_MotionSensor_008", "Entrance", bath));
-            registry.register(new F_MotionSensorController("F_MotionSensor_009", "Shower", bath));
-            registry.register(new F_MotionSensorController("F_MotionSensor_010", "Sink", bath));
-            registry.register(new F_MotionSensorController("F_MotionSensor_011", "Interaction", sports));
-            registry.register(new F_MotionSensorController("F_MotionSensor_012", "Pathway", sports));
-            registry.register(new F_MotionSensorController("F_MotionSensor_013", "Entrance", control));
-            registry.register(new F_MotionSensorController("F_MotionSensor_014", "TestUnit_1", control));
-            registry.register(new F_MotionSensorController("F_MotionSensor_015", "Entrance", outdoor));
+			registry.register(new F_MotionSensorController("Entrance", wardrobe));
+			registry.register(new F_MotionSensorController("Hallway", wardrobe));
+			registry.register(new F_MotionSensorController("Couch", living));
+			registry.register(new F_MotionSensorController("Media", living));
+			registry.register(new F_MotionSensorController("Table", living));
+			registry.register(new F_MotionSensorController("Control", living));
+			registry.register(new F_MotionSensorController("Global", kitchen));
+			registry.register(new F_MotionSensorController("Global", bath));
+			registry.register(new F_MotionSensorController("Entrance", bath));
+			registry.register(new F_MotionSensorController("Shower", bath));
+			registry.register(new F_MotionSensorController("Sink", bath));
+			registry.register(new F_MotionSensorController("Interaction", sports));
+			registry.register(new F_MotionSensorController("Pathway", sports));
+			registry.register(new F_MotionSensorController("Entrance", control));
+			registry.register(new F_MotionSensorController("TestUnit_1", control));
+			registry.register(new F_MotionSensorController("Entrance", outdoor));
 //
-            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", "Hallway_0", wardrobe));
+			registry.register(new PH_Hue_E27Controller("Hallway_0", wardrobe));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_001", "Hallway_1", wardrobe));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_002", "Table_0", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_003", "Table_1", living));
@@ -113,10 +113,10 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_036", "LLamp_Entrance5", sports));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_037", "LLamp_Entrance6", sports));
 
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_000", "Global_0", kitchen));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_001", "Global_1", kitchen));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_002", "Global_2", kitchen));
-            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_003", "Global_3", kitchen));
+			registry.register(new PH_Hue_GU10Controller("Global_0", kitchen));
+			registry.register(new PH_Hue_GU10Controller("Global_1", kitchen));
+			registry.register(new PH_Hue_GU10Controller("Global_2", kitchen));
+			registry.register(new PH_Hue_GU10Controller("Global_3", kitchen));
 //            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_004", "Global_0", bath));
 //            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_005", "Global_1", bath));
 //            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_006", "Global_2", bath));
@@ -153,8 +153,8 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 //
 //            String[] hagerLabel1 = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
 //            registry.register(new HA_TYA628CController("HA_TYA628C_000", "Control", hagerLabel1, control));
-        } catch (de.citec.jul.exception.InstantiationException ex) {
-            logger.warn("Could not initialize devices!", ex);
-        }
-    }
+		} catch (CouldNotPerformException ex) {
+			logger.warn("Could not register devices!", ex);
+		}
+	}
 }

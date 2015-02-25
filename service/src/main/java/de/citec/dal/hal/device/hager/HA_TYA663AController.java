@@ -7,6 +7,7 @@ package de.citec.dal.hal.device.hager;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.dal.data.Location;
+import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.hager.HA_TYA663AType;
@@ -21,8 +22,12 @@ public class HA_TYA663AController extends AbstractOpenHABDeviceController<HA_TYA
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HA_TYA663AType.HA_TYA663A.getDefaultInstance()));
     }
 
-    public HA_TYA663AController(final String id, final String label, final String[] unitLabel, final Location location) throws de.citec.jul.exception.InstantiationException {
-        super(id, label, location, HA_TYA663AType.HA_TYA663A.newBuilder());
-        // TODO tamino: implement dimmer unit.
+    public HA_TYA663AController(final String label, final String[] unitLabel, final Location location) throws de.citec.jul.exception.InstantiationException {
+        super(label, location, HA_TYA663AType.HA_TYA663A.newBuilder());
+//		try {
+//        // TODO tamino: implement dimmer unit.
+//		} catch (CouldNotPerformException ex) {
+//			throw new InstantiationException(this, ex);
+//		}
     }
 }

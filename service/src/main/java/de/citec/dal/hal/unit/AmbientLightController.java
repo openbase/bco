@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
@@ -35,11 +35,11 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 	private final BrightnessService brightnessService;
 	private final PowerService powerService;
 
-	public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
+	public AmbientLightController(final String label, final Device device, final AmbientLightType.AmbientLight.Builder builder) throws InstantiationException {
 		this(label, device, builder, device.getDefaultServiceFactory());
 	}
 
-	public AmbientLightController(final String label, final DeviceInterface device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
+	public AmbientLightController(final String label, final Device device, final AmbientLightType.AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
 		super(AmbientLightController.class, label, device, builder);
 		this.powerService = serviceFactory.newPowerService(device, this);
 		this.colorService = serviceFactory.newColorService(device, this);

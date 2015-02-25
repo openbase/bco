@@ -6,15 +6,15 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
+import de.citec.dal.data.Location;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.device.philips.PH_Hue_E27Controller;
-import de.citec.dal.util.DALRegistry;
+import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import java.awt.Color;
@@ -35,7 +35,8 @@ import rst.vision.HSVColorType;
  */
 public class AmbientLightRemoteTest {
 
-    public static final String LABEL = "Ambient_Light_Unit_Test";
+    private static final String LABEL = "Ambient_Light_Unit_Test";
+	public static final Location LOCATION = new Location("paradise");
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
 
@@ -47,32 +48,34 @@ public class AmbientLightRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        JPService.registerProperty(JPDebugMode.class, true);
-        dalService = new DALService(new TestConfiguration());
-        dalService.activate();
-
-        ambientLightRemote = new AmbientLightRemote();
-        ambientLightRemote.init(LABEL, TestConfiguration.LOCATION);
-        ambientLightRemote.activate();
+        
     }
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        dalService.deactivate();
+        
+    }
+
+    @Before
+    public void setUp() throws InitializationException, InvalidStateException {
+		JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        JPService.registerProperty(JPDebugMode.class, true);
+        dalService = new DALService(new DeviceInitializerImpl());
+        dalService.activate();
+
+        ambientLightRemote = new AmbientLightRemote();
+        ambientLightRemote.init(LABEL, LOCATION);
+        ambientLightRemote.activate();
+    }
+
+    @After
+    public void tearDown() throws CouldNotPerformException {
+		dalService.shutdown();
         try {
             ambientLightRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate ambient light remote: ", ex);
         }
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -246,11 +249,11 @@ public class AmbientLightRemoteTest {
     public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
-        public void initDevices(final DALRegistry registry) {
+        public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new PH_Hue_E27Controller("PH_Hue_E27_000", LABEL, TestConfiguration.LOCATION));
-            } catch (InstantiationException ex) {
+                registry.register(new PH_Hue_E27Controller(LABEL, LOCATION));
+            } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
         }

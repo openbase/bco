@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
@@ -25,7 +25,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(final String label, DeviceInterface device, Button.Builder builder) throws InstantiationException {
+    public ButtonController(final String label, Device device, Button.Builder builder) throws InstantiationException {
         super(ButtonController.class, label, device, builder);
     }
 

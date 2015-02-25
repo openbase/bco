@@ -11,9 +11,9 @@ import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
 import de.citec.dal.bindings.openhab.transform.ItemTransformer;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.hal.unit.UnitInterface;
+import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
@@ -28,18 +28,18 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  * @author mpohling
  * @param <ST> related service type
  */
-public abstract class OpenHABService<ST extends Service & UnitInterface> implements Service {
+public abstract class OpenHABService<ST extends Service & Unit> implements Service {
 
 	private OpenhabBindingInterface openhabBinding;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	protected final DeviceInterface device;
+	protected final Device device;
 	protected final ST unit;
 	private final String itemName;
 	private final ServiceType serviceType;
 
-	public OpenHABService(final DeviceInterface device, final ST unit) throws InstantiationException {
+	public OpenHABService(final Device device, final ST unit) throws InstantiationException {
 		try {
 			this.device = device;
 			this.unit = unit;
@@ -55,7 +55,7 @@ public abstract class OpenHABService<ST extends Service & UnitInterface> impleme
 		return ServiceType.valueOfByServiceName(getClass().getSimpleName().replaceFirst("Service", "").replaceFirst("Provider", "").replaceFirst("Impl", ""));
 	}
 
-	public DeviceInterface getDevice() {
+	public Device getDevice() {
 		return device;
 	}
 

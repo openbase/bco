@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.DeviceInterface;
+import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -29,11 +29,11 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     private final PowerService powerService;
     
-    public PowerPlugController(final String label, DeviceInterface device, PowerPlug.Builder builder) throws InstantiationException {
+    public PowerPlugController(final String label, Device device, PowerPlug.Builder builder) throws InstantiationException {
         this(label, device, builder, device.getDefaultServiceFactory());
     }
     
-    public PowerPlugController(final String label, DeviceInterface device, PowerPlug.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
+    public PowerPlugController(final String label, Device device, PowerPlug.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
         super(PowerPlugController.class, label, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
     }
