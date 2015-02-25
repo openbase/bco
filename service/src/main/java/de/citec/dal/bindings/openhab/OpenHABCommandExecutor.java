@@ -5,14 +5,10 @@
  */
 package de.citec.dal.bindings.openhab;
 
-import static de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController.ITEM_ID_DELIMITER;
-import de.citec.dal.bindings.openhab.transform.ItemTransformer;
 import static de.citec.dal.bindings.openhab.transform.ItemTransformer.ITEM_SEGMENT_DELIMITER;
 import static de.citec.dal.bindings.openhab.transform.ItemTransformer.ITEM_SUBSEGMENT_DELIMITER;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
-import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.Unit;
 import de.citec.dal.registry.UnitRegistry;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -45,11 +41,6 @@ public class OpenHABCommandExecutor {
 		String location = nameSegment[1].replace(ITEM_SUBSEGMENT_DELIMITER, Scope.COMPONENT_SEPARATOR);
 		String unitId = (Scope.COMPONENT_SEPARATOR + location + Scope.COMPONENT_SEPARATOR + nameSegment[2] + Scope.COMPONENT_SEPARATOR + nameSegment[3] + Scope.COMPONENT_SEPARATOR).toLowerCase();
 		String serviceName = nameSegment[4];
-
-//        String unitServicePattern = command.getItem().replaceFirst(name + ITEM_ID_DELIMITER, "");
-//        String[] pattern = unitServicePattern.split(ITEM_ID_DELIMITER);
-//        String unitName = pattern[0];
-//        String serviceName = pattern[pattern.length-1];
 		Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceName);
 		Method relatedMethod;
 		Unit unit;

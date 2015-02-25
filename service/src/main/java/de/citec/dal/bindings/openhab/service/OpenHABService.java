@@ -5,11 +5,10 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
-import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
-import de.citec.dal.bindings.openhab.OpenhabBinding;
-import de.citec.dal.bindings.openhab.OpenhabBindingInterface;
+import de.citec.dal.DALService;
+import de.citec.dal.bindings.openhab.OpenHABBinding;
+import de.citec.dal.bindings.openhab.OpenHABBindingInterface;
 import de.citec.dal.bindings.openhab.transform.ItemTransformer;
-import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.ServiceType;
@@ -30,7 +29,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  */
 public abstract class OpenHABService<ST extends Service & Unit> implements Service {
 
-	private OpenhabBindingInterface openhabBinding;
+	private OpenHABBindingInterface openhabBinding;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,7 +44,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 			this.unit = unit;
 			this.serviceType = detectServiceType();
 			this.itemName = ItemTransformer.generateItemName(device, unit, this);
-			this.openhabBinding = OpenhabBinding.getInstance();
+			this.openhabBinding = DALService.getRegistryProvider().getBindingRegistry().getBinding(OpenHABBinding.class);
 		} catch (CouldNotPerformException ex) {
 			throw new InstantiationException(this, ex);
 		}

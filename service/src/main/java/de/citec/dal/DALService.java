@@ -5,6 +5,8 @@
  */
 package de.citec.dal;
 
+import de.citec.dal.bindings.DALBindingRegistry;
+import de.citec.dal.bindings.openhab.OpenHABBinding;
 import de.citec.dal.registry.CSRADeviceInitializerImpl;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
@@ -13,6 +15,9 @@ import de.citec.dal.util.DeviceInitializer;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.rsb.RSBInformerPool;
 import org.slf4j.Logger;
@@ -26,80 +31,104 @@ public class DALService implements RegistryProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DALService.class);
 
-	private static RegistryProvider registryProvider;
+    private static RegistryProvider registryProvider;
 
-	private final DeviceRegistry deviceRegistry;
-	private final UnitRegistry unitRegistry;
-	private final ConnectionManager connectionManager;
+    private final DALBindingRegistry bindingRegistry;
+    private final DeviceRegistry deviceRegistry;
+    private final UnitRegistry unitRegistry;
+    private final ConnectionManager connectionManager;
 
-	public DALService() {
-		this(new CSRADeviceInitializerImpl());
-	}
+    public DALService() throws InitializationException {
+        this(new CSRADeviceInitializerImpl());
+    }
 
-	public DALService(final DeviceInitializer initializer) {
-		this.deviceRegistry = new DeviceRegistry();
-		this.unitRegistry = new UnitRegistry();
-		this.connectionManager = new ConnectionManager(deviceRegistry);
+    public DALService(final DeviceInitializer initializer) throws InitializationException {
+        try {
+        this.bindingRegistry = new DALBindingRegistry();
+        this.deviceRegistry = new DeviceRegistry();
+        this.unitRegistry = new UnitRegistry();
+        this.connectionManager = new ConnectionManager(deviceRegistry);
 
-		registryProvider = this;
-		initializer.initDevices(deviceRegistry);
-	}
+        registryProvider = this;
+        
+        initBindings();
+        
+        initializer.initDevices(deviceRegistry);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
 
-	public static RegistryProvider getRegistryProvider() throws NotAvailableException {
-		if(registryProvider == null) {
-			throw new NotAvailableException(RegistryProvider.class);
-		}
-		return registryProvider;
-	}
+    public static RegistryProvider getRegistryProvider() throws NotAvailableException {
+        if (registryProvider == null) {
+            throw new NotAvailableException(RegistryProvider.class);
+        }
+        return registryProvider;
+    }
+    
+    private void initBindings() throws CouldNotPerformException {
+        bindingRegistry.register(OpenHABBinding.class);
+    }
 
-	public void activate() {
-		try {
-			this.connectionManager.activate();
-		} catch (Exception ex) {
-			logger.warn("Hardware manager could not be activated!", ex);
-		}
-	}
+    public void activate() {
+        try {
+            this.connectionManager.activate();
+        } catch (Exception ex) {
+            logger.warn("Hardware manager could not be activated!", ex);
+        }
+    }
 
-	public void deactivate() {
-		try {
-			this.connectionManager.deactivate();
-		} catch (Exception ex) {
-			logger.warn("Hardware manager could not be deactivated!", ex);
-		}
-	}
+    public void deactivate() {
+        try {
+            this.connectionManager.deactivate();
+        } catch (Exception ex) {
+            logger.warn("Hardware manager could not be deactivated!", ex);
+        }
+    }
 
-	public void shutdown() {
-		deactivate();
-		RSBInformerPool.getInstance().shutdown();
-		deviceRegistry.shutdown();
-		unitRegistry.shutdown();
-		registryProvider = null;
-	}
+    public void shutdown() {
+        deactivate();
+        RSBInformerPool.getInstance().shutdown();
+        bindingRegistry.clean();
+        deviceRegistry.clean();
+        unitRegistry.clean();
+        registryProvider = null;
+    }
 
-	@Override
-	public DeviceRegistry getDeviceRegistry() {
-		return deviceRegistry;
-	}
+    @Override
+    public DALBindingRegistry getBindingRegistry() {
+        return bindingRegistry;
+    }
 
-	@Override
-	public UnitRegistry getUnitRegistry() {
-		return unitRegistry;
-	}
+    @Override
+    public DeviceRegistry getDeviceRegistry() {
+        return deviceRegistry;
+    }
 
-	public ConnectionManager getConnectionManager() {
-		return connectionManager;
-	}
+    @Override
+    public UnitRegistry getUnitRegistry() {
+        return unitRegistry;
+    }
 
-	/**
-	 * @param args the command line arguments
-	 */
-	public static void main(String[] args) {
-		/* Setup CLParser */
-		JPService.setApplicationName("DeviceManager");
-		JPService.registerProperty(JPDebugMode.class);
-		JPService.registerProperty(JPHardwareSimulationMode.class);
-		JPService.parseAndExitOnError(args);
+    public ConnectionManager getConnectionManager() {
+        return connectionManager;
+    }
 
-		new DALService().activate();
-	}
+    /**
+     * @param args the command line arguments
+     * @throws java.lang.Throwable
+     */
+    public static void main(String[] args) throws Throwable {
+        /* Setup CLParser */
+        JPService.setApplicationName("DeviceManager");
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.parseAndExitOnError(args);
+
+        try {
+            new DALService().activate();
+        } catch (InitializationException ex) {
+            throw ExceptionPrinter.printHistory(logger, ex);
+        }
+    }
 }

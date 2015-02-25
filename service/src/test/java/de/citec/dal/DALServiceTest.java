@@ -7,6 +7,7 @@ package de.citec.dal;
 
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.registry.DeviceRegistry;
+import de.citec.jul.exception.InitializationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class DALServiceTest {
     }
     
     @Before
-    public void setUp() {
+    public void setUp() throws InitializationException {
         dALService = new DALService();
     }
     
@@ -47,7 +48,7 @@ public class DALServiceTest {
      * Test of activate method, of class DALService.
      */
     @Test
-    public void testActivate() {
+    public void testActivate() throws InitializationException {
         System.out.println("activate");
         DALService instance = new DALService();
         instance.activate();
@@ -59,7 +60,7 @@ public class DALServiceTest {
      * Test of deactivate method, of class DALService.
      */
     @Test
-    public void testDeactivate() {
+    public void testDeactivate() throws InitializationException {
         System.out.println("deactivate");
         DALService instance = new DALService();
         instance.deactivate();
@@ -71,7 +72,7 @@ public class DALServiceTest {
      * Test of getRegistry method, of class DALService.
      */
     @Test
-    public void testGetRegistry() {
+    public void testGetRegistry() throws InitializationException {
         System.out.println("getRegistry");
         DALService instance = new DALService();
         DeviceRegistry expResult = null;
@@ -85,7 +86,7 @@ public class DALServiceTest {
      * Test of getHardwareManager method, of class DALService.
      */
     @Test
-    public void testGetHardwareManager() {
+    public void testGetHardwareManager() throws InitializationException {
         System.out.println("getHardwareManager");
         DALService instance = new DALService();
         ConnectionManager expResult = null;
@@ -99,7 +100,7 @@ public class DALServiceTest {
      * Test of main method, of class DALService.
      */
     @Test
-    public void testMain() {
+    public void testMain() throws Throwable {
         System.out.println("main");
         String[] args = null;
         DALService.main(args);

@@ -10,7 +10,9 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.schedule.SyncObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -22,10 +24,10 @@ import java.util.TreeMap;
 public abstract class AbstractRegistry<KEY, VALUE extends Identifiable<KEY>> {
 
 	private final SyncObject SYNC = new SyncObject(AbstractRegistry.class);
-	private final TreeMap<KEY, VALUE> registry;
+	private final Map<KEY, VALUE> registry;
 
 	public AbstractRegistry() {
-		this.registry = new TreeMap<>();
+		this.registry = new HashMap<>();
 	}
 
 	public void register(final VALUE entry) throws CouldNotPerformException {
@@ -49,7 +51,8 @@ public abstract class AbstractRegistry<KEY, VALUE extends Identifiable<KEY>> {
 	public VALUE get(final KEY key) throws NotAvailableException {
 		synchronized (SYNC) {
 			if (!registry.containsKey(key)) {
-				throw new NotAvailableException("Entry[" + key + "]", "Nearest neighbor is [" + registry.floorKey(key) + "] or [" + registry.ceilingKey(key) + "].");
+                TreeMap<KEY, VALUE> sortedMap = new TreeMap<>(registry);
+				throw new NotAvailableException("Entry[" + key + "]", "Nearest neighbor is [" + sortedMap.floorKey(key) + "] or [" + sortedMap.ceilingKey(key) + "].");
 			}
 			return registry.get(key);
 		}
@@ -60,8 +63,12 @@ public abstract class AbstractRegistry<KEY, VALUE extends Identifiable<KEY>> {
 			return new ArrayList<>(registry.values());
 		}
 	}
+    
+    public boolean contrains(KEY key) {
+        return registry.containsKey(key);
+    }
 
-	public void shutdown() {
+	public void clean() {
 		synchronized (SYNC) {
 			registry.clear();
 		}

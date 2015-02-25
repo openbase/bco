@@ -13,7 +13,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  *
  * @author thuxohl
  */
-public interface OpenhabBindingInterface {
+public interface OpenHABBindingInterface {
             
     void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException;
     

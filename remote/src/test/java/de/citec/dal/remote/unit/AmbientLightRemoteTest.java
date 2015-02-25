@@ -48,17 +48,7 @@ public class AmbientLightRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException {
-        
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
-        
-    }
-
-    @Before
-    public void setUp() throws InitializationException, InvalidStateException {
-		JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
         dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
@@ -68,14 +58,24 @@ public class AmbientLightRemoteTest {
         ambientLightRemote.activate();
     }
 
-    @After
-    public void tearDown() throws CouldNotPerformException {
-		dalService.shutdown();
+    @AfterClass
+    public static void tearDownClass() throws CouldNotPerformException {
+        dalService.shutdown();
         try {
             ambientLightRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate ambient light remote: ", ex);
         }
+    }
+
+    @Before
+    public void setUp() throws InitializationException, InvalidStateException {
+		
+    }
+
+    @After
+    public void tearDown() throws CouldNotPerformException {
+		
     }
 
     /**

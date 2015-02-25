@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.dal.bindings.openhab.OpenhabBinding;
+import de.citec.dal.bindings.openhab.OpenHABBinding;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
@@ -48,7 +48,7 @@ public final class OpenhabCommandTransformer {
                     case COLOR:
                         return HSVColorTransformer.transform(command.getHsb());
                     default:
-                        throw new NotSupportedException(serviceType, OpenhabBinding.class);
+                        throw new NotSupportedException(serviceType, OpenHABBinding.class);
                 }
             case INCREASEDECREASE:
 //				return IncreaseDecreaseTransformer(command.getIncreaseDecrease());
@@ -60,7 +60,7 @@ public final class OpenhabCommandTransformer {
                     case POWER:
                         return PowerStateTransformer.transform(command.getOnOff().getState());
                     default:
-                        throw new NotSupportedException(serviceType, OpenhabBinding.class);
+                        throw new NotSupportedException(serviceType, OpenHABBinding.class);
                 }
             case OPENCLOSED:
                 return OpenClosedStateTransformer.transform(command.getOpenClosed().getState());

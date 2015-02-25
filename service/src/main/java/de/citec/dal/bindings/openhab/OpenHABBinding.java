@@ -5,9 +5,9 @@
  */
 package de.citec.dal.bindings.openhab;
 
+import de.citec.dal.bindings.AbstractDALBinding;
 import de.citec.dal.DALService;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
-import de.citec.dal.registry.UnitRegistry;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.RSBInformerInterface.InformerType;
 import de.citec.jul.rsb.RSBRemoteService;
@@ -42,7 +42,7 @@ import rst.homeautomation.state.ActiveDeactiveType;
  * @author thuxohl
  * @author mpohling
  */
-public class OpenhabBinding implements OpenhabBindingInterface {
+public class OpenHABBinding extends AbstractDALBinding implements OpenHABBindingInterface {
 
 	public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
 	public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
@@ -50,9 +50,8 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 	public static final Scope SCOPE_DAL = new Scope("/dal");
 	public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
 
-	private static final Logger logger = LoggerFactory.getLogger(OpenhabBinding.class);
+	private static final Logger logger = LoggerFactory.getLogger(OpenHABBinding.class);
 
-	private static OpenhabBinding instance;
 	private OpenHABCommandExecutor commandExecutor;
 
 	private final RSBRemoteService<RSBBinding> openhabRemoteService;
@@ -64,21 +63,14 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
 	}
 
-	public synchronized static OpenhabBinding getInstance() throws InstantiationException {
-		if (instance == null) {
-			instance = new OpenhabBinding();
-		}
-		return instance;
-	}
-
-	private OpenhabBinding() throws InstantiationException {
+	public OpenHABBinding() throws InstantiationException {
 		try {
 			this.commandExecutor = new OpenHABCommandExecutor(DALService.getRegistryProvider().getUnitRegistry());
 			openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
 				@Override
 				public void notifyUpdated(final RSBBinding data) {
-					OpenhabBinding.this.notifyUpdated(data);
+					OpenHABBinding.this.notifyUpdated(data);
 				}
 			};
 			openhabRemoteService.init(SCOPE_OPENHAB);
@@ -87,7 +79,7 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 
 				@Override
 				public void registerMethods(LocalServer server) throws RSBException {
-					OpenhabBinding.this.registerMethods(server);
+					OpenHABBinding.this.registerMethods(server);
 				}
 			};
 
@@ -134,14 +126,14 @@ public class OpenhabBinding implements OpenhabBindingInterface {
 		}
 	}
 
-	public static class InternalReceiveUpdateCallback extends EventCallback {
+	public class InternalReceiveUpdateCallback extends EventCallback {
 
 		@Override
 		public Event invoke(final Event request) throws Throwable {
 			try {
-				OpenhabBinding.instance.internalReceiveUpdate((OpenhabCommand) request.getData());
+				OpenHABBinding.this.internalReceiveUpdate((OpenhabCommand) request.getData());
 			} catch (Throwable cause) {
-				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenhabBinding.instance, cause));
+				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
 			}
 			return RSBCommunicationService.RPC_SUCCESS;
 		}
