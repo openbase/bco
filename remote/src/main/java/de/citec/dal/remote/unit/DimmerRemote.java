@@ -46,7 +46,7 @@ public class DimmerRemote extends DALRemoteService<DimmerType.Dimmer> implements
     }
 
     @Override
-    public double getDimm() throws CouldNotPerformException {
+    public Double getDimm() throws CouldNotPerformException {
         return this.getData().getValue();
     }
 

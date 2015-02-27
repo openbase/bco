@@ -66,7 +66,7 @@ public class DimmerController extends AbstractUnitController<DimmerType.Dimmer, 
     }
 
     @Override
-    public double getDimm() throws CouldNotPerformException {
+    public Double getDimm() throws CouldNotPerformException {
         return data.getValue();
     }
 }

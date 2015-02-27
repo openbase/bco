@@ -41,7 +41,8 @@ public enum ServiceType {
 	POWER(PowerService.class),
 	SHUTTER(ShutterService.class),
 	OPENING_RATIO(OpeningRatioService.class),
-	MOTION(MotionProvider.class);
+	MOTION(MotionProvider.class),
+        DIMM(DimmService.class);
 
 	public static final String SET = "set";
 	public static final String UPDATE = "update";

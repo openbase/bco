@@ -34,10 +34,10 @@ import rst.homeautomation.state.PowerType;
 public class LightRemoteTest {
 
     public static final String LABEL = "Light_Unit_Test";
-    public static final String[] UNITS = {"Light_1", "Light_2","testButton_1","testButton_2"};
-	public static final Location LOCATION = new Location("paradise");
+    public static final String[] UNITS = {"Light_1", "Light_2", "testButton_1", "testButton_2"};
+    public static final Location LOCATION = new Location("paradise");
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LightRemoteTest.class);
 
     private static LightRemote lightRemote;
     private static DALService dalService;
@@ -94,7 +94,7 @@ public class LightRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", lightRemote.getData().getPowerState().getState().equals(state));
+        assertTrue("Power has not been set in time!", lightRemote.getData().getPowerState().getState().equals(state));
     }
 
     /**
@@ -106,9 +106,7 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        LightController test = ((LightController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, LightController.class));
-        test.updatePower(state);
-        System.out.println(test.getScope() + "," + test.getLabel());
+        ((LightController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, LightController.class)).updatePower(state);
         while (true) {
             try {
                 if (lightRemote.getPower().equals(state)) {
@@ -129,7 +127,7 @@ public class LightRemoteTest {
     public void testNotifyUpdated() {
     }
 
-	public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
+    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
 
         @Override
         public void initDevices(final DeviceRegistry registry) {

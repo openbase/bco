@@ -29,7 +29,7 @@ public class DimmServiceImpl<ST extends DimmService & Unit> extends OpenHABServi
     }
 
     @Override
-    public double getDimm() throws CouldNotPerformException {
+    public Double getDimm() throws CouldNotPerformException {
         return unit.getDimm();
     }
     

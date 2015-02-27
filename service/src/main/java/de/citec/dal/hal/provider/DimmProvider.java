@@ -19,7 +19,7 @@ import rsb.patterns.EventCallback;
  */
 public interface DimmProvider extends Provider {
 
-    public double getDimm() throws CouldNotPerformException;
+    public Double getDimm() throws CouldNotPerformException;
 
     public class GetDimmCallback extends EventCallback {
 
