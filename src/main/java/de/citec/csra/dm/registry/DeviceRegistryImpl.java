@@ -5,7 +5,6 @@
  */
 package de.citec.csra.dm.registry;
 
-import de.citec.csra.dm.DeviceManager;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jul.storage.SynchronizedRegistry;
 import de.citec.jul.rsb.IdentifiableMessage;
@@ -23,28 +22,25 @@ import rst.homeautomation.registry.DeviceRegistryType.DeviceRegistry;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.rsb.ProtobufMessageMap;
+import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.FileNameProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author mpohling
  */
-public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> {
+public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistryInterface {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryImpl.class);
-    
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceClass>> deviceClassRegistry;
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceConfig>> deviceConfigRegistry;
 
     public DeviceRegistryImpl() throws InstantiationException {
-        super(JPService.getAttribute(JPScope.class).getValue(), DeviceRegistry.newBuilder());
+        super(JPService.getProperty(JPScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
             ProtobufMessageMap<String, IdentifiableMessage<DeviceClass>, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
             ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
-            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getAttribute(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<DeviceClass>(), new DBFileNameProvider());
-            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getAttribute(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<DeviceConfig>(), new DBFileNameProvider());
+            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<DeviceClass>(), new DBFileNameProvider());
+            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<DeviceConfig>(), new DBFileNameProvider());
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
         } catch (CouldNotPerformException ex) {
@@ -54,7 +50,37 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public void registerMethods(LocalServer server) throws RSBException {
-//        server.addMethod(RPC_REQUEST_STATUS, null);
+        RPCHelper.registerInterface(DeviceRegistryInterface.class, this, server);
+    }
+
+    @Override
+    public void register(DeviceConfig deviceConfig) throws CouldNotPerformException {
+        deviceConfigRegistry.register(new IdentifiableMessage<>(deviceConfig));
+    }
+
+    @Override
+    public void update(DeviceConfig deviceConfig) throws CouldNotPerformException {
+        deviceConfigRegistry.update(new IdentifiableMessage<>(deviceConfig));
+    }
+
+    @Override
+    public void remove(DeviceConfig deviceConfig) throws CouldNotPerformException {
+        deviceConfigRegistry.remove(new IdentifiableMessage<>(deviceConfig));
+    }
+
+    @Override
+    public void register(DeviceClass deviceClass) throws CouldNotPerformException {
+        deviceClassRegistry.register(new IdentifiableMessage<>(deviceClass));
+    }
+
+    @Override
+    public void update(DeviceClass deviceClass) throws CouldNotPerformException {
+        deviceClassRegistry.update(new IdentifiableMessage<>(deviceClass));
+    }
+
+    @Override
+    public void remove(DeviceClass deviceClass) throws CouldNotPerformException {
+        deviceClassRegistry.remove(new IdentifiableMessage<>(deviceClass));
     }
 
     public class DBFileNameProvider implements FileNameProvider<Identifiable<String>> {

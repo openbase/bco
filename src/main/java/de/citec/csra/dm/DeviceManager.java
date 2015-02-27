@@ -49,7 +49,8 @@ public class DeviceManager {
 //
             JPService.registerProperty(JPScope.class, new Scope("/devicemanager/registry"));
             JPService.registerProperty(JPReadOnly.class);
-            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
+            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, );
+            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, );
             JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
 
 //        JPService.registerProperty(JPShowGUI.class, true);
