@@ -17,20 +17,7 @@ import de.citec.jul.exception.NotAvailableException;
  */
 public class UnitRegistry extends Registry<String, Unit> {
 
-//	private static UnitRegistry instance;
-
-	public UnitRegistry() {
-//		instance = this;
-	}
-
-//	public static synchronized UnitRegistry getInstance() {
-//		if (instance == null) {
-//			instance = new UnitRegistry();
-//		}
-//		return instance;
-//	}
-
-	public Unit getUnit(String label, Location location, Class<? extends AbstractUnitController> unitClass) throws NotAvailableException {
-		return get(AbstractUnitController.generateID(label, location, unitClass));
-	}
+    public Unit getUnit(String label, Location location, Class<? extends AbstractUnitController> unitClass) throws NotAvailableException {
+        return get(AbstractUnitController.generateID(label, location, unitClass));
+    }
 }
