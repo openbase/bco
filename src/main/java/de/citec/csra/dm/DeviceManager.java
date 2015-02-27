@@ -52,9 +52,9 @@ public class DeviceManager {
         JPService.registerProperty(JPScope.class, new Scope("/devicemanager/registry"));
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPInitializeDBFlag.class);
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/database/"));
+//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
+//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
+//        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/database/"));
 
         JPService.parseAndExitOnError(args);
 
