@@ -4,14 +4,14 @@
  * and open the template in the editor.
  */
 
-package de.citec.csra.dm.view;
+package de.citec.csra.dm.view_old;
 
-import de.citec.csra.dm.view.struct.DeviceClassOverviewPanel;
+import de.citec.csra.dm.view_old.struct.DeviceClassOverviewPanel;
 import de.citec.csra.dm.OldDeviceManager;
-import de.citec.csra.dm.view.struct.DataStreamOverviewPanel;
-import de.citec.csra.dm.view.struct.DeviceConfigOverviewPanel;
-import de.citec.csra.dm.view.struct.DeviceInstanceOverviewPanel;
-import de.citec.csra.dm.view.struct.GlobalConfigOverviewPanel;
+import de.citec.csra.dm.view_old.struct.DataStreamOverviewPanel;
+import de.citec.csra.dm.view_old.struct.DeviceConfigOverviewPanel;
+import de.citec.csra.dm.view_old.struct.DeviceInstanceOverviewPanel;
+import de.citec.csra.dm.view_old.struct.GlobalConfigOverviewPanel;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPReadOnly;
 

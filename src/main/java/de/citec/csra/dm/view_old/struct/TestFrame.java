@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.citec.csra.dm.view.struct;
+package de.citec.csra.dm.view_old.struct;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;

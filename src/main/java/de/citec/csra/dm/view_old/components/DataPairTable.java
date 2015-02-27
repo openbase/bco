@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package de.citec.csra.dm.view.components;
+package de.citec.csra.dm.view_old.components;
 
 import java.util.HashMap;
 import java.util.Map;

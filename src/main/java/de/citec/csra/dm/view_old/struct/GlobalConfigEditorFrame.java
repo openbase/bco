@@ -3,15 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view.struct;
+package de.citec.csra.dm.view_old.struct;
 
 import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
-import de.citec.csra.dm.struct.DeviceClass;
-import de.citec.csra.dm.view.components.DataStreamSelectionTable;
+import de.citec.csra.dm.struct.GlobalConfig;
+import de.citec.csra.dm.view_old.components.DataPairSelectionPanel;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JComboBox;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -19,37 +18,33 @@ import javax.swing.JTextField;
  *
  * @author mpohling
  */
-public class DeviceClassEditorFrame extends AbstractEditorFrame<DeviceClass> {
+public class GlobalConfigEditorFrame extends AbstractEditorFrame<GlobalConfig> {
 
-	private final JTextField name, productNumber;
-	private final DataStreamSelectionTable dataStreams;
+	private final JTextField name;
+	private final DataPairSelectionPanel<String, String> instanceConfigMapping;
 	private final JTextArea description;
-	private final JComboBox category;
 
-	protected final static Map<String, DeviceClassEditorFrame> editorInstances = new HashMap<String, DeviceClassEditorFrame>();
+	protected final static Map<String, GlobalConfigEditorFrame> editorInstances = new HashMap<>();
 
-	public static synchronized void edit(final DeviceClass deviceClass) {
-		String contextKey = deviceClass.getId();
+	public static synchronized void edit(final GlobalConfig globalConfig) {
+		String contextKey = globalConfig.getId();
 		if (!editorInstances.containsKey(contextKey)) {
-			editorInstances.put(contextKey, new DeviceClassEditorFrame());
+			editorInstances.put(contextKey, new GlobalConfigEditorFrame());
 		}
-		editorInstances.get(contextKey).init(deviceClass);
+		editorInstances.get(contextKey).init(globalConfig);
 	}
 
 	/**
-	 * Creates new form DeviceClassEditorPanel
+	 * Creates new form GlobalConfigEditorPanel
 	 */
-	public DeviceClassEditorFrame() {
+	public GlobalConfigEditorFrame() {
 		this.name = new JTextField();
-		this.productNumber = new JTextField();
-		this.dataStreams = new DataStreamSelectionTable();
+		this.instanceConfigMapping = new DataPairSelectionPanel<>();
 		this.description = new JTextArea();
-		this.category = new JComboBox(DeviceClass.Category.values());
+		this.instanceConfigMapping.setContextLabels("DeviceInstance", "DeviceConfig");
 
 		addContextElement("Name", name);
-		addContextElement("ProductNumber", productNumber);
-		addContextElement("Category", category);
-		addContextElement("SupportedDataStreams", dataStreams);
+		addContextElement("InstanceConfigMapping", instanceConfigMapping);
 		addContextElement("Description", description);
 		pack();
 	}
@@ -79,28 +74,25 @@ public class DeviceClassEditorFrame extends AbstractEditorFrame<DeviceClass> {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 	@Override
-	protected void load(final DeviceClass context) {
+	protected void load(final GlobalConfig context) {
 		name.setText(context.getName());
-		productNumber.setText(context.getProductNumber());
+		//TODO validate pairs!
+		instanceConfigMapping.load(context.getInstanceConfigMap(), deviceManager.getDeviceInstanceMap().keySet(), deviceManager.getDeviceConfigMap().keySet());
 		description.setText(context.getDescription());
-		category.setSelectedItem(context.getCategory());
-		dataStreams.load(context.getSupportedDataStreams(), deviceManager.getDataStreamMap().keySet());
 	}
 
 	@Override
-	protected void save(final DeviceClass context) throws InvalidOperationException {
+	protected void save(final GlobalConfig context) throws InvalidOperationException {
 		context.setName(name.getText());
-		context.setProductNumber(productNumber.getText());
 		context.setDescription(description.getText());
-		context.setCategory((DeviceClass.Category) category.getSelectedItem());
-		context.setSupportedDataStreams(dataStreams.getDataStreamSelectionList());
+		context.setInstanceConfigMap(instanceConfigMapping.getDataPairs());
 		context.updateID();
-		deviceManager.addDeviceClass(context);
+		deviceManager.addGlobalConfig(context);
 	}
 
 	@Override
-	protected boolean checkExistence(final DeviceClass context) throws NotAvailableException {
-		return deviceManager.getDeviceClass(context.getId()) != null;
+	protected boolean checkExistence(final GlobalConfig context) throws NotAvailableException {
+		return deviceManager.getGlobalConfig(context.getId()) != null;
 	}
 
 	@Override

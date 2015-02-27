@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view.struct;
+package de.citec.csra.dm.view_old.struct;
 
 import de.citec.csra.dm.exception.NotAvailableException;
-import de.citec.csra.dm.struct.GlobalConfig;
+import de.citec.csra.dm.struct.DataStream;
 import java.util.List;
 import javax.swing.JTable;
 
@@ -14,12 +14,12 @@ import javax.swing.JTable;
  *
  * @author mpohling
  */
-public class GlobalConfigOverviewPanel extends AbstractOverviewPanel<GlobalConfig> {
+public class DataStreamOverviewPanel extends AbstractOverviewPanel<DataStream> {
 
 	/**
 	 * Creates new form DeviceClassOverviewPanel
 	 */
-	public GlobalConfigOverviewPanel() {
+	public DataStreamOverviewPanel() {
 
 	}
 
@@ -49,42 +49,45 @@ public class GlobalConfigOverviewPanel extends AbstractOverviewPanel<GlobalConfi
     // End of variables declaration//GEN-END:variables
 
 	@Override
-	protected List<GlobalConfig> getContextList() {
-		return deviceManager.getGlobalConfigList();
+	protected List<DataStream> getContextList() {
+		return deviceManager.getDataStreamList();
 	}
 
 	@Override
 	protected String[] getContextLables() {
-		String[] contextLables = {"ID","Name", "InstanceConfigMap", "Description"};
+		String[] contextLables = {"ID","Name", "RST-Type", "DataSize", "Frequency", "MetaAttributeMap", "Description"};
 		return contextLables;
 	}
 
 	@Override
-	protected void updateContextData(final GlobalConfig context, final Object[] contextData) {
+	protected void updateContextData(final DataStream context, final Object[] contextData) {
 		contextData[0] = context.getId();
 		contextData[1] = context.getName();
-		contextData[2] = context.getInstanceConfigMap(); //TODO
-		contextData[3] = context.getDescription();
+		contextData[2] = context.getRst_type();
+		contextData[3] = context.getDataSize();
+		contextData[4] = context.getFrequency();
+		contextData[5] = context.getMetaAttributeMap();
+		contextData[6] = context.getDescription();
 	}
 
 	@Override
-	protected void remove(final GlobalConfig globalConfig) {
-		deviceManager.removeGlobalConfig(globalConfig.getId());
+	protected void remove(final DataStream dataStream) {
+		deviceManager.removeDataStream(dataStream.getId());
 	}
 
 	@Override
-	protected void edit(final GlobalConfig globalConfig) {
-		GlobalConfigEditorFrame.edit(globalConfig);
+	protected void edit(final DataStream dataStream) {
+		DataStreamEditorFrame.edit(dataStream);
 	}
 
 	@Override
 	protected void add() {
-		GlobalConfig globalConfig = new GlobalConfig();
-		edit(globalConfig);
+		DataStream dataStream = new DataStream();
+		edit(dataStream);
 	}
 
 	@Override
-	protected GlobalConfig getSelection(final JTable contextTable) throws NotAvailableException {
-		return deviceManager.getGlobalConfig((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
+	protected DataStream getSelection(final JTable contextTable) throws NotAvailableException {
+		return deviceManager.getDataStream((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
 	}
 }

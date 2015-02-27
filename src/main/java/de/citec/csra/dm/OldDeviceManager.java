@@ -22,7 +22,7 @@ import de.citec.jps.preset.JPShowGUI;
 import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
-import de.citec.csra.dm.view.DevieManagerGUI;
+import de.citec.csra.dm.view_old.DevieManagerGUI;
 import de.citec.jps.preset.JPReadOnly;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

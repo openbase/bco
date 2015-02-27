@@ -3,24 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view.struct;
+package de.citec.csra.dm.view_old.struct;
 
 import de.citec.csra.dm.exception.NotAvailableException;
-import de.citec.csra.dm.struct.DeviceClass;
+import de.citec.csra.dm.struct.GlobalConfig;
 import java.util.List;
 import javax.swing.JTable;
-import javax.swing.table.TableModel;
 
 /**
  *
  * @author mpohling
  */
-public class DeviceClassOverviewPanel extends AbstractOverviewPanel<DeviceClass> {
+public class GlobalConfigOverviewPanel extends AbstractOverviewPanel<GlobalConfig> {
 
 	/**
 	 * Creates new form DeviceClassOverviewPanel
 	 */
-	public DeviceClassOverviewPanel() {
+	public GlobalConfigOverviewPanel() {
 
 	}
 
@@ -50,43 +49,42 @@ public class DeviceClassOverviewPanel extends AbstractOverviewPanel<DeviceClass>
     // End of variables declaration//GEN-END:variables
 
 	@Override
-	protected List<DeviceClass> getContextList() {
-		return deviceManager.getDeviceClassList();
+	protected List<GlobalConfig> getContextList() {
+		return deviceManager.getGlobalConfigList();
 	}
 
 	@Override
 	protected String[] getContextLables() {
-		String[] contextLables = {"ID","Name", "ProductNumber", "Category", "Description"};
+		String[] contextLables = {"ID","Name", "InstanceConfigMap", "Description"};
 		return contextLables;
 	}
 
 	@Override
-	protected void updateContextData(final DeviceClass context, final Object[] contextData) {
+	protected void updateContextData(final GlobalConfig context, final Object[] contextData) {
 		contextData[0] = context.getId();
 		contextData[1] = context.getName();
-		contextData[2] = context.getProductNumber();
-		contextData[3] = context.getCategory();
-		contextData[4] = context.getDescription();
+		contextData[2] = context.getInstanceConfigMap(); //TODO
+		contextData[3] = context.getDescription();
 	}
 
 	@Override
-	protected void remove(final DeviceClass deviceClass) {
-		deviceManager.removeDeviceClass(deviceClass.getId());
+	protected void remove(final GlobalConfig globalConfig) {
+		deviceManager.removeGlobalConfig(globalConfig.getId());
 	}
 
 	@Override
-	protected void edit(final DeviceClass deviceClass) {
-		DeviceClassEditorFrame.edit(deviceClass);
+	protected void edit(final GlobalConfig globalConfig) {
+		GlobalConfigEditorFrame.edit(globalConfig);
 	}
 
 	@Override
 	protected void add() {
-		DeviceClass deviceClass = new DeviceClass();
-		edit(deviceClass);
+		GlobalConfig globalConfig = new GlobalConfig();
+		edit(globalConfig);
 	}
 
 	@Override
-	protected DeviceClass getSelection(final JTable contextTable) throws NotAvailableException {
-		return deviceManager.getDeviceClass((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
+	protected GlobalConfig getSelection(final JTable contextTable) throws NotAvailableException {
+		return deviceManager.getGlobalConfig((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
 	}
 }

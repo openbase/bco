@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view.struct;
+package de.citec.csra.dm.view_old.struct;
 
 import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.struct.DataStream;
-import de.citec.csra.dm.view.components.DataPairTable;
+import de.citec.csra.dm.view_old.components.DataPairTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;

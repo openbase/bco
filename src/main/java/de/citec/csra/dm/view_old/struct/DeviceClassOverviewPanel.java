@@ -3,23 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view.struct;
+package de.citec.csra.dm.view_old.struct;
 
 import de.citec.csra.dm.exception.NotAvailableException;
-import de.citec.csra.dm.struct.DataStream;
+import de.citec.csra.dm.struct.DeviceClass;
 import java.util.List;
 import javax.swing.JTable;
+import javax.swing.table.TableModel;
 
 /**
  *
  * @author mpohling
  */
-public class DataStreamOverviewPanel extends AbstractOverviewPanel<DataStream> {
+public class DeviceClassOverviewPanel extends AbstractOverviewPanel<DeviceClass> {
 
 	/**
 	 * Creates new form DeviceClassOverviewPanel
 	 */
-	public DataStreamOverviewPanel() {
+	public DeviceClassOverviewPanel() {
 
 	}
 
@@ -49,45 +50,43 @@ public class DataStreamOverviewPanel extends AbstractOverviewPanel<DataStream> {
     // End of variables declaration//GEN-END:variables
 
 	@Override
-	protected List<DataStream> getContextList() {
-		return deviceManager.getDataStreamList();
+	protected List<DeviceClass> getContextList() {
+		return deviceManager.getDeviceClassList();
 	}
 
 	@Override
 	protected String[] getContextLables() {
-		String[] contextLables = {"ID","Name", "RST-Type", "DataSize", "Frequency", "MetaAttributeMap", "Description"};
+		String[] contextLables = {"ID","Name", "ProductNumber", "Category", "Description"};
 		return contextLables;
 	}
 
 	@Override
-	protected void updateContextData(final DataStream context, final Object[] contextData) {
+	protected void updateContextData(final DeviceClass context, final Object[] contextData) {
 		contextData[0] = context.getId();
 		contextData[1] = context.getName();
-		contextData[2] = context.getRst_type();
-		contextData[3] = context.getDataSize();
-		contextData[4] = context.getFrequency();
-		contextData[5] = context.getMetaAttributeMap();
-		contextData[6] = context.getDescription();
+		contextData[2] = context.getProductNumber();
+		contextData[3] = context.getCategory();
+		contextData[4] = context.getDescription();
 	}
 
 	@Override
-	protected void remove(final DataStream dataStream) {
-		deviceManager.removeDataStream(dataStream.getId());
+	protected void remove(final DeviceClass deviceClass) {
+		deviceManager.removeDeviceClass(deviceClass.getId());
 	}
 
 	@Override
-	protected void edit(final DataStream dataStream) {
-		DataStreamEditorFrame.edit(dataStream);
+	protected void edit(final DeviceClass deviceClass) {
+		DeviceClassEditorFrame.edit(deviceClass);
 	}
 
 	@Override
 	protected void add() {
-		DataStream dataStream = new DataStream();
-		edit(dataStream);
+		DeviceClass deviceClass = new DeviceClass();
+		edit(deviceClass);
 	}
 
 	@Override
-	protected DataStream getSelection(final JTable contextTable) throws NotAvailableException {
-		return deviceManager.getDataStream((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
+	protected DeviceClass getSelection(final JTable contextTable) throws NotAvailableException {
+		return deviceManager.getDeviceClass((String) contextTable.getModel().getValueAt(contextTable.convertRowIndexToModel(contextTable.getSelectedRow()), 0));
 	}
 }
