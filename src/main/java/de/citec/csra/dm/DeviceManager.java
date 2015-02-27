@@ -8,6 +8,7 @@ package de.citec.csra.dm;
 import de.citec.csra.dm.registry.DeviceRegistryImpl;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
+import de.citec.jp.JPInitializeDBFlag;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -15,6 +16,7 @@ import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.rsb.RSBInformerInterface;
 import de.citec.jul.rsb.jp.JPScope;
+import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -43,22 +45,20 @@ public class DeviceManager {
 
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
+
+        /* Setup CLParser */
+        JPService.setApplicationName(APP_NAME);
+
+        JPService.registerProperty(JPScope.class, new Scope("/devicemanager/registry"));
+        JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPInitializeDBFlag.class);
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/database/"));
+
+        JPService.parseAndExitOnError(args);
+
         try {
-            /* Setup CLParser */
-            JPService.setApplicationName(APP_NAME);
-//
-            JPService.registerProperty(JPScope.class, new Scope("/devicemanager/registry"));
-            JPService.registerProperty(JPReadOnly.class);
-            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, );
-            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, );
-            JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
-
-//        JPService.registerProperty(JPShowGUI.class, true);
-            JPService.parseAndExitOnError(args);
-
-//        if (JPService.getAttribute(JPShowGUI.class).getValue()) {
-//            DevieManagerGUI.main(args);
-//        }
             new DeviceManager();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistory(logger, ex);

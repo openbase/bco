@@ -24,12 +24,18 @@ import de.citec.jul.iface.Identifiable;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.FileNameProvider;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 
 /**
  *
  * @author mpohling
  */
 public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistryInterface {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
+    }
 
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceClass>> deviceClassRegistry;
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceConfig>> deviceConfigRegistry;
