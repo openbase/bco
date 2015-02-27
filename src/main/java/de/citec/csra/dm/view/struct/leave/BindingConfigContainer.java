@@ -13,7 +13,7 @@ import rst.homeautomation.binding.BindingConfigType.BindingConfig;
  */
 public class BindingConfigContainer implements Leave {
 
-    final BindingConfig bindingConfig;
+    private final BindingConfig bindingConfig;
 
     public BindingConfigContainer(BindingConfig bindingConfig) {
         this.bindingConfig = bindingConfig;

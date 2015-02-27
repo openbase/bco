@@ -24,7 +24,7 @@ public class DeviceClassContainer extends TreeItem<Node> implements Node {
         this.deviceClass = deviceClass;
         TreeItem<Node> label = new TreeItem(new LabelContainer(deviceClass.getLabel()));
         TreeItem<Node> description = new TreeItem(new DescriptionContainer(deviceClass.getDescription()));
-        TreeItem<Node> bindingConfig = new TreeItem(new BindingConfigContainer(deviceClass.getBidingConfig()));
+        TreeItem<Node> bindingConfig = new TreeItem(new BindingConfigContainer(deviceClass.getBindingConfig()));
         TreeItem<Node> productNumber = new TreeItem(new ProductNumberContainer(deviceClass.getProductNumber()));
         UnitTypeListContainer unitTypeList = new UnitTypeListContainer(deviceClass.getUnitsList());
         this.getChildren().addAll(label, description, bindingConfig, productNumber, unitTypeList);
