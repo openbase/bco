@@ -13,7 +13,7 @@ import de.citec.csra.dm.view.struct.DeviceConfigOverviewPanel;
 import de.citec.csra.dm.view.struct.DeviceInstanceOverviewPanel;
 import de.citec.csra.dm.view.struct.GlobalConfigOverviewPanel;
 import de.citec.jps.core.JPService;
-import de.citec.jp.JPReadOnly;
+import de.citec.jps.preset.JPReadOnly;
 
 /**
  *

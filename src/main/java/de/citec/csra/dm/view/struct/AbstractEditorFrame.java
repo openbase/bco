@@ -10,7 +10,7 @@ import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
 import de.citec.jps.core.JPService;
-import de.citec.jp.JPReadOnly;
+import de.citec.jps.preset.JPReadOnly;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -18,7 +18,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.Timer;
@@ -195,7 +194,7 @@ public abstract class AbstractEditorFrame<T extends Manageable> extends javax.sw
     }// </editor-fold>//GEN-END:initComponents
 
     private void confirmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmButtonActionPerformed
-        if (!JPService.getAttribute(JPReadOnly.class).getValue()) {
+        if (!JPService.getProperty(JPReadOnly.class).getValue()) {
             try {
                 save(context);
                 setVisible(false);

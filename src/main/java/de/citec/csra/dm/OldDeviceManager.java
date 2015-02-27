@@ -13,7 +13,7 @@ import de.citec.csra.dm.struct.DeviceInstance;
 import de.citec.csra.dm.tools.Serializer;
 import de.citec.jps.core.JPService;
 import de.citec.jp.JPDataStreamDirectory;
-import de.citec.jp.JPDeviceClassDirectory;
+import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDirectory;
 import de.citec.jp.JPDeviceInstanceDirectory;
 import de.citec.jp.JPDeviceManagerConfigPath;
@@ -23,7 +23,7 @@ import de.citec.csra.dm.exception.InvalidOperationException;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
 import de.citec.csra.dm.view.DevieManagerGUI;
-import de.citec.jp.JPReadOnly;
+import de.citec.jps.preset.JPReadOnly;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -72,7 +72,7 @@ public class OldDeviceManager {
         JPService.setApplicationName("DeviceManager");
         JPService.registerProperty(JPDeviceManagerConfigPath.class);
         JPService.registerProperty(JPDataStreamDirectory.class);
-        JPService.registerProperty(JPDeviceClassDirectory.class);
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceConfigDirectory.class);
         JPService.registerProperty(JPDeviceInstanceDirectory.class);
         JPService.registerProperty(JPGlobalConfigDirectory.class);
@@ -208,7 +208,7 @@ public class OldDeviceManager {
             }
         };
 
-        for (File file : JPService.getAttribute(JPDeviceClassDirectory.class).getValue().listFiles(fileFilter)) {
+        for (File file : JPService.getAttribute(JPDeviceClassDatabaseDirectory.class).getValue().listFiles(fileFilter)) {
             try {
                 addDeviceClass(serializer.deserialize(file, DeviceClass.class));
             } catch (InvalidOperationException | IOException ex) {

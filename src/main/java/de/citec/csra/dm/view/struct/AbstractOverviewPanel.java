@@ -9,7 +9,7 @@ import de.citec.csra.dm.OldDeviceManager;
 import de.citec.csra.dm.exception.NotAvailableException;
 import de.citec.csra.dm.tools.Manageable;
 import de.citec.jps.core.JPService;
-import de.citec.jp.JPReadOnly;
+import de.citec.jps.preset.JPReadOnly;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

@@ -6,7 +6,7 @@
 package de.citec.csra.dm.struct;
 
 import de.citec.jps.core.JPService;
-import de.citec.jp.JPDeviceClassDirectory;
+import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,6 +70,6 @@ public class DeviceClass extends AbstractDeviceStruct<DeviceClass> {
 	
 	@Override
 	public File getParentDirectory() {
-		return JPService.getAttribute(JPDeviceClassDirectory.class).getValue();
+		return JPService.getAttribute(JPDeviceClassDatabaseDirectory.class).getValue();
 	}
 }
