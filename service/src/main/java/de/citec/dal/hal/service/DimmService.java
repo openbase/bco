@@ -1,6 +1,11 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.provider.OpeningRatioProvider;
+import de.citec.dal.hal.provider.DimmProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
@@ -14,24 +19,24 @@ import rsb.patterns.EventCallback;
  *
  * @author thuxohl
  */
-public interface OpeningRatioService extends Service, OpeningRatioProvider {
+public interface DimmService extends Service, DimmProvider {
 
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException;
+    public void setDimm(Double dimm) throws CouldNotPerformException;
 
-    public class SetOpeningRatioCallback extends EventCallback {
+    public class SetDimmCallback extends EventCallback {
 
-        private static final Logger logger = LoggerFactory.getLogger(SetOpeningRatioCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(SetDimmCallback.class);
 
-        private final OpeningRatioService service;
+        private final DimmService service;
 
-        public SetOpeningRatioCallback(final OpeningRatioService service) {
+        public SetDimmCallback(final DimmService service) {
             this.service = service;
         }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setOpeningRatio(((double) request.getData()));
+                service.setDimm(((double) request.getData()));
                 return RSBCommunicationService.RPC_SUCCESS;
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));

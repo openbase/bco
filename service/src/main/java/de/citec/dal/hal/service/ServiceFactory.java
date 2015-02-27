@@ -23,4 +23,6 @@ public interface ServiceFactory {
     public abstract OpeningRatioService newOpeningRatioService(Device device, OpeningRatioService unit) throws InstantiationException;
     
     public abstract ShutterService newShutterService(Device device, ShutterService unit) throws InstantiationException;
+    
+    public abstract DimmService newDimmService(Device device, DimmService unit) throws InstantiationException;
 }

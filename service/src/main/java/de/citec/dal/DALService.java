@@ -44,16 +44,16 @@ public class DALService implements RegistryProvider {
 
     public DALService(final DeviceInitializer initializer) throws InitializationException {
         try {
-        this.bindingRegistry = new DALBindingRegistry();
-        this.deviceRegistry = new DeviceRegistry();
-        this.unitRegistry = new UnitRegistry();
-        this.connectionManager = new ConnectionManager(deviceRegistry);
+            this.bindingRegistry = new DALBindingRegistry();
+            this.deviceRegistry = new DeviceRegistry();
+            this.unitRegistry = new UnitRegistry();
+            this.connectionManager = new ConnectionManager(deviceRegistry);
 
-        registryProvider = this;
-        
-        initBindings();
-        
-        initializer.initDevices(deviceRegistry);
+            registryProvider = this;
+
+            initBindings();
+
+            initializer.initDevices(deviceRegistry);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -65,7 +65,7 @@ public class DALService implements RegistryProvider {
         }
         return registryProvider;
     }
-    
+
     private void initBindings() throws CouldNotPerformException {
         bindingRegistry.register(OpenHABBinding.class);
     }
