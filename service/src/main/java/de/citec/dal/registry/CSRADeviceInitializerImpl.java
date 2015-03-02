@@ -74,16 +74,16 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 			registry.register(new F_MotionSensorController("Entrance", control));
 			registry.register(new F_MotionSensorController("TestUnit_1", control));
 			registry.register(new F_MotionSensorController("Entrance", outdoor));
-//
+
 			registry.register(new PH_Hue_E27Controller("Hallway_0", wardrobe));
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_001", "Hallway_1", wardrobe));
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_002", "Table_0", living));
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_003", "Table_1", living));
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_004", "Couch", living));
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_005", "Media", living));
+            registry.register(new PH_Hue_E27Controller("Hallway_1", wardrobe));
+            registry.register(new PH_Hue_E27Controller("Table_0", living));
+            registry.register(new PH_Hue_E27Controller("Table_1", living));
+            registry.register(new PH_Hue_E27Controller("Couch", living));
+            registry.register(new PH_Hue_E27Controller("Media", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_009", "Interaction_0", sports));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_007", "Interaction_1", sports));
-//            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_008", "TestUnit_0", control));
+            registry.register(new PH_Hue_E27Controller("TestUnit_0", control));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_010", "SLamp_Left_Window1", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_011", "SLamp_Left_Window2", living));
 //            registry.register(new PH_Hue_E27Controller("PH_Hue_E27_012", "SLamp_Right_Window1", living));
@@ -117,10 +117,10 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 			registry.register(new PH_Hue_GU10Controller("Global_1", kitchen));
 			registry.register(new PH_Hue_GU10Controller("Global_2", kitchen));
 			registry.register(new PH_Hue_GU10Controller("Global_3", kitchen));
-//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_004", "Global_0", bath));
-//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_005", "Global_1", bath));
-//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_006", "Global_2", bath));
-//            registry.register(new PH_Hue_GU10Controller("PH_Hue_GU10_007", "Global_3", bath));
+            registry.register(new PH_Hue_GU10Controller("Global_0", bath));
+            registry.register(new PH_Hue_GU10Controller("Global_1", bath));
+            registry.register(new PH_Hue_GU10Controller("Global_2", bath));
+            registry.register(new PH_Hue_GU10Controller("Global_3", bath));
 
 //				registry.register(new HA_TYA606EController("HA_TYA606E_000", "1", control));
 //				registry.register(new HA_TYA606EController("HA_TYA606E_001", "2", control));
