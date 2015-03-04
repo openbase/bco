@@ -60,32 +60,32 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     }
 
     @Override
-    public void register(DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         deviceConfigRegistry.register(new IdentifiableMessage<>(deviceConfig));
     }
 
     @Override
-    public void update(DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         deviceConfigRegistry.update(new IdentifiableMessage<>(deviceConfig));
     }
 
     @Override
-    public void remove(DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         deviceConfigRegistry.remove(new IdentifiableMessage<>(deviceConfig));
     }
 
     @Override
-    public void register(DeviceClass deviceClass) throws CouldNotPerformException {
+    public void registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         deviceClassRegistry.register(new IdentifiableMessage<>(deviceClass));
     }
 
     @Override
-    public void update(DeviceClass deviceClass) throws CouldNotPerformException {
+    public void updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         deviceClassRegistry.update(new IdentifiableMessage<>(deviceClass));
     }
 
     @Override
-    public void remove(DeviceClass deviceClass) throws CouldNotPerformException {
+    public void removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         deviceClassRegistry.remove(new IdentifiableMessage<>(deviceClass));
     }
 

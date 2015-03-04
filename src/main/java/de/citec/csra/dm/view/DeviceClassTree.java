@@ -7,9 +7,9 @@ package de.citec.csra.dm.view;
 
 import javafx.scene.control.TreeItem;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.registry.DeviceRegistryType.DeviceRegistry;
 import de.citec.csra.dm.view.struct.node.DeviceClassContainer;
 import de.citec.csra.dm.view.struct.node.Node;
+import java.util.Collection;
 
 /**
  *
@@ -17,9 +17,9 @@ import de.citec.csra.dm.view.struct.node.Node;
  */
 public class DeviceClassTree extends TreeItem<Node> {
 
-    public DeviceClassTree(DeviceRegistry registry) {
-        for (DeviceClass deviceClass : registry.getDeviceClassesList()) {
+    public DeviceClassTree(final Collection<DeviceClass> deviceClasses) {
+        deviceClasses.stream().forEach((deviceClass) -> {
             this.getChildren().add(new DeviceClassContainer(deviceClass));
-        }
+        });
     }
 }

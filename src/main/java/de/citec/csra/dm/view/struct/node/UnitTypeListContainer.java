@@ -6,7 +6,7 @@
 package de.citec.csra.dm.view.struct.node;
 
 import de.citec.csra.dm.view.struct.leave.UnitTypeContainer;
-import java.util.List;
+import java.util.Collection;
 import javafx.scene.control.TreeItem;
 import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder;
 
@@ -16,10 +16,10 @@ import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder;
  */
 public class UnitTypeListContainer extends TreeItem<Node> implements Node {
 
-    public UnitTypeListContainer(List<UnitTypeHolder> unitTypes) {
-        for (UnitTypeHolder unitType : unitTypes) {
-            this.getChildren().add(new TreeItem<Node>(new UnitTypeContainer(unitType)));
-        }
+    public UnitTypeListContainer(final Collection<UnitTypeHolder> unitTypes) {
+        unitTypes.stream().forEach((unitType) -> {
+            this.getChildren().add(new TreeItem<>(new UnitTypeContainer(unitType)));
+        });
     }
 
     @Override

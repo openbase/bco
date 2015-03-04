@@ -32,32 +32,32 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public void register(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void registerDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         callMethodAsync("register", deviceConfig);
     }
 
     @Override
-    public void update(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void updateDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         callMethodAsync("update", deviceConfig);
     }
 
     @Override
-    public void remove(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void removeDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         callMethodAsync("remove", deviceConfig);
     }
 
     @Override
-    public void register(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public void registerDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         callMethodAsync("register", deviceClass);
     }
 
     @Override
-    public void update(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public void updateDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         callMethodAsync("update", deviceClass);
     }
 
     @Override
-    public void remove(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public void removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         callMethodAsync("remove", deviceClass);
     }
     

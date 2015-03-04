@@ -20,7 +20,7 @@ public class DeviceClassContainer extends TreeItem<Node> implements Node {
 
     private final DeviceClass deviceClass;
 
-    public DeviceClassContainer(DeviceClass deviceClass) {
+    public DeviceClassContainer(final DeviceClass deviceClass) {
         this.deviceClass = deviceClass;
         TreeItem<Node> label = new TreeItem(new LabelContainer(deviceClass.getLabel()));
         TreeItem<Node> description = new TreeItem(new DescriptionContainer(deviceClass.getDescription()));

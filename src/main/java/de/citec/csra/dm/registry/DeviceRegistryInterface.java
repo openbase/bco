@@ -15,15 +15,15 @@ import rst.homeautomation.device.DeviceConfigType;
  */
 public interface DeviceRegistryInterface {
 
-    public void register(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public void registerDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public void update(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public void updateDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public void remove(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public void removeDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
     
-    public void register(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public void registerDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
 
-    public void update(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public void updateDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
 
-    public void remove(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public void removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
 }
