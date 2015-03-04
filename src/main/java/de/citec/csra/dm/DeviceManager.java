@@ -6,6 +6,7 @@
 package de.citec.csra.dm;
 
 import de.citec.csra.dm.registry.DeviceRegistryImpl;
+import de.citec.jp.JPDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPInitializeDBFlag;
@@ -52,9 +53,9 @@ public class DeviceManager {
         JPService.registerProperty(JPScope.class, new Scope("/devicemanager/registry"));
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPInitializeDBFlag.class);
-//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
-//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
-//        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/database/"));
+        JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/database/"));
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/database/device"));
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/database/class"));
 
         JPService.parseAndExitOnError(args);
 

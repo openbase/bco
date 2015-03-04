@@ -21,19 +21,21 @@ public class JavaFXView extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 		TabPane registryTabPane = new TabPane();
+        registryTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         Tab tabDeviceRegistry = new Tab("DeviceRegistry");
         Tab tabLocationRegistry = new Tab("LocationRegistry");
 		registryTabPane.getTabs().addAll(tabDeviceRegistry, tabLocationRegistry);
 
-        TabPane tabPane = new TabPane();
+        TabPane tabDeviceRegistryPane = new TabPane();
+        tabDeviceRegistryPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         Tab tabDeviceClass = new Tab("DeviceClass");
         Tab tabDeviceConfig = new Tab("DeviceConfig");
-        tabPane.getTabs().addAll(tabDeviceClass,tabDeviceConfig);
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabDeviceRegistry.getTabPane().a
+		tabDeviceRegistryPane.getTabs().addAll(tabDeviceClass, tabDeviceConfig);
+
+        tabDeviceRegistry.setContent(tabDeviceRegistryPane);
         Scene scene = new Scene(registryTabPane,700,700);
-		setTitle("");
+		primaryStage.setTitle("Registry Editor");
         primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
         primaryStage.setScene(scene);
         primaryStage.show();
