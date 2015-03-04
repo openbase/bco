@@ -5,14 +5,13 @@
  */
 package de.citec.csra.dm.view;
 
+import static de.citec.csra.dm.DeviceManager.DEFAULT_SCOPE;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.csra.dm.view.struct.node.Node;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.rsb.jp.JPScope;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -20,11 +19,11 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.effect.Bloom;
-import javafx.scene.effect.Glow;
-import javafx.scene.layout.Background;
-import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rst.homeautomation.device.DeviceClassType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.registry.DeviceRegistryType;
 
 /**
@@ -32,6 +31,10 @@ import rst.homeautomation.registry.DeviceRegistryType;
  * @author thuxohl
  */
 public class JavaFXView extends Application {
+
+	private static final Logger logger = LoggerFactory.getLogger(JavaFXView.class);
+
+	public static final String APP_NAME = "RegistryView";
 
     private final DeviceRegistryRemote remote;
     private TabPane registryTabPane, tabDeviceRegistryPane;
@@ -88,7 +91,14 @@ public class JavaFXView extends Application {
         primaryStage.show();
 
         updateDynamicNodes();
+
+		remote.registerDeviceClass(getTestData());
     }
+
+	public DeviceClass getTestData() {
+		return DeviceClassType.DeviceClass.newBuilder().setLabel("MyTestData").build();
+		
+	}
 
     @Override
     public void stop() throws Exception {
@@ -107,7 +117,7 @@ public class JavaFXView extends Application {
             tabDeviceRegistry.setContent(tabDeviceRegistryPane);
             
         } catch (NotAvailableException ex) {
-            Logger.getLogger(JavaFXView.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("Device classes not available!", ex);
             tabDeviceRegistry.setContent(new Label("Error: "+ex.getMessage()));
         }
     }
@@ -116,6 +126,11 @@ public class JavaFXView extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+		logger.info("Start " + APP_NAME + "...");
+
+        /* Setup CLParser */
+        JPService.setApplicationName(APP_NAME);
+        JPService.registerProperty(JPScope.class, DEFAULT_SCOPE);
         launch(args);
     }
 }

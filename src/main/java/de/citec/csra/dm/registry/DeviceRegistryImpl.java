@@ -26,6 +26,8 @@ import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.FileNameProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.device.DeviceClassType;
+import rst.homeautomation.device.DeviceConfigType;
 
 /**
  *
@@ -35,6 +37,8 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
 
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceClass>> deviceClassRegistry;
