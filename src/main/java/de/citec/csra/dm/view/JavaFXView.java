@@ -32,9 +32,9 @@ import rst.homeautomation.registry.DeviceRegistryType;
  */
 public class JavaFXView extends Application {
 
-	private static final Logger logger = LoggerFactory.getLogger(JavaFXView.class);
+    private static final Logger logger = LoggerFactory.getLogger(JavaFXView.class);
 
-	public static final String APP_NAME = "RegistryView";
+    public static final String APP_NAME = "RegistryView";
 
     private final DeviceRegistryRemote remote;
     private TabPane registryTabPane, tabDeviceRegistryPane;
@@ -63,7 +63,7 @@ public class JavaFXView extends Application {
         progressDeviceRegistryIndicator = new ProgressIndicator();
         progressLocationRegistryIndicator = new ProgressIndicator();
         tabLocationRegistry.setContent(progressLocationRegistryIndicator);
-        
+
         deviceClassTreeTableView = new TreeTableView<>();
         deviceConfigTreeTableView = new TreeTableView<>();
 
@@ -92,13 +92,12 @@ public class JavaFXView extends Application {
 
         updateDynamicNodes();
 
-		remote.registerDeviceClass(getTestData());
+        remote.registerDeviceClass(getTestData());
     }
 
-	public DeviceClass getTestData() {
-		return DeviceClassType.DeviceClass.newBuilder().setLabel("MyTestData").build();
-		
-	}
+    public DeviceClass getTestData() {
+        return DeviceClassType.DeviceClass.newBuilder().setLabel("MyTestData").build();
+    }
 
     @Override
     public void stop() throws Exception {
@@ -115,10 +114,10 @@ public class JavaFXView extends Application {
             DeviceRegistryType.DeviceRegistry data = remote.getData();
             deviceClassTreeTableView.setRoot(new DeviceClassTree(data.getDeviceClassesList()));
             tabDeviceRegistry.setContent(tabDeviceRegistryPane);
-            
+
         } catch (NotAvailableException ex) {
             logger.error("Device classes not available!", ex);
-            tabDeviceRegistry.setContent(new Label("Error: "+ex.getMessage()));
+            tabDeviceRegistry.setContent(new Label("Error: " + ex.getMessage()));
         }
     }
 
@@ -126,7 +125,7 @@ public class JavaFXView extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-		logger.info("Start " + APP_NAME + "...");
+        logger.info("Start " + APP_NAME + "...");
 
         /* Setup CLParser */
         JPService.setApplicationName(APP_NAME);
