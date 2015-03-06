@@ -38,7 +38,7 @@ public class TamperSwitchRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperSwitchRemoteTest.class);
 
-    private static TamperSwtichRemote tamperSwitchRemote;
+    private static TamperSwitchRemote tamperSwitchRemote;
     private static DALService dalService;
 
     public TamperSwitchRemoteTest() {
@@ -50,7 +50,7 @@ public class TamperSwitchRemoteTest {
         dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();
 
-        tamperSwitchRemote = new TamperSwtichRemote();
+        tamperSwitchRemote = new TamperSwitchRemote();
         tamperSwitchRemote.init(LABEL, LOCATION);
         tamperSwitchRemote.activate();
     }

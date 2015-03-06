@@ -9,7 +9,6 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.hager.HA_TYA628CController;
 import de.citec.dal.hal.unit.RollershutterController;
-import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
@@ -36,7 +35,7 @@ public class RollershutterRemoteTest {
 
     private static final Location LOCATION = new Location("paradise");
     public static final String LABEL = "Rollershutter_Unit_Test";
-    public static final String[] ROLLERSHUTTER = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
+    public static final String[] UNITS = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollershutterRemoteTest.class);
 
@@ -54,7 +53,7 @@ public class RollershutterRemoteTest {
         dalService.activate();
 
         rollershutterRemote = new RollershutterRemote();
-        rollershutterRemote.init(ROLLERSHUTTER[0], LOCATION);
+        rollershutterRemote.init(UNITS[0], LOCATION);
         rollershutterRemote.activate();
     }
 
@@ -96,7 +95,7 @@ public class RollershutterRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getData().getShutterState().getState().equals(state));
+        assertTrue("Shutter has not been set in time!", rollershutterRemote.getData().getShutterState().getState().equals(state));
     }
 
     /**
@@ -108,7 +107,7 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
-        ((RollershutterController) dalService.getUnitRegistry().getUnit(ROLLERSHUTTER[0], LOCATION, RollershutterController.class)).updateShutter(state);
+        ((RollershutterController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, RollershutterController.class)).updateShutter(state);
         while (true) {
             try {
                 if (rollershutterRemote.getShutter().equals(state)) {
@@ -119,7 +118,7 @@ public class RollershutterRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getShutter().equals(state));
+        assertTrue("Shutter has not been set in time!", rollershutterRemote.getShutter().equals(state));
     }
 
     /**
@@ -142,7 +141,7 @@ public class RollershutterRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == openingRatio);
+        assertTrue("Opening ration has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == openingRatio);
     }
 
     /**
@@ -154,7 +153,7 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
-        ((RollershutterController) dalService.getUnitRegistry().getUnit(ROLLERSHUTTER[0], LOCATION, RollershutterController.class)).updateOpeningRatio(openingRatio);
+        ((RollershutterController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, RollershutterController.class)).updateOpeningRatio(openingRatio);
         while (true) {
             try {
                 if (rollershutterRemote.getOpeningRatio().equals(openingRatio)) {
@@ -165,7 +164,7 @@ public class RollershutterRemoteTest {
             }
             Thread.yield();
         }
-        assertTrue("Color has not been set in time!", rollershutterRemote.getOpeningRatio().equals(openingRatio));
+        assertTrue("Opening ration has not been set in time!", rollershutterRemote.getOpeningRatio().equals(openingRatio));
     }
 
     /**
@@ -181,7 +180,7 @@ public class RollershutterRemoteTest {
         public void initDevices(final DeviceRegistry registry) {
 
             try {
-                registry.register(new HA_TYA628CController(LABEL, ROLLERSHUTTER, LOCATION));
+                registry.register(new HA_TYA628CController(LABEL, UNITS, LOCATION));
             } catch (CouldNotPerformException ex) {
                 logger.warn("Could not initialize unit test device!", ex);
             }
