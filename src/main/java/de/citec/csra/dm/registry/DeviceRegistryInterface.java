@@ -15,15 +15,24 @@ import rst.homeautomation.device.DeviceConfigType;
  */
 public interface DeviceRegistryInterface {
 
-    public void registerDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public DeviceConfigType.DeviceConfig registerDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public void updateDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public boolean containsDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public void removeDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
-    
-    public void registerDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException;
 
-    public void updateDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public DeviceConfigType.DeviceConfig updateDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public void removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public DeviceConfigType.DeviceConfig removeDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+
+    public DeviceClassType.DeviceClass registerDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+
+    public boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException;
+
+    public boolean containsDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+
+    public DeviceClassType.DeviceClass updateDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+
+    public DeviceClassType.DeviceClass removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+
 }

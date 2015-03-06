@@ -82,7 +82,7 @@ public class JavaFXView extends Application {
 
         Scene scene = new Scene(registryTabPane, 1024, 576);
         primaryStage.setTitle("Registry Editor");
-//        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreen(true);
 //        primaryStage.setFullScreenExitKeyCombination(KeyCombination.ALT_ANY);
         primaryStage.setScene(scene);
         primaryStage.show();
