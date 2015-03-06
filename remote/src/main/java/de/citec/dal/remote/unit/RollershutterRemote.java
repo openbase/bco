@@ -18,17 +18,17 @@ import rst.homeautomation.unit.RollershutterType;
  */
 public class RollershutterRemote extends DALRemoteService<RollershutterType.Rollershutter> implements RollershutterInterface {
 
-	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
-	}
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
+    }
 
-	public RollershutterRemote() {
-	}
+    public RollershutterRemote() {
+    }
 
-	@Override
-	public void notifyUpdated(RollershutterType.Rollershutter data) {
-	}
+    @Override
+    public void notifyUpdated(RollershutterType.Rollershutter data) {
+    }
 
     @Override
     public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {

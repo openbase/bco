@@ -16,13 +16,13 @@ import rst.homeautomation.unit.TamperSwitchType;
  *
  * @author thuxohl
  */
-public class TamperSwtichRemote extends DALRemoteService<TamperSwitchType.TamperSwitch> implements TamperSwitchInterface {
+public class TamperSwitchRemote extends DALRemoteService<TamperSwitchType.TamperSwitch> implements TamperSwitchInterface {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwtichRemote() {
+    public TamperSwitchRemote() {
     }
 
     @Override

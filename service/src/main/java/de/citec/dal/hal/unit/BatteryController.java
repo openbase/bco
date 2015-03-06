@@ -10,7 +10,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.EnergyType;
 import rst.homeautomation.unit.BatteryType;
 import rst.homeautomation.unit.BatteryType.Battery;
 
@@ -30,7 +29,6 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     
     public void updateBattery(final double batteryState) {
         logger.debug("Updating Battery level of [" + this.getClass().getSimpleName() + "] to [" + batteryState + "]");
-        data.getBatteryStateBuilder().setState(EnergyType.Energy.EnergyState.OK);  // TODO Tamino, remove this line after removinge "required" attribute of state variable in rst type Battery.
         data.getBatteryStateBuilder().setLevel(batteryState);
         notifyChange();
     }
