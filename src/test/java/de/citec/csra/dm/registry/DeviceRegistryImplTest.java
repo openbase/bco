@@ -43,12 +43,15 @@ public class DeviceRegistryImplTest {
         File dbDeviceConfig = new File("/tmp/db/device-config");
         
         dbFile.mkdir();
+        
+        dbDeviceClasses.delete();
+        dbDeviceConfig.delete();
         dbDeviceClasses.mkdir();
         dbDeviceConfig.mkdir();
                 
         JPService.registerProperty(JPDatabaseDirectory.class, dbFile);
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceClasses);
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceConfig);
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
         
         registry = new DeviceRegistryImpl();
         registry.init(RSBInformerInterface.InformerType.Single);
@@ -58,7 +61,8 @@ public class DeviceRegistryImplTest {
         deviceClass.setLabel("TestDeviceClassLabel");
         deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
         deviceConfig.setLabel("TestDeviceConfigLabel");
-        deviceConfig.setDeviceClass(deviceClass);
+        deviceConfig.setSerialNumber("0001-0004-2245");
+        deviceConfig.setDeviceClass(deviceClass.clone().setId("TestDeviceClassLabel"));
     }
 
     @AfterClass
@@ -80,8 +84,8 @@ public class DeviceRegistryImplTest {
     @Test
     public void testRegisterDeviceClass() throws Exception {
         System.out.println("registerDeviceClass");
-        registry.registerDeviceClass(deviceClass.build());
-        registry.getData().getDeviceClassesBuilderList().contains(deviceClass.build());
+        registry.registerDeviceClass(deviceClass.clone().build());
+        registry.getData().getDeviceClassesBuilderList().contains(deviceClass);
     }
 
     /**
@@ -90,8 +94,8 @@ public class DeviceRegistryImplTest {
     @Test
     public void testRegisterDeviceConfig() throws Exception {
         System.out.println("registerDeviceConfig");
-        registry.registerDeviceConfig(deviceConfig.build());
-        registry.getData().getDeviceConfigsBuilderList().contains(deviceConfig.build());
+        registry.registerDeviceConfig(deviceConfig.clone().build());
+        registry.getData().getDeviceConfigsBuilderList().contains(deviceConfig);
     }
 
     /**

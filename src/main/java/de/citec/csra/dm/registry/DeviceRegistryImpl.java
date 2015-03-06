@@ -5,13 +5,14 @@
  */
 package de.citec.csra.dm.registry;
 
+import com.google.protobuf.GeneratedMessage;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jul.storage.SynchronizedRegistry;
 import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.processing.ProtoBufFileProcessor;
+import de.citec.jul.rsb.processing.ProtoBufFileProcessor;
 import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.rsb.jp.JPScope;
 import rsb.RSBException;
@@ -50,8 +51,8 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
         try {
             ProtobufMessageMap<String, IdentifiableMessage<DeviceClass>, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
             ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
-            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<DeviceClass>(), new DBFileNameProvider());
-            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<DeviceConfig>(), new DBFileNameProvider());
+            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(new IdentifiableMessage.MessageTransformer()), new DBFileNameProvider());
+            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(new IdentifiableMessage.MessageTransformer()), new DBFileNameProvider());
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
         } catch (CouldNotPerformException ex) {
@@ -180,4 +181,6 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             return context.getId().replaceAll("/", "_");
         }
     }
+    
+    
 }
