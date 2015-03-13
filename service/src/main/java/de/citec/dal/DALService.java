@@ -119,7 +119,7 @@ public class DALService implements RegistryProvider {
      * @throws java.lang.Throwable
      */
     public static void main(String[] args) throws Throwable {
-        /* Setup CLParser */
+        /* Setup JPService */
         JPService.setApplicationName("DeviceManager");
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
