@@ -5,26 +5,23 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import de.citec.csra.dm.view.struct.leave.LabelContainer;
-import javafx.scene.control.TreeItem;
-import rst.spatial.LocationConfigType;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
  * @author thuxohl
  */
-public class LocationConfigContainer extends TreeItem<Node> implements Node {
-    
-    private LocationConfigType.LocationConfig location;
+public class LocationConfigContainer extends NodeContainer<LocationConfig> {
 
-    public LocationConfigContainer(LocationConfigType.LocationConfig location) {
-        this.location = location;
-        TreeItem<Node> label = new TreeItem<>(new LabelContainer(location.getLabel()));
-        //TODO
+    public LocationConfigContainer(LocationConfig location) {
+        super("Location", location);
+        super.add(location.getLabel(), "Label");
+        super.add(location.getRoot(), "Root Location");
+        super.add(new ScopeContainer(location.getScope()));
+        super.add(new ChildLocationListContainer(location.getChildrenList()));
+        if (location.hasParent()) {
+            super.add(location.getParent().getLabel(), "Parent Label");
+        }
+        //TODO: change the location type to avoid the infite loop!
     }
-
-    @Override
-    public String getDescriptor() {
-        return "Location";
-    } 
 }

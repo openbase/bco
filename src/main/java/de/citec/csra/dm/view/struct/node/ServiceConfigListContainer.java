@@ -6,23 +6,18 @@
 package de.citec.csra.dm.view.struct.node;
 
 import java.util.Collection;
-import javafx.scene.control.TreeItem;
 import rst.homeautomation.service.ServiceConfigType;
 
 /**
  *
  * @author thuxohl
  */
-public class ServiceConfigListContainer extends TreeItem<Node> implements Node {
-    
-    public ServiceConfigListContainer(final Collection<ServiceConfigType.ServiceConfig> serviceConfigs) {
-        serviceConfigs.stream().forEach((serviceConfig) -> {
-            this.getChildren().add(new ServiceConfigContainer(serviceConfig));
-        });
-    }
+public class ServiceConfigListContainer extends NodeContainer<Collection<ServiceConfigType.ServiceConfig>> {
 
-    @Override
-    public String getDescriptor() {
-        return "Service Configs";
+    public ServiceConfigListContainer(final Collection<ServiceConfigType.ServiceConfig> serviceConfigs) {
+        super("Service Configurations", serviceConfigs);
+        serviceConfigs.stream().forEach((serviceConfig) -> {
+            super.add(new ServiceConfigContainer(serviceConfig));
+        });
     }
 }

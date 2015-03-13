@@ -5,33 +5,21 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import de.citec.csra.dm.view.struct.leave.BindingConfigContainer;
-import de.citec.csra.dm.view.struct.leave.DescriptionContainer;
-import de.citec.csra.dm.view.struct.leave.LabelContainer;
-import de.citec.csra.dm.view.struct.leave.ProductNumberContainer;
-import javafx.scene.control.TreeItem;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 
 /**
  *
  * @author thuxohl
  */
-public class DeviceClassContainer extends TreeItem<Node> implements Node {
-
-    private final DeviceClass deviceClass;
+public class DeviceClassContainer extends NodeContainer<DeviceClass> {
 
     public DeviceClassContainer(final DeviceClass deviceClass) {
-        this.deviceClass = deviceClass;
-        TreeItem<Node> label = new TreeItem(new LabelContainer(deviceClass.getLabel()));
-        TreeItem<Node> description = new TreeItem(new DescriptionContainer(deviceClass.getDescription()));
-        TreeItem<Node> bindingConfig = new TreeItem(new BindingConfigContainer(deviceClass.getBindingConfig()));
-        TreeItem<Node> productNumber = new TreeItem(new ProductNumberContainer(deviceClass.getProductNumber()));
-        UnitTypeListContainer unitTypeList = new UnitTypeListContainer(deviceClass.getUnitsList());
-        this.getChildren().addAll(label, description, bindingConfig, productNumber, unitTypeList);
-    }
-
-    @Override
-    public String getDescriptor() {
-        return deviceClass.getId();
+        super("Device Class", deviceClass);
+        super.add(deviceClass.getLabel(), "ID");
+        super.add(deviceClass.getLabel(), "Label");
+        super.add(deviceClass.getProductNumber(), "Product Number");
+        super.add(new BindingConfigContainer(deviceClass.getBindingConfig()));
+        super.add(new UnitTypeListContainer(deviceClass.getUnitsList()));
+        super.add(deviceClass.getDescription(), "Description");
     }
 }

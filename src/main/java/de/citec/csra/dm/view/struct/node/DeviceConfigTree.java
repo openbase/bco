@@ -3,23 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view;
+package de.citec.csra.dm.view.struct.node;
 
-import de.citec.csra.dm.view.struct.node.DeviceConfigContainer;
-import de.citec.csra.dm.view.struct.node.Node;
 import java.util.Collection;
-import javafx.scene.control.TreeItem;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
  * @author thuxohl
  */
-public class DeviceConfigTree extends TreeItem<Node> {
+public class DeviceConfigTree extends NodeContainer<Collection<DeviceConfig>> {
 
     public DeviceConfigTree(final Collection<DeviceConfig> deviceConfigs) {
+        super("Device Configurations", deviceConfigs);
         deviceConfigs.stream().forEach((deviceConfig) -> {
-            this.getChildren().add(new DeviceConfigContainer(deviceConfig));
+            super.add(new DeviceConfigContainer(deviceConfig));
         });
     }
 }

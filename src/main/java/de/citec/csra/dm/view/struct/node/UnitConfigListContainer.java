@@ -6,23 +6,18 @@
 package de.citec.csra.dm.view.struct.node;
 
 import java.util.Collection;
-import javafx.scene.control.TreeItem;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  * @author thuxohl
  */
-public class UnitConfigListContainer extends TreeItem<Node> implements Node {
-    
-    public UnitConfigListContainer(final Collection<UnitConfigType.UnitConfig> unitConfigs) {
-        unitConfigs.stream().forEach((unitConfig) -> {
-            this.getChildren().add(new UnitConfigContainer(unitConfig));
-        });
-    }
+public class UnitConfigListContainer extends NodeContainer<Collection<UnitConfigType.UnitConfig>> {
 
-    @Override
-    public String getDescriptor() {
-        return "Unit Configs";
+    public UnitConfigListContainer(final Collection<UnitConfigType.UnitConfig> unitConfigs) {
+        super("Unit Configurations", unitConfigs);
+        unitConfigs.stream().forEach((unitConfig) -> {
+            super.add(new UnitConfigContainer(unitConfig));
+        });
     }
 }

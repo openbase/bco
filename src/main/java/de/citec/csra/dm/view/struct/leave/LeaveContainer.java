@@ -8,22 +8,25 @@ package de.citec.csra.dm.view.struct.leave;
 /**
  *
  * @author thuxohl
+ * @param <T>
  */
-public class LabelContainer implements Leave {
+public class LeaveContainer<T> implements Leave<T> {
 
-    String label;
+    private T value;
+    private String descriptor;
 
-    public LabelContainer(String label) {
-        this.label = label;
+    public LeaveContainer(T value, String descriptor) {
+        this.value = value;
+        this.descriptor = descriptor;
     }
 
     @Override
-    public Object getValue() {
-        return label;
+    public T getValue() {
+        return value;
     }
 
     @Override
     public String getDescriptor() {
-        return "Label";
+        return descriptor;
     }
 }

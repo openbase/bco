@@ -13,6 +13,8 @@ import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.rsb.RSBInformerInterface;
 import java.io.File;
+import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -37,22 +39,22 @@ public class DeviceRegistryImplTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, InitializationException {
+    public static void setUpClass() throws InstantiationException, InitializationException, IOException {
         File dbFile = new File("/tmp/db/");
         File dbDeviceClasses = new File("/tmp/db/device-classes");
         File dbDeviceConfig = new File("/tmp/db/device-config");
-        
+
         dbFile.mkdir();
-        
-        dbDeviceClasses.delete();
-        dbDeviceConfig.delete();
+
+        FileUtils.deleteDirectory(dbDeviceClasses);
+        FileUtils.deleteDirectory(dbDeviceConfig);
         dbDeviceClasses.mkdir();
         dbDeviceConfig.mkdir();
-                
+
         JPService.registerProperty(JPDatabaseDirectory.class, dbFile);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
-        
+
         registry = new DeviceRegistryImpl();
         registry.init(RSBInformerInterface.InformerType.Single);
         registry.activate();

@@ -5,27 +5,17 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import de.citec.csra.dm.view.struct.leave.PositionContainer;
-import javafx.scene.control.TreeItem;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
  * @author thuxohl
  */
-public class PlacementConfigContainer extends TreeItem<Node> implements Node {
-
-    private PlacementConfig placement;
+public class PlacementConfigContainer extends NodeContainer<PlacementConfig> {
 
     public PlacementConfigContainer(PlacementConfig placement) {
-        this.placement = placement;
-        TreeItem<Node> position = new TreeItem<>(new PositionContainer(placement.getPosition()));
-        TreeItem<Node> location = new LocationConfigContainer(placement.getLocation());
-        this.getChildren().addAll(position, location);
-    }
-
-    @Override
-    public String getDescriptor() {
-        return "Placement";
+        super("Placement", placement);
+        super.add(new PositionContainer(placement.getPosition()));
+        super.add(new LocationConfigContainer(placement.getLocation()));
     }
 }

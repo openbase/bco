@@ -10,6 +10,7 @@ import de.citec.csra.dm.view.struct.node.Node;
 /**
  *
  * @author thuxohl
+ * @param <M>
  */
 public interface Leave<M> extends Node {
     

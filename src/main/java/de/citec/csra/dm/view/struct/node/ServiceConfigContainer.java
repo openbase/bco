@@ -5,27 +5,20 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import de.citec.csra.dm.view.struct.leave.BindingConfigContainer;
-import javafx.scene.control.TreeItem;
-import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 
 /**
  *
  * @author thuxohl
  */
-public class ServiceConfigContainer extends TreeItem<Node> implements Node {
+public class ServiceConfigContainer extends NodeContainer<ServiceConfig> {
     
-    private ServiceConfigType.ServiceConfig serviceConfig;
-
-    public ServiceConfigContainer(ServiceConfigType.ServiceConfig serviceConfig) {
-        this.serviceConfig = serviceConfig;
-        TreeItem<Node> bindingType = new TreeItem<>(new BindingConfigContainer(serviceConfig.getBindingConfig()));
-        //TODO
-        this.getChildren().addAll(bindingType);
+    public ServiceConfigContainer(ServiceConfig serviceConfig) {
+        super("Service Configuration", serviceConfig);
+        super.add(new BindingConfigContainer(serviceConfig.getBindingConfig()));
+        super.add(new OpenhabServiceConfigContainer(serviceConfig.getOpenhabServiceConfig()));
+        super.add(new MieleAtHomeServiceConfigContainer(serviceConfig.getMieleAtHomeServiceConfig()));
+        super.add(new HandlesServiceConfigContainer(serviceConfig.getHandlesServiceConfig()));
+        super.add(new SinactServiceConfigContainer(serviceConfig.getSinactServiceConfig()));
     }
-
-    @Override
-    public String getDescriptor() {
-        return "Service Config";
-    } 
 }
