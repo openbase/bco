@@ -127,7 +127,7 @@ public class JavaFXView extends Application {
     public static void main(String[] args) {
         logger.info("Start " + APP_NAME + "...");
 
-        /* Setup CLParser */
+        /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPScope.class, DEFAULT_SCOPE);
         launch(args);
