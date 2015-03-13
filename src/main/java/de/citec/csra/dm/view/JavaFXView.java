@@ -12,6 +12,7 @@ import de.citec.csra.dm.view.struct.leave.Leave;
 import de.citec.csra.dm.view.struct.node.Node;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.pattern.Observable;
 import de.citec.jul.rsb.jp.JPScope;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -132,7 +133,7 @@ public class JavaFXView extends Application {
         descriptorColumn2.setCellValueFactory(descriptorColumn.getCellValueFactory());
 
         deviceClassTreeTableView.getColumns().addAll(descriptorColumn, valueColumn);
-        deviceClassTreeTableView.setRoot(new DeviceClassList(testDeviceClass()));
+//        deviceClassTreeTableView.setRoot(new DeviceClassList(testDeviceClass()));
         deviceClassTreeTableView.setEditable(true);
         deviceConfigTreeTableView.getColumns().addAll(descriptorColumn2, valueColumn2);
 
@@ -159,12 +160,14 @@ public class JavaFXView extends Application {
         borderPane.setCenter(registryTabPane);
     }
 
+    @Override
     public void start(Stage primaryStage) throws Exception {
 
-//        remote.activate();
-//        remote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
-//            updateDynamicNodes();
-//        });
+        remote.activate();
+        remote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
+            updateDynamicNodes();
+        });
+        remote.requestStatus();
         Scene scene = new Scene(borderPane, 1024, 576);
         primaryStage.setTitle("Registry Editor");
 //        primaryStage.setFullScreen(true);
@@ -172,7 +175,7 @@ public class JavaFXView extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-//        updateDynamicNodes();
+        updateDynamicNodes();
 //        remote.registerDeviceClass(getTestData());
     }
 
