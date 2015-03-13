@@ -13,7 +13,7 @@ package de.citec.csra.dm.view.struct.leave;
 public class LeaveContainer<T> implements Leave<T> {
 
     private T value;
-    private String descriptor;
+    private final String descriptor;
 
     public LeaveContainer(T value, String descriptor) {
         this.value = value;
@@ -28,5 +28,10 @@ public class LeaveContainer<T> implements Leave<T> {
     @Override
     public String getDescriptor() {
         return descriptor;
+    }
+
+    @Override
+    public void setValue(T value) {
+        this.value = value;
     }
 }

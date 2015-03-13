@@ -18,7 +18,10 @@ import java.util.Collection;
 import javafx.application.Application;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
@@ -26,6 +29,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.slf4j.Logger;
@@ -54,7 +59,12 @@ public class JavaFXView extends Application {
     private TreeTableView<Node> deviceClassTreeTableView;
     private TreeTableView<Node> deviceConfigTreeTableView;
     private TreeTableColumn<Node, String> descriptorColumn;
+    private TreeTableColumn<Node, String> descriptorColumn2;
     private TreeTableColumn<Node, String> valueColumn;
+    private TreeTableColumn<Node, String> valueColumn2;
+    private BorderPane borderPane;
+    private HBox hBox;
+    private Button add, edit, remove;
 
     public JavaFXView() {
         this.remote = new DeviceRegistryRemote();
@@ -94,7 +104,7 @@ public class JavaFXView extends Application {
 
             @Override
             public ObservableValue<String> call(CellDataFeatures<Node, String> param) {
-                if (param.getValue().getValue() instanceof Leave ){
+                if (param.getValue().getValue() instanceof Leave) {
                     return new ReadOnlyStringWrapper(((Leave) param.getValue().getValue()).getValue().toString());
                 } else {
                     return new ReadOnlyStringWrapper("");
@@ -102,9 +112,29 @@ public class JavaFXView extends Application {
             }
         });
 
+//        valueColumn.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
+        valueColumn.setOnEditCommit(new EventHandler<TreeTableColumn.CellEditEvent<Node, String>>() {
+
+            @Override
+            public void handle(TreeTableColumn.CellEditEvent<Node, String> event) {
+                if (event.getRowValue().getValue() instanceof Leave) {
+                    if (!event.getRowValue().getValue().getDescriptor().equals("ID")) {
+                    }
+                    ((Leave) event.getRowValue().getValue()).setValue(event.getNewValue());
+                }
+            }
+        });
+        valueColumn2 = new TreeTableColumn<>("Value");
+        valueColumn2.setPrefWidth(1024 - 400);
+        valueColumn2.setCellValueFactory(valueColumn.getCellValueFactory());
+        descriptorColumn2 = new TreeTableColumn<>("Description");
+        descriptorColumn2.setPrefWidth(400);
+        descriptorColumn2.setCellValueFactory(descriptorColumn.getCellValueFactory());
+
         deviceClassTreeTableView.getColumns().addAll(descriptorColumn, valueColumn);
         deviceClassTreeTableView.setRoot(new DeviceClassList(testDeviceClass()));
-//        deviceConfigTreeTableView.getColumns().addAll(descriptorColumn, valueColumn); 
+        deviceClassTreeTableView.setEditable(true);
+        deviceConfigTreeTableView.getColumns().addAll(descriptorColumn2, valueColumn2);
 
         tabDeviceRegistryPane = new TabPane();
         tabDeviceRegistryPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -114,16 +144,28 @@ public class JavaFXView extends Application {
         tabDeviceConfig.setContent(deviceConfigTreeTableView);
         tabDeviceRegistryPane.getTabs().addAll(tabDeviceClass, tabDeviceConfig);
         tabDeviceRegistry.setContent(tabDeviceRegistryPane);
+
+        hBox = new HBox();
+        edit = new Button("Edit");
+        edit.setPrefWidth(100);
+        add = new Button("Add");
+        add.setPrefWidth(100);
+        remove = new Button("Remove");
+        remove.setPrefWidth(100);
+        hBox.setAlignment(Pos.BASELINE_RIGHT);
+        hBox.getChildren().addAll(add, edit, remove);
+        borderPane = new BorderPane();
+        borderPane.setBottom(hBox);
+        borderPane.setCenter(registryTabPane);
     }
 
-    @Override
     public void start(Stage primaryStage) throws Exception {
 
 //        remote.activate();
 //        remote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
 //            updateDynamicNodes();
 //        });
-        Scene scene = new Scene(registryTabPane, 1024, 576);
+        Scene scene = new Scene(borderPane, 1024, 576);
         primaryStage.setTitle("Registry Editor");
 //        primaryStage.setFullScreen(true);
 //        primaryStage.setFullScreenExitKeyCombination(KeyCombination.ALT_ANY);
@@ -135,7 +177,7 @@ public class JavaFXView extends Application {
     }
 
     public DeviceClass getTestData() {
-        return DeviceClassType.DeviceClass.newBuilder().setLabel("MyTestData").build();
+        return DeviceClassType.DeviceClass.newBuilder().setLabel("MyTestData5").build();
     }
 
     @Override
@@ -175,12 +217,17 @@ public class JavaFXView extends Application {
     private Collection<DeviceClassType.DeviceClass> testDeviceClass() {
         Collection<DeviceClassType.DeviceClass> testCollection = new ArrayList();
 
-        UnitTypeHolderType.UnitTypeHolder testUnit = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.LIGHT).build();
+        UnitTypeHolderType.UnitTypeHolder testUnitType1 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.LIGHT).build();
+        UnitTypeHolderType.UnitTypeHolder testUnitType2 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.MOTION_SENSOR).build();
         BindingConfigType.BindingConfig testBindingConfig = BindingConfigType.BindingConfig.newBuilder().setBindingType(BindingConfigType.BindingConfig.BindingType.OPENHAB).build();
-        DeviceClassType.DeviceClass testDeviceClass = DeviceClassType.DeviceClass.newBuilder().setLabel("Test DeviceClass").setId("Test DeviceClassID").setProductNumber("1234-5678-9101").setDescription("This is a test DeviceClass").setBindingConfig(testBindingConfig).build();
+        DeviceClassType.DeviceClass testDeviceClass = DeviceClassType.DeviceClass.newBuilder().setLabel("Test DeviceClass").setId("Test DeviceClassID").setProductNumber("1234-5678-9101").setDescription("This is a test DeviceClass").setBindingConfig(testBindingConfig).addUnits(testUnitType2).addUnits(testUnitType1).build();
+
+        UnitTypeHolderType.UnitTypeHolder testUnitType3 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.BATTERY).build();
+        UnitTypeHolderType.UnitTypeHolder testUnitType4 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.TEMPERATURE_SENSOR).build();
+        DeviceClassType.DeviceClass testDeviceClass2 = DeviceClassType.DeviceClass.newBuilder().setLabel("Test DeviceClass2").setId("Test DeviceClassID2").setProductNumber("1234-5878-9101").setDescription("This is a test DeviceClass").setBindingConfig(testBindingConfig).addUnits(testUnitType3).addUnits(testUnitType4).build();
 
         testCollection.add(testDeviceClass);
+        testCollection.add(testDeviceClass2);
         return testCollection;
-
     }
 }

@@ -14,8 +14,8 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 public class DeviceClassContainer extends NodeContainer<DeviceClass> {
 
     public DeviceClassContainer(final DeviceClass deviceClass) {
-        super("Device Class", deviceClass);
-        super.add(deviceClass.getLabel(), "ID");
+        super(deviceClass.getId(), deviceClass);
+//        super.add(deviceClass.getLabel(), "ID");
         super.add(deviceClass.getLabel(), "Label");
         super.add(deviceClass.getProductNumber(), "Product Number");
         super.add(new BindingConfigContainer(deviceClass.getBindingConfig()));

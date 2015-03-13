@@ -16,4 +16,6 @@ public interface Leave<M> extends Node {
     
     public M getValue();
             
+    public void setValue(M value);
+    
 }
