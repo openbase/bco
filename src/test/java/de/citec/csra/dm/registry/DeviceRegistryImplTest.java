@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import static junit.framework.TestCase.assertEquals;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,125 +32,126 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  */
 public class DeviceRegistryImplTest {
 
-    private static DeviceRegistryImpl registry;
-    private static DeviceClassType.DeviceClass.Builder deviceClass;
-    private static DeviceConfigType.DeviceConfig.Builder deviceConfig;
+	private static DeviceRegistryImpl registry;
+	private static DeviceClassType.DeviceClass.Builder deviceClass;
+	private static DeviceConfigType.DeviceConfig.Builder deviceConfig;
 
-    public DeviceRegistryImplTest() {
-    }
+	public DeviceRegistryImplTest() {
+	}
 
-    @BeforeClass
-    public static void setUpClass() throws InstantiationException, InitializationException, IOException {
-        File dbFile = new File("/tmp/db/");
-        File dbDeviceClasses = new File("/tmp/db/device-classes");
-        File dbDeviceConfig = new File("/tmp/db/device-config");
+	@BeforeClass
+	public static void setUpClass() throws InstantiationException, InitializationException, IOException {
+		File dbFile = new File("/tmp/db/");
+		File dbDeviceClasses = new File("/tmp/db/device-classes");
+		File dbDeviceConfig = new File("/tmp/db/device-config");
 
-        dbFile.mkdir();
+		dbFile.mkdir();
 
-        FileUtils.deleteDirectory(dbDeviceClasses);
-        FileUtils.deleteDirectory(dbDeviceConfig);
-        dbDeviceClasses.mkdir();
-        dbDeviceConfig.mkdir();
+		FileUtils.deleteDirectory(dbDeviceClasses);
+		FileUtils.deleteDirectory(dbDeviceConfig);
+		dbDeviceClasses.mkdir();
+		dbDeviceConfig.mkdir();
 
-        JPService.registerProperty(JPDatabaseDirectory.class, dbFile);
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
+		JPService.registerProperty(JPDatabaseDirectory.class, dbFile);
+		JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
+		JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
 
-        registry = new DeviceRegistryImpl();
-        registry.init(RSBInformerInterface.InformerType.Single);
-        registry.activate();
+		registry = new DeviceRegistryImpl();
+		registry.init(RSBInformerInterface.InformerType.Single);
+		registry.activate();
 
-        deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
-        deviceClass.setLabel("TestDeviceClassLabel");
-        deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
-        deviceConfig.setLabel("TestDeviceConfigLabel");
-        deviceConfig.setSerialNumber("0001-0004-2245");
-        deviceConfig.setDeviceClass(deviceClass.clone().setId("TestDeviceClassLabel"));
-    }
+		deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
+		deviceClass.setLabel("TestDeviceClassLabel");
+		deviceClass.setProductNumber("TDCL-001");
+		deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
+		deviceConfig.setLabel("TestDeviceConfigLabel");
+		deviceConfig.setSerialNumber("0001-0004-2245");
+		deviceConfig.setDeviceClass(deviceClass.clone().setId("TestDeviceClassLabel"));
+	}
 
-    @AfterClass
-    public static void tearDownClass() throws InterruptedException {
-        registry.deactivate();
-    }
+	@AfterClass
+	public static void tearDownClass() throws InterruptedException {
+		registry.deactivate();
+	}
 
-    @Before
-    public void setUp() {
-    }
+	@Before
+	public void setUp() {
+	}
 
-    @After
-    public void tearDown() {
-    }
+	@After
+	public void tearDown() {
+	}
 
-    /**
-     * Test of registerDeviceClass method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testRegisterDeviceClass() throws Exception {
-        System.out.println("registerDeviceClass");
-        registry.registerDeviceClass(deviceClass.clone().build());
-        registry.getData().getDeviceClassesBuilderList().contains(deviceClass);
-    }
+	/**
+	 * Test of registerDeviceClass method, of class DeviceRegistryImpl.
+	 */
+	@Test
+	public void testRegisterDeviceClass() throws Exception {
+		System.out.println("registerDeviceClass");
+		registry.registerDeviceClass(deviceClass.clone().build());
+		assertEquals(true, registry.getData().getDeviceClassesBuilderList().contains(deviceClass));
+	}
 
-    /**
-     * Test of registerDeviceConfig method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testRegisterDeviceConfig() throws Exception {
-        System.out.println("registerDeviceConfig");
-        registry.registerDeviceConfig(deviceConfig.clone().build());
-        registry.getData().getDeviceConfigsBuilderList().contains(deviceConfig);
-    }
+	/**
+	 * Test of registerDeviceConfig method, of class DeviceRegistryImpl.
+	 */
+	@Test
+	public void testRegisterDeviceConfig() throws Exception {
+		System.out.println("registerDeviceConfig");
+		registry.registerDeviceConfig(deviceConfig.clone().build());
+		assertEquals(true, registry.getData().getDeviceConfigsBuilderList().contains(deviceConfig));
+	}
 
-    /**
-     * Test of updateDeviceClass method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testUpdateDeviceClass() throws Exception {
+	/**
+	 * Test of updateDeviceClass method, of class DeviceRegistryImpl.
+	 */
+	@Test
+	public void testUpdateDeviceClass() throws Exception {
 //        System.out.println("updateDeviceClass");
 //        DeviceClassType.DeviceClass deviceClass = null;
 //        DeviceRegistryImpl instance = new DeviceRegistryImpl();
 //        instance.updateDeviceClass(deviceClass);
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
-    }
+	}
 
-    /**
-     * Test of updateDeviceConfig method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testUpdateDeviceConfig() throws Exception {
+	/**
+	 * Test of updateDeviceConfig method, of class DeviceRegistryImpl.
+	 */
+	@Test
+	public void testUpdateDeviceConfig() throws Exception {
 //        System.out.println("updateDeviceConfig");
 //        DeviceConfigType.DeviceConfig deviceConfig = null;
 //        DeviceRegistryImpl instance = new DeviceRegistryImpl();
 //        instance.updateDeviceConfig(deviceConfig);
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
-    }
+	}
 
-    /**
-     * Test of removeDeviceConfig method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testRemoveDeviceConfig() throws Exception {
+	/**
+	 * Test of removeDeviceConfig method, of class DeviceRegistryImpl.
+	 */
+	@Test
+	public void testRemoveDeviceConfig() throws Exception {
 //        System.out.println("removeDeviceConfig");
 //        DeviceConfigType.DeviceConfig deviceConfig = null;
 //        DeviceRegistryImpl instance = new DeviceRegistryImpl();
 //        instance.removeDeviceConfig(deviceConfig);
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
-    }
+	}
 
-    /**
-     * Test of removeDeviceClass method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testRemoveDeviceClass() throws Exception {
+	/**
+	 * Test of removeDeviceClass method, of class DeviceRegistryImpl.
+	 */
+	@Test
+	public void testRemoveDeviceClass() throws Exception {
 //        System.out.println("removeDeviceClass");
 //        DeviceClassType.DeviceClass deviceClass = null;
 //        DeviceRegistryImpl instance = new DeviceRegistryImpl();
 //        instance.removeDeviceClass(deviceClass);
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
-    }
+	}
 
 }
