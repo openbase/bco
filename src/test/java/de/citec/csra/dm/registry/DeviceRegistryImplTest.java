@@ -138,7 +138,7 @@ public class DeviceRegistryImplTest {
     /**
      * Test of registering a DeviceClass per remote.
      */
-    @Test()
+    @Test(timeout = 3000)
     public void testRegisterDeviceClassPerRemote() throws Exception {
         System.out.println("registerDeviceClassPerRemote");
         
@@ -160,7 +160,6 @@ public class DeviceRegistryImplTest {
                 
         while (true) {
             try {
-                remote.requestStatus();
                 if (remote.getData().getDeviceClassesList().contains(deviceClassRemote.clone().build())) {
                     break;
                 }

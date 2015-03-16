@@ -23,9 +23,12 @@ import rst.homeautomation.registry.DeviceRegistryType.DeviceRegistry;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.iface.Identifiable;
+import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.FileNameProvider;
+import java.util.Map;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
@@ -54,7 +57,15 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(new IdentifiableMessage.MessageTransformer()), new DBFileNameProvider());
             deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(new IdentifiableMessage.MessageTransformer()), new DBFileNameProvider());
             deviceClassRegistry.loadRegistry();
-            deviceConfigRegistry.loadRegistry();
+			deviceConfigRegistry.loadRegistry();
+
+			deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceClass>>> source, Map<String, IdentifiableMessage<DeviceClass>> data1) -> {
+				notifyChange();
+			});
+			deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceConfig>>> source, Map<String, IdentifiableMessage<DeviceConfig>> data1) -> {
+				notifyChange();
+			});
+			
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
