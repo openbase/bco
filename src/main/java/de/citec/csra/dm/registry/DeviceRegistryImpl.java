@@ -71,12 +71,12 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     }
     
     @Override
-    public boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
+    public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.contrains(deviceConfigId);
     }
     
     @Override
-    public boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         if(!deviceConfig.hasId()) {
             deviceConfig = setupDeviceConfigID(deviceConfig);
         }
@@ -99,12 +99,12 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     }
     
     @Override
-    public boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+    public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.contrains(deviceClassId);
     }
     
     @Override
-    public boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+    public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         if(!deviceClass.hasId()) {
             deviceClass = setupDeviceClassID(deviceClass);
         }

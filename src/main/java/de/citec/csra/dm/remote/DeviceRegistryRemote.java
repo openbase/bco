@@ -42,7 +42,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public boolean containsDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public Boolean containsDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceConfig", deviceConfig).get();
         } catch (ExecutionException ex) {
@@ -51,7 +51,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
+    public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceConfigById", deviceConfigId).get();
         } catch (ExecutionException ex) {
@@ -87,7 +87,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public boolean containsDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public Boolean containsDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceClass", deviceClass).get();
         } catch (ExecutionException ex) {
@@ -96,7 +96,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+    public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceClassById", deviceClassId).get();
         } catch (ExecutionException ex) {
