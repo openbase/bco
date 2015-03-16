@@ -8,7 +8,7 @@ package de.citec.csra.dm.view;
 import de.citec.csra.dm.view.struct.node.DeviceClassList;
 import static de.citec.csra.dm.DeviceManager.DEFAULT_SCOPE;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
-import de.citec.csra.dm.view.struct.leave.Leave;
+import de.citec.csra.dm.view.struct.leaf.Leaf;
 import de.citec.csra.dm.view.struct.node.Node;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.NotAvailableException;
@@ -17,8 +17,6 @@ import de.citec.jul.rsb.jp.JPScope;
 import java.util.ArrayList;
 import java.util.Collection;
 import javafx.application.Application;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -27,9 +25,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -59,10 +58,8 @@ public class JavaFXView extends Application {
     private ProgressIndicator progressLocationRegistryIndicator;
     private TreeTableView<Node> deviceClassTreeTableView;
     private TreeTableView<Node> deviceConfigTreeTableView;
-    private TreeTableColumn<Node, String> descriptorColumn;
-    private TreeTableColumn<Node, String> descriptorColumn2;
-    private TreeTableColumn<Node, String> valueColumn;
-    private TreeTableColumn<Node, String> valueColumn2;
+    private TreeTableColumn<Node, Node> descriptorColumn;
+    private TreeTableColumn<Node, Node> valueColumn;
     private BorderPane borderPane;
     private HBox hBox;
     private Button add, edit, remove;
@@ -92,50 +89,46 @@ public class JavaFXView extends Application {
 
         descriptorColumn = new TreeTableColumn<>("Description");
         descriptorColumn.setPrefWidth(400);
-        descriptorColumn.setCellValueFactory(new Callback<CellDataFeatures<Node, String>, ObservableValue<String>>() {
-
-            @Override
-            public ObservableValue<String> call(CellDataFeatures<Node, String> param) {
-                return new ReadOnlyStringWrapper(param.getValue().getValue().getDescriptor());
-            }
-        });
+        descriptorColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("descriptor"));
+                
         valueColumn = new TreeTableColumn<>("Value");
         valueColumn.setPrefWidth(1024 - 400);
-        valueColumn.setCellValueFactory(new Callback<CellDataFeatures<Node, String>, ObservableValue<String>>() {
+        valueColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("this"));
+//        valueColumn.setCellValueFactory(new Callback<CellDataFeatures<Node, Node>, ObservableValue<Node>>() {
+//
+//            @Override
+//            public ObservableValue<Node> call(CellDataFeatures<Node, Node> param) {
+//                if (param.getValue().getValue() instanceof Leaf) {
+//                    return (ObservableValue<Node>) new Label(((Leaf) param.getValue().getValue()).getValue().toString());
+//                } else {
+//                    return (ObservableValue<Node>) new Label("");
+//                }
+//            }
+//        });
+//        valueColumn.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
+        valueColumn.setCellFactory(new Callback<TreeTableColumn<Node, Node>, TreeTableCell<Node, Node>>() {
 
             @Override
-            public ObservableValue<String> call(CellDataFeatures<Node, String> param) {
-                if (param.getValue().getValue() instanceof Leave) {
-                    return new ReadOnlyStringWrapper(((Leave) param.getValue().getValue()).getValue().toString());
-                } else {
-                    return new ReadOnlyStringWrapper("");
-                }
+            public TreeTableCell<Node, Node> call(TreeTableColumn<Node, Node> param) {
+                return new ValueCell();
             }
         });
-
-//        valueColumn.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
-        valueColumn.setOnEditCommit(new EventHandler<TreeTableColumn.CellEditEvent<Node, String>>() {
+        valueColumn.setOnEditCommit(new EventHandler<TreeTableColumn.CellEditEvent<Node, Node>>() {
 
             @Override
-            public void handle(TreeTableColumn.CellEditEvent<Node, String> event) {
-                if (event.getRowValue().getValue() instanceof Leave) {
+            public void handle(TreeTableColumn.CellEditEvent<Node, Node> event) {
+                if (event.getRowValue().getValue() instanceof Leaf) {
                     if (!event.getRowValue().getValue().getDescriptor().equals("ID")) {
                     }
-                    ((Leave) event.getRowValue().getValue()).setValue(event.getNewValue());
+                    ((Leaf) event.getRowValue().getValue()).setValue(event.getNewValue());
                 }
             }
         });
-        valueColumn2 = new TreeTableColumn<>("Value");
-        valueColumn2.setPrefWidth(1024 - 400);
-        valueColumn2.setCellValueFactory(valueColumn.getCellValueFactory());
-        descriptorColumn2 = new TreeTableColumn<>("Description");
-        descriptorColumn2.setPrefWidth(400);
-        descriptorColumn2.setCellValueFactory(descriptorColumn.getCellValueFactory());
 
         deviceClassTreeTableView.getColumns().addAll(descriptorColumn, valueColumn);
-//        deviceClassTreeTableView.setRoot(new DeviceClassList(testDeviceClass()));
+        deviceClassTreeTableView.setRoot(new DeviceClassList(testDeviceClass()));
         deviceClassTreeTableView.setEditable(true);
-        deviceConfigTreeTableView.getColumns().addAll(descriptorColumn2, valueColumn2);
+//        deviceClassTreeTableView.setShowRoot(false);
 
         tabDeviceRegistryPane = new TabPane();
         tabDeviceRegistryPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -175,7 +168,7 @@ public class JavaFXView extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        updateDynamicNodes();
+//        updateDynamicNodes();
 //        remote.registerDeviceClass(getTestData());
     }
 

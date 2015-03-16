@@ -5,7 +5,9 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import de.citec.csra.dm.view.struct.leave.LeaveContainer;
+import de.citec.csra.dm.view.struct.leaf.LeafContainer;
+import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.TreeItem;
 
 /**
@@ -15,30 +17,34 @@ import javafx.scene.control.TreeItem;
  */
 public class NodeContainer<T> extends TreeItem<Node> implements Node {
 
-    private final String descriptor;
+    private final Property<String> descriptor;
     private final T value;
 
     public NodeContainer(String descriptor, T value) {
-        this.descriptor = descriptor;
         this.value = value;
         this.setValue(this);
+        this.descriptor = new ReadOnlyObjectWrapper<>(descriptor);
     }
 
-    protected void add(LeaveContainer leave) {
+    protected void add(LeafContainer leave) {
         this.getChildren().add(new TreeItem<>(leave));
     }
 
     protected void add(TreeItem<Node> node) {
         this.getChildren().add(node);
     }
-    
-    protected<S> void add(S value, String descriptor) {
-        this.add(new LeaveContainer(value, descriptor));
+
+    protected <S> void add(S value, String descriptor) {
+        this.add(new LeafContainer(value, descriptor));
     }
 
     @Override
     public String getDescriptor() {
-        return descriptor;
+        return descriptor.getValue();
     }
 
+    @Override
+    public Node getThis() {
+        return this;
+    }
 }

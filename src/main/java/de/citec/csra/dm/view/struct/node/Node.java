@@ -10,6 +10,8 @@ package de.citec.csra.dm.view.struct.node;
  * @author thuxohl
  */
 public interface Node {
-     
+
     public String getDescriptor();
+    
+    public Node getThis();
 }
