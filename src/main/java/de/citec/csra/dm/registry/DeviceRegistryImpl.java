@@ -77,6 +77,9 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     
     @Override
     public boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
+        if(!deviceConfig.hasId()) {
+            deviceConfig = setupDeviceConfigID(deviceConfig);
+        }
         return containsDeviceConfigById(deviceConfig.getId());
     }
 
@@ -102,6 +105,9 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     
     @Override
     public boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+        if(!deviceClass.hasId()) {
+            deviceClass = setupDeviceClassID(deviceClass);
+        }
         return containsDeviceClassById(deviceClass.getId());
     }
 
@@ -120,7 +126,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             if (deviceClass.hasId()) {
                 throw new InvalidStateException("ID already specified!");
             }
-            return deviceClass.newBuilderForType().setId(generateDeviceClassID(deviceClass)).build();
+            return deviceClass.toBuilder().setId(generateDeviceClassID(deviceClass)).build();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup id!", ex);
         }
@@ -142,7 +148,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             if (deviceConfig.hasId()) {
                 throw new InvalidStateException("ID already specified!");
             }
-            return deviceConfig.newBuilderForType().setId(generateDeviceConfigID(deviceConfig)).build();
+            return deviceConfig.toBuilder().setId(generateDeviceConfigID(deviceConfig)).build();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup id!", ex);
         }

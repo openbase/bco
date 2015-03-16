@@ -89,7 +89,8 @@ public class DeviceRegistryImplTest {
 	public void testRegisterDeviceClass() throws Exception {
 		System.out.println("registerDeviceClass");
 		registry.registerDeviceClass(deviceClass.clone().build());
-		assertEquals(true, registry.getData().getDeviceClassesBuilderList().contains(deviceClass));
+        assertEquals(true, registry.containsDeviceClass(deviceClass.clone().build()));
+//		assertEquals(true, registry.getData().getDeviceClassesBuilderList().contains(deviceClass));
 	}
 
 	/**
@@ -99,7 +100,7 @@ public class DeviceRegistryImplTest {
 	public void testRegisterDeviceConfig() throws Exception {
 		System.out.println("registerDeviceConfig");
 		registry.registerDeviceConfig(deviceConfig.clone().build());
-		assertEquals(true, registry.getData().getDeviceConfigsBuilderList().contains(deviceConfig));
+		assertEquals(true, registry.containsDeviceConfig(deviceConfig.clone().build()));
 	}
 
 	/**
