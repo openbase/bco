@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
 public class DALService implements RegistryProvider {
 

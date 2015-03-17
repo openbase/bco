@@ -23,7 +23,7 @@ import rsb.patterns.LocalServer;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */

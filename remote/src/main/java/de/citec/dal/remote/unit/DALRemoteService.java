@@ -12,7 +12,7 @@ import de.citec.jul.rsb.RSBRemoteService;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  * @param <M>
  */
 public abstract class DALRemoteService<M extends GeneratedMessage> extends RSBRemoteService<M> implements Service {

@@ -7,7 +7,7 @@ package de.citec.dal.hal.service;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
 public interface Service {
 	public ServiceType getServiceType();

@@ -10,7 +10,7 @@ import de.citec.jps.preset.AbstractJPBoolean;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
 public class JPHardwareSimulationMode extends AbstractJPBoolean {
 

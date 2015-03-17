@@ -14,7 +14,7 @@ import de.citec.jul.exception.InstantiationException;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  * @param <M>
  * @param <MB>
  */

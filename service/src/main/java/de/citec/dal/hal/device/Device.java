@@ -13,7 +13,7 @@ import de.citec.jul.rsb.ScopeProvider;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
 public interface Device extends ScopeProvider, Identifiable<String>, Activatable {
 

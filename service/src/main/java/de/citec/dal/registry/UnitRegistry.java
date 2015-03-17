@@ -13,7 +13,7 @@ import de.citec.jul.exception.NotAvailableException;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
 public class UnitRegistry extends Registry<String, Unit> {
 

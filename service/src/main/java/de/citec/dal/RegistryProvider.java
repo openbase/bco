@@ -11,7 +11,7 @@ import de.citec.dal.registry.UnitRegistry;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
     public interface RegistryProvider {
 

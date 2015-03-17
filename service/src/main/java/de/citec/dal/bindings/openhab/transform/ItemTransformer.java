@@ -15,7 +15,7 @@ import rst.homeautomation.openhab.OpenhabCommandType;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine Threepwood
  */
 public class ItemTransformer {
 
