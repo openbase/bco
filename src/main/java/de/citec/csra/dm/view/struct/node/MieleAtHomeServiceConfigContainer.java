@@ -11,11 +11,11 @@ import rst.homeautomation.service.MieleAtHomeServiceConfigType.MieleAtHomeServic
  *
  * @author thuxohl
  */
-class MieleAtHomeServiceConfigContainer extends NodeContainer<MieleAtHomeServiceConfig> {
+class MieleAtHomeServiceConfigContainer extends NodeContainer<MieleAtHomeServiceConfig.Builder> {
 
-    public MieleAtHomeServiceConfigContainer(MieleAtHomeServiceConfig mieleAtHomeServiceConfig) {
+    public MieleAtHomeServiceConfigContainer(MieleAtHomeServiceConfig.Builder mieleAtHomeServiceConfig) {
         super("Miele@Home Service Configuration", mieleAtHomeServiceConfig);
-        super.add(mieleAtHomeServiceConfig.getHardwareConfig(), "Hardware Configuration");
+        super.add(mieleAtHomeServiceConfig.getHardwareConfig(), "hardware_configuration");
     }
 
 }

@@ -11,11 +11,11 @@ import rst.homeautomation.service.HandlesServiceConfigType.HandlesServiceConfig;
  *
  * @author thuxohl
  */
-class HandlesServiceConfigContainer extends NodeContainer<HandlesServiceConfig> {
+class HandlesServiceConfigContainer extends NodeContainer<HandlesServiceConfig.Builder> {
     
-    public HandlesServiceConfigContainer(HandlesServiceConfig handlesServiceConfig) {
+    public HandlesServiceConfigContainer(HandlesServiceConfig.Builder handlesServiceConfig) {
         super("Handles Service Configuration", handlesServiceConfig);
-        super.add(handlesServiceConfig.getHardwareConfig(), "Hardware Configuration");
+        super.add(handlesServiceConfig.getHardwareConfig(), "hardware_configuration");
     }
     
 }

@@ -11,10 +11,10 @@ import rst.homeautomation.binding.BindingConfigType.BindingConfig;
  *
  * @author thuxohl
  */
-public class BindingConfigContainer extends NodeContainer<BindingConfig> {
+public class BindingConfigContainer extends NodeContainer<BindingConfig.Builder> {
 
-    public BindingConfigContainer(BindingConfig bindingConfig) {
-        super("Binding Configuration", bindingConfig);
-        super.add(bindingConfig.getBindingType(), "Binding Type");
+    public BindingConfigContainer(BindingConfig.Builder bindingConfig) {
+        super("BindingConfig", bindingConfig);
+        super.add(bindingConfig.getBindingType(), "binding_type");
     }
 }

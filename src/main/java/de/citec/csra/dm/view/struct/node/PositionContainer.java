@@ -11,12 +11,12 @@ import rst.math.Vec3DFloatType.Vec3DFloat;
  *
  * @author thuxohl
  */
-public class PositionContainer extends NodeContainer<Vec3DFloat> {
+public class PositionContainer extends NodeContainer<Vec3DFloat.Builder> {
 
-    public PositionContainer(Vec3DFloat position) {
+    public PositionContainer(Vec3DFloat.Builder position) {
         super("Position", position);
-        super.add(position.getX(), "X Position");
-        super.add(position.getY(), "Y Position");
-        super.add(position.getZ(), "Z Position");
+        super.add(position.getX(), "x");
+        super.add(position.getY(), "y");
+        super.add(position.getZ(), "z");
     }
 }

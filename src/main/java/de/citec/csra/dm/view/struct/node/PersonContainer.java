@@ -11,13 +11,13 @@ import rst.person.PersonType.Person;
  *
  * @author thuxohl
  */
-public class PersonContainer extends NodeContainer<Person> {
+public class PersonContainer extends NodeContainer<Person.Builder> {
 
-    public PersonContainer(Person owner) {
+    public PersonContainer(Person.Builder owner) {
         super("Owner", owner);
-        super.add(owner.getFirstName(), "First Name");
-        super.add(owner.getLastName(), "Last Name");
-        super.add(owner.getUserName(), "User Name");
-        super.add(owner.getId(), "ID");
+        super.add(owner.getFirstName(), "first_name");
+        super.add(owner.getLastName(), "last_name");
+        super.add(owner.getUserName(), "user_name");
+        super.add(owner.getId(), "id");
     }
 }

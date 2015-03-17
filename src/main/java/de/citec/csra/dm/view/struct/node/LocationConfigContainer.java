@@ -11,14 +11,14 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author thuxohl
  */
-public class LocationConfigContainer extends NodeContainer<LocationConfig> {
+public class LocationConfigContainer extends NodeContainer<LocationConfig.Builder> {
 
-    public LocationConfigContainer(LocationConfig location) {
+    public LocationConfigContainer(LocationConfig.Builder location) {
         super("Location", location);
-        super.add(location.getLabel(), "Label");
-        super.add(location.getRoot(), "Root Location");
-        super.add(new ScopeContainer(location.getScope()));
-        super.add(new ChildLocationListContainer(location.getChildrenList()));
+        super.add(location.getLabel(), "label");
+        super.add(location.getRoot(), "root");
+        super.add(new ScopeContainer(location.getScope().toBuilder()));
+        super.add(new ChildLocationListContainer(location));
         if (location.hasParent()) {
             super.add(location.getParent().getLabel(), "Parent Label");
         }

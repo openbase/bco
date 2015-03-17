@@ -5,19 +5,18 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import java.util.Collection;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
  * @author thuxohl
  */
-public class ChildLocationListContainer extends NodeContainer<Collection<LocationConfig>> {
+public class ChildLocationListContainer extends NodeContainer<LocationConfig.Builder> {
 
-    public ChildLocationListContainer(final Collection<LocationConfig> locationConfigs) {
-        super("Child Locations", locationConfigs);
-        locationConfigs.stream().forEach((locationConfig) -> {
-            super.add(new LocationConfigContainer(locationConfig));
+    public ChildLocationListContainer(final LocationConfig.Builder parentLocationConfig) {
+        super("Child Locations", parentLocationConfig);
+        parentLocationConfig.getChildrenList().stream().forEach((locationConfig) -> {
+            super.add(new LocationConfigContainer(locationConfig.toBuilder()));
         });
     }
 }

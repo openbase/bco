@@ -11,18 +11,18 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  *
  * @author thuxohl
  */
-public class DeviceConfigContainer extends NodeContainer<DeviceConfig> {
+public class DeviceConfigContainer extends NodeContainer<DeviceConfig.Builder> {
 
-    public DeviceConfigContainer(DeviceConfig deviceConfig) {
+    public DeviceConfigContainer(DeviceConfig.Builder deviceConfig) {
         super("Device Configuration", deviceConfig);
-        super.add(deviceConfig.getId(), "ID");
-        super.add(deviceConfig.getLabel(), "Label");
-        super.add(deviceConfig.getSerialNumber(), "Serial Number");
-        super.add(new PlacementConfigContainer(deviceConfig.getPlacementConfig()));
-        super.add(new ScopeContainer(deviceConfig.getScope()));
-        super.add(new InventoryStateContainer(deviceConfig.getInventoryState()));
-        super.add(new DeviceClassContainer(deviceConfig.getDeviceClass()));
-        super.add(new UnitConfigListContainer(deviceConfig.getUnitConfigsList()));
-        super.add(deviceConfig.getDescription(), "Description");
+        super.add(deviceConfig.getId(), "id");
+        super.add(deviceConfig.getLabel(), "label");
+        super.add(deviceConfig.getSerialNumber(), "serial_number");
+        super.add(new PlacementConfigContainer(deviceConfig.getPlacementConfig().toBuilder()));
+        super.add(new ScopeContainer(deviceConfig.getScope().toBuilder()));
+        super.add(new InventoryStateContainer(deviceConfig.getInventoryState().toBuilder()));
+        super.add(new DeviceClassContainer(deviceConfig.getDeviceClass().toBuilder()));
+        super.add(new UnitConfigListContainer(deviceConfig));
+        super.add(deviceConfig.getDescription(), "description");
     }
 }
