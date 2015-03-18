@@ -17,7 +17,7 @@ public class LocationConfigContainer extends NodeContainer<LocationConfig.Builde
         super("Location", location);
         super.add(location.getLabel(), "label");
         super.add(location.getRoot(), "root");
-        super.add(new ScopeContainer(location.getScope().toBuilder()));
+        super.add(new ScopeContainer(location.getScopeBuilder()));
         super.add(new ChildLocationListContainer(location));
         if (location.hasParent()) {
             super.add(location.getParent().getLabel(), "Parent Label");

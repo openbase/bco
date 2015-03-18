@@ -5,6 +5,7 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 
 /**
@@ -13,12 +14,15 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
  */
 public class DeviceClassContainer extends SendableNode<DeviceClass.Builder> {
 
+    private final BindingConfig.Builder bindingConfigBuilder;
+    
     public DeviceClassContainer(final DeviceClass.Builder deviceClass) {
         super("Device Class", deviceClass);
+        bindingConfigBuilder = deviceClass.getBindingConfig().toBuilder();
         super.add(deviceClass.getId(), "id");
         super.add(deviceClass.getLabel(), "label");
         super.add(deviceClass.getProductNumber(), "product_number");
-        super.add(new BindingConfigContainer(deviceClass.getBindingConfig().toBuilder()));
+        super.add(new BindingConfigContainer(deviceClass.getBindingConfigBuilder()));
         super.add(new UnitTypeListContainer(deviceClass));
         super.add(deviceClass.getDescription(), "description");
     }

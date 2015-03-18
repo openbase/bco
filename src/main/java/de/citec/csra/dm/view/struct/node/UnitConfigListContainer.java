@@ -15,8 +15,11 @@ public class UnitConfigListContainer extends NodeContainer<DeviceConfigType.Devi
 
     public UnitConfigListContainer(final DeviceConfigType.DeviceConfig.Builder deviceConfig) {
         super("Unit Configurations", deviceConfig);
-        deviceConfig.getUnitConfigsList().stream().forEach((unitConfig) -> {
-            super.add(new UnitConfigContainer(unitConfig.toBuilder()));
+        deviceConfig.getUnitConfigsBuilderList().stream().forEach((unitConfigBuilder) -> {
+            super.add(new UnitConfigContainer(unitConfigBuilder));
         });
+        if (deviceConfig.getUnitConfigsBuilderList().isEmpty()) {
+            super.add(new UnitConfigContainer(deviceConfig.addUnitConfigsBuilder()));
+        }
     }
 }

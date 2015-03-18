@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view;
+package de.citec.csra.dm.view.cellfactory.unused;
 
 import de.citec.csra.dm.view.struct.leaf.Leaf;
 import de.citec.csra.dm.view.struct.node.Node;

@@ -12,7 +12,6 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import rst.homeautomation.device.DeviceClassType;
-import rst.homeautomation.unit.UnitTypeHolderType;
 
 /**
  *
@@ -43,8 +42,9 @@ public class VariableNode<MB extends GeneratedMessage.Builder> extends NodeConta
                 VariableNode addedNode = null;
                 if (VariableNode.this instanceof DeviceClassContainer) {
                     addedNode = new DeviceClassContainer(DeviceClassType.DeviceClass.getDefaultInstance().toBuilder());
+                    ((SendableNode) addedNode).setNewNode();
                 } else if (VariableNode.this instanceof UnitTypeContainer) {
-                    addedNode = new UnitTypeContainer(UnitTypeHolderType.UnitTypeHolder.getDefaultInstance().toBuilder());
+                    addedNode = new UnitTypeContainer(((DeviceClassType.DeviceClass.Builder) ((NodeContainer) VariableNode.this.getParent().getValue()).getBuilder()).addUnitsBuilder());
                 }
 
                 if (addedNode != null) {
@@ -52,13 +52,13 @@ public class VariableNode<MB extends GeneratedMessage.Builder> extends NodeConta
                 }
 
                 if (addedNode instanceof SendableNode) {
-                    ((SendableNode) addedNode).getApplyButton().setVisible(true);
+//                    ((SendableNode) addedNode).getApplyButton().setVisible(true);
                 } else {
                     TreeItem<Node> parent = addedNode.getParent();
                     while (!(parent instanceof SendableNode)) {
                         parent = parent.getParent();
                     }
-                    ((SendableNode) parent).getApplyButton().setVisible(true);
+//                    ((SendableNode) parent).getApplyButton().setVisible(true);
                 }
             } else if (event.getSource().equals(removeMenuItem)) {
                 VariableNode.this.getParent().getChildren().remove(VariableNode.this);

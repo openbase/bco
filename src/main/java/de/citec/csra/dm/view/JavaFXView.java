@@ -5,50 +5,43 @@
  */
 package de.citec.csra.dm.view;
 
+import de.citec.csra.dm.view.cellfactory.DescriptionCell;
+import de.citec.csra.dm.view.cellfactory.ValueCell;
 import de.citec.csra.dm.view.struct.node.DeviceClassList;
 import static de.citec.csra.dm.DeviceManager.DEFAULT_SCOPE;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.csra.dm.view.struct.leaf.Leaf;
+import de.citec.csra.dm.view.struct.node.DeviceClassContainer;
 import de.citec.csra.dm.view.struct.node.DeviceConfigContainer;
+import de.citec.csra.dm.view.struct.node.DeviceConfigList;
 import de.citec.csra.dm.view.struct.node.Node;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.rsb.jp.JPScope;
-import java.util.ArrayList;
-import java.util.Collection;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.binding.BindingConfigType;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.registry.DeviceRegistryType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.homeautomation.unit.UnitTypeHolderType;
-import rst.math.Vec3DFloatType;
-import rst.spatial.PlacementConfigType;
 
 /**
  *
@@ -71,7 +64,6 @@ public class JavaFXView extends Application {
     private TreeTableColumn<Node, Node> valueColumn;
     private TreeTableColumn<Node, Node> descriptorColumn2;
     private TreeTableColumn<Node, Node> valueColumn2;
-    private ValueCell valueColumnCell;
 
     public JavaFXView() {
         this.remote = new DeviceRegistryRemote();
@@ -98,30 +90,39 @@ public class JavaFXView extends Application {
 
         descriptorColumn = new TreeTableColumn<>("Description");
         descriptorColumn.setPrefWidth(400);
-        descriptorColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("descriptor"));
+        descriptorColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("this"));
+        descriptorColumn.setCellFactory(new Callback<TreeTableColumn<Node, Node>, TreeTableCell<Node, Node>>() {
+
+            @Override
+            public TreeTableCell<Node, Node> call(TreeTableColumn<Node, Node> param) {
+                return new DescriptionCell(remote);
+            }
+        });
+
+        MenuItem addDeviceClass = new MenuItem("Add");
+        addDeviceClass.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                if( event.getSource().equals(addDeviceClass)) {
+                    deviceClassTreeTableView.getRoot().getChildren().add(new DeviceClassContainer(DeviceClassType.DeviceClass.getDefaultInstance().toBuilder()));
+                }
+            }
+        });
+
+        ContextMenu deviceClassTreeTableViewContextMenu = new ContextMenu(addDeviceClass);
+                deviceClassTreeTableView.setContextMenu(deviceClassTreeTableViewContextMenu);
 
         valueColumn = new TreeTableColumn<>("Value");
         valueColumn.setPrefWidth(1024 - 400);
+        valueColumn.setSortable(false);
         valueColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("this"));
-//        valueColumn.setCellValueFactory(new Callback<CellDataFeatures<Node, Node>, ObservableValue<Node>>() {
-//
-//            @Override
-//            public ObservableValue<Node> call(CellDataFeatures<Node, Node> param) {
-//                if (param.getValue().getValue() instanceof Leaf) {
-//                    return (ObservableValue<Node>) new Label(((Leaf) param.getValue().getValue()).getValue().toString());
-//                } else {
-//                    return (ObservableValue<Node>) new Label("");
-//                }
-//            }
-//        });
-//        valueColumn.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
-        valueColumnCell= new ValueCell();
         valueColumn.setCellFactory(new Callback<TreeTableColumn<Node, Node>, TreeTableCell<Node, Node>>() {
 
             @Override
             public TreeTableCell<Node, Node> call(TreeTableColumn<Node, Node> param) {
 
-                return new ValueCell();
+                return new ValueCell(remote);
             }
         });
         valueColumn.setOnEditCommit(new EventHandler<TreeTableColumn.CellEditEvent<Node, Node>>() {
@@ -136,8 +137,22 @@ public class JavaFXView extends Application {
             }
         });
 
+        MenuItem addDeviceConfig = new MenuItem("Add");
+        addDeviceConfig.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                if( event.getSource().equals(addDeviceConfig)) {
+                    deviceConfigTreeTableView.getRoot().getChildren().add(new DeviceConfigContainer(DeviceConfigType.DeviceConfig.getDefaultInstance().toBuilder()));
+                }
+            }
+        });
+
+        ContextMenu deviceConfiglassTreeTableViewContextMenu = new ContextMenu(addDeviceConfig);
+        deviceConfigTreeTableView.setContextMenu(deviceConfiglassTreeTableViewContextMenu);
+                
         deviceClassTreeTableView.getColumns().addAll(descriptorColumn, valueColumn);
-//        deviceClassTreeTableView.setRoot(new DeviceClassList(testDeviceClass()));
+//        deviceClassTreeTableView.getColumns().addAll(new DescriptorColumn(remote), new ValueColumn(remote));
         deviceClassTreeTableView.setEditable(true);
         deviceClassTreeTableView.setShowRoot(false);
 
@@ -152,7 +167,7 @@ public class JavaFXView extends Application {
         valueColumn2.setOnEditCommit(valueColumn.getOnEditCommit());
         deviceConfigTreeTableView.getColumns().addAll(descriptorColumn2, valueColumn2);
         deviceConfigTreeTableView.setEditable(true);
-        deviceConfigTreeTableView.setRoot(new DeviceConfigContainer(testDeviceConfig().toBuilder()));
+        deviceConfigTreeTableView.setShowRoot(false);
 
         tabDeviceRegistryPane = new TabPane();
         tabDeviceRegistryPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -180,10 +195,6 @@ public class JavaFXView extends Application {
         primaryStage.show();
 
         updateDynamicNodes();
-//        remote.registerDeviceClass(getTestData());
-//        for(DeviceClass test : testDeviceClass()) {
-//            remote.registerDeviceClass(test);
-//        }
     }
 
     public DeviceClass getTestData() {
@@ -197,19 +208,27 @@ public class JavaFXView extends Application {
     }
 
     private void updateDynamicNodes() {
-        if (!remote.isConnected()) {
-            tabDeviceRegistry.setContent(progressDeviceRegistryIndicator);
-            return;
-        }
-        try {
-            DeviceRegistryType.DeviceRegistry data = remote.getData();
-            deviceClassTreeTableView.setRoot(new DeviceClassList(data.toBuilder()));
-            tabDeviceRegistry.setContent(tabDeviceRegistryPane);
+        Platform.runLater(new Runnable() {
 
-        } catch (NotAvailableException ex) {
-            logger.error("Device classes not available!", ex);
-            tabDeviceRegistry.setContent(new Label("Error: " + ex.getMessage()));
-        }
+            @Override
+            public void run() {
+                if (!remote.isConnected()) {
+                    tabDeviceRegistry.setContent(progressDeviceRegistryIndicator);
+                    return;
+                }
+                try {
+                    DeviceRegistryType.DeviceRegistry data = remote.getData();
+                    deviceClassTreeTableView.setRoot(new DeviceClassList(data.toBuilder()));
+                    deviceConfigTreeTableView.setRoot(new DeviceConfigList(data.toBuilder()));
+                    tabDeviceRegistry.setContent(tabDeviceRegistryPane);
+
+                } catch (NotAvailableException ex) {
+                    logger.error("Device classes not available!", ex);
+                    tabDeviceRegistry.setContent(new Label("Error: " + ex.getMessage()));
+                }
+            }
+        });
+
     }
 
     /**
@@ -222,31 +241,5 @@ public class JavaFXView extends Application {
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPScope.class, DEFAULT_SCOPE);
         launch(args);
-    }
-
-    public DeviceConfigType.DeviceConfig testDeviceConfig() {
-        Vec3DFloatType.Vec3DFloat testPosition = Vec3DFloatType.Vec3DFloat.newBuilder().setX(12.5f).setY(55f).setZ(0.33f).build();
-        PlacementConfigType.PlacementConfig testPlacement = PlacementConfigType.PlacementConfig.newBuilder().setPosition(testPosition).build();
-        UnitConfigType.UnitConfig testUnitConfig = UnitConfigType.UnitConfig.newBuilder().setLabel("TestUnitConfig").setPlacement(testPlacement).build();
-
-        DeviceConfigType.DeviceConfig testDeviceConfig = DeviceConfigType.DeviceConfig.newBuilder().setDescription("This is a TestConfig").setLabel("TestConfig").setSerialNumber("123-456-789").addUnitConfigs(testUnitConfig).build();
-        return testDeviceConfig;
-    }
-
-    private Collection<DeviceClassType.DeviceClass> testDeviceClass() {
-        Collection<DeviceClassType.DeviceClass> testCollection = new ArrayList();
-
-        UnitTypeHolderType.UnitTypeHolder testUnitType1 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.LIGHT).build();
-        UnitTypeHolderType.UnitTypeHolder testUnitType2 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.MOTION_SENSOR).build();
-        BindingConfigType.BindingConfig testBindingConfig = BindingConfigType.BindingConfig.newBuilder().setBindingType(BindingConfigType.BindingConfig.BindingType.OPENHAB).build();
-        DeviceClassType.DeviceClass testDeviceClass = DeviceClassType.DeviceClass.newBuilder().setLabel("Test DeviceClass").setProductNumber("1234-5678-9101").setDescription("This is a test DeviceClass").setBindingConfig(testBindingConfig).addUnits(testUnitType2).addUnits(testUnitType1).build();
-
-        UnitTypeHolderType.UnitTypeHolder testUnitType3 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.BATTERY).build();
-        UnitTypeHolderType.UnitTypeHolder testUnitType4 = UnitTypeHolderType.UnitTypeHolder.newBuilder().setUnitType(UnitTypeHolderType.UnitTypeHolder.UnitType.TEMPERATURE_SENSOR).build();
-        DeviceClassType.DeviceClass testDeviceClass2 = DeviceClassType.DeviceClass.newBuilder().setLabel("Test DeviceClass2").setProductNumber("1234-5878-9101").setDescription("This is a test DeviceClass").setBindingConfig(testBindingConfig).addUnits(testUnitType3).addUnits(testUnitType4).build();
-
-        testCollection.add(testDeviceClass);
-        testCollection.add(testDeviceClass2);
-        return testCollection;
     }
 }

@@ -15,8 +15,8 @@ public class DeviceConfigList extends NodeContainer<DeviceRegistryType.DeviceReg
 
     public DeviceConfigList(final DeviceRegistryType.DeviceRegistry.Builder deviceRegistry) {
         super("Device Configurations", deviceRegistry);
-        deviceRegistry.getDeviceConfigsList().stream().forEach((deviceConfig) -> {
-            super.add(new DeviceConfigContainer(deviceConfig.toBuilder()));
+        deviceRegistry.getDeviceConfigsBuilderList().stream().forEach((deviceConfigBuilder) -> {
+            super.add(new DeviceConfigContainer(deviceConfigBuilder));
         });
     }
 }

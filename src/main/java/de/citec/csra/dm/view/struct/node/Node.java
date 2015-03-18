@@ -13,5 +13,5 @@ public interface Node {
 
     public String getDescriptor();
     
-    public Node getThis();
+//    public Node getThis();
 }

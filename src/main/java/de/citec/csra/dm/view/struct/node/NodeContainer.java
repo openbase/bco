@@ -44,8 +44,8 @@ public class NodeContainer<MB extends GeneratedMessage.Builder> extends TreeItem
         return descriptor.getValue();
     }
 
-    @Override
-    public Node getThis() {
+//    @Override
+    public NodeContainer getThis() {
         return this;
     }
     

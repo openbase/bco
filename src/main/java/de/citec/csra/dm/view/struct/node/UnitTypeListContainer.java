@@ -15,8 +15,11 @@ public class UnitTypeListContainer extends NodeContainer<DeviceClassType.DeviceC
 
     public UnitTypeListContainer(final DeviceClassType.DeviceClass.Builder deviceClass) {
         super("Unit Types", deviceClass);
-        deviceClass.getUnitsList().stream().forEach((unitType) -> {
-            super.add(new UnitTypeContainer(unitType.toBuilder()));
+        deviceClass.getUnitsBuilderList().stream().forEach((unitTypeBuilder) -> {
+            super.add(new UnitTypeContainer(unitTypeBuilder));
         });
+        if( deviceClass.getUnitsList().isEmpty() ) {
+            super.add(new UnitTypeContainer(deviceClass.addUnitsBuilder()));
+        }
     }
 }

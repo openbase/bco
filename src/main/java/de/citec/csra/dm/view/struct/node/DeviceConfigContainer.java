@@ -11,17 +11,17 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  *
  * @author thuxohl
  */
-public class DeviceConfigContainer extends NodeContainer<DeviceConfig.Builder> {
+public class DeviceConfigContainer extends SendableNode<DeviceConfig.Builder> {
 
     public DeviceConfigContainer(DeviceConfig.Builder deviceConfig) {
         super("Device Configuration", deviceConfig);
         super.add(deviceConfig.getId(), "id");
         super.add(deviceConfig.getLabel(), "label");
         super.add(deviceConfig.getSerialNumber(), "serial_number");
-        super.add(new PlacementConfigContainer(deviceConfig.getPlacementConfig().toBuilder()));
-        super.add(new ScopeContainer(deviceConfig.getScope().toBuilder()));
-        super.add(new InventoryStateContainer(deviceConfig.getInventoryState().toBuilder()));
-        super.add(new DeviceClassContainer(deviceConfig.getDeviceClass().toBuilder()));
+        super.add(new PlacementConfigContainer(deviceConfig.getPlacementConfigBuilder()));
+        super.add(new ScopeContainer(deviceConfig.getScopeBuilder()));
+        super.add(new InventoryStateContainer(deviceConfig.getInventoryStateBuilder()));
+        super.add(new DeviceClassContainer(deviceConfig.getDeviceClassBuilder()));
         super.add(new UnitConfigListContainer(deviceConfig));
         super.add(deviceConfig.getDescription(), "description");
     }

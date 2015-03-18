@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.csra.dm.view;
+package de.citec.csra.dm.view.cellfactory.unused;
 
 import java.lang.reflect.ParameterizedType;
 import javafx.collections.FXCollections;
