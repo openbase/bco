@@ -11,10 +11,10 @@ import rst.rsb.ScopeType.Scope;
  *
  * @author thuxohl
  */
-public class ScopeContainer extends NodeContainer<Scope> {
+public class ScopeContainer extends NodeContainer<Scope.Builder> {
 
-    public ScopeContainer(Scope scope) {
+    public ScopeContainer(Scope.Builder scope) {
         super("Scope", scope);
-        super.add(scope.getStringRep(), "String Representation");
+        super.add(scope.getStringRep(), "string_rep");
     }
 }

@@ -11,11 +11,11 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  *
  * @author thuxohl
  */
-public class PlacementConfigContainer extends NodeContainer<PlacementConfig> {
+public class PlacementConfigContainer extends NodeContainer<PlacementConfig.Builder> {
 
-    public PlacementConfigContainer(PlacementConfig placement) {
+    public PlacementConfigContainer(PlacementConfig.Builder placement) {
         super("Placement", placement);
-        super.add(new PositionContainer(placement.getPosition()));
-        super.add(new LocationConfigContainer(placement.getLocation()));
+        super.add(new PositionContainer(placement.getPosition().toBuilder()));
+        super.add(new LocationConfigContainer(placement.getLocation().toBuilder()));
     }
 }

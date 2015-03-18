@@ -11,10 +11,10 @@ import rst.timing.TimestampType.Timestamp;
  *
  * @author thuxohl
  */
-public class TimestampContainer extends NodeContainer<Timestamp> {
+public class TimestampContainer extends NodeContainer<Timestamp.Builder> {
 
-    public TimestampContainer(Timestamp timestamp) {
+    public TimestampContainer(Timestamp.Builder timestamp) {
         super("Timestamp", timestamp);
-        super.add(timestamp.getTime(), "Time");
+        super.add(timestamp.getTime(), "time");
     }
 }

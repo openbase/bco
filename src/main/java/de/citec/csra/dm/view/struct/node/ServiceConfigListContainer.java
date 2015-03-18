@@ -5,19 +5,18 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import java.util.Collection;
-import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  * @author thuxohl
  */
-public class ServiceConfigListContainer extends NodeContainer<Collection<ServiceConfigType.ServiceConfig>> {
+public class ServiceConfigListContainer extends NodeContainer<UnitConfigType.UnitConfig.Builder> {
 
-    public ServiceConfigListContainer(final Collection<ServiceConfigType.ServiceConfig> serviceConfigs) {
-        super("Service Configurations", serviceConfigs);
-        serviceConfigs.stream().forEach((serviceConfig) -> {
-            super.add(new ServiceConfigContainer(serviceConfig));
+    public ServiceConfigListContainer(final UnitConfigType.UnitConfig.Builder unitConfig) {
+        super("Service Configurations", unitConfig);
+        unitConfig.getServiceConfigsList().stream().forEach((serviceConfig) -> {
+            super.add(new ServiceConfigContainer(serviceConfig.toBuilder()));
         });
     }
 }

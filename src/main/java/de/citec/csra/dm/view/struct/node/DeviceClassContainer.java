@@ -11,15 +11,15 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
  *
  * @author thuxohl
  */
-public class DeviceClassContainer extends NodeContainer<DeviceClass> {
+public class DeviceClassContainer extends SendableNode<DeviceClass.Builder> {
 
-    public DeviceClassContainer(final DeviceClass deviceClass) {
-        super(deviceClass.getId(), deviceClass);
-//        super.add(deviceClass.getLabel(), "ID");
-        super.add(deviceClass.getLabel(), "Label");
-        super.add(deviceClass.getProductNumber(), "Product Number");
-        super.add(new BindingConfigContainer(deviceClass.getBindingConfig()));
-        super.add(new UnitTypeListContainer(deviceClass.getUnitsList()));
-        super.add(deviceClass.getDescription(), "Description");
+    public DeviceClassContainer(final DeviceClass.Builder deviceClass) {
+        super("Device Class", deviceClass);
+        super.add(deviceClass.getId(), "id");
+        super.add(deviceClass.getLabel(), "label");
+        super.add(deviceClass.getProductNumber(), "product_number");
+        super.add(new BindingConfigContainer(deviceClass.getBindingConfig().toBuilder()));
+        super.add(new UnitTypeListContainer(deviceClass));
+        super.add(deviceClass.getDescription(), "description");
     }
 }

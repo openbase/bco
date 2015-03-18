@@ -11,11 +11,11 @@ import rst.homeautomation.service.SinactServiceConfigType.SinactServiceConfig;
  *
  * @author thuxohl
  */
-class SinactServiceConfigContainer extends NodeContainer<SinactServiceConfig> {
+class SinactServiceConfigContainer extends NodeContainer<SinactServiceConfig.Builder> {
     
-    public SinactServiceConfigContainer(SinactServiceConfig sinactServiceConfig) {
+    public SinactServiceConfigContainer(SinactServiceConfig.Builder sinactServiceConfig) {
         super("Sinact Service Configuration", sinactServiceConfig);
-        super.add(sinactServiceConfig.getHardwareConfig(), "Hardware Configuration");
+        super.add(sinactServiceConfig.getHardwareConfig(), "hardware_configuration");
     }
     
 }

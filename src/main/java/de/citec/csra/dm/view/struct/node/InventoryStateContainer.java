@@ -11,13 +11,13 @@ import rst.homeautomation.state.InventoryStateType.InventoryState;
  *
  * @author thuxohl
  */
-public class InventoryStateContainer extends NodeContainer<InventoryState> {
+public class InventoryStateContainer extends NodeContainer<InventoryState.Builder> {
 
-    public InventoryStateContainer(InventoryState inventoryState) {
+    public InventoryStateContainer(InventoryState.Builder inventoryState) {
         super("Inventory State", inventoryState);
-        super.add(inventoryState.getInventoryStatus(), "Inventory Status");
-        super.add(new LocationConfigContainer(inventoryState.getLocation()));
-        super.add(new TimestampContainer(inventoryState.getTimestamp()));
-        super.add(new PersonContainer(inventoryState.getOwner()));
+        super.add(inventoryState.getInventoryStatus(), "inventory_status");
+        super.add(new LocationConfigContainer(inventoryState.getLocation().toBuilder()));
+        super.add(new TimestampContainer(inventoryState.getTimestamp().toBuilder()));
+        super.add(new PersonContainer(inventoryState.getOwner().toBuilder()));
     }
 }

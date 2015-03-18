@@ -11,10 +11,10 @@ import rst.homeautomation.service.OpenhabServiceConfigType.OpenhabServiceConfig;
  *
  * @author thuxohl
  */
-public class OpenhabServiceConfigContainer extends NodeContainer<OpenhabServiceConfig> {
+public class OpenhabServiceConfigContainer extends NodeContainer<OpenhabServiceConfig.Builder> {
 
-    public OpenhabServiceConfigContainer(OpenhabServiceConfig openhabServiceConfig) {
+    public OpenhabServiceConfigContainer(OpenhabServiceConfig.Builder openhabServiceConfig) {
         super("Openhab Service Configuration", openhabServiceConfig);
-        super.add(openhabServiceConfig.getHardwareConfig(), "Hardware Configuration");
+        super.add(openhabServiceConfig.getHardwareConfig(), "hardware_configuration");
     }
 }

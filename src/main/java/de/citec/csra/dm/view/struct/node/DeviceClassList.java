@@ -5,19 +5,18 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import java.util.Collection;
+import rst.homeautomation.registry.DeviceRegistryType;
 
 /**
  *
  * @author thuxohl
  */
-public class DeviceClassList extends NodeContainer<Collection<DeviceClass>> {
+public class DeviceClassList extends NodeContainer<DeviceRegistryType.DeviceRegistry.Builder> {
 
-    public DeviceClassList(final Collection<DeviceClass> deviceClasses) {
-        super("Device Classes", deviceClasses);
-        deviceClasses.stream().forEach((deviceClass) -> {
-            super.add(new DeviceClassContainer(deviceClass));
+    public DeviceClassList(final DeviceRegistryType.DeviceRegistry.Builder deviceRegistry) {
+        super("Device Classes", deviceRegistry);
+        deviceRegistry.getDeviceClassesList().stream().forEach((deviceClass) -> {
+            super.add(new DeviceClassContainer(deviceClass.toBuilder()));
         });
     }
 }

@@ -5,6 +5,7 @@
  */
 package de.citec.csra.dm.view.struct.node;
 
+import com.google.protobuf.GeneratedMessage;
 import de.citec.csra.dm.view.struct.leaf.LeafContainer;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -13,15 +14,15 @@ import javafx.scene.control.TreeItem;
 /**
  *
  * @author thuxohl
- * @param <T>
+ * @param <MB>
  */
-public class NodeContainer<T> extends TreeItem<Node> implements Node {
+public class NodeContainer<MB extends GeneratedMessage.Builder> extends TreeItem<Node> implements Node {
 
     private final Property<String> descriptor;
-    private final T value;
+    protected final MB builder;
 
-    public NodeContainer(String descriptor, T value) {
-        this.value = value;
+    public NodeContainer(String descriptor, MB builder) {
+        this.builder = builder;
         this.setValue(this);
         this.descriptor = new ReadOnlyObjectWrapper<>(descriptor);
     }
@@ -35,7 +36,7 @@ public class NodeContainer<T> extends TreeItem<Node> implements Node {
     }
 
     protected <S> void add(S value, String descriptor) {
-        this.add(new LeafContainer(value, descriptor));
+        this.add(new LeafContainer(value, descriptor, this));
     }
 
     @Override
@@ -46,5 +47,9 @@ public class NodeContainer<T> extends TreeItem<Node> implements Node {
     @Override
     public Node getThis() {
         return this;
+    }
+    
+    public MB getBuilder() {
+        return builder;
     }
 }
