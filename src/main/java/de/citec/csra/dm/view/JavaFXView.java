@@ -15,10 +15,10 @@ import de.citec.csra.dm.view.struct.node.DeviceClassContainer;
 import de.citec.csra.dm.view.struct.node.DeviceConfigContainer;
 import de.citec.csra.dm.view.struct.node.DeviceConfigList;
 import de.citec.csra.dm.view.struct.node.Node;
+import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
-import de.citec.jul.rsb.jp.JPScope;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -72,7 +72,7 @@ public class JavaFXView extends Application {
     @Override
     public void init() throws Exception {
         super.init();
-        remote.init(JPService.getProperty(JPScope.class).getValue());
+        remote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
 
         registryTabPane = new TabPane();
         registryTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -239,7 +239,7 @@ public class JavaFXView extends Application {
 
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
-        JPService.registerProperty(JPScope.class, DEFAULT_SCOPE);
+        JPService.registerProperty(JPDeviceRegistryScope.class, DEFAULT_SCOPE);
         launch(args);
     }
 }

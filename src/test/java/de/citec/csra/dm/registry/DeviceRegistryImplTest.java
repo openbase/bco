@@ -9,6 +9,7 @@ import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
+import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
@@ -18,12 +19,10 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.RSBInformerInterface;
-import de.citec.jul.rsb.jp.JPScope;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -72,7 +71,7 @@ public class DeviceRegistryImplTest {
         dbDeviceClasses.mkdir();
         dbDeviceConfig.mkdir();
 
-        JPService.registerProperty(JPScope.class, scope);
+        JPService.registerProperty(JPDeviceRegistryScope.class, scope);
         JPService.registerProperty(JPDatabaseDirectory.class, dbFile);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
@@ -96,7 +95,7 @@ public class DeviceRegistryImplTest {
         deviceConfigRemote.setDeviceClass(deviceClassRemote.clone().setId("RemoteTestDeviceClass"));
 
         remote = new DeviceRegistryRemote();
-        remote.init(JPService.getProperty(JPScope.class).getValue());
+        remote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
         remote.activate();
     }
 
