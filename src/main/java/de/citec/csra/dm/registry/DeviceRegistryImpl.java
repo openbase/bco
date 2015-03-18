@@ -18,7 +18,6 @@ import rsb.RSBException;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.registry.DeviceRegistryType.DeviceRegistry;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.iface.Identifiable;
@@ -31,6 +30,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 
 /**
  *

@@ -13,7 +13,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.registry.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 
 /**
  *

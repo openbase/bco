@@ -35,7 +35,7 @@ import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.registry.DeviceRegistryType;
+import rst.homeautomation.device.DeviceRegistryType;
 
 /**
  *
