@@ -5,16 +5,15 @@
  */
 package de.citec.csra.dm.registry;
 
-import com.google.protobuf.GeneratedMessage;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jul.storage.SynchronizedRegistry;
 import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
+import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.processing.ProtoBufFileProcessor;
 import de.citec.jul.rsb.RSBCommunicationService;
-import de.citec.jul.rsb.jp.JPScope;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -24,7 +23,6 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.FileNameProvider;
@@ -50,7 +48,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceConfig>> deviceConfigRegistry;
 
     public DeviceRegistryImpl() throws InstantiationException {
-        super(JPService.getProperty(JPScope.class).getValue(), DeviceRegistry.newBuilder());
+        super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
             ProtobufMessageMap<String, IdentifiableMessage<DeviceClass>, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
             ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
