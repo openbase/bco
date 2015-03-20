@@ -17,7 +17,7 @@ import java.io.File;
  */
 public class JPDeviceConfigDatabaseDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--device-class-db-dir"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--device-config-db-dir"};
 	
 	public JPDeviceConfigDatabaseDirectory() {
 		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
@@ -25,7 +25,7 @@ public class JPDeviceConfigDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getAttribute(JPDatabaseDirectory.class).getValue(), "device-class-db");
+		return new File(JPService.getProperty(JPDatabaseDirectory.class).getValue(), "device-config-db");
 	}
 
 	@Override
