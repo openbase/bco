@@ -28,7 +28,7 @@ public class JPDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File("./.database");
+		return new File("/tmp/.registry/db");
 	}
 
 	@Override

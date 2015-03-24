@@ -25,7 +25,7 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getAttribute(JPDatabaseDirectory.class).getValue(), "device-class-db");
+		return new File(JPService.getProperty(JPDatabaseDirectory.class).getValue(), "device-class-db");
 	}
 
 	@Override

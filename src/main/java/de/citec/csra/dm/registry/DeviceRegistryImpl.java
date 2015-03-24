@@ -22,10 +22,14 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
+import de.citec.jul.rsb.MessageTransformer;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
-import de.citec.jul.storage.FileNameProvider;
+import de.citec.jul.storage.FileProvider;
+import java.io.File;
+import java.io.FileFilter;
 import java.util.Map;
+import org.apache.commons.io.filefilter.FileFileFilter;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
@@ -40,30 +44,34 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
 
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceClass>> deviceClassRegistry;
     private SynchronizedRegistry<String, IdentifiableMessage<DeviceConfig>> deviceConfigRegistry;
+    private MessageTransformer<DeviceClass, DeviceClass.Builder> deviceClassMessageTransformer;
+    private MessageTransformer<DeviceConfig, DeviceClass.Builder> deviceConfigMessageTransformer;
 
     public DeviceRegistryImpl() throws InstantiationException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
             ProtobufMessageMap<String, IdentifiableMessage<DeviceClass>, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
             ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
-            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(new IdentifiableMessage.MessageTransformer()), new DBFileNameProvider());
-            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(new IdentifiableMessage.MessageTransformer()), new DBFileNameProvider());
+            deviceClassMessageTransformer = new MessageTransformer<>(DeviceClass.class);
+            deviceConfigMessageTransformer = new MessageTransformer<>(DeviceConfig.class);
+            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceClassMessageTransformer), new DBFileProvider());
+            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceConfigMessageTransformer), new DBFileProvider());
             deviceClassRegistry.loadRegistry();
-			deviceConfigRegistry.loadRegistry();
+            deviceConfigRegistry.loadRegistry();
 
-			deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceClass>>> source, Map<String, IdentifiableMessage<DeviceClass>> data1) -> {
-				notifyChange();
-			});
-			deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceConfig>>> source, Map<String, IdentifiableMessage<DeviceConfig>> data1) -> {
-				notifyChange();
-			});
-			
+            deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceClass>>> source, Map<String, IdentifiableMessage<DeviceClass>> data1) -> {
+                notifyChange();
+            });
+            deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceConfig>>> source, Map<String, IdentifiableMessage<DeviceConfig>> data1) -> {
+                notifyChange();
+            });
+
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -78,15 +86,15 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.register(new IdentifiableMessage<>(setupDeviceConfigID(deviceConfig))).getMessageOrBuilder();
     }
-    
+
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.contrains(deviceConfigId);
     }
-    
+
     @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        if(!deviceConfig.hasId()) {
+        if (!deviceConfig.hasId()) {
             deviceConfig = setupDeviceConfigID(deviceConfig);
         }
         return containsDeviceConfigById(deviceConfig.getId());
@@ -106,15 +114,15 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     public DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.register(new IdentifiableMessage<>(setupDeviceClassID(deviceClass))).getMessageOrBuilder();
     }
-    
+
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.contrains(deviceClassId);
     }
-    
+
     @Override
     public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        if(!deviceClass.hasId()) {
+        if (!deviceClass.hasId()) {
             deviceClass = setupDeviceClassID(deviceClass);
         }
         return containsDeviceClassById(deviceClass.getId());
@@ -174,7 +182,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             }
 
             String id;
-            
+
             id = deviceConfig.getDeviceClass().getId();
             id += "_";
             id += convertIntoValidFileName(deviceConfig.getSerialNumber());
@@ -184,18 +192,38 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             throw new CouldNotPerformException("Could not generate id!", ex);
         }
     }
-    
+
     public String convertIntoValidFileName(final String filename) {
         return filename.replaceAll("[^0-9a-zA-Z\\-_]+", "_");
     }
 
-    public class DBFileNameProvider implements FileNameProvider<Identifiable<String>> {
+    public class DBFileProvider implements FileProvider<Identifiable<String>> {
+
+        public static final String FILE_TYPE = "json";
+        public static final String FILE_SUFFIX = "." + FILE_TYPE;
 
         @Override
         public String getFileName(Identifiable<String> context) {
-            return context.getId().replaceAll("/", "_");
+            return context.getId().replaceAll("/", "_") + FILE_SUFFIX;
+        }
+
+        @Override
+        public String getFileType() {
+            return FILE_TYPE;
+        }
+
+        @Override
+        public FileFilter getFileFilter() {
+            return new FileFileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    if (file == null) {
+                        return false;
+                    }
+                    return (!file.isHidden()) && file.isFile() && file.getName().toLowerCase().endsWith(FILE_SUFFIX);
+                }
+            };
         }
     }
-    
-    
+
 }
