@@ -22,6 +22,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.MessageTransformer;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
@@ -64,12 +65,20 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceConfigMessageTransformer), new DBFileProvider());
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
+            
+            deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<DeviceClass>>>() {
 
-            deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceClass>>> source, Map<String, IdentifiableMessage<DeviceClass>> data1) -> {
-                notifyChange();
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<DeviceClass>>> source, Map<String, IdentifiableMessage<DeviceClass>> data) throws Exception {
+                    notifyChange();
+                }
             });
-            deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<DeviceConfig>>> source, Map<String, IdentifiableMessage<DeviceConfig>> data1) -> {
-                notifyChange();
+            deviceConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<DeviceConfig>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<DeviceConfig>>> source, Map<String, IdentifiableMessage<DeviceConfig>> data) throws Exception {
+                    notifyChange();
+                }
             });
 
         } catch (CouldNotPerformException ex) {

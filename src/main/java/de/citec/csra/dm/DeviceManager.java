@@ -31,7 +31,6 @@ public class DeviceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceManager.class);
 
-    public static final Scope DEFAULT_SCOPE = new Scope("/devicemanager/registry");
     public static final String APP_NAME = "DeviceManager";
 
     private final DeviceRegistryImpl deviceRegistry;
@@ -52,7 +51,7 @@ public class DeviceManager {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
 
-        JPService.registerProperty(JPDeviceRegistryScope.class, DEFAULT_SCOPE);
+        JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDBFlag.class);

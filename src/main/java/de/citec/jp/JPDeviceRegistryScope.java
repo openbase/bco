@@ -6,6 +6,7 @@
 package de.citec.jp;
 
 import de.citec.jul.rsb.jp.JPScope;
+import rsb.Scope;
 
 /**
  *
@@ -18,6 +19,11 @@ public class JPDeviceRegistryScope extends JPScope {
 	public JPDeviceRegistryScope() {
 		super(COMMAND_IDENTIFIERS);
 	}
+
+    @Override
+    protected Scope getPropertyDefaultValue() {
+        return new Scope("/devicemanager/registry");
+    }
     
     @Override
 	public String getDescription() {
