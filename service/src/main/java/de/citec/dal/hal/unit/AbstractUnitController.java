@@ -172,7 +172,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         for (ServiceType service : ServiceType.getServiceTypeList(this)) {
             for (String serviceMethod : service.getUpdateMethods()) {
                 if (!unitMethods.contains(serviceMethod)) {
-                    MultiException.push(service, null, exceptionStack);
+                    exceptionStack = MultiException.push(service, null, exceptionStack);
                 }
             }
         }
