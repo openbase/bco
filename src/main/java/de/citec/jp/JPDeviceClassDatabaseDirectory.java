@@ -20,7 +20,7 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
 	public final static String[] COMMAND_IDENTIFIERS = {"--device-class-db-dir"};
 	
 	public JPDeviceClassDatabaseDirectory() {
-		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
+		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.On);
 	}
 
 	@Override

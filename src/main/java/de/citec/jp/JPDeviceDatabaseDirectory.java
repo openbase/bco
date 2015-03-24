@@ -20,7 +20,7 @@ public class JPDeviceDatabaseDirectory extends AbstractJPDirectory {
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
 
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
-	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.Off;
+	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 	
 	public JPDeviceDatabaseDirectory() {
 		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
