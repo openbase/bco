@@ -6,7 +6,7 @@
 package de.citec.csra.dm.registry;
 
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
-import de.citec.jp.JPDatabaseDirectory;
+import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
@@ -72,7 +72,7 @@ public class DeviceRegistryImplTest {
         dbDeviceConfig.mkdir();
 
         JPService.registerProperty(JPDeviceRegistryScope.class, scope);
-        JPService.registerProperty(JPDatabaseDirectory.class, dbFile);
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class, dbFile);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
 

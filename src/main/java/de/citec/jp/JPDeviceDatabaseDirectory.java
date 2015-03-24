@@ -14,7 +14,7 @@ import java.io.File;
  *
  * @author mpohling
  */
-public class JPDatabaseDirectory extends AbstractJPDirectory {
+public class JPDeviceDatabaseDirectory extends AbstractJPDirectory {
 
 	public final static String[] COMMAND_IDENTIFIERS = {"--database-dir"};
 	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
@@ -22,7 +22,7 @@ public class JPDatabaseDirectory extends AbstractJPDirectory {
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
 	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.Off;
 	
-	public JPDatabaseDirectory() {
+	public JPDeviceDatabaseDirectory() {
 		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
 	}
 
@@ -33,6 +33,6 @@ public class JPDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	public String getDescription() {
-		return "Specifies the DataStream directory name.";
+		return "Specifies the database directory.";
 	}
 }
