@@ -66,5 +66,6 @@ public class DeviceManager {
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
+        logger.info(APP_NAME + " successfully started.");
     }
 }
