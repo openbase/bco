@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DALService implements RegistryProvider {
 
+    public static final String APP_NAME = DALService.class.getSimpleName();
+    
     private static final Logger logger = LoggerFactory.getLogger(DALService.class);
 
     private static RegistryProvider registryProvider;
@@ -120,7 +122,7 @@ public class DALService implements RegistryProvider {
      */
     public static void main(String[] args) throws Throwable {
         /* Setup JPService */
-        JPService.setApplicationName("DeviceManager");
+        JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.parseAndExitOnError(args);
@@ -130,5 +132,6 @@ public class DALService implements RegistryProvider {
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
+        logger.info(APP_NAME + " successfully started.");
     }
 }
