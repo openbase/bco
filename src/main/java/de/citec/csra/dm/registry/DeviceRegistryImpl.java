@@ -29,6 +29,7 @@ import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.FileProvider;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import rsb.converter.DefaultConverterRepository;
@@ -36,6 +37,8 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -204,6 +207,18 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     public String convertIntoValidFileName(final String filename) {
         return filename.replaceAll("[^0-9a-zA-Z\\-_]+", "_");
+    }
+
+    @Override
+    public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
+        //TODO implement
+        return null;
+    }
+
+    @Override
+    public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
+        //TODO implement
+        return null;
     }
 
     public class DBFileProvider implements FileProvider<Identifiable<String>> {

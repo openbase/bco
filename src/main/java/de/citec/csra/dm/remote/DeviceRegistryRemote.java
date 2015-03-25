@@ -8,12 +8,15 @@ package de.citec.csra.dm.remote;
 import de.citec.csra.dm.registry.DeviceRegistryInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.rsb.RSBRemoteService;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -120,5 +123,17 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }
+    }
+
+    @Override
+    public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
+        //TODO implement
+        return null;
+    }
+
+    @Override
+    public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
+        //TODO implement
+        return null;
     }
 }

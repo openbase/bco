@@ -6,8 +6,11 @@
 package de.citec.csra.dm.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import java.util.List;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -35,4 +38,7 @@ public interface DeviceRegistryInterface {
 
     public DeviceClassType.DeviceClass removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
 
+    public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException;
+    
+    public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException;
 }
