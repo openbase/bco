@@ -20,6 +20,7 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -99,6 +100,28 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     @Override
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.register(new IdentifiableMessage<>(setupDeviceConfigID(deviceConfig))).getMessageOrBuilder();
+    }
+    
+    @Override
+    public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+        return deviceClassRegistry.get(deviceClassId).getMessageOrBuilder();
+    }
+
+    @Override
+    public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
+        return deviceConfigRegistry.get(deviceConfigId).getMessageOrBuilder();
+    }
+    
+    @Override
+    public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
+        for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
+            for(UnitConfig unitConfig : deviceConfig.getMessageOrBuilder().getUnitConfigsList()) {
+                if(unitConfig.getId().equals(unitConfigId)) {
+                    return unitConfig;
+                }
+            }
+        }
+        throw new NotAvailableException(unitConfigId);
     }
 
     @Override
@@ -212,7 +235,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     }
 
     @Override
-    public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessageOrBuilder().getUnitConfigsList());
@@ -221,9 +244,9 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnits()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigsList());
         }
         return serviceConfigs;
@@ -257,5 +280,4 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             };
         }
     }
-
 }

@@ -7,10 +7,10 @@ package de.citec.csra.dm.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
-import rst.homeautomation.device.DeviceClassType;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -18,27 +18,33 @@ import rst.homeautomation.unit.UnitConfigType;
  */
 public interface DeviceRegistryInterface {
 
-    public DeviceConfigType.DeviceConfig registerDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public Boolean containsDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException;
 
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException;
 
-    public DeviceConfigType.DeviceConfig updateDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public DeviceConfigType.DeviceConfig removeDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public DeviceConfig removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException;
 
-    public DeviceClassType.DeviceClass registerDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException;
 
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException;
 
-    public Boolean containsDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException;
 
-    public DeviceClassType.DeviceClass updateDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
+    public DeviceClass updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException;
 
-    public DeviceClassType.DeviceClass removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException;
-
-    public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException;
+    public DeviceClass removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException;
     
-    public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException;
+    public DeviceClass getDeviceClassById(final String deviceClassId) throws CouldNotPerformException;
+    
+    public DeviceConfig getDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException;
+    
+    public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
+
+    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
+    
+    public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 }

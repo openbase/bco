@@ -6,7 +6,11 @@
 package de.citec.csra.dm.remote;
 
 import de.citec.csra.dm.registry.DeviceRegistryInterface;
+import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jul.rsb.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
@@ -22,6 +26,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -35,12 +40,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
     
-    private final RemoteRegistry<DeviceClass> deviceClassRemoteRegistry;
-    private final RemoteRegistry<DeviceConfig> deviceConfigRemoteRegistry;
+    private final RemoteRegistry<DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
+    private final RemoteRegistry<DeviceConfig, DeviceConfig.Builder> deviceConfigRemoteRegistry;
 
     public DeviceRegistryRemote() {
         deviceClassRemoteRegistry = new RemoteRegistry<>();
         deviceConfigRemoteRegistry = new RemoteRegistry<>();
+    }
+
+    public void init() throws InitializationException {
+        super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
     }
     
     @Override
@@ -56,6 +65,28 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not register device config!", ex);
         }
+    }
+    
+    @Override
+    public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+        return deviceClassRemoteRegistry.getMessage(deviceClassId);
+    }
+
+    @Override
+    public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
+        return deviceConfigRemoteRegistry.getMessage(deviceConfigId);
+    }
+    
+    @Override
+    public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
+        for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+            for(UnitConfig unitConfig : deviceConfig.getMessageOrBuilder().getUnitConfigsList()) {
+                if(unitConfig.getId().equals(unitConfigId)) {
+                    return unitConfig;
+                }
+            }
+        }
+        throw new NotAvailableException(unitConfigId);
     }
 
     @Override
@@ -140,7 +171,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
     
     @Override
-    public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessageOrBuilder().getUnitConfigsList());
@@ -149,9 +180,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfigType.UnitConfig unitConfig : getUnits()) {
+        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigsList());
         }
         return serviceConfigs;
