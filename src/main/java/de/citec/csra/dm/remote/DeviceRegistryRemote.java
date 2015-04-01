@@ -32,7 +32,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public void notifyUpdated(DeviceRegistry data) {
-        
+
     }
 
     @Override
@@ -127,13 +127,19 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
-        //TODO implement
-        return null;
+        try {
+            return (List<UnitConfigType.UnitConfig>) callMethodAsync("getUnits").get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not reveice unit configs!", ex);
+        }
     }
 
     @Override
     public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
-        //TODO implement
-        return null;
+        try {
+            return (List<ServiceConfigType.ServiceConfig>) callMethodAsync("getServices").get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not reveice service configs!", ex);
+        }
     }
 }
