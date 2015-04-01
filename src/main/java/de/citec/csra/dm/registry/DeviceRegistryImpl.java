@@ -212,7 +212,8 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
-        for(deviceConfigRegistry.get)
+//        for(deviceConfigRegistry.get)
+        return null;
     }
 
     @Override
