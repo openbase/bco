@@ -6,7 +6,7 @@
 package de.citec.csra.dm.registry;
 
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
-import de.citec.jul.storage.registry.SynchronizedRegistry;
+import de.citec.jul.storage.registry.FileSynchronizedRegistry;
 import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
@@ -54,8 +54,8 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
 
-    private SynchronizedRegistry<String, IdentifiableMessage<DeviceClass>> deviceClassRegistry;
-    private SynchronizedRegistry<String, IdentifiableMessage<DeviceConfig>> deviceConfigRegistry;
+    private FileSynchronizedRegistry<String, IdentifiableMessage<DeviceClass>> deviceClassRegistry;
+    private FileSynchronizedRegistry<String, IdentifiableMessage<DeviceConfig>> deviceConfigRegistry;
     private MessageTransformer<DeviceClass, DeviceClass.Builder> deviceClassMessageTransformer;
     private MessageTransformer<DeviceConfig, DeviceClass.Builder> deviceConfigMessageTransformer;
 
@@ -66,8 +66,8 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
             deviceClassMessageTransformer = new MessageTransformer<>(DeviceClass.class);
             deviceConfigMessageTransformer = new MessageTransformer<>(DeviceConfig.class);
-            deviceClassRegistry = new SynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceClassMessageTransformer), new DBFileProvider());
-            deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceConfigMessageTransformer), new DBFileProvider());
+            deviceClassRegistry = new FileSynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceClassMessageTransformer), new DBFileProvider());
+            deviceConfigRegistry = new FileSynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceConfigMessageTransformer), new DBFileProvider());
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 

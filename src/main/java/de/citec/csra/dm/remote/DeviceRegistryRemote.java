@@ -7,13 +7,18 @@ package de.citec.csra.dm.remote;
 
 import de.citec.csra.dm.registry.DeviceRegistryInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.jul.storage.registry.RemoteRegistry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
@@ -29,14 +34,23 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
+    
+    private final RemoteRegistry<DeviceClass> deviceClassRemoteRegistry;
+    private final RemoteRegistry<DeviceConfig> deviceConfigRemoteRegistry;
 
+    public DeviceRegistryRemote() {
+        deviceClassRemoteRegistry = new RemoteRegistry<>();
+        deviceConfigRemoteRegistry = new RemoteRegistry<>();
+    }
+    
     @Override
-    public void notifyUpdated(DeviceRegistry data) {
-
+    public void notifyUpdated(final DeviceRegistry data) {
+        deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassesList());
+        deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigsList());
     }
 
     @Override
-    public DeviceConfigType.DeviceConfig registerDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public DeviceConfigType.DeviceConfig registerDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
             return (DeviceConfigType.DeviceConfig) callMethodAsync("registerDeviceConfig", deviceConfig).get();
         } catch (ExecutionException ex) {
@@ -45,7 +59,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public Boolean containsDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public Boolean containsDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceConfig", deviceConfig).get();
         } catch (ExecutionException ex) {
@@ -54,7 +68,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
+    public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceConfigById", deviceConfigId).get();
         } catch (ExecutionException ex) {
@@ -63,7 +77,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceConfigType.DeviceConfig updateDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public DeviceConfigType.DeviceConfig updateDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
             return (DeviceConfigType.DeviceConfig) callMethodAsync("updateDeviceConfig", deviceConfig).get();
         } catch (ExecutionException ex) {
@@ -72,7 +86,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceConfigType.DeviceConfig removeDeviceConfig(DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public DeviceConfigType.DeviceConfig removeDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
             return (DeviceConfigType.DeviceConfig) callMethodAsync("removeDeviceConfig", deviceConfig).get();
         } catch (ExecutionException ex) {
@@ -81,7 +95,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClassType.DeviceClass registerDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClassType.DeviceClass registerDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (DeviceClassType.DeviceClass) callMethodAsync("registerDeviceClass", deviceClass).get();
         } catch (ExecutionException ex) {
@@ -90,7 +104,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public Boolean containsDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public Boolean containsDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (Boolean) callMethodAsync("containsDeviceClass", deviceClass).get();
         } catch (ExecutionException ex) {
@@ -108,7 +122,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClassType.DeviceClass updateDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClassType.DeviceClass updateDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (DeviceClassType.DeviceClass) callMethodAsync("updateDeviceClass", deviceClass).get();
         } catch (ExecutionException ex) {
@@ -117,29 +131,29 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClassType.DeviceClass removeDeviceClass(DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClassType.DeviceClass removeDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (DeviceClassType.DeviceClass) callMethodAsync("removeDeviceClass", deviceClass).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }
     }
-
+    
     @Override
     public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
-        try {
-            return (List<UnitConfigType.UnitConfig>) callMethodAsync("getUnits").get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not reveice unit configs!", ex);
+        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+            unitConfigs.addAll(deviceConfig.getMessageOrBuilder().getUnitConfigsList());
         }
+        return unitConfigs;
     }
 
     @Override
     public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
-        try {
-            return (List<ServiceConfigType.ServiceConfig>) callMethodAsync("getServices").get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not reveice service configs!", ex);
+        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfigType.UnitConfig unitConfig : getUnits()) {
+            serviceConfigs.addAll(unitConfig.getServiceConfigsList());
         }
+        return serviceConfigs;
     }
 }
