@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings;
 
-import de.citec.jul.storage.Registry;
+import de.citec.jul.storage.registry.Registry;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;

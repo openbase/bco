@@ -6,7 +6,7 @@
  */
 package de.citec.dal.registry;
 
-import de.citec.jul.storage.Registry;
+import de.citec.jul.storage.registry.Registry;
 import de.citec.dal.hal.device.Device;
 
 /**

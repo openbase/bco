@@ -44,6 +44,7 @@ public class AmbientLightRemoteTest {
     private static DALService dalService;
 
     public AmbientLightRemoteTest() {
+        
     }
 
     @BeforeClass
