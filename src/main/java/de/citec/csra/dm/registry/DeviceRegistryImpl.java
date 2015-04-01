@@ -20,7 +20,6 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotSupportedException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -30,6 +29,7 @@ import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.file.FileProvider;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -40,6 +40,7 @@ import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -69,7 +70,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             deviceConfigRegistry = new SynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceConfigMessageTransformer), new DBFileProvider());
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
-            
+
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<DeviceClass>>>() {
 
                 @Override
@@ -212,14 +213,20 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
-//        for(deviceConfigRegistry.get)
-        return null;
+        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
+            unitConfigs.addAll(deviceConfig.getMessageOrBuilder().getUnitConfigsList());
+        }
+        return unitConfigs;
     }
 
     @Override
     public List<ServiceConfigType.ServiceConfig> getServices() throws CouldNotPerformException {
-        //TODO implement
-        return null;
+        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnits()) {
+            serviceConfigs.addAll(unitConfig.getServiceConfigsList());
+        }
+        return serviceConfigs;
     }
 
     public class DBFileProvider implements FileProvider<Identifiable<String>> {
