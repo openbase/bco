@@ -31,7 +31,7 @@ public class DeviceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceManager.class);
 
-    public static final String APP_NAME = "DeviceManager";
+    public static final String APP_NAME = DeviceManager.class.getSimpleName();
 
     private final DeviceRegistryImpl deviceRegistry;
 
