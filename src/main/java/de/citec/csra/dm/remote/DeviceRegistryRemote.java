@@ -47,7 +47,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         deviceClassRemoteRegistry = new RemoteRegistry<>();
         deviceConfigRemoteRegistry = new RemoteRegistry<>();
     }
-
+    
     public void init() throws InitializationException {
         super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
     }
