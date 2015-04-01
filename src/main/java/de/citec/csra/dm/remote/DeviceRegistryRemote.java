@@ -32,7 +32,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public void notifyUpdated(DeviceRegistry data) {
-
+        
     }
 
     @Override

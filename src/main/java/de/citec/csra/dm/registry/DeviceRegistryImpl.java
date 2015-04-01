@@ -6,7 +6,7 @@
 package de.citec.csra.dm.registry;
 
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
-import de.citec.jul.storage.SynchronizedRegistry;
+import de.citec.jul.storage.registry.SynchronizedRegistry;
 import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
@@ -20,13 +20,14 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.NotSupportedException;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.MessageTransformer;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
-import de.citec.jul.storage.FileProvider;
+import de.citec.jul.storage.file.FileProvider;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
@@ -211,8 +212,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public List<UnitConfigType.UnitConfig> getUnits() throws CouldNotPerformException {
-        //TODO implement
-        return null;
+        for(deviceConfigRegistry.get)
     }
 
     @Override
