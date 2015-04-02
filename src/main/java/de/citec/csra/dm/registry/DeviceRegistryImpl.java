@@ -99,24 +99,24 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return deviceConfigRegistry.register(new IdentifiableMessage<>(setupDeviceConfigID(deviceConfig))).getMessageOrBuilder();
+        return deviceConfigRegistry.register(new IdentifiableMessage<>(setupDeviceConfigID(deviceConfig))).getMessage();
     }
-    
+
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
-        return deviceClassRegistry.get(deviceClassId).getMessageOrBuilder();
+        return deviceClassRegistry.get(deviceClassId).getMessage();
     }
 
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
-        return deviceConfigRegistry.get(deviceConfigId).getMessageOrBuilder();
+        return deviceConfigRegistry.get(deviceConfigId).getMessage();
     }
-    
+
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
-            for(UnitConfig unitConfig : deviceConfig.getMessageOrBuilder().getUnitConfigsList()) {
-                if(unitConfig.getId().equals(unitConfigId)) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
+                if (unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
                 }
             }
@@ -139,17 +139,17 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return deviceConfigRegistry.update(new IdentifiableMessage<>(deviceConfig)).getMessageOrBuilder();
+        return deviceConfigRegistry.update(new IdentifiableMessage<>(deviceConfig)).getMessage();
     }
 
     @Override
     public DeviceConfig removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return deviceConfigRegistry.remove(new IdentifiableMessage<>(deviceConfig)).getMessageOrBuilder();
+        return deviceConfigRegistry.remove(new IdentifiableMessage<>(deviceConfig)).getMessage();
     }
 
     @Override
     public DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return deviceClassRegistry.register(new IdentifiableMessage<>(setupDeviceClassID(deviceClass))).getMessageOrBuilder();
+        return deviceClassRegistry.register(new IdentifiableMessage<>(setupDeviceClassID(deviceClass))).getMessage();
     }
 
     @Override
@@ -167,12 +167,12 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public DeviceClass updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return deviceClassRegistry.update(new IdentifiableMessage<>(deviceClass)).getMessageOrBuilder();
+        return deviceClassRegistry.update(new IdentifiableMessage<>(deviceClass)).getMessage();
     }
 
     @Override
     public DeviceClass removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return deviceClassRegistry.remove(new IdentifiableMessage<>(deviceClass)).getMessageOrBuilder();
+        return deviceClassRegistry.remove(new IdentifiableMessage<>(deviceClass)).getMessage();
     }
 
     public DeviceClass setupDeviceClassID(final DeviceClass deviceClass) throws InvalidStateException, CouldNotPerformException {
@@ -238,7 +238,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
-            unitConfigs.addAll(deviceConfig.getMessageOrBuilder().getUnitConfigsList());
+            unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigsList());
         }
         return unitConfigs;
     }
@@ -258,8 +258,12 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
         public static final String FILE_SUFFIX = "." + FILE_TYPE;
 
         @Override
-        public String getFileName(Identifiable<String> context) {
-            return context.getId().replaceAll("/", "_") + FILE_SUFFIX;
+        public String getFileName(Identifiable<String> context) throws CouldNotPerformException {
+            try {
+                return context.getId().replaceAll("/", "_") + FILE_SUFFIX;
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not generate file name!", ex);
+            }
         }
 
         @Override

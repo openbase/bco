@@ -53,7 +53,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
     
     @Override
-    public void notifyUpdated(final DeviceRegistry data) {
+    public void notifyUpdated(final DeviceRegistry data) throws CouldNotPerformException {
         deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassesList());
         deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigsList());
     }
@@ -80,7 +80,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
-            for(UnitConfig unitConfig : deviceConfig.getMessageOrBuilder().getUnitConfigsList()) {
+            for(UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
                 if(unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
                 }
@@ -174,7 +174,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
-            unitConfigs.addAll(deviceConfig.getMessageOrBuilder().getUnitConfigsList());
+            unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigsList());
         }
         return unitConfigs;
     }
