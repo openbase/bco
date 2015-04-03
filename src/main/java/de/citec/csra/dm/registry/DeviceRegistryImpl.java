@@ -21,19 +21,15 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.iface.Identifiable;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.MessageTransformer;
 import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
-import de.citec.jul.storage.file.FileProvider;
-import java.io.File;
-import java.io.FileFilter;
+import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.io.filefilter.FileFileFilter;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
@@ -63,12 +59,15 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     public DeviceRegistryImpl() throws InstantiationException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
-            ProtobufMessageMap<String, IdentifiableMessage<DeviceClass>, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
-            ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
+            ProtobufMessageMap<String, IdentifiableMessage<DeviceClass>, DeviceClass, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
+            ProtobufMessageMap<String, IdentifiableMessage<DeviceConfig>, DeviceConfig, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
             deviceClassMessageTransformer = new MessageTransformer<>(DeviceClass.class);
             deviceConfigMessageTransformer = new MessageTransformer<>(DeviceConfig.class);
-            deviceClassRegistry = new FileSynchronizedRegistry(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceClassMessageTransformer), new DBFileProvider());
-            deviceConfigRegistry = new FileSynchronizedRegistry(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), new ProtoBufFileProcessor<>(deviceConfigMessageTransformer), new DBFileProvider());
+			ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+			ProtoBufFileProcessor<IdentifiableMessage<DeviceClass>, DeviceClass, DeviceClass.Builder> deviceClassFileProcessor = new ProtoBufFileProcessor<>(deviceClassMessageTransformer);
+            deviceClassRegistry = new FileSynchronizedRegistry<>(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), deviceClassFileProcessor, protoBufJSonFileProvider);
+			ProtoBufFileProcessor<IdentifiableMessage<DeviceConfig>, DeviceConfig, DeviceConfig.Builder> deviceConfigFileProcessor = new ProtoBufFileProcessor<>(deviceConfigMessageTransformer);
+            deviceConfigRegistry = new FileSynchronizedRegistry<>(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), deviceConfigFileProcessor, protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
@@ -250,38 +249,5 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
             serviceConfigs.addAll(unitConfig.getServiceConfigsList());
         }
         return serviceConfigs;
-    }
-
-    public class DBFileProvider implements FileProvider<Identifiable<String>> {
-
-        public static final String FILE_TYPE = "json";
-        public static final String FILE_SUFFIX = "." + FILE_TYPE;
-
-        @Override
-        public String getFileName(Identifiable<String> context) throws CouldNotPerformException {
-            try {
-                return context.getId().replaceAll("/", "_") + FILE_SUFFIX;
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not generate file name!", ex);
-            }
-        }
-
-        @Override
-        public String getFileType() {
-            return FILE_TYPE;
-        }
-
-        @Override
-        public FileFilter getFileFilter() {
-            return new FileFileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    if (file == null) {
-                        return false;
-                    }
-                    return (!file.isHidden()) && file.isFile() && file.getName().toLowerCase().endsWith(FILE_SUFFIX);
-                }
-            };
-        }
     }
 }
