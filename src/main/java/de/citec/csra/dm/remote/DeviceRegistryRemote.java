@@ -40,8 +40,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
     
-    private final RemoteRegistry<DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
-    private final RemoteRegistry<DeviceConfig, DeviceConfig.Builder> deviceConfigRemoteRegistry;
+    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
+    private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder> deviceConfigRemoteRegistry;
 
     public DeviceRegistryRemote() {
         deviceClassRemoteRegistry = new RemoteRegistry<>();
@@ -79,7 +79,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
-        for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+        for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for(UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
                 if(unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
@@ -173,7 +173,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
-        for (IdentifiableMessage<DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+        for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigsList());
         }
         return unitConfigs;
