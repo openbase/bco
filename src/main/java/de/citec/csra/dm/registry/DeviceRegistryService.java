@@ -18,12 +18,10 @@ import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.MessageTransformer;
-import de.citec.jul.rsb.ProtobufMessageMap;
 import de.citec.jul.rsb.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -43,7 +41,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistryInterface {
+public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistryInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
@@ -56,14 +54,12 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     private MessageTransformer<DeviceClass, DeviceClass.Builder> deviceClassMessageTransformer;
     private MessageTransformer<DeviceConfig, DeviceClass.Builder> deviceConfigMessageTransformer;
 
-    public DeviceRegistryImpl() throws InstantiationException {
+    public DeviceRegistryService() throws InstantiationException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
 			ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-			ProtoBufFileProcessor<IdentifiableMessage<String, DeviceClass>, DeviceClass, DeviceClass.Builder> deviceClassFileProcessor = new ProtoBufFileProcessor<>(deviceClassMessageTransformer);
-            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-			ProtoBufFileProcessor<IdentifiableMessage<String, DeviceConfig>, DeviceConfig, DeviceConfig.Builder> deviceConfigFileProcessor = new ProtoBufFileProcessor<>(deviceConfigMessageTransformer);
-            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSE_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
@@ -110,7 +106,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
-            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
                 }
@@ -168,7 +164,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
-            unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigsList());
+            unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
         return unitConfigs;
     }
@@ -177,7 +173,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
-            serviceConfigs.addAll(unitConfig.getServiceConfigsList());
+            serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigs;
     }

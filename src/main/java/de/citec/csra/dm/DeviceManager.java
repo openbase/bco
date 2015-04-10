@@ -5,7 +5,7 @@
  */
 package de.citec.csra.dm;
 
-import de.citec.csra.dm.registry.DeviceRegistryImpl;
+import de.citec.csra.dm.registry.DeviceRegistryService;
 import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
@@ -33,11 +33,11 @@ public class DeviceManager {
 
     public static final String APP_NAME = DeviceManager.class.getSimpleName();
 
-    private final DeviceRegistryImpl deviceRegistry;
+    private final DeviceRegistryService deviceRegistry;
 
     public DeviceManager() throws InitializationException {
         try {
-            this.deviceRegistry = new DeviceRegistryImpl();
+            this.deviceRegistry = new DeviceRegistryService();
             this.deviceRegistry.init(RSBInformerInterface.InformerType.Single);
             this.deviceRegistry.activate();
         } catch (CouldNotPerformException ex) {

@@ -45,7 +45,7 @@ public class DeviceRegistryImplTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryImplTest.class);
 
-    private static DeviceRegistryImpl registry;
+    private static DeviceRegistryService registry;
     private static DeviceClassType.DeviceClass.Builder deviceClass;
     private static DeviceConfigType.DeviceConfig.Builder deviceConfig;
 
@@ -76,7 +76,7 @@ public class DeviceRegistryImplTest {
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
 
-        registry = new DeviceRegistryImpl();
+        registry = new DeviceRegistryService();
         registry.init(RSBInformerInterface.InformerType.Single);
         registry.activate();
 
@@ -159,7 +159,7 @@ public class DeviceRegistryImplTest {
                 
         while (true) {
             try {
-                if (remote.getData().getDeviceClassesList().contains(deviceClassRemote.clone().build())) {
+                if (remote.getData().getDeviceClasseList().contains(deviceClassRemote.clone().build())) {
                     break;
                 }
             } catch (NotAvailableException ex) {

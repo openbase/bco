@@ -56,8 +56,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public void notifyUpdated(final DeviceRegistry data) throws CouldNotPerformException {
-        deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassesList());
-        deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigsList());
+        deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClasseList());
+        deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigList());
     }
 
     @Override
@@ -82,7 +82,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
-            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
                 }
@@ -160,7 +160,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
-            unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigsList());
+            unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
         return unitConfigs;
     }
@@ -169,7 +169,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
-            serviceConfigs.addAll(unitConfig.getServiceConfigsList());
+            serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigs;
     }
