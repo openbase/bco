@@ -74,7 +74,7 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
         return remoteService;
     }
 
-    public M getData() throws NotAvailableException {
+    public M getData() throws CouldNotPerformException {
         return getRemoteService().getData();
     }
 

@@ -7,6 +7,7 @@ package de.citec.dal.visual.util;
 
 import de.citec.jul.rsb.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -65,7 +66,7 @@ public abstract class RSBRemoteViewFrame<M extends GeneratedMessage> extends jav
         updateDynamicComponents();
     }
     
-    public M getData() throws NotAvailableException {
+    public M getData() throws CouldNotPerformException {
         return remoteService.getData();
     }
     

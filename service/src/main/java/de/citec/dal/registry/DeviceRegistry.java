@@ -6,13 +6,13 @@
  */
 package de.citec.dal.registry;
 
-import de.citec.jul.storage.registry.AbstractRegistry;
 import de.citec.dal.hal.device.Device;
+import de.citec.jul.storage.registry.Registry;
 
 /**
  *
  * @author mpohling
  */
-public class DeviceRegistry extends AbstractRegistry<String, Device> {
+public class DeviceRegistry extends Registry<String, Device> {
 
 }

@@ -5,24 +5,23 @@
  */
 package de.citec.dal.bindings;
 
-import de.citec.jul.storage.registry.AbstractRegistry;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.storage.registry.Registry;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author mpohling
  */
-public class DALBindingRegistry extends AbstractRegistry<Class<? extends Binding>, Binding> {
+public class DALBindingRegistry extends Registry<Class<? extends Binding>, Binding> {
 
-    public <BC extends Binding> BC getBinding(Class<BC> key) throws NotAvailableException {
+    public <BC extends Binding> BC getBinding(Class<BC> key) throws CouldNotPerformException {
         return (BC) super.get(key);
     }
 
     public void register(Class<? extends Binding> bindingClazz) throws CouldNotPerformException {
         try {
-            if (contrains(bindingClazz)) {
+            if (contains(bindingClazz)) {
                 throw new CouldNotPerformException("Binding instance already registered!");
             }
             try {
