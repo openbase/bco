@@ -5,6 +5,8 @@
  */
 package de.citec.csra.dm.remote;
 
+import de.citec.csra.dm.registry.DeviceClassIdGenerator;
+import de.citec.csra.dm.registry.DeviceConfigIdGenerator;
 import de.citec.csra.dm.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
@@ -39,19 +41,19 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
-    
-    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
-    private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder> deviceConfigRemoteRegistry;
+
+    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRemoteRegistry;
+    private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRemoteRegistry;
 
     public DeviceRegistryRemote() {
-        deviceClassRemoteRegistry = new RemoteRegistry<>();
-        deviceConfigRemoteRegistry = new RemoteRegistry<>();
+        deviceClassRemoteRegistry = new RemoteRegistry<>(new DeviceClassIdGenerator());
+        deviceConfigRemoteRegistry = new RemoteRegistry<>(new DeviceConfigIdGenerator());
     }
-    
+
     public void init() throws InitializationException {
         super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
     }
-    
+
     @Override
     public void notifyUpdated(final DeviceRegistry data) throws CouldNotPerformException {
         deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassesList());
@@ -66,7 +68,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             throw new CouldNotPerformException("Could not register device config!", ex);
         }
     }
-    
+
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRemoteRegistry.getMessage(deviceClassId);
@@ -76,12 +78,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRemoteRegistry.getMessage(deviceConfigId);
     }
-    
+
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
-            for(UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
-                if(unitConfig.getId().equals(unitConfigId)) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigsList()) {
+                if (unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
                 }
             }
@@ -91,20 +93,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Boolean containsDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
-        try {
-            return (Boolean) callMethodAsync("containsDeviceConfig", deviceConfig).get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not check device config!", ex);
-        }
+        return deviceConfigRemoteRegistry.contains(deviceConfig);
     }
 
     @Override
     public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException {
-        try {
-            return (Boolean) callMethodAsync("containsDeviceConfigById", deviceConfigId).get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not check device config!", ex);
-        }
+        return deviceConfigRemoteRegistry.contains(deviceConfigId);
     }
 
     @Override
@@ -136,20 +130,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Boolean containsDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
-        try {
-            return (Boolean) callMethodAsync("containsDeviceClass", deviceClass).get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not check device class!", ex);
-        }
+        return deviceClassRemoteRegistry.contains(deviceClass);
     }
 
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
-        try {
-            return (Boolean) callMethodAsync("containsDeviceClassById", deviceClassId).get();
-        } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not check device class!", ex);
-        }
+        return deviceClassRemoteRegistry.contains(deviceClassId);
     }
 
     @Override
@@ -169,7 +155,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }
     }
-    
+
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();

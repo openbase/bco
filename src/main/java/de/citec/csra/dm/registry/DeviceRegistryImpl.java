@@ -51,23 +51,19 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, IdentifiableMessage<String, DeviceClass>, DeviceClass, DeviceRegistry.Builder> deviceClassRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, IdentifiableMessage<String, DeviceConfig>, DeviceConfig, DeviceRegistry.Builder> deviceConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
     private MessageTransformer<DeviceClass, DeviceClass.Builder> deviceClassMessageTransformer;
     private MessageTransformer<DeviceConfig, DeviceClass.Builder> deviceConfigMessageTransformer;
 
     public DeviceRegistryImpl() throws InstantiationException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
-            ProtobufMessageMap<String, IdentifiableMessage<String, DeviceClass>, DeviceClass, DeviceRegistry.Builder> deviceClassMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER));
-            ProtobufMessageMap<String, IdentifiableMessage<String, DeviceConfig>, DeviceConfig, DeviceRegistry.Builder> deviceConfigMap = new ProtobufMessageMap<>(getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER));
-            deviceClassMessageTransformer = new MessageTransformer<>(DeviceClass.class);
-            deviceConfigMessageTransformer = new MessageTransformer<>(DeviceConfig.class);
 			ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 			ProtoBufFileProcessor<IdentifiableMessage<String, DeviceClass>, DeviceClass, DeviceClass.Builder> deviceClassFileProcessor = new ProtoBufFileProcessor<>(deviceClassMessageTransformer);
-            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(deviceClassMap, JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), deviceClassFileProcessor, protoBufJSonFileProvider);
+            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSES_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 			ProtoBufFileProcessor<IdentifiableMessage<String, DeviceConfig>, DeviceConfig, DeviceConfig.Builder> deviceConfigFileProcessor = new ProtoBufFileProcessor<>(deviceConfigMessageTransformer);
-            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(deviceConfigMap, JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), deviceConfigFileProcessor, protoBufJSonFileProvider);
+            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIGS_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
@@ -98,7 +94,7 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return deviceConfigRegistry.register(new IdentifiableMessage<String, DeviceConfig>(setupDeviceConfigID(deviceConfig))).getMessage();
+        return deviceConfigRegistry.register(deviceConfig);
     }
 
     @Override
@@ -125,112 +121,47 @@ public class DeviceRegistryImpl extends RSBCommunicationService<DeviceRegistry, 
 
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
-        return deviceConfigRegistry.contrains(deviceConfigId);
+        return deviceConfigRegistry.contains(deviceConfigId);
     }
 
     @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        if (!deviceConfig.hasId()) {
-            deviceConfig = setupDeviceConfigID(deviceConfig);
-        }
-        return containsDeviceConfigById(deviceConfig.getId());
+        return deviceConfigRegistry.contains(deviceConfig);
     }
 
     @Override
     public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return deviceConfigRegistry.update(new IdentifiableMessage<String, DeviceConfig>(deviceConfig)).getMessage();
+        return deviceConfigRegistry.update(deviceConfig);
     }
 
     @Override
     public DeviceConfig removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return deviceConfigRegistry.remove(new IdentifiableMessage<String, DeviceConfig>(deviceConfig)).getMessage();
+        return deviceConfigRegistry.remove(deviceConfig);
     }
 
     @Override
     public DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return deviceClassRegistry.register(new IdentifiableMessage<String, DeviceClass>(setupDeviceClassID(deviceClass))).getMessage();
+        return deviceClassRegistry.register(deviceClass);
     }
 
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
-        return deviceClassRegistry.contrains(deviceClassId);
+        return deviceClassRegistry.contains(deviceClassId);
     }
 
     @Override
     public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        if (!deviceClass.hasId()) {
-            deviceClass = setupDeviceClassID(deviceClass);
-        }
-        return containsDeviceClassById(deviceClass.getId());
+        return deviceClassRegistry.contains(deviceClass);
     }
 
     @Override
     public DeviceClass updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return deviceClassRegistry.update(new IdentifiableMessage<String, DeviceClass>(deviceClass)).getMessage();
+        return deviceClassRegistry.update(deviceClass);
     }
 
     @Override
     public DeviceClass removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return deviceClassRegistry.remove(new IdentifiableMessage<String, DeviceClass>(deviceClass)).getMessage();
-    }
-
-    public DeviceClass setupDeviceClassID(final DeviceClass deviceClass) throws InvalidStateException, CouldNotPerformException {
-        try {
-            if (deviceClass.hasId()) {
-                throw new InvalidStateException("ID already specified!");
-            }
-            return deviceClass.toBuilder().setId(generateDeviceClassID(deviceClass)).build();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not setup id!", ex);
-        }
-    }
-
-    public String generateDeviceClassID(final DeviceClass deviceClass) throws InvalidStateException, CouldNotPerformException {
-        try {
-            if (!deviceClass.hasLabel()) {
-                throw new InvalidStateException("Field [Label] is missing!");
-            }
-            return convertIntoValidFileName(deviceClass.getLabel());
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
-    }
-
-    public DeviceConfig setupDeviceConfigID(final DeviceConfig deviceConfig) throws InvalidStateException, CouldNotPerformException {
-        try {
-            if (deviceConfig.hasId()) {
-                throw new InvalidStateException("ID already specified!");
-            }
-            return deviceConfig.toBuilder().setId(generateDeviceConfigID(deviceConfig)).build();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not setup id!", ex);
-        }
-    }
-
-    public String generateDeviceConfigID(final DeviceConfig deviceConfig) throws InvalidStateException, CouldNotPerformException {
-        try {
-            if (!deviceConfig.hasDeviceClass() | !deviceConfig.getDeviceClass().hasId()) {
-                throw new InvalidStateException("Field [DeviceClass] is missing!");
-            }
-
-            if (!deviceConfig.hasSerialNumber()) {
-                throw new InvalidStateException("Field [SerialNumber] is missing!");
-            }
-
-            String id;
-
-            id = deviceConfig.getDeviceClass().getId();
-            id += "_";
-            id += convertIntoValidFileName(deviceConfig.getSerialNumber());
-            return id;
-
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
-    }
-
-    public String convertIntoValidFileName(final String filename) {
-        return filename.replaceAll("[^0-9a-zA-Z\\-_]+", "_");
+        return deviceClassRegistry.remove(deviceClass);
     }
 
     @Override
