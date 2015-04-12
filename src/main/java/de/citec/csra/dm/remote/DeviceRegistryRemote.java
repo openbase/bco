@@ -81,7 +81,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
-        for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
@@ -159,7 +159,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
         return unitConfigs;

@@ -11,7 +11,6 @@ import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.processing.ProtoBufFileProcessor;
 import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
@@ -63,17 +62,17 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
-            deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass>>>() {
+            deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
                 @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, DeviceClass>>> source, Map<String, IdentifiableMessage<String, DeviceClass>> data) throws Exception {
+                public void update(Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) throws Exception {
                     notifyChange();
                 }
             });
-            deviceConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceConfig>>>() {
+            deviceConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>>() {
 
                 @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, DeviceConfig>>> source, Map<String, IdentifiableMessage<String, DeviceConfig>> data) throws Exception {
+                public void update(Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) throws Exception {
                     notifyChange();
                 }
             });
@@ -105,7 +104,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
-        for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getId().equals(unitConfigId)) {
                     return unitConfig;
@@ -163,7 +162,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, DeviceConfig> deviceConfig : deviceConfigRegistry.getEntries()) {
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
         return unitConfigs;
