@@ -17,7 +17,7 @@ import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
-import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.rsb.RSBInformerPool;
 import org.slf4j.Logger;
@@ -40,11 +40,11 @@ public class DALService implements RegistryProvider {
     private final UnitRegistry unitRegistry;
     private final ConnectionManager connectionManager;
 
-    public DALService() throws InitializationException {
+    public DALService() throws InstantiationException {
         this(new CSRADeviceInitializerImpl());
     }
 
-    public DALService(final DeviceInitializer initializer) throws InitializationException {
+    public DALService(final DeviceInitializer initializer) throws InstantiationException {
         try {
             this.bindingRegistry = new DALBindingRegistry();
             this.deviceRegistry = new DeviceRegistry();
@@ -57,7 +57,7 @@ public class DALService implements RegistryProvider {
 
             initializer.initDevices(deviceRegistry);
         } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
+            throw new InstantiationException(this, ex);
         }
     }
 
@@ -129,7 +129,7 @@ public class DALService implements RegistryProvider {
 
         try {
             new DALService().activate();
-        } catch (InitializationException ex) {
+        } catch (de.citec.jul.exception.InstantiationException ex) {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
         logger.info(APP_NAME + " successfully started.");
