@@ -5,7 +5,7 @@
  */
 package de.citec.jp;
 
-import de.citec.jul.rsb.jp.JPScope;
+import de.citec.jul.rsb.scope.jp.JPScope;
 import rsb.Scope;
 
 /**

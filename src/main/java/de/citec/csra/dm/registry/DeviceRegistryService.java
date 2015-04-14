@@ -6,12 +6,10 @@
 package de.citec.csra.dm.registry;
 
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
-import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.RSBCommunicationService;
 import rsb.RSBException;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -20,8 +18,10 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import de.citec.jul.rsb.IdentifiableMessage;
 import de.citec.jul.rsb.MessageTransformer;
 import de.citec.jul.rsb.RPCHelper;
+import de.citec.jul.rsb.RSBCommunicationService;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import java.util.ArrayList;
