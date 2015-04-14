@@ -9,7 +9,7 @@ import de.citec.dal.hal.provider.ColorProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
-import de.citec.jul.rsb.RSBCommunicationService;
+import de.citec.jul.rsb.com.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;

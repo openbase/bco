@@ -19,7 +19,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.rsb.RSBInformerPool;
+import de.citec.jul.rsb.com.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -8,7 +8,7 @@ package de.citec.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
-import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.jul.rsb.com.RSBRemoteService;
 
 /**
  *

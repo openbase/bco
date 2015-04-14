@@ -6,7 +6,7 @@
 package de.citec.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.jul.rsb.com.RSBRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;

@@ -6,7 +6,7 @@
 package de.citec.dal.data;
 
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.rsb.ScopeProvider;
+import de.citec.jul.rsb.scope.ScopeProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

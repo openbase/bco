@@ -9,7 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.iface.Activatable;
 import de.citec.jul.iface.Identifiable;
-import de.citec.jul.rsb.ScopeProvider;
+import de.citec.jul.rsb.scope.ScopeProvider;
 
 /**
  *

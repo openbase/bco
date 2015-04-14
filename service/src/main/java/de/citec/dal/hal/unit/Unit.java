@@ -8,7 +8,7 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.MultiService;
 import de.citec.jul.iface.Identifiable;
-import de.citec.jul.rsb.ScopeProvider;
+import de.citec.jul.rsb.scope.ScopeProvider;
 
 /**
  *
