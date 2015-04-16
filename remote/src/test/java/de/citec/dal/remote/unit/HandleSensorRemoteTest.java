@@ -9,7 +9,6 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.homematic.HM_RotaryHandleSensorController;
 import de.citec.dal.hal.unit.HandleSensorController;
-import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -17,7 +16,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.VerificationFailedException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -46,7 +44,7 @@ public class HandleSensorRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();

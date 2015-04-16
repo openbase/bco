@@ -8,12 +8,20 @@ package de.citec.dal.bindings;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.storage.registry.Registry;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 
 /**
  *
  * @author mpohling
  */
 public class DALBindingRegistry extends Registry<Class<? extends Binding>, Binding> {
+
+    public DALBindingRegistry() throws de.citec.jul.exception.InstantiationException {
+    }
+
+    public DALBindingRegistry(HashMap<Class<? extends Binding>, Binding> entryMap) throws de.citec.jul.exception.InstantiationException {
+        super(entryMap);
+    }
 
     public <BC extends Binding> BC getBinding(Class<BC> key) throws CouldNotPerformException {
         return (BC) super.get(key);

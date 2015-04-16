@@ -10,7 +10,6 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_FGS221Controller;
 import de.citec.dal.hal.unit.LightController;
 import de.citec.dal.registry.DeviceRegistry;
-import de.citec.dal.registry.UnitRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -46,7 +45,7 @@ public class LightRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();

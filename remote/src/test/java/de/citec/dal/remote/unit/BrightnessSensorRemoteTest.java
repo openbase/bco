@@ -5,13 +5,10 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.dal.remote.unit.BrightnessSensorRemote;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.unit.BrightnessSensorController;
-import de.citec.dal.hal.unit.BrightnessSensorController;
-import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -46,7 +43,7 @@ public class BrightnessSensorRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException {
+    public static void setUpClass()  throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new DeviceInitializerImpl());
         dalService.activate();

@@ -8,6 +8,7 @@ package de.citec.dal;
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class DALServiceTest {
     }
     
     @Before
-    public void setUp() throws InitializationException {
+    public void setUp() throws InitializationException, InstantiationException {
         dALService = new DALService();
     }
     
@@ -48,7 +49,7 @@ public class DALServiceTest {
      * Test of activate method, of class DALService.
      */
     @Test
-    public void testActivate() throws InitializationException {
+    public void testActivate() throws InitializationException, InstantiationException {
         System.out.println("activate");
         DALService instance = new DALService();
         instance.activate();
@@ -60,7 +61,7 @@ public class DALServiceTest {
      * Test of deactivate method, of class DALService.
      */
     @Test
-    public void testDeactivate() throws InitializationException {
+    public void testDeactivate() throws InitializationException, InstantiationException {
         System.out.println("deactivate");
         DALService instance = new DALService();
         instance.deactivate();
@@ -70,9 +71,10 @@ public class DALServiceTest {
 
     /**
      * Test of getRegistry method, of class DALService.
+     * @throws de.citec.jul.exception.InitializationException
      */
     @Test
-    public void testGetRegistry() throws InitializationException {
+    public void testGetRegistry() throws InitializationException, InstantiationException {
         System.out.println("getRegistry");
         DALService instance = new DALService();
         DeviceRegistry expResult = null;
@@ -86,7 +88,7 @@ public class DALServiceTest {
      * Test of getHardwareManager method, of class DALService.
      */
     @Test
-    public void testGetHardwareManager() throws InitializationException {
+    public void testGetHardwareManager() throws InitializationException, InstantiationException {
         System.out.println("getHardwareManager");
         DALService instance = new DALService();
         ConnectionManager expResult = null;

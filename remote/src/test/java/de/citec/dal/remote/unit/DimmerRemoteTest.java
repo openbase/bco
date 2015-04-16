@@ -45,7 +45,7 @@ public class DimmerRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InvalidStateException, InitializationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         dalService = new DALService(new DimmerRemoteTest.DeviceInitializerImpl());
         dalService.activate();

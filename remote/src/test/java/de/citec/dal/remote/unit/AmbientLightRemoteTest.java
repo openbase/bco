@@ -15,6 +15,7 @@ import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import java.awt.Color;
@@ -48,7 +49,7 @@ public class AmbientLightRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
         dalService = new DALService(new DeviceInitializerImpl());
