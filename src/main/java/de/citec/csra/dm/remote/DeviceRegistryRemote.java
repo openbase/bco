@@ -12,10 +12,10 @@ import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.rsb.IdentifiableMessage;
-import de.citec.jul.rsb.RSBRemoteService;
+import de.citec.jul.rsb.container.IdentifiableMessage;
+import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,7 @@ import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+
 
 /**
  *
@@ -51,7 +52,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 			deviceClassRemoteRegistry = new RemoteRegistry<>(new DeviceClassIdGenerator());
 			deviceConfigRemoteRegistry = new RemoteRegistry<>(new DeviceConfigIdGenerator());
 		} catch (CouldNotPerformException ex) {
-			throw new de.citec.jul.exception.InstantiationException(this, ex);
+			throw new InstantiationException(this, ex);
 		}
 	}
 

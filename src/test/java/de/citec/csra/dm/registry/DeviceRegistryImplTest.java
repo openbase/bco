@@ -18,7 +18,7 @@ import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import de.citec.jul.rsb.RSBInformerInterface;
+import de.citec.jul.rsb.com.RSBInformerInterface;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
