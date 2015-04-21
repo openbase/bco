@@ -5,6 +5,7 @@
  */
 package de.citec.dal;
 
+import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.dal.bindings.DALBindingRegistry;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;

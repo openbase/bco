@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
  */
 public class CSRADeviceInitializerImpl implements DeviceInitializer {
 
-	private static final Logger logger = LoggerFactory.getLogger(CSRADeviceInitializerImpl.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(CSRADeviceInitializerImpl.class);
+        
 	@Override
 	public void initDevices(final DeviceRegistry registry) {
 		logger.info("Init devices...");
@@ -156,5 +156,5 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 		} catch (CouldNotPerformException ex) {
 			logger.warn("Could not register devices!", ex);
 		}
-	}
+    }
 }

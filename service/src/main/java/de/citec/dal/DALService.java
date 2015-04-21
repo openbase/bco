@@ -5,6 +5,7 @@
  */
 package de.citec.dal;
 
+import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.dal.bindings.DALBindingRegistry;
 import de.citec.dal.bindings.openhab.OpenHABBinding;
 import de.citec.dal.registry.CSRADeviceInitializerImpl;
@@ -36,6 +37,7 @@ public class DALService implements RegistryProvider {
     private static RegistryProvider registryProvider;
 
     private final DALBindingRegistry bindingRegistry;
+    
     private final DeviceRegistry deviceRegistry;
     private final UnitRegistry unitRegistry;
     private final ConnectionManager connectionManager;
