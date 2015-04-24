@@ -1,6 +1,7 @@
 package de.citec.dal.util;
 
 import de.citec.dal.registry.DeviceRegistry;
+import de.citec.jul.exception.CouldNotPerformException;
 
 /**
  *
@@ -8,5 +9,5 @@ import de.citec.dal.registry.DeviceRegistry;
  */
 public interface DeviceInitializer {
 
-    public void initDevices(final DeviceRegistry registry);
+    public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException;
 }

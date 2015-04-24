@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.device;
 
-import de.citec.dal.hal.device.fibaro.F_FGS221Controller;
+import de.citec.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -16,12 +16,14 @@ public class DeviceFactory implements DeviceFactoryInterface {
 
     public DeviceFactory() {
     }
-    
-    @Override
-    public Device newDevice(final DeviceConfig deviceConfig) {
-//        deviceConfig.get
 
-        F_FGS221Controller
-        return deviceConfig.;
+    @Override
+    public Device newDevice(final DeviceConfig deviceConfig) throws CouldNotPerformException {
+        try {
+            Class deviceClass = getClass().getClassLoader().loadClass(AbstractDeviceController.class.getPackage().getName() + "." + deviceConfig.getDeviceClass().getCompany() + "." + deviceConfig.getDeviceClass().getLabel() + "Controller");
+            return (Device) deviceClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not instantiate Device[" + deviceConfig + "]!", ex);
+        }
     }
 }

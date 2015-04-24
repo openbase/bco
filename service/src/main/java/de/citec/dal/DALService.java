@@ -5,10 +5,9 @@
  */
 package de.citec.dal;
 
-import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.dal.bindings.DALBindingRegistry;
 import de.citec.dal.bindings.openhab.OpenHABBinding;
-import de.citec.dal.registry.CSRADeviceInitializerImpl;
+import de.citec.dal.registry.DeviceManagerRemoteDalConnector;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.util.ConnectionManager;
@@ -43,7 +42,7 @@ public class DALService implements RegistryProvider {
     private final ConnectionManager connectionManager;
 
     public DALService() throws InstantiationException {
-        this(new CSRADeviceInitializerImpl());
+        this(new DeviceManagerRemoteDalConnector());
     }
 
     public DALService(final DeviceInitializer initializer) throws InstantiationException {

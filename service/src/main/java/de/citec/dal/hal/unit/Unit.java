@@ -9,6 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.MultiService;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.rsb.scope.ScopeProvider;
+import rsb.Scope;
 
 /**
  *
@@ -21,5 +22,7 @@ public interface Unit extends MultiService, ScopeProvider, Identifiable<String> 
 	public String getLabel();
 
     public Location getLocation();
+    
+    public Scope getScope();
     
 }

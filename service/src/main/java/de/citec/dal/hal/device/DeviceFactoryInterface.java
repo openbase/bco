@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.device;
 
+import de.citec.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceConfigType;
 
 /**
@@ -13,6 +14,6 @@ import rst.homeautomation.device.DeviceConfigType;
  */
 public interface DeviceFactoryInterface {
 
-    Device newDevice(final DeviceConfigType.DeviceConfig deviceConfig);
-    
+    Device newDevice(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException;
+
 }
