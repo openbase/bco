@@ -44,10 +44,11 @@ public class TemperatureSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        registry = new MockRegistryHolder();
+        
         dalService = new DALService();
         dalService.activate();
 
-        registry = new MockRegistryHolder();
         location = new Location(registry.getLocation());
         label = MockRegistryHolder.TEMPERATURE_SENSOR_LABEL;
 

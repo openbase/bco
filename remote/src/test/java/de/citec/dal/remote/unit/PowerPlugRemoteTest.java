@@ -45,10 +45,11 @@ public class PowerPlugRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        registry = new MockRegistryHolder();
+        
         dalService = new DALService();
         dalService.activate();
 
-        registry = new MockRegistryHolder();
         locaton = new Location(registry.getLocation());
         label = MockRegistryHolder.POWER_PLUG_LABEL;
 

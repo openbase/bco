@@ -5,6 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
+import com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl;
 import de.citec.csra.dm.DeviceManager;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.csra.lm.LocationManager;
@@ -18,6 +19,7 @@ import de.citec.jp.JPLocationDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPTestMode;
+import de.citec.jps.preset.JPVerbose;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
@@ -71,14 +73,20 @@ public class MockRegistryHolder {
 
     public MockRegistryHolder() throws InitializationException, InstantiationException, InvalidStateException, CouldNotPerformException {
         JPService.registerProperty(JPTestMode.class, true);
+        JPService.registerProperty(JPVerbose.class, true);
         JPService.registerProperty(JPInitializeDB.class, true);
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/test-registry"));
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/test-registry/device_class"));
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/test-registry/device_config"));
-        JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/test-registry"));
-        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class, new File("/tmp/test-registry/location_config"));
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/test-device-registry"));
+        JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/test-location-registry"));
+//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/test-device-registry/device_class"));
+//        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/test-device-registry/device_config"));
+//        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class, new File("/tmp/test-location-registry/location_config"));
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
+        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/unit_tests/device_registry"));
         JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/unit_tests/location_registry"));
+        String[] args = {};
+        JPService.parseAndExitOnError(args);
         deviceManager = new DeviceManager();
         locationManager = new LocationManager();
 
@@ -106,21 +114,21 @@ public class MockRegistryHolder {
         locationManager.shutdown();
     }
 
-    public void registerLocation() throws CouldNotPerformException {
+    private void registerLocation() throws CouldNotPerformException {
         paradise = locationRemote.registerLocationConfig(LocationConfig.newBuilder().setLabel("Paradise").build());
     }
 
-    public void registerDevices() throws CouldNotPerformException {
+    private void registerDevices() throws CouldNotPerformException {
         ArrayList<UnitConfig> units = new ArrayList<>();
 
         // ambient light
-        DeviceClass ambientLightClass = deviceRemote.registerDeviceClass(getDeviceClass("PH_Hue_E27"));
+        DeviceClass ambientLightClass = deviceRemote.registerDeviceClass(getDeviceClass("PH_Hue_E27", "philips"));
         units.add(getUnitConfig(UnitTemplate.UnitType.AMBIENT_LIGHT, AMBIENT_LIGHT_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units));
 
         units.clear();
         // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
-        DeviceClass motionSensorClass = deviceRemote.registerDeviceClass(getDeviceClass("F_MotionSensor"));
+        DeviceClass motionSensorClass = deviceRemote.registerDeviceClass(getDeviceClass("F_MotionSensor", "fibaro"));
         units.add(getUnitConfig(UnitTemplate.UnitType.MOTION_SENSOR, MOTION_SENSOR_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.BATTERY, BATTERY_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL));
@@ -130,44 +138,44 @@ public class MockRegistryHolder {
 
         units.clear();
         // button
-        DeviceClass buttonClass = deviceRemote.registerDeviceClass(getDeviceClass("GI_5133"));
+        DeviceClass buttonClass = deviceRemote.registerDeviceClass(getDeviceClass("GI_5133", "gira"));
         units.add(getUnitConfig(UnitTemplate.UnitType.BUTTON, BUTTON_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("GI_5133_Device", serialNumber, buttonClass, units));
 
         units.clear();
         // dimmer
-        DeviceClass dimmerClass = deviceRemote.registerDeviceClass(DeviceClass.newBuilder().setLabel("HA_TYA663A").build());
+        DeviceClass dimmerClass = deviceRemote.registerDeviceClass(getDeviceClass("HA_TYA663A", "hager"));
         units.add(getUnitConfig(UnitTemplate.UnitType.DIMMER, DIMMER_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units));
 
         units.clear();
         // handle
-        DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("HM_RotaryHandleSensor"));
+        DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("HM_RotaryHandleSensor", "homematic"));
         units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE_SENSOR, HANDLE_SENSOR_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units));
 
         units.clear();
         // light 
-        DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("F_FGS221"));
+        DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("F_FGS221", "fibaro"));
         units.add(getUnitConfig(UnitTemplate.UnitType.LIGHT, LIGHT_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units));
 
         units.clear();
         // powerConsumptionSensor, powerPlug 
-        DeviceClass powerPlugClass = deviceRemote.registerDeviceClass(getDeviceClass("PW_PowerPlug"));
+        DeviceClass powerPlugClass = deviceRemote.registerDeviceClass(getDeviceClass("PW_PowerPlug", "plugwise"));
         units.add(getUnitConfig(UnitTemplate.UnitType.POWER_PLUG, POWER_PLUG_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units));
 
         units.clear();
         // reedSwitch 
-        DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("HM_ReedSwitch"));
+        DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("HM_ReedSwitch", "homematic"));
         units.add(getUnitConfig(UnitTemplate.UnitType.REED_SWITCH, REED_SWITCH_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units));
 
         units.clear();
         // rollershutter 
-        DeviceClass rollershutterClass = deviceRemote.registerDeviceClass(getDeviceClass("HA_TYA628C"));
+        DeviceClass rollershutterClass = deviceRemote.registerDeviceClass(getDeviceClass("HA_TYA628C", "hager"));
         units.add(getUnitConfig(UnitTemplate.UnitType.ROLLERSHUTTER, ROLLERSHUTTER_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units));
     }
@@ -187,8 +195,8 @@ public class MockRegistryHolder {
         return DeviceConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setSerialNumber(serialNumber).setDeviceClass(clazz).addAllUnitConfig(units).build();
     }
 
-    private DeviceClass getDeviceClass(String label) {
-        return DeviceClass.newBuilder().setLabel(label).build();
+    private DeviceClass getDeviceClass(String label, String company) {
+        return DeviceClass.newBuilder().setLabel(label).setCompany(company).build();
     }
 
     public LocationConfig getLocation() {

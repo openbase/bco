@@ -49,10 +49,11 @@ public class AmbientLightRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
+        registry = new MockRegistryHolder();
+
         dalService = new DALService();
         dalService.activate();
 
-        registry = new MockRegistryHolder();
         location = new Location(registry.getLocation());
         label = MockRegistryHolder.AMBIENT_LIGHT_LABEL;
 

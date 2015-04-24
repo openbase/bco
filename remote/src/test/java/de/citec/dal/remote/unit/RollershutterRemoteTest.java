@@ -46,10 +46,11 @@ public class RollershutterRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
+        registry = new MockRegistryHolder();
+        
         dalService = new DALService();
         dalService.activate();
 
-        registry = new MockRegistryHolder();
         location = new Location(registry.getLocation());
         label = MockRegistryHolder.ROLLERSHUTTER_LABEL;
 

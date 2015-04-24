@@ -44,10 +44,11 @@ public class ButtonRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        registry = new MockRegistryHolder();
+        
         dalService = new DALService();
         dalService.activate();
 
-        registry = new MockRegistryHolder();
         location = new Location(registry.getLocation());
         label = MockRegistryHolder.BUTTON_LABEL;
 

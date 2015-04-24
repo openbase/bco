@@ -43,10 +43,11 @@ public class PowerConsumptionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        registry = new MockRegistryHolder();
+        
         dalService = new DALService();
         dalService.activate();
 
-        registry = new MockRegistryHolder();
         locaton = new Location(registry.getLocation());
         label = MockRegistryHolder.POWER_CONSUMPTION_LABEL;
 
