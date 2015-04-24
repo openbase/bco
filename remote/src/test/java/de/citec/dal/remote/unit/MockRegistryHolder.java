@@ -5,7 +5,6 @@
  */
 package de.citec.dal.remote.unit;
 
-import com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl;
 import de.citec.csra.dm.DeviceManager;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.csra.lm.LocationManager;
@@ -77,9 +76,6 @@ public class MockRegistryHolder {
         JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/test-device-registry"));
         JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/test-location-registry"));
-//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("/tmp/test-device-registry/device_class"));
-//        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("/tmp/test-device-registry/device_config"));
-//        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class, new File("/tmp/test-location-registry/location_config"));
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);

@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
  */
 public class DALServiceTest {
     
-    private DALService dALService;
     
     public DALServiceTest() {
         
@@ -38,7 +37,6 @@ public class DALServiceTest {
     
     @Before
     public void setUp() throws InitializationException, InstantiationException {
-        dALService = new DALService();
     }
     
     @After
@@ -53,8 +51,6 @@ public class DALServiceTest {
         System.out.println("activate");
         DALService instance = new DALService();
         instance.activate();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -64,9 +60,8 @@ public class DALServiceTest {
     public void testDeactivate() throws InitializationException, InstantiationException {
         System.out.println("deactivate");
         DALService instance = new DALService();
+        instance.activate();
         instance.deactivate();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -80,8 +75,6 @@ public class DALServiceTest {
         DeviceRegistry expResult = null;
         DeviceRegistry result = instance.getDeviceRegistry();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -94,8 +87,6 @@ public class DALServiceTest {
         ConnectionManager expResult = null;
         ConnectionManager result = instance.getConnectionManager();
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**
@@ -106,8 +97,6 @@ public class DALServiceTest {
         System.out.println("main");
         String[] args = null;
         DALService.main(args);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
     
 }
