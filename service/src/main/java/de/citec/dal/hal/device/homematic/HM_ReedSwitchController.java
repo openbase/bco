@@ -6,13 +6,12 @@
 package de.citec.dal.hal.device.homematic;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
-import de.citec.dal.data.Location;
-import de.citec.dal.hal.unit.BatteryController;
-import de.citec.dal.hal.unit.ReedSwitchController;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.homematic.HM_ReedSwitchType;
 import rst.homeautomation.device.homematic.HM_ReedSwitchType.HM_ReedSwitch;
 
@@ -22,17 +21,16 @@ import rst.homeautomation.device.homematic.HM_ReedSwitchType.HM_ReedSwitch;
  */
 public class HM_ReedSwitchController extends AbstractOpenHABDeviceController<HM_ReedSwitch, HM_ReedSwitch.Builder> {
 
-	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HM_ReedSwitchType.HM_ReedSwitch.getDefaultInstance()));
-	}
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HM_ReedSwitchType.HM_ReedSwitch.getDefaultInstance()));
+    }
 
-	public HM_ReedSwitchController(final String label, final Location location) throws InstantiationException {
-		super(label, location, HM_ReedSwitch.newBuilder());
-		try {
-			this.registerUnit(new ReedSwitchController(label, this, data.getReedSwitchBuilder()));
-			this.registerUnit(new BatteryController(label, this, data.getBatteryBuilder()));
-		} catch (CouldNotPerformException ex) {
-			throw new InstantiationException(this, ex);
-		}
-	}
+    public HM_ReedSwitchController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, HM_ReedSwitchType.HM_ReedSwitch.newBuilder());
+        try {
+            registerUnits(config.getUnitConfigList());
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
 }

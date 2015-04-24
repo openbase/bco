@@ -6,13 +6,12 @@
 package de.citec.dal.hal.device.plugwise;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
-import de.citec.dal.data.Location;
-import de.citec.dal.hal.unit.PowerConsumptionSensorController;
-import de.citec.dal.hal.unit.PowerPlugController;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.plugwise.PW_PowerPlugType;
 import rst.homeautomation.device.plugwise.PW_PowerPlugType.PW_PowerPlug;
 
@@ -22,17 +21,16 @@ import rst.homeautomation.device.plugwise.PW_PowerPlugType.PW_PowerPlug;
  */
 public class PW_PowerPlugController extends AbstractOpenHABDeviceController<PW_PowerPlug, PW_PowerPlug.Builder> {
 
-	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PW_PowerPlugType.PW_PowerPlug.getDefaultInstance()));
-	}
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PW_PowerPlugType.PW_PowerPlug.getDefaultInstance()));
+    }
 
-	public PW_PowerPlugController(final String label, final Location location) throws InstantiationException {
-		super(PW_PowerPlug.newBuilder());
-		try {
-			this.registerUnit(new PowerPlugController(label, this, data.getPowerPlugBuilder(), getDefaultServiceFactory()));
-			this.registerUnit(new PowerConsumptionSensorController(label, this, data.getPowerConsumptionBuilder()));
-		} catch (CouldNotPerformException ex) {
-			throw new InstantiationException(this, ex);
-		}
-	}
+    public PW_PowerPlugController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, PW_PowerPlugType.PW_PowerPlug.newBuilder());
+        try {
+            registerUnits(config.getUnitConfigList());
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
 }
