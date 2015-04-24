@@ -7,9 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -31,36 +29,41 @@ import org.slf4j.LoggerFactory;
  */
 public class PowerConsumptionSensorRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    public static final String LABEL = "Power_Consumption_Unit_Test";
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerConsumptionSensorRemoteTest.class);
 
     private static PowerConsumptionSensorRemote powerConsumptionRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location locaton;
+    private static String label;
 
     public PowerConsumptionSensorRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        locaton = new Location(registry.getLocation());
+        label = MockRegistryHolder.POWER_CONSUMPTION_LABEL;
+
         powerConsumptionRemote = new PowerConsumptionSensorRemote();
-        powerConsumptionRemote.init(LABEL, LOCATION);
+        powerConsumptionRemote.init(label, locaton);
         powerConsumptionRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         dalService.shutdown();
         try {
             powerConsumptionRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate power consumption remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before
@@ -88,7 +91,7 @@ public class PowerConsumptionSensorRemoteTest {
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;
-        ((PowerConsumptionSensorController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, PowerConsumptionSensorController.class)).updatePowerConsumption(consumption);
+        ((PowerConsumptionSensorController) dalService.getUnitRegistry().getUnit(label, locaton, PowerConsumptionSensorController.class)).updatePowerConsumption(consumption);
         while (true) {
             try {
                 if (powerConsumptionRemote.getPowerConsumption() == consumption) {
@@ -100,18 +103,5 @@ public class PowerConsumptionSensorRemoteTest {
             Thread.yield();
         }
         assertTrue("The getter for the power consumption returns the wrong value!", powerConsumptionRemote.getPowerConsumption() == consumption);
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-
-            try {
-                registry.register(new PW_PowerPlugController(LABEL, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

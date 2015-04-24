@@ -7,10 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.unit.TamperSwitchController;
-import de.citec.dal.registry.UnitRegistry;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -33,36 +30,41 @@ import rst.homeautomation.state.TamperType;
  */
 public class TamperSwitchRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    public static final String LABEL = "Tamper_Switch_Unit_Test";
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperSwitchRemoteTest.class);
 
     private static TamperSwitchRemote tamperSwitchRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location location;
+    private static String label;
 
     public TamperSwitchRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        location = new Location(registry.getLocation());
+        label = MockRegistryHolder.TAMPER_SWITCH_LABEL;
+
         tamperSwitchRemote = new TamperSwitchRemote();
-        tamperSwitchRemote.init(LABEL, LOCATION);
+        tamperSwitchRemote.init(label, location);
         tamperSwitchRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         dalService.shutdown();
         try {
             tamperSwitchRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate tamper switch remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before
@@ -89,7 +91,7 @@ public class TamperSwitchRemoteTest {
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperType.Tamper.TamperState state = TamperType.Tamper.TamperState.TAMPER;
-        ((TamperSwitchController)dalService.getUnitRegistry().getUnit(LABEL, LOCATION, TamperSwitchController.class)).updateTamper(state);
+        ((TamperSwitchController) dalService.getUnitRegistry().getUnit(label, location, TamperSwitchController.class)).updateTamper(state);
         while (true) {
             try {
                 if (tamperSwitchRemote.getTamper().equals(state)) {
@@ -101,18 +103,5 @@ public class TamperSwitchRemoteTest {
             Thread.yield();
         }
         assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().equals(state));
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-
-            try {
-                registry.register(new F_MotionSensorController(LABEL, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

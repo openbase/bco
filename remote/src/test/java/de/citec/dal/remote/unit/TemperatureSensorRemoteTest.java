@@ -7,15 +7,14 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.fibaro.F_MotionSensorController;
 import de.citec.dal.hal.unit.TemperatureSensorController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -31,25 +30,29 @@ import org.slf4j.LoggerFactory;
  */
 public class TemperatureSensorRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    public static final String LABEL = "Temperature_Sensor_Unit_Test";
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TemperatureSensorRemoteTest.class);
 
     private static TemperatureSensorRemote temperatureSensorRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location location;
+    private static String label;
 
     public TemperatureSensorRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        location = new Location(registry.getLocation());
+        label = MockRegistryHolder.TEMPERATURE_SENSOR_LABEL;
+
         temperatureSensorRemote = new TemperatureSensorRemote();
-        temperatureSensorRemote.init(LABEL, LOCATION);
+        temperatureSensorRemote.init(label, location);
         temperatureSensorRemote.activate();
     }
 
@@ -87,7 +90,7 @@ public class TemperatureSensorRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         float temperature = 37.0F;
-        ((TemperatureSensorController)dalService.getUnitRegistry().getUnit(LABEL, LOCATION, TemperatureSensorController.class)).updateTemperature(temperature);
+        ((TemperatureSensorController) dalService.getUnitRegistry().getUnit(label, location, TemperatureSensorController.class)).updateTemperature(temperature);
         while (true) {
             try {
                 if (temperatureSensorRemote.getTemperature() == temperature) {
@@ -99,17 +102,5 @@ public class TemperatureSensorRemoteTest {
             Thread.yield();
         }
         assertTrue("The getter for the tamper switch state returns the wrong value!", temperatureSensorRemote.getTemperature() == temperature);
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-            try {
-                registry.register(new F_MotionSensorController(LABEL, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

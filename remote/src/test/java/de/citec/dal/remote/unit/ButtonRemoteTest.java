@@ -7,9 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.gira.GI_5142Controller;
 import de.citec.dal.hal.unit.ButtonController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -32,37 +30,41 @@ import rst.homeautomation.state.ClickType;
  */
 public class ButtonRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    public static final String LABEL = "Button_Unit_Test";
-    public static final String[] BUTTONS = {"Button_1", "Button_2", "Button_3", "Button_4"};
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ButtonRemoteTest.class);
 
     private static ButtonRemote buttonRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location location;
+    private static String label;
 
     public ButtonRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        location = new Location(registry.getLocation());
+        label = MockRegistryHolder.BUTTON_LABEL;
+
         buttonRemote = new ButtonRemote();
-        buttonRemote.init(BUTTONS[0], LOCATION);
+        buttonRemote.init(label, location);
         buttonRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
-//        dalService.shutdown();
-//        try {
-//            buttonRemote.deactivate();
-//        } catch (InterruptedException ex) {
-//            logger.warn("Could not deactivate button remote: ", ex);
-//        }
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
+        dalService.shutdown();
+        try {
+            buttonRemote.deactivate();
+        } catch (InterruptedException ex) {
+            logger.warn("Could not deactivate button remote: ", ex);
+        }
+        registry.shutdown();
     }
 
     @Before
@@ -89,7 +91,7 @@ public class ButtonRemoteTest {
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
         ClickType.Click.ClickState state = ClickType.Click.ClickState.DOUBLE_CLICKED;
-        ((ButtonController) dalService.getUnitRegistry().getUnit(BUTTONS[0], LOCATION, ButtonController.class)).updateButton(state);
+        ((ButtonController) dalService.getUnitRegistry().getUnit(label, location, ButtonController.class)).updateButton(state);
         while (true) {
             try {
                 if (buttonRemote.getButton().equals(state)) {
@@ -101,17 +103,5 @@ public class ButtonRemoteTest {
             Thread.yield();
         }
         assertTrue("The getter for the button returns the wrong value!", buttonRemote.getButton().equals(state));
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-            try {
-                registry.register(new GI_5142Controller(LABEL, BUTTONS, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

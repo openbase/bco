@@ -7,9 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.plugwise.PW_PowerPlugController;
 import de.citec.dal.hal.unit.PowerPlugController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -33,36 +31,41 @@ import rst.homeautomation.state.PowerType;
  */
 public class PowerPlugRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    public static final String LABEL = "Power_Plug_Unit_Test";
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerPlugRemoteTest.class);
 
     private static PowerPlugRemote powerPlugRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location locaton;
+    private static String label;
 
     public PowerPlugRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        locaton = new Location(registry.getLocation());
+        label = MockRegistryHolder.POWER_PLUG_LABEL;
+
         powerPlugRemote = new PowerPlugRemote();
-        powerPlugRemote.init(LABEL, LOCATION);
+        powerPlugRemote.init(label, locaton);
         powerPlugRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         dalService.shutdown();
         try {
             powerPlugRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate power plug remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before
@@ -105,7 +108,7 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((PowerPlugController) dalService.getUnitRegistry().getUnit(LABEL, LOCATION, PowerPlugController.class)).updatePower(state);
+        ((PowerPlugController) dalService.getUnitRegistry().getUnit(label, locaton, PowerPlugController.class)).updatePower(state);
         while (true) {
             try {
                 if (powerPlugRemote.getPower().equals(state)) {
@@ -124,18 +127,5 @@ public class PowerPlugRemoteTest {
      */
     @Ignore
     public void testNotifyUpdated() {
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-
-            try {
-                registry.register(new PW_PowerPlugController(LABEL, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

@@ -7,9 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.hager.HA_TYA663AController;
 import de.citec.dal.hal.unit.DimmerController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -32,37 +30,41 @@ import rst.homeautomation.state.PowerType;
  */
 public class DimmerRemoteTest {
 
-    public static final String LABEL = "Dimmer_Unit_Test";
-    public static final String[] UNITS = {"Dimmer_1", "Dimmer_2", "Dimmer_3"};
-    public static final Location LOCATION = new Location("paradise");
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DimmerRemoteTest.class);
 
     private static DimmerRemote dimmerRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location location;
+    private static String label;
 
     public DimmerRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DimmerRemoteTest.DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        location = new Location(registry.getLocation());
+        label = MockRegistryHolder.DIMMER_LABEL;
+
         dimmerRemote = new DimmerRemote();
-        dimmerRemote.init(UNITS[0], LOCATION);
+        dimmerRemote.init(label, location);
         dimmerRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         dalService.shutdown();
         try {
             dimmerRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate dimmer remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before
@@ -110,7 +112,7 @@ public class DimmerRemoteTest {
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((DimmerController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, DimmerController.class)).updatePower(state);
+        ((DimmerController) dalService.getUnitRegistry().getUnit(label, location, DimmerController.class)).updatePower(state);
         while (true) {
             try {
                 if (dimmerRemote.getPower().equals(state)) {
@@ -152,7 +154,7 @@ public class DimmerRemoteTest {
     public void testGetDimm() throws Exception {
         System.out.println("getDimm");
         Double dimm = 70.0D;
-        ((DimmerController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, DimmerController.class)).updateDimm(dimm);
+        ((DimmerController) dalService.getUnitRegistry().getUnit(label, location, DimmerController.class)).updateDimm(dimm);
         while (true) {
             try {
                 if (dimmerRemote.getDimm().equals(dimm)) {
@@ -164,18 +166,5 @@ public class DimmerRemoteTest {
             Thread.yield();
         }
         assertTrue("Dimm has not been set in time!", dimmerRemote.getDimm().equals(dimm));
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-
-            try {
-                registry.register(new HA_TYA663AController(LABEL, UNITS, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

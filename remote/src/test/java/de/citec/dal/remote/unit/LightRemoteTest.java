@@ -7,9 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.fibaro.F_FGS221Controller;
 import de.citec.dal.hal.unit.LightController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -32,37 +30,41 @@ import rst.homeautomation.state.PowerType;
  */
 public class LightRemoteTest {
 
-    public static final String LABEL = "Light_Unit_Test";
-    public static final String[] UNITS = {"Light_1", "Light_2", "testButton_1", "testButton_2"};
-    public static final Location LOCATION = new Location("paradise");
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LightRemoteTest.class);
 
     private static LightRemote lightRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location location;
+    private static String label;
 
     public LightRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        location = new Location(registry.getLocation());
+        label = MockRegistryHolder.LIGHT_LABEL;
+
         lightRemote = new LightRemote();
-        lightRemote.init(UNITS[0], LOCATION);
+        lightRemote.init(label, location);
         lightRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         dalService.shutdown();
         try {
             lightRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate light remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before
@@ -105,7 +107,7 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((LightController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, LightController.class)).updatePower(state);
+        ((LightController) dalService.getUnitRegistry().getUnit(label, location, LightController.class)).updatePower(state);
         while (true) {
             try {
                 if (lightRemote.getPower().equals(state)) {
@@ -124,18 +126,5 @@ public class LightRemoteTest {
      */
     @Ignore
     public void testNotifyUpdated() {
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-
-            try {
-                registry.register(new F_FGS221Controller(LABEL, UNITS, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }

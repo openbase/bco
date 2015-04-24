@@ -7,9 +7,7 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.hager.HA_TYA628CController;
 import de.citec.dal.hal.unit.RollershutterController;
-import de.citec.dal.registry.DeviceRegistry;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -33,38 +31,42 @@ import rst.homeautomation.state.ShutterType;
  */
 public class RollershutterRemoteTest {
 
-    private static final Location LOCATION = new Location("paradise");
-    public static final String LABEL = "Rollershutter_Unit_Test";
-    public static final String[] UNITS = {"Rollershutter_1", "Rollershutter_2", "Rollershutter_3", "Rollershutter_4", "Rollershutter_5", "Rollershutter_6", "Rollershutter_7", "Rollershutter_8"};
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollershutterRemoteTest.class);
 
     private static RollershutterRemote rollershutterRemote;
     private static DALService dalService;
+    private static MockRegistryHolder registry;
+    private static Location location;
+    private static String label;
 
     public RollershutterRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
-        dalService = new DALService(new DeviceInitializerImpl());
+        dalService = new DALService();
         dalService.activate();
 
+        registry = new MockRegistryHolder();
+        location = new Location(registry.getLocation());
+        label = MockRegistryHolder.ROLLERSHUTTER_LABEL;
+
         rollershutterRemote = new RollershutterRemote();
-        rollershutterRemote.init(UNITS[0], LOCATION);
+        rollershutterRemote.init(label, location);
         rollershutterRemote.activate();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException {
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         dalService.shutdown();
         try {
             rollershutterRemote.deactivate();
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate rollershutter remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before
@@ -107,7 +109,7 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
-        ((RollershutterController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, RollershutterController.class)).updateShutter(state);
+        ((RollershutterController) dalService.getUnitRegistry().getUnit(label, location, RollershutterController.class)).updateShutter(state);
         while (true) {
             try {
                 if (rollershutterRemote.getShutter().equals(state)) {
@@ -153,7 +155,7 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
-        ((RollershutterController) dalService.getUnitRegistry().getUnit(UNITS[0], LOCATION, RollershutterController.class)).updateOpeningRatio(openingRatio);
+        ((RollershutterController) dalService.getUnitRegistry().getUnit(label, location, RollershutterController.class)).updateOpeningRatio(openingRatio);
         while (true) {
             try {
                 if (rollershutterRemote.getOpeningRatio().equals(openingRatio)) {
@@ -172,18 +174,5 @@ public class RollershutterRemoteTest {
      */
     @Ignore
     public void testNotifyUpdated() {
-    }
-
-    public static class DeviceInitializerImpl implements de.citec.dal.util.DeviceInitializer {
-
-        @Override
-        public void initDevices(final DeviceRegistry registry) {
-
-            try {
-                registry.register(new HA_TYA628CController(LABEL, UNITS, LOCATION));
-            } catch (CouldNotPerformException ex) {
-                logger.warn("Could not initialize unit test device!", ex);
-            }
-        }
     }
 }
