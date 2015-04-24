@@ -81,6 +81,12 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             throw new InstantiationException(this, ex);
         }
     }
+    
+    @Override
+    public void shutdown() {
+        deviceClassRegistry.shutdown();
+        deviceConfigRegistry.shutdown();
+    }
 
     @Override
     public void registerMethods(LocalServer server) throws RSBException {

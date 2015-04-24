@@ -42,6 +42,10 @@ public class DeviceManager {
             throw new InitializationException(this, ex);
         }
     }
+    
+    public void shutdown() {
+        deviceRegistry.shutdown();
+    }
 
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");

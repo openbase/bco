@@ -51,4 +51,6 @@ public interface DeviceRegistryInterface {
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
     
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
+    
+    public void shutdown();
 }
