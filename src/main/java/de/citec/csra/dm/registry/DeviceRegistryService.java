@@ -160,6 +160,16 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
+    public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
+        return deviceClassRegistry.getMessages();
+    }
+
+    @Override
+    public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException {
+        return deviceConfigRegistry.getMessages();
+    }
+
+    @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {

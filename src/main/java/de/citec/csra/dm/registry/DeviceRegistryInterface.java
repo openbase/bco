@@ -44,6 +44,10 @@ public interface DeviceRegistryInterface {
     
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
+    public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException;
+
+    public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException;
+
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
     
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;

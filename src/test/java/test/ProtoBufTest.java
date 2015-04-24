@@ -6,34 +6,45 @@
 package test;
 
 import java.util.HashMap;
-import java.util.List;
 import junit.framework.TestCase;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.unit.UnitConfigType;
+import org.junit.Test;
+import rst.homeautomation.device.fibaro.F_FGS_221Type;
+import rst.homeautomation.unit.ButtonType.Button;
 
 /**
  *
  * @author mpohling
  */
 public class ProtoBufTest extends TestCase {
-    
+
     public ProtoBufTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
-    
+    @Test
+    public void testInternalBuilderDep() {
+        F_FGS_221Type.F_FGS_221.Builder fibaro = F_FGS_221Type.F_FGS_221.newBuilder();
+        Button.Builder button = Button.newBuilder();
+        button.setName("Test1");
+        fibaro.getUnitButtonBuilderList().add(button);
+        assertEquals(fibaro.getUnitButton(0).getName(), "Test1");
+        button.setName("Test2");
+        assertEquals(fibaro.getUnitButton(0).getName(), "Test2");
+
+    }
+
     public void testHello() {
-        
+
         HashMap map = new HashMap();
 //        map.keySet().
 //        DeviceConfigType.DeviceConfig.Builder newBuilder = DeviceConfigType.DeviceConfig.newBuilder();
