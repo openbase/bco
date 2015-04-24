@@ -13,6 +13,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState;
 import rst.homeautomation.unit.HandleSensorType;
 import rst.homeautomation.unit.HandleSensorType.HandleSensor;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -24,8 +25,8 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
     }
 
-    public HandleSensorController(final String label, Device device, HandleSensor.Builder builder) throws InstantiationException {
-        super(HandleSensorController.class, label, device, builder);
+    public HandleSensorController(final UnitConfigType.UnitConfig config, Device device, HandleSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, HandleSensorController.class, device, builder);
     }
 
     public void updateHandle(final OpenClosedTiltedState state) {

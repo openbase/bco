@@ -12,6 +12,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.TemperatureSensorType;
 import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -23,8 +24,8 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(final String label, Device device, TemperatureSensor.Builder builder) throws InstantiationException {
-        super(TemperatureSensorController.class, label, device, builder);
+    public TemperatureSensorController(final UnitConfigType.UnitConfig config, Device device, TemperatureSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, TemperatureSensorController.class, device, builder);
     }
 
     public void updateTemperature(final float temperature) {

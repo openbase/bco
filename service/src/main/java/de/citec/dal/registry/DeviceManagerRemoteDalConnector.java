@@ -6,17 +6,12 @@
 package de.citec.dal.registry;
 
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
-import de.citec.dal.data.Location;
-import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.device.DeviceFactory;
-import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.util.DeviceInitializer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

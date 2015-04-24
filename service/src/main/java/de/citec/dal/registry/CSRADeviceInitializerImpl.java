@@ -25,14 +25,6 @@ public class CSRADeviceInitializerImpl implements DeviceInitializer {
 	@Override
 	public void initDevices(final DeviceRegistry registry) {
 		logger.info("Init devices...");
-		Location home = new Location("home");
-		Location outdoor = new Location("outdoor", home);
-		Location kitchen = new Location("kitchen", home);
-		Location wardrobe = new Location("wardrobe", home);
-		Location living = new Location("living", home);
-		Location sports = new Location("sports", home);
-		Location bath = new Location("bath", home);
-		Location control = new Location("control", home);
 
 		try {
 //				registry.register(new PW_PowerPlugController("PW_PowerPlug_000", "USBCharger_1", control));

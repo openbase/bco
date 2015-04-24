@@ -9,6 +9,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
 import rst.homeautomation.unit.LightType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -23,12 +24,12 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
 
     private final PowerService powerService;
 
-    public LightController(final String label, Device device, LightType.Light.Builder builder) throws InstantiationException {
-        this(label, device, builder, device.getDefaultServiceFactory());
+    public LightController(final UnitConfigType.UnitConfig config, Device device, LightType.Light.Builder builder) throws InstantiationException, CouldNotPerformException {
+        this(config, device, builder, device.getDefaultServiceFactory());
     }
 
-    public LightController(final String label, Device device, LightType.Light.Builder builder, ServiceFactory serviceFactory) throws InstantiationException {
-        super(LightController.class, label, device, builder);
+    public LightController(final UnitConfigType.UnitConfig config, Device device, LightType.Light.Builder builder, ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+        super(config, LightController.class, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
     }
 

@@ -13,6 +13,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperType;
 import rst.homeautomation.unit.TamperSwitchType;
 import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -24,8 +25,8 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
     }
 
-    public TamperSwitchController(final String label, Device device, TamperSwitch.Builder builder) throws InstantiationException {
-        super(TamperSwitchController.class, label, device, builder);
+    public TamperSwitchController(final UnitConfigType.UnitConfig config, Device device, TamperSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, TamperSwitchController.class, device, builder);
     }
 
     public void updateTamper(final TamperType.Tamper.TamperState state) {

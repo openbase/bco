@@ -16,6 +16,7 @@ import de.citec.jul.rsb.com.RSBCommunicationService;
 import de.citec.jul.rsb.com.RSBInformerInterface;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
+import de.citec.jul.rsb.scope.ScopeTransformer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import java.util.List;
 import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -44,18 +46,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final Device device;
     private final List<Service> serviceList;
 
-    public AbstractUnitController(final Class unitClass, final String label, final Device device, final MB builder) throws InstantiationException {
-        this(unitClass, label, device.getLocation(), device, builder);
-    }
-
-    public AbstractUnitController(final Class unitClass, final String label, final Location location, final Device device, final MB builder) throws InstantiationException {
-        super(generateScope(generateName(unitClass), label, device), builder);
+    public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final Device device, final MB builder) throws CouldNotPerformException {
+        super(ScopeTransformer.transform(config.getScope()), builder);
         try {
-            this.id = generateID(scope);
+            this.id = config.getId();
             this.name = generateName();
-            this.label = label;
+            this.label = config.getLabel();
             this.device = device;
-            this.location = location;
+            this.location = new Location(config.getPlacement().getLocation());
             this.serviceList = new ArrayList<>();
 
             setField(TYPE_FILED_ID, id);
@@ -109,7 +107,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         serviceList.add(service);
     }
 
-    public static String generateID(final String label, final Location location, final Class clazz) {
+    public static String generateID(final String label, final Location location, final Class clazz) throws CouldNotPerformException {
         return generateID(generateScope(generateName(clazz), label, location));
     }
 
@@ -125,18 +123,16 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return clazz.getSimpleName().replace("Controller", "");
     }
 
-    public Scope generateScope() {
+    public Scope generateScope() throws CouldNotPerformException {
         return generateScope(generateName(), label, device);
     }
 
-    public static Scope generateScope(final String name, final String label, final Device device) {
-        return generateScope(name, label, device.getLocation());
-    }
-
-    public static Scope generateScope(final String name, final String label, final Location location) {
-        return location.getScope().concat(new Scope(Scope.COMPONENT_SEPARATOR + name).concat(new Scope(Scope.COMPONENT_SEPARATOR + label)));
-    }
-
+//    public static Scope generateScope(final String name, final String label, final Device device) throws CouldNotPerformException {
+//        return generateScope(name, label, device.getLocation());
+//    }
+//    public static Scope generateScope(final String name, final String label, final Location location) {
+//        return location.getScope().concat(new Scope(Scope.COMPONENT_SEPARATOR + name).concat(new Scope(Scope.COMPONENT_SEPARATOR + label)));
+//    }
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + name + "[" + label + "]]";

@@ -12,6 +12,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.PowerConsumptionSensorType;
 import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -23,8 +24,8 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(final String label, Device device, PowerConsumptionSensor.Builder builder) throws InstantiationException {
-        super(PowerConsumptionSensorController.class, label, device, builder);
+    public PowerConsumptionSensorController(final UnitConfigType.UnitConfig config, final String label, Device device, PowerConsumptionSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, PowerConsumptionSensorController.class, device, builder);
     }
 
     public void updatePowerConsumption(final float consumption) {

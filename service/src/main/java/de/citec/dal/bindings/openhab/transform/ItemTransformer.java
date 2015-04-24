@@ -9,7 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.unit.Unit;
-import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.CouldNotPerformException;
 import rsb.Scope;
 import rst.homeautomation.openhab.OpenhabCommandType;
 
@@ -22,10 +22,10 @@ public class ItemTransformer {
 	public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
 	public static final String ITEM_SEGMENT_DELIMITER = "__";
 
-	public static String generateItemName(final Device device, final Unit unit, final Service service) {
+	public static String generateItemName(final Device device, final Unit unit, final Service service) throws CouldNotPerformException {
 		return device.getName()
 				+ ITEM_SEGMENT_DELIMITER
-				+ generateLocationName(unit.getLocation())
+				+ generateLocationId(unit.getLocation())
 				+ ITEM_SEGMENT_DELIMITER
 				+ unit.getName()
 				+ ITEM_SEGMENT_DELIMITER
@@ -34,19 +34,13 @@ public class ItemTransformer {
 				+ service.getServiceType().getServiceName();
 	}
 
-	public static String generateLocationName(final Location location) {
+	public static String generateLocationId(final Location location) throws CouldNotPerformException {
 		String location_id = "";
-		Location parentLocation;
 
-		try {
-			parentLocation = location.getParent();
-			while (true) {
-				location_id += parentLocation.getName() + ITEM_SUBSEGMENT_DELIMITER;
-				parentLocation = parentLocation.getParent();
-			}
-		} catch (NotAvailableException ex) {
-			return location_id + location.getName();
-		}
+        for(String component : location.getScope().getComponents()) {
+            location_id += component + ITEM_SUBSEGMENT_DELIMITER;
+        }
+        return location_id;
 	}
 
 	public static String generateUnitID(final OpenhabCommandType.OpenhabCommand command) {

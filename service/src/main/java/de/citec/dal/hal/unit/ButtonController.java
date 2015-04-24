@@ -13,6 +13,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ClickType;
 import rst.homeautomation.unit.ButtonType;
 import rst.homeautomation.unit.ButtonType.Button;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -25,8 +26,8 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
     }
 
-    public ButtonController(final String label, Device device, Button.Builder builder) throws InstantiationException {
-        super(ButtonController.class, label, device, builder);
+    public ButtonController(final UnitConfigType.UnitConfig config, Device device, Button.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, ButtonController.class, device, builder);
     }
 
     public void updateButton(final ClickType.Click.ClickState state) {

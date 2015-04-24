@@ -13,6 +13,7 @@ import rst.homeautomation.state.MotionType;
 import rst.homeautomation.state.MotionType.Motion.MotionState;
 import rst.homeautomation.unit.MotionSensorType;
 import rst.homeautomation.unit.MotionSensorType.MotionSensor;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -24,8 +25,8 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
     }
 
-    public MotionSensorController(final String label, final Device device, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException {
-        super(MotionSensorController.class, label, device, builder);
+    public MotionSensorController(final UnitConfigType.UnitConfig config, final Device device, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+        super(config, MotionSensorController.class, device, builder);
         
     }
 

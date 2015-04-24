@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.device;
 
+import de.citec.dal.hal.device.fibaro.F_FGS221Controller;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -18,6 +19,9 @@ public class DeviceFactory implements DeviceFactoryInterface {
     
     @Override
     public Device newDevice(final DeviceConfig deviceConfig) {
+//        deviceConfig.get
+
+        F_FGS221Controller
         return deviceConfig.;
     }
 }

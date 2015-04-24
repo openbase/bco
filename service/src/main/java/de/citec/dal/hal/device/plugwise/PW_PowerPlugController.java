@@ -27,7 +27,7 @@ public class PW_PowerPlugController extends AbstractOpenHABDeviceController<PW_P
 	}
 
 	public PW_PowerPlugController(final String label, final Location location) throws InstantiationException {
-		super(label, location, PW_PowerPlug.newBuilder());
+		super(PW_PowerPlug.newBuilder());
 		try {
 			this.registerUnit(new PowerPlugController(label, this, data.getPowerPlugBuilder(), getDefaultServiceFactory()));
 			this.registerUnit(new PowerConsumptionSensorController(label, this, data.getPowerConsumptionBuilder()));

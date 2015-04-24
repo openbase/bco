@@ -7,10 +7,11 @@ package de.citec.dal.bindings.openhab;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.bindings.openhab.service.OpenhabServiceFactory;
-import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.AbstractDeviceController;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
+import rst.homeautomation.device.DeviceConfigType;
 
 /**
  *
@@ -23,13 +24,8 @@ public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage
     public static final String ITEM_ID_DELIMITER = "_";
     private final static ServiceFactory defaultServiceFactory = new OpenhabServiceFactory();
 
-	@Deprecated
-    public AbstractOpenHABDeviceController(String name, String label, Location location, MB builder) throws InstantiationException {
-		this(label, location, builder);
-	}
-
-    public AbstractOpenHABDeviceController(String label, Location location, MB builder) throws InstantiationException {
-        super(label, location, builder);
+    public AbstractOpenHABDeviceController(final DeviceConfigType.DeviceConfig config, MB builder) throws InstantiationException, CouldNotTransformException {
+        super(config, builder);
     }
 
     @Override

@@ -14,6 +14,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
 import rst.homeautomation.unit.DimmerType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -29,12 +30,12 @@ public class DimmerController extends AbstractUnitController<DimmerType.Dimmer, 
     private final PowerService powerService;
     private final DimmService dimmService;
 
-    public DimmerController(final String label, Device device, DimmerType.Dimmer.Builder builder) throws de.citec.jul.exception.InstantiationException {
-        this(label, device, builder, device.getDefaultServiceFactory());
+    public DimmerController(final UnitConfigType.UnitConfig config, Device device, DimmerType.Dimmer.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+        this(config, device, builder, device.getDefaultServiceFactory());
     }
 
-    public DimmerController(final String label, Device device, DimmerType.Dimmer.Builder builder, final ServiceFactory serviceFactory) throws de.citec.jul.exception.InstantiationException {
-        super(DimmerController.class, label, device, builder);
+    public DimmerController(final UnitConfigType.UnitConfig config, Device device, DimmerType.Dimmer.Builder builder, final ServiceFactory serviceFactory) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+        super(config, DimmerController.class, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
         this.dimmService = serviceFactory.newDimmService(device, this);
     }

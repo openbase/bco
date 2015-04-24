@@ -14,6 +14,7 @@ import rst.homeautomation.state.OpenClosedType;
 import rst.homeautomation.state.OpenClosedType.OpenClosed.OpenClosedState;
 import rst.homeautomation.unit.ReedSwitchType;
 import rst.homeautomation.unit.ReedSwitchType.ReedSwitch;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -25,8 +26,8 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
     }
 
-    public ReedSwitchController(final String label, Device device, ReedSwitch.Builder builder) throws InstantiationException {
-        super(ReedSwitchController.class, label, device, builder);
+    public ReedSwitchController(final UnitConfigType.UnitConfig config, Device device, ReedSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, ReedSwitchController.class, device, builder);
     }
 
     public void updateReedSwitch(final OpenClosedType.OpenClosed.OpenClosedState state) {

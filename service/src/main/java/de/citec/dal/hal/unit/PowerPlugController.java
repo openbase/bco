@@ -15,6 +15,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
 import rst.homeautomation.unit.PowerPlugType;
 import rst.homeautomation.unit.PowerPlugType.PowerPlug;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -29,12 +30,12 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     private final PowerService powerService;
     
-    public PowerPlugController(final String label, Device device, PowerPlug.Builder builder) throws InstantiationException {
-        this(label, device, builder, device.getDefaultServiceFactory());
+    public PowerPlugController(final UnitConfigType.UnitConfig config, final Device device, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
+        this(config, device, builder, device.getDefaultServiceFactory());
     }
     
-    public PowerPlugController(final String label, Device device, PowerPlug.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
-        super(PowerPlugController.class, label, device, builder);
+    public PowerPlugController(final UnitConfigType.UnitConfig config, final Device device, final PowerPlug.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+        super(config, PowerPlugController.class, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
     }
 

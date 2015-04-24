@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.AbstractUnitController;
+import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.rsb.com.RSBCommunicationService;
 import de.citec.jul.rsb.com.RSBInformerInterface.InformerType;
@@ -18,8 +19,8 @@ import java.util.Collections;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
-import rsb.Scope;
 import rsb.patterns.LocalServer;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
@@ -29,9 +30,10 @@ import rsb.patterns.LocalServer;
  */
 public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements Device {
 
-	public final static String TYPE_FILED_ID = "id";
-	public final static String TYPE_FILED_NAME = "name";
-	public final static String TYPE_FILED_LABEL = "label";
+//	public final static String TYPE_FILED_ID = "id";
+//	public final static String TYPE_FILED_NAME = "name";
+//	public final static String TYPE_FILED_LABEL = "label";
+	public final static String DEVICE_TYPE_FILED_CONFIG = "config";
 
 	protected final String id;
 	protected final String name;
@@ -40,17 +42,18 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
 	private final Map<String, AbstractUnitController> unitMap;
 
-	public AbstractDeviceController(final String label, final Location location, final MB builder) throws InstantiationException {
-		super(generateScope(generateName(builder.getClass().getDeclaringClass()), label, location), builder);
-		this.id = generateId(scope);
+	public AbstractDeviceController(final DeviceConfig config, final MB builder) throws InstantiationException, CouldNotTransformException {
+		super(config.getScope(), builder);
+		this.id = config.getId();
 		this.name = generateName(builder.getClass().getDeclaringClass());
-		this.label = label;
-		this.location = location;
+		this.label = config.getLabel();
+		this.location = new Location(config.getPlacementConfig().getLocation());
 		this.unitMap = new HashMap<>();
 
-		setField(TYPE_FILED_ID, id);
-		setField(TYPE_FILED_NAME, name);
-		setField(TYPE_FILED_LABEL, label);
+        setField(DEVICE_TYPE_FILED_CONFIG, config);
+//		setField(TYPE_FILED_ID, id);
+//		setField(TYPE_FILED_NAME, name);
+//		setField(TYPE_FILED_LABEL, label);
 
 		try {
 			init(InformerType.Distributed);
@@ -59,10 +62,11 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 		}
 	}
 
-	public final static String generateId(final Scope scope) {
-		return scope.toString();
-	}
-
+//	public final static String generateId(final Scope scope) {
+//		return scope.toString();
+//	}
+//
+    
 	public final static String generateName(final Class hardware) {
 		return hardware.getSimpleName().replace("Controller", "");
 	}

@@ -12,6 +12,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BrightnessSensorType;
 import rst.homeautomation.unit.BrightnessSensorType.BrightnessSensor;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -23,8 +24,8 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
 	}
 
-	public BrightnessSensorController(final String label, Device device, BrightnessSensor.Builder builder) throws InstantiationException {
-		super(BrightnessSensorController.class, label, device, builder);
+	public BrightnessSensorController(final UnitConfigType.UnitConfig config, Device device, BrightnessSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+		super(config, BrightnessSensorController.class, device, builder);
 	}
 
 	public void updateBrightness(final float brightness) {

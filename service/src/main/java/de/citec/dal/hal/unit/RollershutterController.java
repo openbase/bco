@@ -15,6 +15,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ShutterType;
 import rst.homeautomation.unit.RollershutterType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -30,12 +31,12 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     private final ShutterService shutterService;
     private final OpeningRatioService openingRatioService;
 
-    public RollershutterController(final String label, Device device, RollershutterType.Rollershutter.Builder builder) throws InstantiationException {
-        this(label, device, builder, device.getDefaultServiceFactory());
+    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, RollershutterType.Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
+        this(config, device, builder, device.getDefaultServiceFactory());
     }
 
-    public RollershutterController(final String label, Device device, RollershutterType.Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException {
-        super(RollershutterController.class, label, device, builder);
+    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, RollershutterType.Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+        super(config, RollershutterController.class, device, builder);
         this.shutterService = serviceFactory.newShutterService(device, this);
         this.openingRatioService = serviceFactory.newOpeningRatioService(device, this);
     }
