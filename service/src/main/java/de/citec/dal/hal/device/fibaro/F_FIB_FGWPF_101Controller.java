@@ -22,11 +22,12 @@ import de.citec.jul.exception.InstantiationException;
 public class F_FIB_FGWPF_101Controller extends AbstractOpenHABDeviceController<F_FIB_FGWPF_101Type.F_FIB_FGWPF_101, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.Builder> {
 
 	static {
+        
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.getDefaultInstance()));
 	}
 
 	public F_FIB_FGWPF_101Controller(String label, final Location location) throws InstantiationException {
-		super(label, location, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.newBuilder());
+		super(F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.newBuilder());
 		try {
 			registerUnit(new PowerPlugController(label, this, data.getPowerPlugBuilder()));
 			registerUnit(new PowerConsumptionSensorController(label, this, data.getPowerConsumptionBuilder()));
