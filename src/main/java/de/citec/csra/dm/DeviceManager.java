@@ -10,7 +10,7 @@ import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jp.JPInitializeDBFlag;
+import de.citec.jul.storage.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.preset.JPReadOnly;
@@ -52,7 +52,7 @@ public class DeviceManager {
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
-        JPService.registerProperty(JPInitializeDBFlag.class);
+        JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPDeviceDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);

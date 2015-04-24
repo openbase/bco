@@ -6,8 +6,10 @@
 
 package de.citec.jp;
 
+import de.citec.jul.storage.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.AbstractJPDirectory;
+import de.citec.jps.preset.JPTestMode;
 import de.citec.jps.tools.FileHandler;
 import java.io.File;
 
@@ -27,6 +29,15 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
 	protected File getPropertyDefaultValue() {
 		return new File(JPService.getProperty(JPDeviceDatabaseDirectory.class).getValue(), "device-class-db");
 	}
+
+    @Override
+    public void validate() throws Exception {
+        if(JPService.getProperty(JPInitializeDB.class).getValue()) {
+            setAutoCreateMode(FileHandler.AutoMode.On);
+            setExistenceHandling(FileHandler.ExistenceHandling.MustBeNew);
+        }
+        super.validate();
+    }
 
 	@Override
 	public String getDescription() {
