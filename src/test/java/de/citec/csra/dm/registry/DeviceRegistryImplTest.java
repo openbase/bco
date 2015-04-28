@@ -159,7 +159,7 @@ public class DeviceRegistryImplTest {
                 
         while (true) {
             try {
-                if (remote.getData().getDeviceClasseList().contains(deviceClassRemote.clone().build())) {
+                if (remote.getData().getDeviceClassList().contains(deviceClassRemote.clone().build())) {
                     break;
                 }
             } catch (NotAvailableException ex) {

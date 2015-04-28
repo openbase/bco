@@ -57,7 +57,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
 			ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASSE_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
