@@ -5,6 +5,10 @@
  */
 package de.citec.csra.dm.registry;
 
+import de.citec.csra.dm.consistency.DeviceScopeConsistencyHandler;
+import de.citec.csra.dm.consistency.TransformationConsistencyHandler;
+import de.citec.csra.dm.consistency.UnitIdConsistencyHandler;
+import de.citec.csra.dm.consistency.UnitScopeConsistencyHandler;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
@@ -61,6 +65,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
+
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
