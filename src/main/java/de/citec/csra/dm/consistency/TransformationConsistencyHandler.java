@@ -64,13 +64,13 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             throw new NotAvailableException("deviceconfig.placement.position");
         }
 
-        if (!deviceConfig.getPlacementConfig().hasLocation()) {
+        if (!deviceConfig.getPlacementConfig().hasLocationConfig()) {
             throw new NotAvailableException("deviceconfig.placement.location");
         }
 
         // publish device transformation
 
-        Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocation().getId(), deviceConfig.getId());
+        Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationConfig().getId(), deviceConfig.getId());
 
         try {
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
@@ -82,19 +82,19 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
 
         for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
 
-            if (!unitConfig.hasPlacement()) {
+            if (!unitConfig.hasPlacementConfig()) {
                 throw new NotAvailableException("unitconfig.placement");
             }
 
-            if (!unitConfig.getPlacement().hasPosition()) {
+            if (!unitConfig.getPlacementConfig().hasPosition()) {
                 throw new NotAvailableException("unitconfig.placement.position");
             }
 
-            if (!unitConfig.getPlacement().hasLocation()) {
+            if (!unitConfig.getPlacementConfig().hasLocationConfig()) {
                 throw new NotAvailableException("unitconfig.placement.location");
             }
 
-            transformation = transform(unitConfig.getPlacement().getPosition(), unitConfig.getPlacement().getLocation().getId(), unitConfig.getId());
+            transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationConfig().getId(), unitConfig.getId());
             //TODO mpohling: refactory unitConfig.getPlacement into getPlacementConfig
 
             try {
