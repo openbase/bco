@@ -19,12 +19,24 @@ public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig
     @Override
     public String generateId(DeviceConfig message) throws CouldNotPerformException {
         try {
-            if (!message.hasDeviceClass() | !message.getDeviceClass().hasId()) {
+            if (!message.hasDeviceClass()) {
                 throw new InvalidStateException("Field [DeviceClass] is missing!");
+            }
+
+            if (!message.getDeviceClass().hasId()) {
+                throw new InvalidStateException("Field [DeviceClass.id] is missing!");
+            }
+
+            if (message.getDeviceClass().getId().isEmpty()) {
+                throw new InvalidStateException("Field [DeviceClass.id] is empty!");
             }
 
             if (!message.hasSerialNumber()) {
                 throw new InvalidStateException("Field [SerialNumber] is missing!");
+            }
+
+            if (message.getSerialNumber().isEmpty()) {
+                throw new InvalidStateException("Field [SerialNumber] is empty!");
             }
 
             String id;

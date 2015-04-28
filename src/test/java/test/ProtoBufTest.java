@@ -43,7 +43,6 @@ public class ProtoBufTest extends TestCase {
 //        assertEquals(fibaro.getUnitButton(0).getName(), "Test2");
 //
 //    }
-
     public void testHello() {
 
         HashMap map = new HashMap();
@@ -71,5 +70,16 @@ public class ProtoBufTest extends TestCase {
 //        
 //        assertEquals(newBuilder.getUnitConfigsCount(), 0);
 //        assertEquals(unitConfigsBuilderList.size(), 0);
+    }
+
+    @Test
+    public void testRSTClassLoader() throws Exception {
+        String unitMessageClassName = "rst.homeautomation.unit.LightType$Light";
+//        Class z = rst.homeautomation.unit.LightType.Light.class;
+        Class messageClass;
+//        assertEquals(unitMessageClassName, z.getName());
+        messageClass = Class.forName(unitMessageClassName);
+        System.out.println("Loaded Class:"+messageClass.getName());
+//        messageClass = getClass().getClassLoader().loadClass(unitMessageClassName);
     }
 }

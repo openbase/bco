@@ -82,6 +82,7 @@ public class DeviceRegistryImplTest {
 
         deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClass.setLabel("TestDeviceClassLabel");
+        deviceClass.setCompany("MyCom");
         deviceClass.setProductNumber("TDCL-001");
         deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
         deviceConfig.setLabel("TestDeviceConfigLabel");
@@ -89,7 +90,7 @@ public class DeviceRegistryImplTest {
         deviceConfig.setDeviceClass(deviceClass.clone().setId("TestDeviceClassLabel"));
 
         deviceClassRemote = DeviceClass.getDefaultInstance().newBuilderForType();
-        deviceClassRemote.setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132");
+        deviceClassRemote.setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
         deviceConfigRemote = DeviceConfig.getDefaultInstance().newBuilderForType();
         deviceConfigRemote.setLabel("RemoteTestDeviceConfig").setSerialNumber("1123-5813-2134");
         deviceConfigRemote.setDeviceClass(deviceClassRemote.clone().setId("RemoteTestDeviceClass"));
@@ -100,9 +101,9 @@ public class DeviceRegistryImplTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws InterruptedException, CouldNotPerformException {
-        remote.deactivate();
-        registry.deactivate();
+    public static void tearDownClass() {
+        remote.shutdown();
+        registry.shutdown();
     }
 
     @Before
@@ -137,26 +138,26 @@ public class DeviceRegistryImplTest {
     /**
      * Test of registering a DeviceClass per remote.
      */
-    @Test(timeout = 3000)
+    @Test(timeout = 5000)
     public void testRegisterDeviceClassPerRemote() throws Exception {
         System.out.println("registerDeviceClassPerRemote");
-        
+
         remote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
 
             @Override
             public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
-                if(!data.hasLabel()) {
+                if (data != null) {
                     logger.info("Got empty data!");
                 } else {
-                    logger.info("Got data update: "+data);
+                    logger.info("Got data update: " + data);
                 }
             }
         });
-        
+
         returnValue = remote.registerDeviceClass(deviceClassRemote.clone().build()).toBuilder();
-        logger.info("Returned device class id ["+returnValue.getId()+"]");
-        deviceClassRemote.setId("RemoteTestDeviceClass");
-                
+        logger.info("Returned device class id [" + returnValue.getId() + "]");
+        deviceClassRemote.setId(returnValue.getId());
+
         while (true) {
             try {
                 if (remote.getData().getDeviceClasseList().contains(deviceClassRemote.clone().build())) {
