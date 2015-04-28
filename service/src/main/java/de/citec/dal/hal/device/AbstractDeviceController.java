@@ -25,9 +25,12 @@ import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.rsb.processing.StringProcessor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.fibaro.F_FGS_221Type;
+import rst.homeautomation.device.fibaro.F_FIB_FGWPF_101Type;
+import rst.homeautomation.device.fibaro.F_MotionSensorType;
 import rst.homeautomation.unit.LightType.Light;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -56,7 +59,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.id = config.getId();
         this.name = generateName(builder.getClass().getDeclaringClass());
         this.label = config.getLabel();
-        this.location = new Location(config.getPlacementConfig().getLocation());
+        this.location = new Location(config.getPlacementConfig().getLocationConfig());
         this.unitMap = new HashMap<>();
 
         setField(DEVICE_TYPE_FILED_CONFIG, config);
@@ -169,7 +172,13 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
             String repeatedUnitFieldName = "unit_" + unitConfig.getTemplate().getType().name().toLowerCase();
+            List<Descriptors.FieldDescriptor> fields = data.getDescriptorForType().getFields();
             Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = data.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
+            
+            if(repeatedUnitFieldDescriptor == null) {
+                throw new CouldNotPerformException("Missing FieldDescriptor["+repeatedUnitFieldName+"] in protobuf Type["+data.getClass().getName()+"]!");
+            }
+            
             GeneratedMessage.Builder unitBuilder = loadUnitBuilder(unitConfig);
             try {
 //                F_FGS_221Type.F_FGS_221.newBuilder().getUnitButtonBuilder(index)addUnitLight(Light.newBuilder());

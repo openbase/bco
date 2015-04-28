@@ -178,11 +178,11 @@ public class MockRegistry {
         Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        return PlacementConfig.newBuilder().setPosition(pose).setLocation(paradise).build();
+        return PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(paradise).build();
     }
 
     private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) {
-        return UnitConfig.newBuilder().setPlacement(getDefaultPlacement()).setTemplate(UnitTemplate.newBuilder().setType(type).build()).setLabel(label).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(UnitTemplate.newBuilder().setType(type).build()).setLabel(label).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {

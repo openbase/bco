@@ -53,7 +53,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             this.name = generateName();
             this.label = config.getLabel();
             this.device = device;
-            this.location = new Location(config.getPlacement().getLocation());
+            this.location = new Location(config.getPlacementConfig().getLocationConfig());
             this.serviceList = new ArrayList<>();
 
             setField(TYPE_FILED_ID, id);
