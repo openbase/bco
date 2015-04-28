@@ -6,6 +6,7 @@
 package de.citec.dal.transform;
 
 import de.citec.dal.hal.unit.AbstractUnitController;
+import de.citec.dal.hal.unit.LightController;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.rsb.processing.StringProcessor;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -18,9 +19,10 @@ public class UnitConfigToUnitClassTransformer {
 
     public static Class<? extends AbstractUnitController> transform(final UnitConfig config) throws CouldNotTransformException {
 
-        String className = StringProcessor.transformUpperCaseToCamelCase(config.getTemplate().getType().name()) + "Controller";
+        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(config.getTemplate().getType().name()) + "Controller";
         try {
-            return (Class< ? extends AbstractUnitController>) AbstractUnitController.class.getClassLoader().loadClass(className);
+
+            return (Class< ? extends AbstractUnitController>) Class.forName(className);
         } catch (ClassNotFoundException ex) {
             throw new CouldNotTransformException(config, AbstractUnitController.class, ex);
         }

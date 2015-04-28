@@ -142,7 +142,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
 	@Override
 	public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
 		try {
-			if (JPService.getAttribute(JPHardwareSimulationMode.class).getValue()) {
+			if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
 				internalReceiveUpdate(command);
 				return null;
 			}

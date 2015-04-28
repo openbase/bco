@@ -5,10 +5,12 @@
  */
 package de.citec.dal.remote.unit;
 
+import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -38,7 +40,7 @@ public class AmbientLightRemoteTest {
 
     private static AmbientLightRemote ambientLightRemote;
     private static DALService dalService;
-    private static MockRegistryHolder registry;
+    private static MockRegistry registry;
     private static Location location;
     private static String label;
 
@@ -46,16 +48,16 @@ public class AmbientLightRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
-        registry = new MockRegistryHolder();
+        registry = new MockRegistry();
 
         dalService = new DALService();
         dalService.activate();
 
         location = new Location(registry.getLocation());
-        label = MockRegistryHolder.AMBIENT_LIGHT_LABEL;
+        label = MockRegistry.AMBIENT_LIGHT_LABEL;
 
         ambientLightRemote = new AmbientLightRemote();
         ambientLightRemote.init(label, location);

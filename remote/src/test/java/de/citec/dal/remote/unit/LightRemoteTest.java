@@ -5,6 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
+import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.LightController;
@@ -34,7 +35,7 @@ public class LightRemoteTest {
 
     private static LightRemote lightRemote;
     private static DALService dalService;
-    private static MockRegistryHolder registry;
+    private static MockRegistry registry;
     private static Location location;
     private static String label;
 
@@ -44,13 +45,13 @@ public class LightRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistryHolder();
+        registry = new MockRegistry();
         
         dalService = new DALService();
         dalService.activate();
 
         location = new Location(registry.getLocation());
-        label = MockRegistryHolder.LIGHT_LABEL;
+        label = MockRegistry.LIGHT_LABEL;
 
         lightRemote = new LightRemote();
         lightRemote.init(label, location);

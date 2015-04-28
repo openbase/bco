@@ -5,6 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
+import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.BrightnessSensorController;
@@ -33,7 +34,7 @@ public class BrightnessSensorRemoteTest {
 
     private static BrightnessSensorRemote brightnessSensorRemote;
     private static DALService dalService;
-    private static MockRegistryHolder registry;
+    private static MockRegistry registry;
     private static Location location;
     private static String label;
 
@@ -43,13 +44,13 @@ public class BrightnessSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistryHolder();
+        registry = new MockRegistry();
         
         dalService = new DALService();
         dalService.activate();
 
         location = new Location(registry.getLocation());
-        label = MockRegistryHolder.BRIGHTNESS_SENSOR_LABEL;
+        label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
 
         brightnessSensorRemote = new BrightnessSensorRemote();
         brightnessSensorRemote.init(label, location);

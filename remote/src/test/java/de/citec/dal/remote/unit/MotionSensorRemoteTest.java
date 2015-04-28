@@ -5,6 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
+import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.MotionSensorController;
@@ -34,7 +35,7 @@ public class MotionSensorRemoteTest {
 
     private static MotionSensorRemote motionSensorRemote;
     private static DALService dalService;
-    private static MockRegistryHolder registry;
+    private static MockRegistry registry;
     private static Location location;
     private static String label;
 
@@ -44,13 +45,13 @@ public class MotionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistryHolder();
+        registry = new MockRegistry();
         
         dalService = new DALService();
         dalService.activate();
 
         location = new Location(registry.getLocation());
-        label = MockRegistryHolder.MOTION_SENSOR_LABEL;
+        label = MockRegistry.MOTION_SENSOR_LABEL;
 
         motionSensorRemote = new MotionSensorRemote();
         motionSensorRemote.init(label, location);

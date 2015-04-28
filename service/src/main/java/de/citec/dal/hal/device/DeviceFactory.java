@@ -6,6 +6,7 @@
 package de.citec.dal.hal.device;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -20,6 +21,27 @@ public class DeviceFactory implements DeviceFactoryInterface {
     @Override
     public Device newDevice(final DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
+            if (deviceConfig == null) {
+                throw new NotAvailableException("deviceClass");
+            }
+            if (!deviceConfig.hasDeviceClass()) {
+                throw new NotAvailableException("deviceClass");
+            }
+            if (!deviceConfig.getDeviceClass().hasCompany()) {
+                throw new NotAvailableException("deviceClass.company");
+            }
+            if (!deviceConfig.hasId()) {
+                throw new NotAvailableException("deviceConfig.id");
+            }
+            if (!deviceConfig.hasLabel()) {
+                throw new NotAvailableException("deviceConfig.label");
+            }
+            if (!deviceConfig.hasPlacementConfig()) {
+                throw new NotAvailableException("deviceConfig.placement");
+            }
+            if (!deviceConfig.getPlacementConfig().hasLocation()) {
+                throw new NotAvailableException("deviceConfig.placement.location");
+            }
             Class deviceClass = getClass().getClassLoader().loadClass(AbstractDeviceController.class.getPackage().getName() + "." + deviceConfig.getDeviceClass().getCompany() + "." + deviceConfig.getDeviceClass().getLabel() + "Controller");
             return (Device) deviceClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);
         } catch (Exception ex) {

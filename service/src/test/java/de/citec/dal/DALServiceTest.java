@@ -7,6 +7,7 @@ package de.citec.dal;
 
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.registry.DeviceRegistry;
+import de.citec.dal.registry.MockRegistry;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import org.junit.After;
@@ -22,17 +23,19 @@ import static org.junit.Assert.*;
  */
 public class DALServiceTest {
     
-    
+    private static MockRegistry registry;
     public DALServiceTest() {
         
     }
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws InstantiationException {
+        registry = new MockRegistry();
     }
     
     @AfterClass
     public static void tearDownClass() {
+        registry.shutdown();
     }
     
     @Before

@@ -5,6 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
+import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.PowerConsumptionSensorController;
@@ -33,7 +34,7 @@ public class PowerConsumptionSensorRemoteTest {
 
     private static PowerConsumptionSensorRemote powerConsumptionRemote;
     private static DALService dalService;
-    private static MockRegistryHolder registry;
+    private static MockRegistry registry;
     private static Location locaton;
     private static String label;
 
@@ -43,13 +44,13 @@ public class PowerConsumptionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistryHolder();
+        registry = new MockRegistry();
         
         dalService = new DALService();
         dalService.activate();
 
         locaton = new Location(registry.getLocation());
-        label = MockRegistryHolder.POWER_CONSUMPTION_LABEL;
+        label = MockRegistry.POWER_CONSUMPTION_LABEL;
 
         powerConsumptionRemote = new PowerConsumptionSensorRemote();
         powerConsumptionRemote.init(label, locaton);

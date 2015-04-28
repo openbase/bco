@@ -5,6 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
+import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.PowerPlugController;
@@ -35,7 +36,7 @@ public class PowerPlugRemoteTest {
 
     private static PowerPlugRemote powerPlugRemote;
     private static DALService dalService;
-    private static MockRegistryHolder registry;
+    private static MockRegistry registry;
     private static Location locaton;
     private static String label;
 
@@ -45,13 +46,13 @@ public class PowerPlugRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistryHolder();
+        registry = new MockRegistry();
         
         dalService = new DALService();
         dalService.activate();
 
         locaton = new Location(registry.getLocation());
-        label = MockRegistryHolder.POWER_PLUG_LABEL;
+        label = MockRegistry.POWER_PLUG_LABEL;
 
         powerPlugRemote = new PowerPlugRemote();
         powerPlugRemote.init(label, locaton);
