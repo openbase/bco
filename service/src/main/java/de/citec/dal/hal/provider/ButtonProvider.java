@@ -20,7 +20,7 @@ import rst.homeautomation.state.ClickType;
  */
 public interface ButtonProvider extends Provider {
 
-    public ClickType.Click.ClickState getButton() throws CouldNotPerformException;
+    public ClickType.Click getButton() throws CouldNotPerformException;
 
     public class GetButtonCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface ButtonProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(ClickType.Click.ClickState.class, provider.getButton());
+                return new Event(ClickType.Click.class, provider.getButton());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

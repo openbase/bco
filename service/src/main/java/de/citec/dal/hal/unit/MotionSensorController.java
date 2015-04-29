@@ -14,12 +14,13 @@ import rst.homeautomation.state.MotionType.Motion.MotionState;
 import rst.homeautomation.unit.MotionSensorType;
 import rst.homeautomation.unit.MotionSensorType.MotionSensor;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.timing.TimestampType;
 
 /**
  *
  * @author mpohling
  */
-public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> implements MotionSensorInterface{
+public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> implements MotionSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
@@ -27,17 +28,20 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     public MotionSensorController(final UnitConfigType.UnitConfig config, final Device device, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         super(config, MotionSensorController.class, device, builder);
-        
+
     }
 
     public void updateMotion(final MotionType.Motion.MotionState state) {
         data.getMotionStateBuilder().setState(state);
+        if (state == MotionState.MOVEMENT) {
+            data.getMotionStateBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+        }
         notifyChange();
     }
 
     @Override
-    public MotionState getMotion() throws CouldNotPerformException{
+    public MotionType.Motion getMotion() throws CouldNotPerformException {
         logger.debug("Getting [" + getLabel() + "] State: [" + data.getMotionState() + "]");
-        return data.getMotionState().getState();
+        return data.getMotionState();
     }
 }

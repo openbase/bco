@@ -14,6 +14,7 @@ import rst.homeautomation.state.TamperType;
 import rst.homeautomation.unit.TamperSwitchType;
 import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.timing.TimestampType;
 
 /**
  *
@@ -30,13 +31,16 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
     }
 
     public void updateTamper(final TamperType.Tamper.TamperState state) {
-        logger.debug("Updating tamper of ["+this+"] to ["+state+"]");
+        logger.debug("Updating tamper of [" + this + "] to [" + state + "]");
         data.getTamperStateBuilder().setState(state);
+        if (state == TamperType.Tamper.TamperState.TAMPER) {
+            data.getTamperStateBuilder().setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+        }
         notifyChange();
     }
 
     @Override
-    public TamperType.Tamper.TamperState getTamper() throws CouldNotPerformException {
-        return data.getTamperState().getState();
+    public TamperType.Tamper getTamper() throws CouldNotPerformException {
+        return data.getTamperState();
     }
 }

@@ -20,7 +20,7 @@ import rst.homeautomation.state.MotionType;
  */
 public interface MotionProvider extends Provider {
 
-    public MotionType.Motion.MotionState getMotion() throws CouldNotPerformException;
+    public MotionType.Motion getMotion() throws CouldNotPerformException;
 
     public class GetMotionCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface MotionProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(MotionType.Motion.MotionState.class, provider.getMotion());
+                return new Event(MotionType.Motion.class, provider.getMotion());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

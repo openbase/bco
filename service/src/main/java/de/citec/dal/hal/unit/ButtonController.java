@@ -14,6 +14,7 @@ import rst.homeautomation.state.ClickType;
 import rst.homeautomation.unit.ButtonType;
 import rst.homeautomation.unit.ButtonType.Button;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.timing.TimestampType;
 
 /**
  *
@@ -32,11 +33,14 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
 
     public void updateButton(final ClickType.Click.ClickState state) {
         data.getButtonStateBuilder().setState(state);
+        if (state == ClickType.Click.ClickState.CLICKED || state == ClickType.Click.ClickState.DOUBLE_CLICKED) {
+            data.getButtonStateBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+        }
         notifyChange();
     }
 
     @Override
-    public ClickType.Click.ClickState getButton() throws CouldNotPerformException {
-        return data.getButtonState().getState();
+    public ClickType.Click getButton() throws CouldNotPerformException {
+        return data.getButtonState();
     }
 }
