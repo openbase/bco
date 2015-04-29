@@ -143,6 +143,8 @@ public class DeviceRegistryImplTest {
         assertTrue(registry.containsDeviceConfig(deviceConfig.clone().build()));
     }
 
+    String LOCATION_LABEL = "paradise";
+    
     /**
      * Test of registerDeviceConfigWithUnits method, of class
      * DeviceRegistryImpl.
@@ -152,12 +154,13 @@ public class DeviceRegistryImplTest {
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
         String company = "Fibaro";
+        
         String deviceId = company + "_" + productNumber + "_" + serialNumber;
         String deviceLabel = "TestSensor";
-        String deviceScope = "/paradise/" + deviceLabel.toLowerCase();
+        String deviceScope = "/"+LOCATION_LABEL+"/" + deviceLabel.toLowerCase();
 
         String unitLabel = "Battery";
-        String unitScope = "/paradise" + unitLabel.toLowerCase();
+        String unitScope = "/"+LOCATION_LABEL+"/" + unitLabel.toLowerCase();
         String unitID = unitScope;
 
         ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();
@@ -185,7 +188,8 @@ public class DeviceRegistryImplTest {
         RotationType.Rotation rotation = RotationType.Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel("Paradise").build()).build();
+        ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION_LABEL);
+        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel(LOCATION_LABEL).setScope(locationScope).build()).build();
     }
 
     private UnitConfigType.UnitConfig getUnitConfig(UnitTemplateType.UnitTemplate.UnitType type, String label) {
