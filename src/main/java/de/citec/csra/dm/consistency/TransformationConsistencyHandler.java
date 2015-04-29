@@ -56,6 +56,10 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfig deviceConfig = entry.getMessage();
 
+        if (!deviceConfig.hasId()) {
+            throw new NotAvailableException("deviceconfig.id");
+        }
+        
         if (!deviceConfig.hasPlacementConfig()) {
             throw new NotAvailableException("deviceconfig.placement");
         }
@@ -67,6 +71,10 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
         if (!deviceConfig.getPlacementConfig().hasLocationConfig()) {
             throw new NotAvailableException("deviceconfig.placement.location");
         }
+        
+        if (!deviceConfig.getPlacementConfig().getLocationConfig().hasId()) {
+            throw new NotAvailableException("deviceconfig.placement.location.id");
+        }
 
         // publish device transformation
 
@@ -74,7 +82,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
 
         try {
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
-        } catch (TransformerException ex) {
+        } catch (Exception ex) {
             ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
         }
 
@@ -93,13 +101,17 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             if (!unitConfig.getPlacementConfig().hasLocationConfig()) {
                 throw new NotAvailableException("unitconfig.placement.location");
             }
+            
+             if (!unitConfig.getPlacementConfig().getLocationConfig().hasId()) {
+                throw new NotAvailableException("unitconfig.placement.location.id");
+            }
 
             transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationConfig().getId(), unitConfig.getId());
             //TODO mpohling: refactory unitConfig.getPlacement into getPlacementConfig
 
             try {
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
-            } catch (TransformerException ex) {
+            } catch (Exception ex) {
                 ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
             }
         }
@@ -109,7 +121,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
     public Transform transform(final PoseType.Pose position, String frameParent, String frameChild) {
         RotationType.Rotation pRotation = position.getRotation();
         TranslationType.Translation pTranslation = position.getTranslation();
-        Quat4d jRotation = new Quat4d(pRotation.getQw(), pRotation.getQx(), pRotation.getQy(), pRotation.getQz());
+        Quat4d jRotation = new Quat4d(pRotation.getQx(), pRotation.getQy(), pRotation.getQz(), pRotation.getQw());
         Vector3d jTranslation = new Vector3d(pTranslation.getX(), pTranslation.getY(), pTranslation.getZ());
         Transform3D transform = new Transform3D(jRotation, jTranslation, 1.0);
         return new Transform(transform, frameParent, frameChild, System.currentTimeMillis());

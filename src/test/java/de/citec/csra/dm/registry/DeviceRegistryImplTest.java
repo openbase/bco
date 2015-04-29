@@ -11,6 +11,7 @@ import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
@@ -22,9 +23,11 @@ import de.citec.jul.rsb.scope.ScopeGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import static junit.framework.TestCase.assertEquals;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -54,6 +57,8 @@ public class DeviceRegistryImplTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryImplTest.class);
 
+    public static final String LOCATION_LABEL = "paradise";
+    
     private static DeviceRegistryService registry;
     private static DeviceClassType.DeviceClass.Builder deviceClass;
     private static DeviceConfigType.DeviceConfig.Builder deviceConfig;
@@ -67,7 +72,7 @@ public class DeviceRegistryImplTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException {
+    public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException {
         File dbFile = new File("/tmp/db/");
         File dbDeviceClasses = new File("/tmp/db/device-classes");
         File dbDeviceConfig = new File("/tmp/db/device-config");
@@ -84,6 +89,7 @@ public class DeviceRegistryImplTest {
         JPService.registerProperty(JPDeviceDatabaseDirectory.class, dbFile);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
+        JPService.setupJUnitTestMode();
 
         registry = new DeviceRegistryService();
         registry.init(RSBInformerInterface.InformerType.Single);
@@ -144,37 +150,83 @@ public class DeviceRegistryImplTest {
         assertTrue(registry.containsDeviceConfig(deviceConfig.clone().build()));
     }
 
-    String LOCATION_LABEL = "paradise";
     
+
     /**
      * Test of registerDeviceConfigWithUnits method, of class
      * DeviceRegistryImpl.
+     *
+     * Test if the scope and the id of a device configuration and its units is
+     * set when registered.
      */
     @Test
     public void testRegisterDeviceConfigWithUnits() throws Exception {
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
         String company = "Fibaro";
-        
+
         String deviceId = company + "_" + productNumber + "_" + serialNumber;
         String deviceLabel = "TestSensor";
-        String deviceScope = "/"+LOCATION_LABEL+"/" + deviceLabel.toLowerCase();
+        String deviceScope = "/" + LOCATION_LABEL + "/" + deviceLabel.toLowerCase() + "/";
 
         String unitLabel = "Battery";
-        String unitScope = "/"+LOCATION_LABEL+"/" + unitLabel.toLowerCase() + "/";
+        String unitScope = "/" + LOCATION_LABEL + "/" + unitLabel.toLowerCase() + "/";
         String unitID = unitScope;
 
         ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();
         DeviceClass motionSensorClass = registry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
         units.add(getUnitConfig(UnitTemplateType.UnitTemplate.UnitType.BATTERY, unitLabel));
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, units);
-        motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);        
-                
-        assertTrue("Device id is not set properly:\nValue [" + motionSensorConfig.getId() + "]\nExpected[" + deviceId + "]", motionSensorConfig.getId().equals(deviceId));
-        assertTrue("Device scope is not set properly:\nValue [" + ScopeGenerator.generateStringRep(motionSensorConfig.getScope()) + "]\nExpected[" + deviceScope + "]", ScopeGenerator.generateStringRep(motionSensorConfig.getScope()).equals(deviceScope));
 
-        assertTrue("Unit id is not set properly:\nValue [" + motionSensorConfig.getUnitConfig(0).getId() + "]\nExpected[" + unitID + "]", motionSensorConfig.getUnitConfig(0).getId().equals(unitID));
-        assertTrue("Unit scope is not set properly:\nValue [" + ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()) + "]\nExpected[" + deviceScope + "]", ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()).equals(unitScope));
+        motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);
+
+        assertEquals("Device id is not set properly", deviceId, motionSensorConfig.getId());
+        assertEquals("Device scope is not set properly", deviceScope, ScopeGenerator.generateStringRep(motionSensorConfig.getScope()));
+
+        assertEquals("Unit id is not set properly", unitID, motionSensorConfig.getUnitConfig(0).getId());
+        assertEquals("Unit scope is not set properly", unitScope, ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()));
+    }
+
+    /**
+     * Test of testRegiseredDeviceConfigWithoutLabel method, of class
+     * DeviceRegistryImpl.
+     */
+    @Test
+    public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
+        String productNumber = "KNHD-4321";
+        String serialNumber = "112358";
+        String company = "Company";
+
+        String deviceId = company + "_" + productNumber + "_" + serialNumber;
+
+        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company));
+        DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<UnitConfigType.UnitConfig>());
+        deviceWithoutLabel = registry.registerDeviceConfig(deviceWithoutLabel);
+
+        assertEquals("The device label is not set as the id if it is empty!", deviceId, deviceWithoutLabel.getLabel());
+    }
+
+    /**
+     * Test of testRegisterTwoDevicesWithSameLabel method, of class
+     * DeviceRegistryImpl.
+     */
+    @Test
+    public void testRegisterTwoDevicesWithSameLabel() throws Exception {
+        String serialNumber1 = "FIRST_DEV";
+        String serialNumber2 = "BAD_DEV";
+        String deviceLabel = "SameLabelSameLocation";
+        
+        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", "xyz", "HuxGMBH"));
+        DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, clazz, new ArrayList<UnitConfigType.UnitConfig>());
+        DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, clazz, new ArrayList<UnitConfigType.UnitConfig>());
+
+        registry.registerDeviceConfig(deviceWithLabel1);
+        try {
+            registry.registerDeviceConfig(deviceWithLabel2);
+            fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
+        } catch (Exception ex) {
+            assertTrue(true);
+        }
     }
 
     private PlacementConfigType.PlacementConfig getDefaultPlacement() {
@@ -182,7 +234,7 @@ public class DeviceRegistryImplTest {
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
         ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION_LABEL);
-        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel(LOCATION_LABEL).setScope(locationScope).build()).build();
+        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel(LOCATION_LABEL).setScope(locationScope).setId(LOCATION_LABEL).build()).build();
     }
 
     private UnitConfigType.UnitConfig getUnitConfig(UnitTemplateType.UnitTemplate.UnitType type, String label) {
@@ -249,57 +301,4 @@ public class DeviceRegistryImplTest {
         }
         assertTrue(remote.containsDeviceConfig(deviceConfigRemote.clone().build()));
     }
-
-    /**
-     * Test of updateDeviceClass method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testUpdateDeviceClass() throws Exception {
-//        System.out.println("updateDeviceClass");
-//        DeviceClassType.DeviceClass deviceClass = null;
-//        DeviceRegistryImpl instance = new DeviceRegistryImpl();
-//        instance.updateDeviceClass(deviceClass);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of updateDeviceConfig method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testUpdateDeviceConfig() throws Exception {
-//        System.out.println("updateDeviceConfig");
-//        DeviceConfigType.DeviceConfig deviceConfig = null;
-//        DeviceRegistryImpl instance = new DeviceRegistryImpl();
-//        instance.updateDeviceConfig(deviceConfig);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of removeDeviceConfig method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testRemoveDeviceConfig() throws Exception {
-//        System.out.println("removeDeviceConfig");
-//        DeviceConfigType.DeviceConfig deviceConfig = null;
-//        DeviceRegistryImpl instance = new DeviceRegistryImpl();
-//        instance.removeDeviceConfig(deviceConfig);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of removeDeviceClass method, of class DeviceRegistryImpl.
-     */
-    @Test
-    public void testRemoveDeviceClass() throws Exception {
-//        System.out.println("removeDeviceClass");
-//        DeviceClassType.DeviceClass deviceClass = null;
-//        DeviceRegistryImpl instance = new DeviceRegistryImpl();
-//        instance.removeDeviceClass(deviceClass);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
-
 }
