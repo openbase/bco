@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.fail;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -144,36 +146,80 @@ public class DeviceRegistryImplTest {
     }
 
     String LOCATION_LABEL = "paradise";
-    
+
     /**
      * Test of registerDeviceConfigWithUnits method, of class
      * DeviceRegistryImpl.
+     *
+     * Test if the scope and the id of a device configuration and its units is
+     * set when registered.
      */
     @Test
     public void testRegisterDeviceConfigWithUnits() throws Exception {
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
         String company = "Fibaro";
-        
+
         String deviceId = company + "_" + productNumber + "_" + serialNumber;
         String deviceLabel = "TestSensor";
-        String deviceScope = "/"+LOCATION_LABEL+"/" + deviceLabel.toLowerCase();
+        String deviceScope = "/" + LOCATION_LABEL + "/" + deviceLabel.toLowerCase();
 
         String unitLabel = "Battery";
-        String unitScope = "/"+LOCATION_LABEL+"/" + unitLabel.toLowerCase();
+        String unitScope = "/" + LOCATION_LABEL + "/" + unitLabel.toLowerCase();
         String unitID = unitScope;
 
         ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();
         DeviceClass motionSensorClass = registry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
         units.add(getUnitConfig(UnitTemplateType.UnitTemplate.UnitType.BATTERY, unitLabel));
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, units);
-        motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);        
-                
-        assertTrue("Device id is not set properly:\nValue [" + motionSensorConfig.getId() + "]\nExpected[" + deviceId + "]", motionSensorConfig.getId().equals(deviceId));
-        assertTrue("Device scope is not set properly:\nValue [" + scopeToString(motionSensorConfig.getScope()) + "]\nExpected[" + deviceScope + "]", scopeToString(motionSensorConfig.getScope()).equals(deviceScope));
+        motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);
 
-        assertTrue("Unit id is not set properly:\nValue [" + motionSensorConfig.getUnitConfig(0).getId() + "]\nExpected[" + unitID + "]", motionSensorConfig.getUnitConfig(0).getId().equals(unitID));
-        assertTrue("Unit scope is not set properly:\nValue [" + scopeToString(motionSensorConfig.getUnitConfig(0).getScope()) + "]\nExpected[" + deviceScope + "]", scopeToString(motionSensorConfig.getUnitConfig(0).getScope()).equals(unitScope));
+        assertEquals("Device id is not set properly", deviceId, motionSensorConfig.getId());
+        assertEquals("Device scope is not set properly", deviceScope, scopeToString(motionSensorConfig.getScope()));
+
+        assertEquals("Unit id is not set properly", unitID, motionSensorConfig.getUnitConfig(0).getId());
+        assertEquals("Unit scope is not set properly", unitScope, scopeToString(motionSensorConfig.getUnitConfig(0).getScope()));
+    }
+
+    /**
+     * Test of testRegiseredDeviceConfigWithoutLabel method, of class
+     * DeviceRegistryImpl.
+     */
+    @Test
+    public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
+        String productNumber = "KNHD-4321";
+        String serialNumber = "112358";
+        String company = "Company";
+
+        String deviceId = company + "_" + productNumber + "_" + serialNumber;
+
+        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company));
+        DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<UnitConfigType.UnitConfig>());
+        deviceWithoutLabel = registry.registerDeviceConfig(deviceWithoutLabel);
+
+        assertEquals("The device label is not set as the id if it is empty!", deviceId, deviceWithoutLabel.getLabel());
+    }
+
+    /**
+     * Test of testRegisterTwoDevicesWithSameLabel method, of class
+     * DeviceRegistryImpl.
+     */
+    @Test
+    public void testRegisterTwoDevicesWithSameLabel() throws Exception {
+        String serialNumber1 = "150812";
+        String serialNumber2 = "1587912";
+        String deviceLabel = "SameLabelSameLocation";
+
+        DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, deviceClass.clone().build(), new ArrayList<UnitConfigType.UnitConfig>());
+        DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, deviceClass.clone().build(), new ArrayList<UnitConfigType.UnitConfig>());
+
+        registry.registerDeviceConfig(deviceWithLabel1);
+        try {
+            registry.registerDeviceConfig(deviceWithLabel2);
+            fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
+        } catch (Exception ex) {
+            assertTrue(true);
+        }
     }
 
     private String scopeToString(ScopeType.Scope scope) {
