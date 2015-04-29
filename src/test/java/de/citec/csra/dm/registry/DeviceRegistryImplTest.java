@@ -11,7 +11,6 @@ import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
@@ -21,6 +20,7 @@ import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.com.RSBInformerInterface;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
@@ -31,11 +31,19 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import rst.geometry.PoseType;
+import rst.geometry.RotationType;
+import rst.geometry.TranslationType;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitTemplateType;
+import rst.rsb.ScopeType;
+import rst.spatial.LocationConfigType;
+import rst.spatial.PlacementConfigType;
 
 /**
  *
@@ -133,6 +141,64 @@ public class DeviceRegistryImplTest {
         System.out.println("registerDeviceConfig");
         registry.registerDeviceConfig(deviceConfig.clone().build());
         assertTrue(registry.containsDeviceConfig(deviceConfig.clone().build()));
+    }
+
+    /**
+     * Test of registerDeviceConfigWithUnits method, of class
+     * DeviceRegistryImpl.
+     */
+    @Test
+    public void testRegisterDeviceConfigWithUnits() throws Exception {
+        String productNumber = "ABCD-4321";
+        String serialNumber = "1234-WXYZ";
+        String company = "Fibaro";
+        String deviceId = company + "_" + productNumber + "_" + serialNumber;
+        String deviceLabel = "TestSensor";
+        String deviceScope = "/paradise/" + deviceLabel.toLowerCase();
+
+        String unitLabel = "Battery";
+        String unitScope = "/paradise" + unitLabel.toLowerCase();
+        String unitID = unitScope;
+
+        ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();
+        DeviceClass motionSensorClass = registry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
+        units.add(getUnitConfig(UnitTemplateType.UnitTemplate.UnitType.BATTERY, unitLabel));
+        DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, units);
+        motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);        
+                
+        assertTrue("Device id is not set properly:\nValue [" + motionSensorConfig.getId() + "]\nExpected[" + deviceId + "]", motionSensorConfig.getId().equals(deviceId));
+        assertTrue("Device scope is not set properly:\nValue [" + scopeToString(motionSensorConfig.getScope()) + "]\nExpected[" + deviceScope + "]", scopeToString(motionSensorConfig.getScope()).equals(deviceScope));
+
+        assertTrue("Unit id is not set properly:\nValue [" + motionSensorConfig.getUnitConfig(0).getId() + "]\nExpected[" + unitID + "]", motionSensorConfig.getUnitConfig(0).getId().equals(unitID));
+        assertTrue("Unit scope is not set properly:\nValue [" + scopeToString(motionSensorConfig.getUnitConfig(0).getScope()) + "]\nExpected[" + deviceScope + "]", scopeToString(motionSensorConfig.getUnitConfig(0).getScope()).equals(unitScope));
+    }
+
+    private String scopeToString(ScopeType.Scope scope) {
+        String result = "";
+        for (String component : scope.getComponentList()) {
+            result += "/" + component;
+        }
+        return result;
+    }
+
+    private PlacementConfigType.PlacementConfig getDefaultPlacement() {
+        RotationType.Rotation rotation = RotationType.Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
+        TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
+        PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
+        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel("Paradise").build()).build();
+    }
+
+    private UnitConfigType.UnitConfig getUnitConfig(UnitTemplateType.UnitTemplate.UnitType type, String label) {
+        return UnitConfigType.UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(UnitTemplateType.UnitTemplate.newBuilder().setType(type).build()).setLabel(label).build();
+    }
+
+    private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfigType.UnitConfig> units) {
+        return DeviceConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setSerialNumber(serialNumber).setDeviceClass(clazz).addAllUnitConfig(units).build();
+    }
+
+    private DeviceClass getDeviceClass(String label, String productNumber, String company) {
+        return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).build();
+
     }
 
     /**
