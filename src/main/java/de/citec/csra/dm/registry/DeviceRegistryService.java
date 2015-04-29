@@ -5,6 +5,8 @@
  */
 package de.citec.csra.dm.registry;
 
+import de.citec.csra.dm.generator.DeviceConfigIdGenerator;
+import de.citec.csra.dm.generator.DeviceClassIdGenerator;
 import de.citec.csra.dm.consistency.DeviceScopeConsistencyHandler;
 import de.citec.csra.dm.consistency.TransformationConsistencyHandler;
 import de.citec.csra.dm.consistency.UnitIdConsistencyHandler;

@@ -26,7 +26,7 @@ public class DeviceScopeConsistencyHandler implements ProtoBufRegistryConsistenc
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig deviceConfig = entry.getMessage();
 
-        ScopeType.Scope newScope = ScopeGenerator.setupDeviceScope(deviceConfig);
+        ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(deviceConfig);
 
         // verify and update scope
 		if(!ScopeGenerator.generateStringRep(deviceConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {

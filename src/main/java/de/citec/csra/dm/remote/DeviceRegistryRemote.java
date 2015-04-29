@@ -5,8 +5,8 @@
  */
 package de.citec.csra.dm.remote;
 
-import de.citec.csra.dm.registry.DeviceClassIdGenerator;
-import de.citec.csra.dm.registry.DeviceConfigIdGenerator;
+import de.citec.csra.dm.generator.DeviceClassIdGenerator;
+import de.citec.csra.dm.generator.DeviceConfigIdGenerator;
 import de.citec.csra.dm.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;

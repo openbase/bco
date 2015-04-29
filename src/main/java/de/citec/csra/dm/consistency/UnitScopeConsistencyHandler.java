@@ -6,8 +6,6 @@
 package de.citec.csra.dm.consistency;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.rsb.container.IdentifiableMessage;
 import de.citec.jul.rsb.container.ProtoBufMessageMapInterface;
 import de.citec.jul.rsb.scope.ScopeGenerator;
@@ -16,7 +14,6 @@ import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
@@ -33,7 +30,7 @@ public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyH
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : deviceConfig.getUnitConfigBuilderList()) {
-            ScopeType.Scope newScope = ScopeGenerator.setupUnitScope(unitConfig.clone().build());
+            ScopeType.Scope newScope = ScopeGenerator.generateUnitScope(unitConfig.clone().build());
 
             // verify and update scope
             if (!ScopeGenerator.generateStringRep(unitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {

@@ -5,17 +5,16 @@
  */
 package de.citec.csra.dm.consistency;
 
+import de.citec.csra.dm.generator.UnitConfigIdGenerator;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.rsb.container.IdentifiableMessage;
 import de.citec.jul.rsb.container.ProtoBufMessageMapInterface;
 import de.citec.jul.rsb.scope.ScopeGenerator;
-import de.citec.jul.rsb.scope.ScopeTransformer;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
-import de.citec.jul.storage.registry.Registry;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType;
@@ -45,26 +44,26 @@ public class UnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHand
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : deviceConfig.getUnitConfigBuilderList()) {
-            if (!unitConfig.hasId() || unitConfig.getId().isEmpty() || !unitConfig.getId().equals(generateUnitId(unitConfig))) {
-                deviceConfig.addUnitConfig(unitConfig.setId(generateUnitId(unitConfig)));
+            if (!unitConfig.hasId() || unitConfig.getId().isEmpty() || !unitConfig.getId().equals(UnitConfigIdGenerator.getInstance().generateId(unitConfig.build()))) {
+                unitConfig.setId(UnitConfigIdGenerator.getInstance().generateId(unitConfig.build()));
                 modification = true;
             }
             deviceConfig.addUnitConfig(unitConfig);
         }
 
-        if(modification) {
+        if (modification) {
             throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
         }
     }
 
-    private String generateUnitId(final UnitConfigType.UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
-        try {
-            if (unitConfig.hasScope()) {
-                throw new NotAvailableException("unitconfig.scope");
-            }
-            return ScopeGenerator.generateStringRep(unitConfig.getScope());
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate unti id!");
-        }
-    }
+//    private String generateUnitId(final UnitConfigType.UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
+//        try {
+//            if (unitConfig.hasScope()) {
+//                throw new NotAvailableException("unitconfig.scope");
+//            }
+//            return ScopeGenerator.generateStringRep(unitConfig.getScope());
+//        } catch (CouldNotPerformException ex) {
+//            throw new CouldNotPerformException("Could not generate unti id!");
+//        }
+//    }
 }
