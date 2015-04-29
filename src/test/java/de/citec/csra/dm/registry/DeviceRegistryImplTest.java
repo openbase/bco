@@ -18,6 +18,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.rsb.com.RSBInformerInterface;
+import de.citec.jul.rsb.scope.ScopeGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -160,7 +161,7 @@ public class DeviceRegistryImplTest {
         String deviceScope = "/"+LOCATION_LABEL+"/" + deviceLabel.toLowerCase();
 
         String unitLabel = "Battery";
-        String unitScope = "/"+LOCATION_LABEL+"/" + unitLabel.toLowerCase();
+        String unitScope = "/"+LOCATION_LABEL+"/" + unitLabel.toLowerCase() + "/";
         String unitID = unitScope;
 
         ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();
@@ -170,18 +171,10 @@ public class DeviceRegistryImplTest {
         motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);        
                 
         assertTrue("Device id is not set properly:\nValue [" + motionSensorConfig.getId() + "]\nExpected[" + deviceId + "]", motionSensorConfig.getId().equals(deviceId));
-        assertTrue("Device scope is not set properly:\nValue [" + scopeToString(motionSensorConfig.getScope()) + "]\nExpected[" + deviceScope + "]", scopeToString(motionSensorConfig.getScope()).equals(deviceScope));
+        assertTrue("Device scope is not set properly:\nValue [" + ScopeGenerator.generateStringRep(motionSensorConfig.getScope()) + "]\nExpected[" + deviceScope + "]", ScopeGenerator.generateStringRep(motionSensorConfig.getScope()).equals(deviceScope));
 
         assertTrue("Unit id is not set properly:\nValue [" + motionSensorConfig.getUnitConfig(0).getId() + "]\nExpected[" + unitID + "]", motionSensorConfig.getUnitConfig(0).getId().equals(unitID));
-        assertTrue("Unit scope is not set properly:\nValue [" + scopeToString(motionSensorConfig.getUnitConfig(0).getScope()) + "]\nExpected[" + deviceScope + "]", scopeToString(motionSensorConfig.getUnitConfig(0).getScope()).equals(unitScope));
-    }
-
-    private String scopeToString(ScopeType.Scope scope) {
-        String result = "";
-        for (String component : scope.getComponentList()) {
-            result += "/" + component;
-        }
-        return result;
+        assertTrue("Unit scope is not set properly:\nValue [" + ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()) + "]\nExpected[" + deviceScope + "]", ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()).equals(unitScope));
     }
 
     private PlacementConfigType.PlacementConfig getDefaultPlacement() {

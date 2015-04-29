@@ -29,7 +29,7 @@ public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyH
 
         deviceConfig.clearUnitConfig();
         boolean modification = false;
-        for (UnitConfig.Builder unitConfig : deviceConfig.getUnitConfigBuilderList()) {
+        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
             ScopeType.Scope newScope = ScopeGenerator.generateUnitScope(unitConfig.clone().build());
 
             // verify and update scope

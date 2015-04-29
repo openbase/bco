@@ -23,7 +23,7 @@ public class UnitConfigIdGenerator implements IdGenerator<String, UnitConfigType
     }
 
     public static synchronized UnitConfigIdGenerator getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new UnitConfigIdGenerator();
         }
         return instance;
@@ -32,12 +32,12 @@ public class UnitConfigIdGenerator implements IdGenerator<String, UnitConfigType
     @Override
     public String generateId(UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
         try {
-            if (unitConfig.hasScope()) {
+            if (!unitConfig.hasScope()) {
                 throw new NotAvailableException("unitconfig.scope");
             }
             return ScopeGenerator.generateStringRep(unitConfig.getScope());
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate unti id!");
+            throw new CouldNotPerformException("Could not generate unti id!", ex);
         }
     }
 }
