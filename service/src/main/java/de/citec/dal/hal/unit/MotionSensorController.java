@@ -37,7 +37,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     @Override
     public MotionState getMotion() throws CouldNotPerformException{
-        logger.debug("Getting [" + label + "] State: [" + data.getMotionState() + "]");
+        logger.debug("Getting [" + getLabel() + "] State: [" + data.getMotionState() + "]");
         return data.getMotionState().getState();
     }
 }

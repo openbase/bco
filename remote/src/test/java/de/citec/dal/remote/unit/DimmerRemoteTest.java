@@ -114,7 +114,7 @@ public class DimmerRemoteTest {
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((DimmerController) dalService.getUnitRegistry().getUnit(label, location, DimmerController.class)).updatePower(state);
+        ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updatePower(state);
         while (true) {
             try {
                 if (dimmerRemote.getPower().equals(state)) {
@@ -156,7 +156,7 @@ public class DimmerRemoteTest {
     public void testGetDimm() throws Exception {
         System.out.println("getDimm");
         Double dimm = 70.0D;
-        ((DimmerController) dalService.getUnitRegistry().getUnit(label, location, DimmerController.class)).updateDimm(dimm);
+        ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updateDimm(dimm);
         while (true) {
             try {
                 if (dimmerRemote.getDimm().equals(dimm)) {

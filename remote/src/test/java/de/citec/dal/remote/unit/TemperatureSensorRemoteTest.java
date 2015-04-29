@@ -92,7 +92,7 @@ public class TemperatureSensorRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         float temperature = 37.0F;
-        ((TemperatureSensorController) dalService.getUnitRegistry().getUnit(label, location, TemperatureSensorController.class)).updateTemperature(temperature);
+        ((TemperatureSensorController) dalService.getUnitRegistry().get(temperatureSensorRemote.getId())).updateTemperature(temperature);
         while (true) {
             try {
                 if (temperatureSensorRemote.getTemperature() == temperature) {

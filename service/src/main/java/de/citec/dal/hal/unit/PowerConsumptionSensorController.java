@@ -35,7 +35,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
 
     @Override
     public float getPowerConsumption() throws CouldNotPerformException {
-        logger.debug("Getting [" + label + "] Consumption: [" + data.getConsumption() + "]");
+        logger.debug("Getting [" + getLabel() + "] Consumption: [" + data.getConsumption() + "]");
         return data.getConsumption();
     }
 }

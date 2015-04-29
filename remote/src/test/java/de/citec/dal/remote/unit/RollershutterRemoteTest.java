@@ -111,7 +111,7 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
-        ((RollershutterController) dalService.getUnitRegistry().getUnit(label, location, RollershutterController.class)).updateShutter(state);
+        ((RollershutterController) dalService.getUnitRegistry().get(rollershutterRemote.getId())).updateShutter(state);
         while (true) {
             try {
                 if (rollershutterRemote.getShutter().equals(state)) {
@@ -157,7 +157,7 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
-        ((RollershutterController) dalService.getUnitRegistry().getUnit(label, location, RollershutterController.class)).updateOpeningRatio(openingRatio);
+        ((RollershutterController) dalService.getUnitRegistry().get(rollershutterRemote.getId())).updateOpeningRatio(openingRatio);
         while (true) {
             try {
                 if (rollershutterRemote.getOpeningRatio().equals(openingRatio)) {

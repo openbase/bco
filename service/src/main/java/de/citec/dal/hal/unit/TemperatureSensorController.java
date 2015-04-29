@@ -35,7 +35,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
 
     @Override
     public float getTemperature() throws CouldNotPerformException {
-        logger.debug("Getting [" + label + "] Temperature: [" + data.getTemperature() + "]");
+        logger.debug("Getting [" + getLabel() + "] Temperature: [" + data.getTemperature() + "]");
         return data.getTemperature();
     }
 }

@@ -93,7 +93,7 @@ public class ReedSwitchRemoteTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
-        ((ReedSwitchController) dalService.getUnitRegistry().getUnit(label, location, ReedSwitchController.class)).updateReedSwitch(state);
+        ((ReedSwitchController) dalService.getUnitRegistry().get(reedSwitchRemote.getId())).updateReedSwitch(state);
         while (true) {
             try {
                 if (reedSwitchRemote.getReedSwitch().equals(state)) {

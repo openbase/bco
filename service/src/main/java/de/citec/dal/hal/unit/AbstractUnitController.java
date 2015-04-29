@@ -16,6 +16,7 @@ import de.citec.jul.rsb.com.RSBCommunicationService;
 import de.citec.jul.rsb.com.RSBInformerInterface;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.rsb.scope.ScopeTransformer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ import rsb.RSBException;
 import rsb.Scope;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
@@ -36,12 +39,11 @@ import rst.homeautomation.unit.UnitConfigType;
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements Unit {
 
     public final static String TYPE_FILED_ID = "id";
-    public final static String TYPE_FILED_NAME = "name";
+//    public final static String TYPE_FILED_NAME = "name";
     public final static String TYPE_FILED_LABEL = "label";
 
-    protected final String id;
-    protected final String name;
-    protected final String label;
+//    protected final String name;
+    protected final UnitConfig config;
     protected final Location location;
     private final Device device;
     private final List<Service> serviceList;
@@ -49,16 +51,26 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final Device device, final MB builder) throws CouldNotPerformException {
         super(ScopeTransformer.transform(config.getScope()), builder);
         try {
-            this.id = config.getId();
-            this.name = generateName();
-            this.label = config.getLabel();
+            if (config == null) {
+                throw new NotAvailableException("config");
+            }
+
+            if (!config.hasId()) {
+                throw new NotAvailableException("config.id");
+            }
+
+            if (!config.hasLabel()) {
+                throw new NotAvailableException("config.label");
+            }
+            this.config = config;
+//            this.name = generateName();
             this.device = device;
             this.location = new Location(config.getPlacementConfig().getLocationConfig());
             this.serviceList = new ArrayList<>();
 
-            setField(TYPE_FILED_ID, id);
-            setField(TYPE_FILED_NAME, name);
-            setField(TYPE_FILED_LABEL, label);
+            setField(TYPE_FILED_ID, getId());
+//            setField(TYPE_FILED_NAME, name);
+            setField(TYPE_FILED_LABEL, getLabel());
 
             try {
                 validateUpdateServices();
@@ -76,18 +88,22 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public String getId() {
-        return id;
+    public final String getId() {
+        return config.getId();
+    }
+
+//    @Override
+//    public String getName() {
+//        return name;
+//    }
+    @Override
+    public final String getLabel() {
+        return config.getLabel();
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getLabel() {
-        return label;
+    public UnitTemplateType.UnitTemplate.UnitType getType() {
+        return config.getTemplate().getType();
     }
 
     @Override
@@ -107,37 +123,28 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         serviceList.add(service);
     }
 
-    public static String generateID(final String label, final Location location, final Class clazz) throws CouldNotPerformException {
-        return generateID(generateScope(generateName(clazz), label, location));
-    }
-
-    public static String generateID(final Scope scope) {
-        return scope.toString().toLowerCase();
-    }
-
-    public final String generateName() {
-        return generateName(getClass());
-    }
-
-    public static final String generateName(final Class clazz) {
-        return clazz.getSimpleName().replace("Controller", "");
-    }
-
-    public Scope generateScope() throws CouldNotPerformException {
-        return generateScope(generateName(), label, device);
-    }
-
+//    public static String generateID(final String label, final Location location, final Class clazz) throws CouldNotPerformException {
+//        return generateID(generateScope(generateName(clazz), label, location));
+//    }
+//
+//    public static String generateID(final Scope scope) {
+//        return scope.toString().toLowerCase();
+//    }
+//    public final String generateName() {
+//        return generateName(getClass());
+//    }
+//    public static final String generateName(final Class clazz) {
+//        return clazz.getSimpleName().replace("Controller", "");
+//    }
+//    public Scope generateScope() throws CouldNotPerformException {
+//        return generateScope(generateName(), getLabel(), device);
+//    }
 //    public static Scope generateScope(final String name, final String label, final Device device) throws CouldNotPerformException {
 //        return generateScope(name, label, device.getLocation());
 //    }
 //    public static Scope generateScope(final String name, final String label, final Location location) {
 //        return location.getScope().concat(new Scope(Scope.COMPONENT_SEPARATOR + name).concat(new Scope(Scope.COMPONENT_SEPARATOR + label)));
 //    }
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + "[" + name + "[" + label + "]]";
-    }
-
     @Override
     public void registerMethods(LocalServer server) throws RSBException {
         ServiceType.registerServiceMethods(server, this);
@@ -175,5 +182,10 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
         // === throw multi exception in error case. ===
         MultiException.checkAndThrow("Update service not valid!", exceptionStack);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + config.getTemplate().getType() + "[" + config.getLabel() + "]]";
     }
 }

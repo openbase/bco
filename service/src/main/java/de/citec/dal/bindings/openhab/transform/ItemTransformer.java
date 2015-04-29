@@ -27,7 +27,7 @@ public class ItemTransformer {
 				+ ITEM_SEGMENT_DELIMITER
 				+ generateLocationId(unit.getLocation())
 				+ ITEM_SEGMENT_DELIMITER
-				+ unit.getName()
+				+ unit.getType().name()
 				+ ITEM_SEGMENT_DELIMITER
 				+ unit.getLabel()
 				+ ITEM_SEGMENT_DELIMITER

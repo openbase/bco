@@ -46,7 +46,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     @Override
     public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + label + "] to Power [" + state.name() + "]");
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state.name() + "]");
         powerService.setPower(state);
     }
 

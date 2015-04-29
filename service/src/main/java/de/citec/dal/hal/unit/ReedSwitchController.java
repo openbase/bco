@@ -37,7 +37,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
 
     @Override
     public OpenClosedState getReedSwitch() throws CouldNotPerformException {
-        logger.debug("Getting [" + label + "] State: [" + data.getReedSwitchState() + "]");
+        logger.debug("Getting [" + getLabel() + "] State: [" + data.getReedSwitchState() + "]");
         return data.getReedSwitchState().getState();
     }
 }

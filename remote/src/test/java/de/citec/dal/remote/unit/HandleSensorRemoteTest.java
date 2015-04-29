@@ -93,7 +93,7 @@ public class HandleSensorRemoteTest {
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
-        ((HandleSensorController) dalService.getUnitRegistry().getUnit(label, location, HandleSensorController.class)).updateHandle(state);
+        ((HandleSensorController) dalService.getUnitRegistry().get(handleSensorRemote.getId())).updateHandle(state);
         while (true) {
             try {
                 if (handleSensorRemote.getHandle().equals(state)) {

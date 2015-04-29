@@ -93,7 +93,7 @@ public class ButtonRemoteTest {
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
         ClickType.Click.ClickState state = ClickType.Click.ClickState.DOUBLE_CLICKED;
-        ((ButtonController) dalService.getUnitRegistry().getUnit(label, location, ButtonController.class)).updateButton(state);
+        ((ButtonController) dalService.getUnitRegistry().get(buttonRemote.getId())).updateButton(state);
         while (true) {
             try {
                 if (buttonRemote.getButton().equals(state)) {

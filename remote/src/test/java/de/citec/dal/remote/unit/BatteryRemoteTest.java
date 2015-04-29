@@ -93,7 +93,7 @@ public class BatteryRemoteTest {
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         double level = 34.0;
-        ((BatteryController) dalService.getUnitRegistry().getUnit(label, location, BatteryController.class)).updateBattery(level);
+        ((BatteryController) dalService.getUnitRegistry().get(batteryRemote.getId())).updateBattery(level);
         while (true) {
             try {
                 if (batteryRemote.getBattery() == level) {

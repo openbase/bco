@@ -47,7 +47,7 @@ public class PowerPlugRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = new MockRegistry();
-        
+
         dalService = new DALService();
         dalService.activate();
 
@@ -110,7 +110,7 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((PowerPlugController) dalService.getUnitRegistry().getUnit(label, locaton, PowerPlugController.class)).updatePower(state);
+        ((PowerPlugController) dalService.getUnitRegistry().get(powerPlugRemote.getId())).updatePower(state);
         while (true) {
             try {
                 if (powerPlugRemote.getPower().equals(state)) {

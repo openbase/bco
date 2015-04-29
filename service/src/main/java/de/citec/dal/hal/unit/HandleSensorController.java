@@ -36,7 +36,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
 
     @Override
     public OpenClosedTiltedState getHandle() throws CouldNotPerformException {
-        logger.debug("Getting [" + label + "] State: [" + data.getHandleState() + "]");
+        logger.debug("Getting [" + getLabel() + "] State: [" + data.getHandleState() + "]");
         return data.getHandleState().getState();
     }
 }

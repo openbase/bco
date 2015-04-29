@@ -109,7 +109,7 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
-        ((LightController) dalService.getUnitRegistry().getUnit(label, location, LightController.class)).updatePower(state);
+        ((LightController) dalService.getUnitRegistry().get(lightRemote.getId())).updatePower(state);
         while (true) {
             try {
                 if (lightRemote.getPower().equals(state)) {

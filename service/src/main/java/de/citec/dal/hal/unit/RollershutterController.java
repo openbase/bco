@@ -48,7 +48,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     @Override
     public void setShutter(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + label + "] to ShutterState [" + state.name() + "]");
+        logger.debug("Setting [" + getLabel() + "] to ShutterState [" + state.name() + "]");
         this.shutterService.setShutter(state);
     }
 
@@ -64,7 +64,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
 
     @Override
     public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        logger.debug("Setting [" + label + "] to OpeningRatio [" + openingRatio + "]");
+        logger.debug("Setting [" + getLabel() + "] to OpeningRatio [" + openingRatio + "]");
         this.openingRatioService.setOpeningRatio(openingRatio);
     }
 

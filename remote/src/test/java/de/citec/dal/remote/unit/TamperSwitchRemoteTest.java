@@ -93,7 +93,7 @@ public class TamperSwitchRemoteTest {
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperType.Tamper.TamperState state = TamperType.Tamper.TamperState.TAMPER;
-        ((TamperSwitchController) dalService.getUnitRegistry().getUnit(label, location, TamperSwitchController.class)).updateTamper(state);
+        ((TamperSwitchController) dalService.getUnitRegistry().get(tamperSwitchRemote.getId())).updateTamper(state);
         while (true) {
             try {
                 if (tamperSwitchRemote.getTamper().equals(state)) {

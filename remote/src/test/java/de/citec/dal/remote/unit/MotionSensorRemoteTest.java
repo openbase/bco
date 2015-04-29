@@ -93,7 +93,7 @@ public class MotionSensorRemoteTest {
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionType.Motion.MotionState state = MotionType.Motion.MotionState.MOVEMENT;
-        ((MotionSensorController) dalService.getUnitRegistry().getUnit(label, location, MotionSensorController.class)).updateMotion(state);
+        ((MotionSensorController) dalService.getUnitRegistry().get(motionSensorRemote.getId())).updateMotion(state);
         while (true) {
             try {
                 if (motionSensorRemote.getMotion().equals(state)) {

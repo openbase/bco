@@ -34,14 +34,14 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
     }
 
     public void updatePower(final PowerType.Power.PowerState state) {
-        logger.debug("Updating [" + label + "] to Power [" + state.name() + "]");
+        logger.debug("Updating [" + getLabel() + "] to Power [" + state.name() + "]");
         data.getPowerStateBuilder().setState(state);
         notifyChange();
     }
 
     @Override
     public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + label + "] to Power [" + state.name() + "]");
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state.name() + "]");
         powerService.setPower(state);
     }
 

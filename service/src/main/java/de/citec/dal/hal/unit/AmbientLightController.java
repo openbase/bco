@@ -48,14 +48,14 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 	}
 
 	public void updatePower(final PowerType.Power.PowerState state) {
-		logger.debug("Update " + name + "[" + label + "] to PowerState [" + state.name() + "]");
+		logger.debug("Update " + getType().name() + "[" + getLabel() + "] to PowerState [" + state.name() + "]");
 		data.getPowerStateBuilder().setState(state);
 		notifyChange();
 	}
 
 	@Override
 	public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
-		logger.debug("Set " + name + "[" + label + "] to PowerState [" + state.name() + "]");
+		logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state.name() + "]");
 		powerService.setPower(state);
 	}
 
@@ -71,7 +71,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
 	@Override
 	public void setColor(final HSVColor color) throws CouldNotPerformException {
-		logger.debug("Set " + name + "[" + label + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
+		logger.debug("Set " + getType().name() + "[" + getLabel() + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
 		colorService.setColor(color);
 	}
 
@@ -86,7 +86,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
 	@Override
 	public void setBrightness(Double brightness) throws CouldNotPerformException {
-		logger.debug("Set " + name + "[" + label + "] to Brightness[" + brightness + "]");
+		logger.debug("Set " + getType().name() + "[" + getLabel() + "] to Brightness[" + brightness + "]");
 		brightnessService.setBrightness(brightness);
 	}
 

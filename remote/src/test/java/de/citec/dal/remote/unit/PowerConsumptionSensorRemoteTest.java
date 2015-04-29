@@ -93,7 +93,7 @@ public class PowerConsumptionSensorRemoteTest {
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;
-        ((PowerConsumptionSensorController) dalService.getUnitRegistry().getUnit(label, locaton, PowerConsumptionSensorController.class)).updatePowerConsumption(consumption);
+        ((PowerConsumptionSensorController) dalService.getUnitRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(consumption);
         while (true) {
             try {
                 if (powerConsumptionRemote.getPowerConsumption() == consumption) {
