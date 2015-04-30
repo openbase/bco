@@ -45,8 +45,9 @@ public class PowerConsumptionSensorRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = new MockRegistry();
-        
+
         dalService = new DALService();
+        dalService.init();
         dalService.activate();
 
         locaton = new Location(registry.getLocation());
@@ -89,7 +90,8 @@ public class PowerConsumptionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+//    @Test(timeout = 3000)
+    @Test
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;

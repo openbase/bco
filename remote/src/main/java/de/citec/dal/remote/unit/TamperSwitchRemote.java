@@ -30,8 +30,8 @@ public class TamperSwitchRemote extends DALRemoteService<TamperSwitchType.Tamper
     }
 
     @Override
-    public TamperType.Tamper.TamperState getTamper() throws CouldNotPerformException {
-        return this.getData().getTamperState().getState();
+    public TamperType.Tamper getTamper() throws CouldNotPerformException {
+        return this.getData().getTamperState();
     }
     
 }

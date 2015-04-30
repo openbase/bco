@@ -49,6 +49,7 @@ public class PowerPlugRemoteTest {
         registry = new MockRegistry();
 
         dalService = new DALService();
+        dalService.init();
         dalService.activate();
 
         locaton = new Location(registry.getLocation());

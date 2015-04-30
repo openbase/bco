@@ -22,8 +22,6 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.storage.jp.JPInitializeDB;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.geometry.PoseType.Pose;
@@ -52,7 +50,7 @@ public class MockRegistry {
     public static final String HANDLE_SENSOR_LABEL = "Handle_Sensor_Unit_Test";
     public static final String LIGHT_LABEL = "Light_Unit_Test";
     public static final String MOTION_SENSOR_LABEL = "Motion_Sensor_Unit_Test";
-    public static final String POWER_CONSUMPTION_LABEL = "Power_Consumption_Unit_Test";
+    public static final String POWER_CONSUMPTION_LABEL = "Power_Consumption_Sensor_Unit_Test";
     public static final String POWER_PLUG_LABEL = "Power_Plug_Unit_Test";
     public static final String REED_SWITCH_LABEL = "Reed_Switch_Unit_Test";
     public static final String ROLLERSHUTTER_LABEL = "Rollershutter_Unit_Test";

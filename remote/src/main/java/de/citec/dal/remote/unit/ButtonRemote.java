@@ -31,7 +31,7 @@ public class ButtonRemote extends DALRemoteService<ButtonType.Button> implements
     }
 
     @Override
-    public ClickType.Click.ClickState getButton() throws CouldNotPerformException {
-        return this.getData().getButtonState().getState();
+    public ClickType.Click getButton() throws CouldNotPerformException {
+        return this.getData().getButtonState();
     }
 }

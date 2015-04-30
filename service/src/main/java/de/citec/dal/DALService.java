@@ -30,22 +30,18 @@ import org.slf4j.LoggerFactory;
 public class DALService implements RegistryProvider {
 
     public static final String APP_NAME = DALService.class.getSimpleName();
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DALService.class);
 
     private static RegistryProvider registryProvider;
 
     private final DALBindingRegistry bindingRegistry;
-    
+
     private final DeviceRegistry deviceRegistry;
     private final UnitRegistry unitRegistry;
     private final ConnectionManager connectionManager;
 
     public DALService() throws InstantiationException {
-        this(new DeviceManagerRemoteDalConnector());
-    }
-
-    public DALService(final DeviceInitializer initializer) throws InstantiationException {
         try {
             this.bindingRegistry = new DALBindingRegistry();
             this.deviceRegistry = new DeviceRegistry();
@@ -54,9 +50,6 @@ public class DALService implements RegistryProvider {
 
             registryProvider = this;
 
-            initBindings();
-
-            initializer.initDevices(deviceRegistry);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -69,8 +62,22 @@ public class DALService implements RegistryProvider {
         return registryProvider;
     }
 
+    public void init() throws CouldNotPerformException {
+        init(new DeviceManagerRemoteDalConnector());
+    }
+
+    public void init(final DeviceInitializer initializer) throws CouldNotPerformException {
+        try {
+            initBindings();
+            initializer.initDevices(deviceRegistry);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
     private void initBindings() throws CouldNotPerformException {
-        bindingRegistry.register(OpenHABBinding.class);
+        bindingRegistry.register(OpenHABBinding.class
+        );
     }
 
     public void activate() {
@@ -124,15 +131,22 @@ public class DALService implements RegistryProvider {
     public static void main(String[] args) throws Throwable {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
-        JPService.registerProperty(JPDebugMode.class);
-        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService
+                .registerProperty(JPDebugMode.class
+                );
+        JPService.registerProperty(JPHardwareSimulationMode.class
+        );
         JPService.parseAndExitOnError(args);
 
         try {
-            new DALService().activate();
+            DALService dalService = new DALService();
+            dalService.init();
+            dalService.activate();
         } catch (de.citec.jul.exception.InstantiationException ex) {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
-        logger.info(APP_NAME + " successfully started.");
+
+        logger.info(APP_NAME
+                + " successfully started.");
     }
 }

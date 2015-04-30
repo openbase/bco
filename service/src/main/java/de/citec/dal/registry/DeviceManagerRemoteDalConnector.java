@@ -10,6 +10,7 @@ import de.citec.dal.hal.device.DeviceFactory;
 import de.citec.dal.util.DeviceInitializer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.MultiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -35,6 +36,7 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
 
     @Override
     public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException {
+        MultiException.ExceptionStack exceptionStack = null;
         try {
             logger.info("Init devices...");
             deviceRegistryRemote.init();
@@ -47,11 +49,16 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
                 }
             }));
             deviceRegistryRemote.requestStatus();
-            for(DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
-                registry.register(factory.newDevice(config));
+            for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
+                try {
+                    registry.register(factory.newDevice(config));
+                } catch (Exception ex) {
+                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                }
             }
+            MultiException.checkAndThrow("Could not init all registered devices!", exceptionStack);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register devices!", ex);
+            throw new CouldNotPerformException("Could not init devices!", ex);
         }
     }
 }

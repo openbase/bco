@@ -30,8 +30,8 @@ public class MotionSensorRemote extends DALRemoteService<MotionSensorType.Motion
     }
 
     @Override
-    public MotionType.Motion.MotionState getMotion() throws CouldNotPerformException {
-        return this.getData().getMotionState().getState();
+    public MotionType.Motion getMotion() throws CouldNotPerformException {
+        return this.getData().getMotionState();
     }
 
 }

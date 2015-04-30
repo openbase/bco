@@ -48,6 +48,7 @@ public class ButtonRemoteTest {
         registry = new MockRegistry();
         
         dalService = new DALService();
+        dalService.init();
         dalService.activate();
 
         location = new Location(registry.getLocation());
