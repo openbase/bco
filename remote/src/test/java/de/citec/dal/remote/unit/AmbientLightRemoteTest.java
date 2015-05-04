@@ -91,7 +91,8 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+//    @Test(timeout = 3000)
+    @Test
     public void testSetColor_Color() throws Exception {
         System.out.println("setColor");
         Color color = Color.MAGENTA;
