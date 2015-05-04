@@ -170,7 +170,7 @@ public class DeviceRegistryImplTest {
         String deviceScope = "/" + LOCATION_LABEL + "/" + deviceLabel.toLowerCase() + "/";
 
         String unitLabel = "Battery";
-        String unitScope = "/" + LOCATION_LABEL + "/" + unitLabel.toLowerCase() + "/";
+        String unitScope = "/" + LOCATION_LABEL + "/" +UnitTemplateType.UnitTemplate.UnitType.BATTERY.name().toLowerCase()+ "/" + unitLabel.toLowerCase() + "/";
         String unitID = unitScope;
 
         ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();

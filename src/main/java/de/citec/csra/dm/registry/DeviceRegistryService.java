@@ -74,7 +74,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+//            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
