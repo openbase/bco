@@ -67,6 +67,7 @@ public class TemperatureSensorRemoteTest {
         } catch (InterruptedException ex) {
             logger.warn("Could not deactivate temperature sensor remote: ", ex);
         }
+        registry.shutdown();
     }
 
     @Before

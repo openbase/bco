@@ -37,7 +37,6 @@ public class HandleSensorRemoteTest {
     private static DALService dalService;
     private static MockRegistry registry;
     private static Location location;
-    public static String label;
 
     public HandleSensorRemoteTest() {
     }
@@ -52,10 +51,9 @@ public class HandleSensorRemoteTest {
         dalService.activate();
 
         location = new Location(registry.getLocation());
-        String label = MockRegistry.HANDLE_SENSOR_LABEL;
 
         handleSensorRemote = new HandleSensorRemote();
-        handleSensorRemote.init(label, location);
+        handleSensorRemote.init(MockRegistry.HANDLE_SENSOR_LABEL, location);
         handleSensorRemote.activate();
     }
 

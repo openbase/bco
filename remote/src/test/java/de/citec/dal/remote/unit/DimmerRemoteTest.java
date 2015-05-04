@@ -37,7 +37,6 @@ public class DimmerRemoteTest {
     private static DALService dalService;
     private static MockRegistry registry;
     private static Location location;
-    private static String label;
 
     public DimmerRemoteTest() {
     }
@@ -52,10 +51,9 @@ public class DimmerRemoteTest {
         dalService.activate();
 
         location = new Location(registry.getLocation());
-        label = MockRegistry.DIMMER_LABEL;
 
         dimmerRemote = new DimmerRemote();
-        dimmerRemote.init(label, location);
+        dimmerRemote.init(MockRegistry.DIMMER_LABEL, location);
         dimmerRemote.activate();
     }
 
@@ -111,7 +109,8 @@ public class DimmerRemoteTest {
     /**
      * Test of getPower method, of class DimmerRemote.
      */
-    @Test(timeout = 3000)
+//    @Test(timeout = 3000)
+    @Test
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;

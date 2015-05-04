@@ -59,8 +59,16 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                 throw new NotAvailableException("config.id");
             }
 
+            if (config.getId().isEmpty()) {
+                throw new NotAvailableException("Field config.id is empty!");
+            }
+
             if (!config.hasLabel()) {
                 throw new NotAvailableException("config.label");
+            }
+
+            if (config.getLabel().isEmpty()) {
+                throw new NotAvailableException("Field config.label is emty!");
             }
             this.config = config;
 //            this.name = generateName();

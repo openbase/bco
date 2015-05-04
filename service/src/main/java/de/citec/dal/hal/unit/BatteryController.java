@@ -33,6 +33,11 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
         data.getBatteryStateBuilder().setLevel(batteryState);
         notifyChange();
     }
+
+    @Override
+    public Battery requestStatus() throws CouldNotPerformException {
+        return super.requestStatus(); 
+    }
     
     @Override
     public double getBattery() throws CouldNotPerformException {
