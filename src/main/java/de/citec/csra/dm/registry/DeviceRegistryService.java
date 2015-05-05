@@ -63,13 +63,12 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     public DeviceRegistryService() throws InstantiationException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
-			ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+            ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
-            
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler());
@@ -95,11 +94,16 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     @Override
     public void shutdown() {
-        deviceClassRegistry.shutdown();
-        deviceConfigRegistry.shutdown();
+        if (deviceClassRegistry != null) {
+            deviceClassRegistry.shutdown();
+        }
+
+        if (deviceConfigRegistry != null) {
+            deviceConfigRegistry.shutdown();
+        }
     }
 
     @Override

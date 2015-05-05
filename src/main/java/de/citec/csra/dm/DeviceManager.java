@@ -42,9 +42,11 @@ public class DeviceManager {
             throw new InitializationException(this, ex);
         }
     }
-    
+
     public void shutdown() {
-        deviceRegistry.shutdown();
+        if (deviceRegistry != null) {
+            deviceRegistry.shutdown();
+        }
     }
 
     public static void main(String args[]) throws Throwable {

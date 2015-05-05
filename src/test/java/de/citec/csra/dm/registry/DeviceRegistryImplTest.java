@@ -118,7 +118,7 @@ public class DeviceRegistryImplTest {
     @AfterClass
     public static void tearDownClass() {
         remote.shutdown();
-        registry.shutdown();
+        if (registry != null) {             registry.shutdown();         }
     }
 
     @Before
