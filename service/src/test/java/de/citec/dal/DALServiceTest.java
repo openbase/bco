@@ -23,32 +23,35 @@ import org.slf4j.LoggerFactory;
  * @author mpohling
  */
 public class DALServiceTest {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DALServiceTest.class);
-    
+
     private static MockRegistry registry;
+
     public DALServiceTest() {
-        
+
     }
-    
+
     @BeforeClass
     public static void setUpClass() throws InstantiationException {
         registry = new MockRegistry();
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
-        registry.shutdown();
+        if (registry != null) {
+            registry.shutdown();
+        }
     }
-    
+
     @Before
     public void setUp() throws InitializationException, InstantiationException {
     }
-    
+
     @After
     public void tearDown() {
     }
-    
+
     /**
      * Test of deactivate method, of class DALService.
      */
@@ -58,12 +61,11 @@ public class DALServiceTest {
         DALService instance = new DALService();
         try {
             instance.init();
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
         instance.activate();
         instance.deactivate();
     }
-    
-    
+
 }

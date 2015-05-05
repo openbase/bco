@@ -8,6 +8,7 @@ package de.citec.dal.remote.unit;
 import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
+import de.citec.dal.registry.MockFactory;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
@@ -51,7 +52,7 @@ public class AmbientLightRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
-        registry = new MockRegistry();
+        registry = MockFactory.newMockRegistry();
 
         dalService = new DALService();
         dalService.init();
@@ -67,13 +68,15 @@ public class AmbientLightRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        dalService.shutdown();
-        try {
-            ambientLightRemote.deactivate();
-        } catch (InterruptedException ex) {
-            logger.warn("Could not deactivate ambient light remote: ", ex);
+        if (dalService != null) {
+            dalService.shutdown();
         }
-        registry.shutdown();
+        if (ambientLightRemote != null) {
+            ambientLightRemote.shutdown();
+        }
+        if (registry != null) {
+            MockFactory.shutdownMockRegistry();
+        }
     }
 
     @Before

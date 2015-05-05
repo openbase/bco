@@ -9,6 +9,7 @@ import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.TamperSwitchController;
+import de.citec.dal.registry.MockFactory;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -45,8 +46,8 @@ public class TamperSwitchRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistry();
-        
+        registry = MockFactory.newMockRegistry();
+
         dalService = new DALService();
         dalService.init();
         dalService.activate();
@@ -61,13 +62,15 @@ public class TamperSwitchRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        dalService.shutdown();
-        try {
-            tamperSwitchRemote.deactivate();
-        } catch (InterruptedException ex) {
-            logger.warn("Could not deactivate tamper switch remote: ", ex);
+        if (dalService != null) {
+            dalService.shutdown();
         }
-        registry.shutdown();
+        if (tamperSwitchRemote != null) {
+            tamperSwitchRemote.shutdown();
+        }
+        if (registry != null) {
+            MockFactory.shutdownMockRegistry();
+        }
     }
 
     @Before

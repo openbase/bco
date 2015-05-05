@@ -31,11 +31,12 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     }
 
-    public void updateMotion(final MotionType.Motion.MotionState state) {
-        data.getMotionStateBuilder().setState(state);
-        if (state == MotionState.MOVEMENT) {
-            data.getMotionStateBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+    public void updateMotion(MotionType.Motion motion) {
+        //TODO tamino: need to be tested!
+        if (motion.getState() == MotionState.MOVEMENT) {
+            motion = motion.toBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
         }
+        data.setMotionState(motion);
         notifyChange();
     }
 

@@ -9,6 +9,7 @@ import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.MotionSensorController;
+import de.citec.dal.registry.MockFactory;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionType;
+import rst.homeautomation.state.MotionType.Motion.MotionState;
 
 /**
  *
@@ -45,8 +47,8 @@ public class MotionSensorRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = new MockRegistry();
-        
+        registry = MockFactory.newMockRegistry();
+
         dalService = new DALService();
         dalService.init();
         dalService.activate();
@@ -61,13 +63,15 @@ public class MotionSensorRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        dalService.shutdown();
-        try {
-            motionSensorRemote.deactivate();
-        } catch (InterruptedException ex) {
-            logger.warn("Could not deactivate motion sensor remote: ", ex);
+        if (dalService != null) {
+            dalService.shutdown();
         }
-        registry.shutdown();
+        if (motionSensorRemote != null) {
+            motionSensorRemote.shutdown();
+        }
+        if (registry != null) {
+            MockFactory.shutdownMockRegistry();
+        }
     }
 
     @Before
@@ -93,7 +97,7 @@ public class MotionSensorRemoteTest {
     @Test(timeout = 3000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
-        MotionType.Motion.MotionState state = MotionType.Motion.MotionState.MOVEMENT;
+        MotionType.Motion state = MotionType.Motion.newBuilder().setState(MotionState.MOVEMENT).build();
         ((MotionSensorController) dalService.getUnitRegistry().get(motionSensorRemote.getId())).updateMotion(state);
         while (true) {
             try {

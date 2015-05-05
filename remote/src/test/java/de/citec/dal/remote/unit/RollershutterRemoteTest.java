@@ -9,6 +9,7 @@ import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.RollershutterController;
+import de.citec.dal.registry.MockFactory;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -47,8 +48,8 @@ public class RollershutterRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         JPService.registerProperty(JPDebugMode.class, true);
-        registry = new MockRegistry();
-        
+        registry = MockFactory.newMockRegistry();
+
         dalService = new DALService();
         dalService.init();
         dalService.activate();
@@ -63,13 +64,15 @@ public class RollershutterRemoteTest {
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        dalService.shutdown();
-        try {
-            rollershutterRemote.deactivate();
-        } catch (InterruptedException ex) {
-            logger.warn("Could not deactivate rollershutter remote: ", ex);
+        if (dalService != null) {
+            dalService.shutdown();
         }
-        registry.shutdown();
+        if (rollershutterRemote != null) {
+            rollershutterRemote.shutdown();
+        }
+        if (registry != null) {
+            MockFactory.shutdownMockRegistry();
+        }
     }
 
     @Before
