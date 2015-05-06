@@ -32,6 +32,16 @@ public class ProtoBufTest extends TestCase {
         super.tearDown();
     }
 
+    @Test
+    public void testStringhashCompare() {
+        String a = "Hallo World";
+        String b = "Hallo World";
+        System.out.println("hash is: " + b.hashCode());
+        assertEquals(a.hashCode(), b.hashCode());
+        b += " ";
+        assertNotSame(a.hashCode(), b.hashCode());
+    }
+
 //    @Test
 //    public void testInternalBuilderDep() {
 //        F_FGS_221Type.F_FGS_221.Builder fibaro = F_FGS_221Type.F_FGS_221.newBuilder();
@@ -79,7 +89,7 @@ public class ProtoBufTest extends TestCase {
         Class messageClass;
 //        assertEquals(unitMessageClassName, z.getName());
         messageClass = Class.forName(unitMessageClassName);
-        System.out.println("Loaded Class:"+messageClass.getName());
+        System.out.println("Loaded Class:" + messageClass.getName());
 //        messageClass = getClass().getClassLoader().loadClass(unitMessageClassName);
     }
 }
