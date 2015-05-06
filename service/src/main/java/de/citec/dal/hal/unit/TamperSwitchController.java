@@ -30,12 +30,12 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         super(config, TamperSwitchController.class, device, builder);
     }
 
-    public void updateTamper(final TamperType.Tamper.TamperState state) {
-        logger.debug("Updating tamper of [" + this + "] to [" + state + "]");
-        data.getTamperStateBuilder().setState(state);
-        if (state == TamperType.Tamper.TamperState.TAMPER) {
-            data.getTamperStateBuilder().setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+    public void updateTamper(TamperType.Tamper tamperState) {
+        logger.debug("Updating tamper of [" + this + "] to [" + tamperState + "]");
+        if (tamperState.getState() == TamperType.Tamper.TamperState.TAMPER) {
+            tamperState = tamperState.toBuilder().setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
         }
+        data.setTamperState(tamperState);
         notifyChange();
     }
 

@@ -15,7 +15,6 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -93,21 +92,12 @@ public class ButtonRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
-        ClickType.Click.ClickState state = ClickType.Click.ClickState.DOUBLE_CLICKED;
-        ((ButtonController) dalService.getUnitRegistry().get(buttonRemote.getId())).updateButton(state);
-        while (true) {
-            try {
-                if (buttonRemote.getButton().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the button returns the wrong value!", buttonRemote.getButton().equals(state));
+        ClickType.Click buttonState = ClickType.Click.newBuilder().setState(ClickType.Click.ClickState.CLICKED).build();
+        ((ButtonController) dalService.getUnitRegistry().get(buttonRemote.getId())).updateButton(buttonState);
+        buttonRemote.requestStatus();
+        assertEquals("The getter for the button returns the wrong value!", buttonState.getState(), buttonRemote.getButton().getState());
     }
 }

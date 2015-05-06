@@ -12,13 +12,11 @@ import de.citec.dal.registry.MockFactory;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
-import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import java.awt.Color;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,7 +24,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.PowerType;
 import rst.vision.HSVColorType;
@@ -51,7 +48,6 @@ public class AmbientLightRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        JPService.registerProperty(JPDebugMode.class, true);
         registry = MockFactory.newMockRegistry();
 
         dalService = new DALService();
@@ -94,23 +90,13 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 3000)
     @Test
     public void testSetColor_Color() throws Exception {
         System.out.println("setColor");
         Color color = Color.MAGENTA;
         ambientLightRemote.setColor(color);
-        while (true) {
-            try {
-                if (ambientLightRemote.getData().getColor().equals(HSVColorToRGBColorTransformer.transform(color))) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Color has not been set in time!", ambientLightRemote.getData().getColor().equals(HSVColorToRGBColorTransformer.transform(color)));
+        ambientLightRemote.requestStatus();
+        assertEquals("Color has not been set in time!", HSVColorToRGBColorTransformer.transform(color), ambientLightRemote.getData().getColor());
     }
 
     /**
@@ -118,22 +104,13 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetColor_HSVColorTypeHSVColor() throws Exception {
         System.out.println("setColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(50).setSaturation(50).setValue(50).build();
         ambientLightRemote.setColor(color);
-        while (true) {
-            try {
-                if (ambientLightRemote.getData().getColor().equals(color)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Color has not been set in time!", ambientLightRemote.getData().getColor().equals(color));
+        ambientLightRemote.requestStatus();
+        assertEquals("Color has not been set in time!", color, ambientLightRemote.getData().getColor());
     }
 
     /**
@@ -141,22 +118,13 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetColor() throws Exception {
         System.out.println("getColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(66).setSaturation(63).setValue(33).build();
         ambientLightRemote.setColor(color);
-        while (true) {
-            try {
-                if (ambientLightRemote.getColor().equals(color)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Color has not been set in time or the return value from the getter is different!", ambientLightRemote.getColor().equals(color));
+        ambientLightRemote.requestStatus();
+        assertEquals("Color has not been set in time or the return value from the getter is different!", color, ambientLightRemote.getColor());
     }
 
     /**
@@ -164,22 +132,13 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         ambientLightRemote.setPower(state);
-        while (true) {
-            try {
-                if (ambientLightRemote.getData().getPowerState().getState().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power state has not been set in time!", ambientLightRemote.getData().getPowerState().getState().equals(state));
+        ambientLightRemote.requestStatus();
+        assertEquals("Power state has not been set in time!", state, ambientLightRemote.getData().getPowerState().getState());
     }
 
     /**
@@ -187,22 +146,13 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         ambientLightRemote.setPower(state);
-        while (true) {
-            try {
-                if (ambientLightRemote.getPower().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power state has not been set in time or the return value from the getter is different!", ambientLightRemote.getPower().equals(state));
+        ambientLightRemote.requestStatus();
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, ambientLightRemote.getPower());
     }
 
     /**
@@ -210,22 +160,13 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 75d;
         ambientLightRemote.setBrightness(brightness);
-        while (true) {
-            try {
-                if (ambientLightRemote.getData().getColor().getValue() == brightness) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power state has not been set in time!", ambientLightRemote.getData().getColor().getValue() == brightness);
+        ambientLightRemote.requestStatus();
+        assertEquals("Power state has not been set in time!", brightness, ambientLightRemote.getData().getColor().getValue(), 0.1);
     }
 
     /**
@@ -233,28 +174,12 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         Double brightness = 25d;
         ambientLightRemote.setBrightness(brightness);
-        while (true) {
-            try {
-                if (ambientLightRemote.getBrightness().equals(brightness)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Brightness has not been set in time or the return value from the getter is different!", ambientLightRemote.getBrightness().equals(brightness));
-    }
-
-    /**
-     * Test of notifyUpdated method, of class AmbientLightRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
+        ambientLightRemote.requestStatus();
+        assertEquals("Brightness has not been set in time or the return value from the getter is different!", brightness, ambientLightRemote.getBrightness(), 0.1);
     }
 }

@@ -11,12 +11,10 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.RollershutterController;
 import de.citec.dal.registry.MockFactory;
 import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -47,7 +45,6 @@ public class RollershutterRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        JPService.registerProperty(JPDebugMode.class, true);
         registry = MockFactory.newMockRegistry();
 
         dalService = new DALService();
@@ -88,22 +85,13 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
         rollershutterRemote.setShutter(state);
-        while (true) {
-            try {
-                if (rollershutterRemote.getData().getShutterState().getState().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Shutter has not been set in time!", rollershutterRemote.getData().getShutterState().getState().equals(state));
+        rollershutterRemote.requestStatus();
+        assertEquals("Shutter has not been set in time!",state,  rollershutterRemote.getData().getShutterState().getState());
     }
 
     /**
@@ -111,22 +99,13 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
         ((RollershutterController) dalService.getUnitRegistry().get(rollershutterRemote.getId())).updateShutter(state);
-        while (true) {
-            try {
-                if (rollershutterRemote.getShutter().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Shutter has not been set in time!", rollershutterRemote.getShutter().equals(state));
+        rollershutterRemote.requestStatus();
+        assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
     }
 
     /**
@@ -134,22 +113,13 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetOpeningRatio() throws Exception {
         System.out.println("setOpeningRatio");
         double openingRatio = 34.0D;
         rollershutterRemote.setOpeningRatio(openingRatio);
-        while (true) {
-            try {
-                if (rollershutterRemote.getData().getOpeningRatio() == openingRatio) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Opening ration has not been set in time!", rollershutterRemote.getData().getOpeningRatio() == openingRatio);
+        rollershutterRemote.requestStatus();
+        assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getData().getOpeningRatio(), 0.1);
     }
 
     /**
@@ -157,22 +127,13 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
         ((RollershutterController) dalService.getUnitRegistry().get(rollershutterRemote.getId())).updateOpeningRatio(openingRatio);
-        while (true) {
-            try {
-                if (rollershutterRemote.getOpeningRatio().equals(openingRatio)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Opening ration has not been set in time!", rollershutterRemote.getOpeningRatio().equals(openingRatio));
+        rollershutterRemote.requestStatus();
+        assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getOpeningRatio());
     }
 
     /**

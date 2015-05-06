@@ -15,10 +15,9 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,7 +52,7 @@ public class BrightnessSensorRemoteTest {
 
         location = new Location(registry.getLocation());
         label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
-//
+
         brightnessSensorRemote = new BrightnessSensorRemote();
         brightnessSensorRemote.init(label, location);
         brightnessSensorRemote.activate();
@@ -92,21 +91,12 @@ public class BrightnessSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         double brightness = 0.5;
         ((BrightnessSensorController) dalService.getUnitRegistry().get(brightnessSensorRemote.getId())).updateBrightness((float) brightness);
-        while (true) {
-            try {
-                if (brightnessSensorRemote.getBrightness() == brightness) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the brightness returns the wrong value!", brightnessSensorRemote.getBrightness() == brightness);
+        brightnessSensorRemote.requestStatus();
+        assertEquals("The getter for the brightness returns the wrong value!", brightness, brightnessSensorRemote.getBrightness(), 0.1);
     }
 }

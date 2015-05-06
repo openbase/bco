@@ -131,11 +131,8 @@ public class DALService implements RegistryProvider {
     public static void main(String[] args) throws Throwable {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
-        JPService
-                .registerProperty(JPDebugMode.class
-                );
-        JPService.registerProperty(JPHardwareSimulationMode.class
-        );
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.parseAndExitOnError(args);
 
         try {

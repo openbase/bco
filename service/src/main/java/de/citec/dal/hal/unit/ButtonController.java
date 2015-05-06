@@ -11,6 +11,7 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ClickType;
+import rst.homeautomation.state.MotionType;
 import rst.homeautomation.unit.ButtonType;
 import rst.homeautomation.unit.ButtonType.Button;
 import rst.homeautomation.unit.UnitConfigType;
@@ -31,11 +32,12 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         super(config, ButtonController.class, device, builder);
     }
 
-    public void updateButton(final ClickType.Click.ClickState state) {
-        data.getButtonStateBuilder().setState(state);
-        if (state == ClickType.Click.ClickState.CLICKED || state == ClickType.Click.ClickState.DOUBLE_CLICKED) {
-            data.getButtonStateBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+    //TODO Tamino: rename Click Type into button state.
+    public void updateButton(ClickType.Click click) {
+        if (click.getState() == ClickType.Click.ClickState.CLICKED || click.getState() == ClickType.Click.ClickState.DOUBLE_CLICKED) {
+            click = click.toBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
         }
+        data.setButtonState(click);
         notifyChange();
     }
 

@@ -91,85 +91,48 @@ public class DimmerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         dimmerRemote.setPower(state);
-        while (true) {
-            try {
-                if (dimmerRemote.getData().getPowerState().getState().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power has not been set in time!", dimmerRemote.getData().getPowerState().getState().equals(state));
+        dimmerRemote.requestStatus();
+        assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState().getState());
     }
 
     /**
      * Test of getPower method, of class DimmerRemote.
      */
-//    @Test(timeout = 3000)
     @Test
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updatePower(state);
-        while (true) {
-            try {
-                if (dimmerRemote.getPower().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power has not been set in time!", dimmerRemote.getPower().equals(state));
+        dimmerRemote.requestStatus();
+        assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
     }
 
     /**
      * Test of setDimm method, of class DimmerRemote.
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetDimm() throws Exception {
         System.out.println("setDimm");
         Double dimm = 66d;
         dimmerRemote.setDimm(dimm);
-        while (true) {
-            try {
-                if (dimmerRemote.getData().getValue() == dimm) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Dimm has not been set in time!", dimmerRemote.getData().getValue() == dimm);
+        dimmerRemote.requestStatus();
+        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getData().getValue(), 0.1);
     }
 
     /**
      * Test of getDimm method, of class DimmerRemote.
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetDimm() throws Exception {
         System.out.println("getDimm");
-        Double dimm = 70.0D;
+        Double dimm = 70.0d;
         ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updateDimm(dimm);
-        while (true) {
-            try {
-                if (dimmerRemote.getDimm().equals(dimm)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Dimm has not been set in time!", dimmerRemote.getDimm().equals(dimm));
+        dimmerRemote.requestStatus();
+        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getDimm());
     }
 }

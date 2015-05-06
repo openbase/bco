@@ -15,10 +15,9 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -91,21 +90,12 @@ public class HandleSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
         ((HandleSensorController) dalService.getUnitRegistry().get(handleSensorRemote.getId())).updateHandle(state);
-        while (true) {
-            try {
-                if (handleSensorRemote.getHandle().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the handle state returns the wrong value!", handleSensorRemote.getHandle().equals(state));
+        handleSensorRemote.requestStatus();
+        Assert.assertEquals("The getter for the handle state returns the wrong value!",state, handleSensorRemote.getHandle());
     }
 }

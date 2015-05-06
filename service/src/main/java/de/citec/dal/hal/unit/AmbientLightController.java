@@ -49,7 +49,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLightT
 
 	public void updatePower(final PowerType.Power.PowerState state) {
 		logger.debug("Update " + getType().name() + "[" + getLabel() + "] to PowerState [" + state.name() + "]");
-		data.getPowerStateBuilder().setState(state);
+		getData().getPowerStateBuilder().setState(state);
 		notifyChange();
 	}
 

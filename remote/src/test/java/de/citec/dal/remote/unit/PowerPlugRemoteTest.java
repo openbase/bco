@@ -16,7 +16,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -87,22 +86,13 @@ public class PowerPlugRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         powerPlugRemote.setPower(state);
-        while (true) {
-            try {
-                if (powerPlugRemote.getData().getPowerState().getState().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power state has not been set in time!", powerPlugRemote.getData().getPowerState().getState().equals(state));
+        powerPlugRemote.requestStatus();
+        assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState().getState());
     }
 
     /**
@@ -110,22 +100,13 @@ public class PowerPlugRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         ((PowerPlugController) dalService.getUnitRegistry().get(powerPlugRemote.getId())).updatePower(state);
-        while (true) {
-            try {
-                if (powerPlugRemote.getPower().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the power state returns the wrong value!", powerPlugRemote.getPower().equals(state));
+        powerPlugRemote.requestStatus();
+        assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
     }
 
     /**

@@ -15,10 +15,9 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -93,22 +92,12 @@ public class PowerConsumptionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 3000)
     @Test
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         float consumption = 0.0F;
         ((PowerConsumptionSensorController) dalService.getUnitRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(consumption);
-        while (true) {
-            try {
-                if (powerConsumptionRemote.getPowerConsumption() == consumption) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the power consumption returns the wrong value!", powerConsumptionRemote.getPowerConsumption() == consumption);
+        powerConsumptionRemote.requestStatus();
+        Assert.assertEquals("The getter for the power consumption returns the wrong value!", consumption, powerConsumptionRemote.getPowerConsumption(), 0.1);
     }
 }

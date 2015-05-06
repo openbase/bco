@@ -44,138 +44,143 @@ import rst.homeautomation.state.ActiveDeactiveType;
  */
 public class OpenHABBinding extends AbstractDALBinding implements OpenHABBindingInterface {
 
-	public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
-	public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
+    public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
+    public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
-	public static final Scope SCOPE_DAL = new Scope("/dal");
-	public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
+    public static final Scope SCOPE_DAL = new Scope("/dal");
+    public static final Scope SCOPE_OPENHAB = new Scope("/openhab");
 
-	private static final Logger logger = LoggerFactory.getLogger(OpenHABBinding.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenHABBinding.class);
 
-	private OpenHABCommandExecutor commandExecutor;
+    private OpenHABCommandExecutor commandExecutor;
 
-	private final RSBRemoteService<RSBBinding> openhabRemoteService;
-	private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
+    private final RSBRemoteService<RSBBinding> openhabRemoteService;
+    private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
 
-	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RSBBindingType.RSBBinding.getDefaultInstance()));
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
-	}
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RSBBindingType.RSBBinding.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
+    }
 
-	public OpenHABBinding() throws InstantiationException {
-		try {
-			this.commandExecutor = new OpenHABCommandExecutor(DALService.getRegistryProvider().getUnitRegistry());
-			openhabRemoteService = new RSBRemoteService<RSBBinding>() {
+    public OpenHABBinding() throws InstantiationException {
+        try {
+            this.commandExecutor = new OpenHABCommandExecutor(DALService.getRegistryProvider().getUnitRegistry());
 
-				@Override
-				public void notifyUpdated(final RSBBinding data) {
-					OpenHABBinding.this.notifyUpdated(data);
-				}
-			};
-			openhabRemoteService.init(SCOPE_OPENHAB);
+            openhabRemoteService = new RSBRemoteService<RSBBinding>() {
 
-			dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
+                @Override
+                public void notifyUpdated(final RSBBinding data) {
+                    OpenHABBinding.this.notifyUpdated(data);
+                }
+            };
+            openhabRemoteService.init(SCOPE_OPENHAB);
 
-				@Override
-				public void registerMethods(LocalServer server) throws RSBException {
-					OpenHABBinding.this.registerMethods(server);
-				}
-			};
+            dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
 
-			dalCommunicationService.init(InformerType.Single);
+                @Override
+                public void registerMethods(LocalServer server) throws RSBException {
+                    OpenHABBinding.this.registerMethods(server);
+                }
+            };
 
-			openhabRemoteService.activate();
-			dalCommunicationService.activate();
+            dalCommunicationService.init(InformerType.Single);
 
-			dalCommunicationService.getData().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
-			dalCommunicationService.notifyChange();
-		} catch (CouldNotPerformException ex) {
-			throw new de.citec.jul.exception.InstantiationException(this, ex);
-		}
-	}
+            if (!JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
+                // Init Openhab connection
+                openhabRemoteService.activate();
+                dalCommunicationService.activate();
 
-	public final void notifyUpdated(final RSBBinding data) {
-		switch (data.getState().getState()) {
-			case ACTIVE:
-				logger.info("Active dal binding state!");
-				break;
-			case DEACTIVE:
-				logger.info("Deactive dal binding state!");
-				break;
-			case UNKNOWN:
-				logger.info("Unkown dal binding state!");
-				break;
-		}
-	}
+                dalCommunicationService.getData().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
+                dalCommunicationService.notifyChange();
 
-	public final void registerMethods(final LocalServer server) {
-		try {
-			server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
-		} catch (RSBException ex) {
-			logger.warn("Could not add methods to local server in [" + getClass().getSimpleName() + "]", ex);
-		}
-	}
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new de.citec.jul.exception.InstantiationException(this, ex);
+        }
+    }
 
-	@Override
-	public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
-		try {
-			commandExecutor.receiveUpdate(command);
-		} catch (Exception ex) {
-			throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + OpenhabCommandTransformer.getCommandData(command) + "]!", ex);
-		}
-	}
+    public final void notifyUpdated(final RSBBinding data) {
+        switch (data.getState().getState()) {
+            case ACTIVE:
+                logger.info("Active dal binding state!");
+                break;
+            case DEACTIVE:
+                logger.info("Deactive dal binding state!");
+                break;
+            case UNKNOWN:
+                logger.info("Unkown dal binding state!");
+                break;
+        }
+    }
 
-	public class InternalReceiveUpdateCallback extends EventCallback {
+    public final void registerMethods(final LocalServer server) {
+        try {
+            server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
+        } catch (RSBException ex) {
+            logger.warn("Could not add methods to local server in [" + getClass().getSimpleName() + "]", ex);
+        }
+    }
 
-		@Override
-		public Event invoke(final Event request) throws Throwable {
-			try {
-				OpenHABBinding.this.internalReceiveUpdate((OpenhabCommand) request.getData());
-			} catch (Throwable cause) {
-				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
-			}
-			return RSBCommunicationService.RPC_SUCCESS;
-		}
-	}
+    @Override
+    public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
+        try {
+            commandExecutor.receiveUpdate(command);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + OpenhabCommandTransformer.getCommandData(command) + "]!", ex);
+        }
+    }
 
-	@Override
-	public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
-		try {
-			if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
-				internalReceiveUpdate(command);
-				return null;
-			}
-			if (!openhabRemoteService.isConnected()) {
-				throw new InvalidStateException("Could not reache server!");
-			}
+    public class InternalReceiveUpdateCallback extends EventCallback {
 
-			openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
-			return null; // TODO: mpohling implement future handling.
-		} catch (RSBException | ExecutionException | TimeoutException | CouldNotPerformException ex) {
-			throw new CouldNotPerformException("Could not execute " + command + "!", ex);
-		}
-	}
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                OpenHABBinding.this.internalReceiveUpdate((OpenhabCommand) request.getData());
+            } catch (Throwable cause) {
+                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
+            }
+            return RSBCommunicationService.RPC_SUCCESS;
+        }
+    }
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "[version=" + getClass().getPackage().getImplementationVersion() + "]";
-	}
-	/**
-	 * TODO mpohling: add the following code to the openhabbinding pom.
-	 *
-	 * <plugin>
-	 * <groupId>org.apache.maven.plugins</groupId>
-	 * <artifactId>maven-jar-plugin</artifactId>
-	 * <configuration>
-	 * <archive>
-	 * <manifest>
-	 * <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-	 * <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-	 * </manifest>
-	 * </archive>
-	 * </configuration>
-	 * </plugin>
-	 */
+    @Override
+    public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
+        try {
+            if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
+                internalReceiveUpdate(command);
+                return null;
+            }
+            if (!openhabRemoteService.isConnected()) {
+                throw new InvalidStateException("Could not reache server!");
+            }
+
+            openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
+            return null; // TODO: mpohling implement future handling.
+        } catch (RSBException | ExecutionException | TimeoutException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not execute " + command + "!", ex);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[version=" + getClass().getPackage().getImplementationVersion() + "]";
+    }
+    /**
+     * TODO mpohling: add the following code to the openhabbinding pom.
+     *
+     * <plugin>
+     * <groupId>org.apache.maven.plugins</groupId>
+     * <artifactId>maven-jar-plugin</artifactId>
+     * <configuration>
+     * <archive>
+     * <manifest>
+     * <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+     * <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+     * </manifest>
+     * </archive>
+     * </configuration>
+     * </plugin>
+     */
 
 }

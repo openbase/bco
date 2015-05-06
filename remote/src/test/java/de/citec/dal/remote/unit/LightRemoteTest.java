@@ -86,22 +86,13 @@ public class LightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
         lightRemote.setPower(state);
-        while (true) {
-            try {
-                if (lightRemote.getData().getPowerState().getState().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Power has not been set in time!", lightRemote.getData().getPowerState().getState().equals(state));
+        lightRemote.requestStatus();
+        assertEquals("Power has not been set in time!", state, lightRemote.getData().getPowerState().getState());
     }
 
     /**
@@ -109,28 +100,12 @@ public class LightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
         ((LightController) dalService.getUnitRegistry().get(lightRemote.getId())).updatePower(state);
-        while (true) {
-            try {
-                if (lightRemote.getPower().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("Light has not been set in time!", lightRemote.getPower().equals(state));
-    }
-
-    /**
-     * Test of notifyUpdated method, of class LightRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
+        lightRemote.requestStatus();
+        assertEquals("Light has not been set in time!", state, lightRemote.getPower());
     }
 }

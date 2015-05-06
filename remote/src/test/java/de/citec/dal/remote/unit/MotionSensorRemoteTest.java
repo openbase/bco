@@ -15,10 +15,9 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -94,21 +93,12 @@ public class MotionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
-        MotionType.Motion state = MotionType.Motion.newBuilder().setState(MotionState.MOVEMENT).build();
-        ((MotionSensorController) dalService.getUnitRegistry().get(motionSensorRemote.getId())).updateMotion(state);
-        while (true) {
-            try {
-                if (motionSensorRemote.getMotion().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotion().equals(state));
+        MotionType.Motion motion = MotionType.Motion.newBuilder().setState(MotionState.MOVEMENT).build();
+        ((MotionSensorController) dalService.getUnitRegistry().get(motionSensorRemote.getId())).updateMotion(motion);
+        motionSensorRemote.requestStatus();
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotion().getState(), motion.getState());
     }
 }

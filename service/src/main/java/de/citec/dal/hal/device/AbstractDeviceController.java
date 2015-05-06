@@ -172,24 +172,24 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
             String repeatedUnitFieldName = "unit_" + unitConfig.getTemplate().getType().name().toLowerCase();
-            List<Descriptors.FieldDescriptor> fields = data.getDescriptorForType().getFields();
+            MB data = getData();
+            Class<? extends M> messageClass = detectMessageClass();
             Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = data.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
             
             if(repeatedUnitFieldDescriptor == null) {
                 throw new CouldNotPerformException("Missing FieldDescriptor["+repeatedUnitFieldName+"] in protobuf Type["+data.getClass().getName()+"]!");
             }
-            
+
             GeneratedMessage.Builder unitBuilder = loadUnitBuilder(unitConfig);
             try {
-//                F_FGS_221Type.F_FGS_221.newBuilder().getUnitButtonBuilder(index)addUnitLight(Light.newBuilder());
-                data.getClass().getMethod("addUnit" + unitTypeName, unitBuilder.getClass()).invoke(data, unitBuilder);
-//                PH_Hue_E27Type.PH_Hue_E27.newBuilder().a
+                messageClass.getMethod("addUnit" + unitTypeName, unitBuilder.getClass()).invoke(data, unitBuilder);
 
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Missing repeated field for "+unitBuilder.getClass().getSimpleName()+" in Message["+data.getClass().getSimpleName()+"]!", ex);
             }
             try {
-                return (B) data.getClass().getMethod("getUnit" + unitTypeName + "Builder", int.class).invoke(data, data.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
+                
+                return (B) messageClass.getMethod("getUnit" + unitTypeName + "Builder", int.class).invoke(data, data.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not create Builder!", ex);
             }
@@ -206,7 +206,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             Class messageClass;
             try {
                 messageClass = Class.forName(unitMessageClassName);
-//                messageClass = getClass().getClassLoader().loadClass(unitMessageClassName);
             } catch (ClassNotFoundException ex) {
                 throw new CouldNotPerformException("Could not find builder Class[" + unitMessageClassName + "]!", ex);
             }

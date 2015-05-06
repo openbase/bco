@@ -15,7 +15,6 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -93,21 +92,12 @@ public class TamperSwitchRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
-        TamperType.Tamper.TamperState state = TamperType.Tamper.TamperState.TAMPER;
-        ((TamperSwitchController) dalService.getUnitRegistry().get(tamperSwitchRemote.getId())).updateTamper(state);
-        while (true) {
-            try {
-                if (tamperSwitchRemote.getTamper().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().equals(state));
+        TamperType.Tamper tamperState = TamperType.Tamper.newBuilder().setState(TamperType.Tamper.TamperState.TAMPER).build();
+        ((TamperSwitchController) dalService.getUnitRegistry().get(tamperSwitchRemote.getId())).updateTamper(tamperState);
+        tamperSwitchRemote.requestStatus();
+        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().getState().equals(tamperState.getState()));
     }
 }

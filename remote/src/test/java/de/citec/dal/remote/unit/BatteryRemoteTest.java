@@ -16,7 +16,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -25,7 +24,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.unit.BatteryType;
 
 /**
  *
@@ -94,23 +92,12 @@ public class BatteryRemoteTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 3000)
     @Test
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         double level = 34.0;
-        BatteryType.Battery requestStatus = batteryRemote.requestStatus();
         ((BatteryController) dalService.getUnitRegistry().get(batteryRemote.getId())).updateBattery(level);
-        while (true) {
-            try {
-                if (batteryRemote.getBattery() == level) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the battery level returns the wrong value!", batteryRemote.getBattery() == level);
+        batteryRemote.requestStatus();
+        assertEquals("The getter for the battery level returns the wrong value!", level, batteryRemote.getBattery(), 0.1);
     }
 }

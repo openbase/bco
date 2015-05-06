@@ -18,6 +18,7 @@ import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -93,21 +94,12 @@ public class ReedSwitchRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
         ((ReedSwitchController) dalService.getUnitRegistry().get(reedSwitchRemote.getId())).updateReedSwitch(state);
-        while (true) {
-            try {
-                if (reedSwitchRemote.getReedSwitch().equals(state)) {
-                    break;
-                }
-            } catch (NotAvailableException ex) {
-                logger.debug("Not ready yet");
-            }
-            Thread.yield();
-        }
-        assertTrue("The getter for the reed switch state returns the wrong value!", reedSwitchRemote.getReedSwitch().equals(state));
+        reedSwitchRemote.requestStatus();
+        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch());
     }
 }
