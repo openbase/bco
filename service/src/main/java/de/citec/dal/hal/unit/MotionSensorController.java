@@ -7,6 +7,9 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionType;
@@ -31,18 +34,29 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     }
 
-    public void updateMotion(MotionType.Motion motion) {
-        //TODO tamino: need to be tested!
+    public void updateMotion(MotionType.Motion motion) throws CouldNotPerformException {
+        //TODO tamino: need to be tested! Please write an unit test.
         if (motion.getState() == MotionState.MOVEMENT) {
             motion = motion.toBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
         }
-        data.setMotionState(motion);
+
+        try (ClosableDataBuilder builder = getClosableDataBuilder()) {
+            builder.builder.setMotionState(motion);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply data change!", ex);
+        }
+
         notifyChange();
     }
 
     @Override
     public MotionType.Motion getMotion() throws CouldNotPerformException {
-        logger.debug("Getting [" + getLabel() + "] State: [" + data.getMotionState() + "]");
-        return data.getMotionState();
+        try {
+            MotionType.Motion motionState = getData().getMotionState();
+            logger.debug("Getting [" + getLabel() + "] State: [" + motionState + "]");
+            return motionState;
+        } catch (RSBException ex) {
+            throw new CouldNotPerformException("Could not return motion data.", ex);
+        }
     }
 }
