@@ -5,6 +5,7 @@
  */
 package de.citec.csra.dm.registry;
 
+import de.citec.csra.dm.consistency.DeviceIdConsistencyHandler;
 import de.citec.csra.dm.consistency.DeviceLabelConsistencyHandler;
 import de.citec.csra.dm.generator.DeviceConfigIdGenerator;
 import de.citec.csra.dm.generator.DeviceClassIdGenerator;
@@ -76,6 +77,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
 //            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
