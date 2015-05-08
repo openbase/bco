@@ -17,7 +17,7 @@ import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.rsb.com.RSBInformerInterface;
+import de.citec.jul.extension.rsb.com.RSBInformerInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

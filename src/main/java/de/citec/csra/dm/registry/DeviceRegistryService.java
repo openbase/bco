@@ -9,7 +9,6 @@ import de.citec.csra.dm.consistency.DeviceLabelConsistencyHandler;
 import de.citec.csra.dm.generator.DeviceConfigIdGenerator;
 import de.citec.csra.dm.generator.DeviceClassIdGenerator;
 import de.citec.csra.dm.consistency.DeviceScopeConsistencyHandler;
-import de.citec.csra.dm.consistency.TransformationConsistencyHandler;
 import de.citec.csra.dm.consistency.UnitIdConsistencyHandler;
 import de.citec.csra.dm.consistency.UnitScopeConsistencyHandler;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
@@ -20,9 +19,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import de.citec.jul.rsb.container.IdentifiableMessage;
-import de.citec.jul.rsb.container.transformer.MessageTransformer;
-import de.citec.jul.rsb.util.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import java.util.ArrayList;
@@ -41,7 +37,10 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.container.IdentifiableMessage;
+import de.citec.jul.extension.rsb.container.transformer.MessageTransformer;
+import de.citec.jul.extension.rsb.util.RPCHelper;
 
 /**
  *
@@ -64,8 +63,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getData(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 

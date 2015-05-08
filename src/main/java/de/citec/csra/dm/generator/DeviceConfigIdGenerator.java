@@ -7,7 +7,7 @@ package de.citec.csra.dm.generator;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.rsb.util.IdGenerator;
+import de.citec.jul.extension.rsb.util.IdGenerator;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**

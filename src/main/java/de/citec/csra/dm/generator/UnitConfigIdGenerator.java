@@ -7,8 +7,8 @@ package de.citec.csra.dm.generator;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.rsb.scope.ScopeGenerator;
-import de.citec.jul.rsb.util.IdGenerator;
+import de.citec.jul.extension.rsb.scope.ScopeGenerator;
+import de.citec.jul.extension.rsb.util.IdGenerator;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
