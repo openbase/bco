@@ -18,6 +18,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.extension.rsb.com.RSBInformerInterface;
+import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,7 @@ public class DeviceManager {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class);
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/vol/csra/data/db/device-db"));
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
 
