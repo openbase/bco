@@ -160,7 +160,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
 
             openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
             return null; // TODO: mpohling implement future handling.
-        } catch (RSBException | ExecutionException | TimeoutException | CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not execute " + command + "!", ex);
         }
     }

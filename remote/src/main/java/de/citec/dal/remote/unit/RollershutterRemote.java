@@ -32,7 +32,7 @@ public class RollershutterRemote extends DALRemoteService<RollershutterType.Roll
 
     @Override
     public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
-        callMethodAsync("setShutter", ShutterType.Shutter.newBuilder().setState(state).build());
+        callMethod("setShutter", ShutterType.Shutter.newBuilder().setState(state).build());
     }
 
     @Override
@@ -42,7 +42,7 @@ public class RollershutterRemote extends DALRemoteService<RollershutterType.Roll
 
     @Override
     public void setOpeningRatio(final Double openingRatio) throws CouldNotPerformException {
-        callMethodAsync("setOpeningRatio", openingRatio);
+        callMethod("setOpeningRatio", openingRatio);
     }
 
     @Override

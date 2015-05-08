@@ -32,7 +32,7 @@ public class PowerPlugRemote extends DALRemoteService<PowerPlugType.PowerPlug> i
 
     @Override
     public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethodAsync("setPower", PowerType.Power.newBuilder().setState(state).build());
+        callMethod("setPower", PowerType.Power.newBuilder().setState(state).build());
     }
 
     @Override

@@ -32,7 +32,7 @@ public class DimmerRemote extends DALRemoteService<DimmerType.Dimmer> implements
 
     @Override
     public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethodAsync("setPower", PowerType.Power.newBuilder().setState(state).build());
+        callMethod("setPower", PowerType.Power.newBuilder().setState(state).build());
     }
 
     @Override
@@ -42,7 +42,7 @@ public class DimmerRemote extends DALRemoteService<DimmerType.Dimmer> implements
 
     @Override
     public void setDimm(Double dimm) throws CouldNotPerformException {
-        callMethodAsync("setDimm", dimm);
+        callMethod("setDimm", dimm);
     }
 
     @Override
