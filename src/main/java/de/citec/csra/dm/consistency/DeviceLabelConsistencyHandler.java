@@ -55,13 +55,13 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
                 throw new NotAvailableException("deviceconfig.label");
             }
 
-            if (labelConsistencyMap.containsKey(config.getLabel())) {
-                if (!config.getId().equals(labelConsistencyMap.get(config.getLabel()))) {
+            if (labelConsistencyMap.containsKey(generateKey(config))) {
+                if (!config.getId().equals(labelConsistencyMap.get(generateKey(config)))) {
                     throw new VerificationFailedException("Device[" + config.getId() + "] and Device[" + labelConsistencyMap.get(config.getLabel()) + "] are registerted with equal label on the same location which is not allowed!");
                 }
             }
 
-            labelConsistencyMap.put(config.getLabel(), config.getId());
+            labelConsistencyMap.put(generateKey(config), config.getId());
 
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not check deviceconfig uniqueness of " + config + "!", ex);
@@ -84,6 +84,10 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not gernerate unit label!", ex);
         }
+    }
+    
+    private String generateKey(DeviceConfig deviceConfig) {
+        return deviceConfig.getLabel() + deviceConfig.getPlacementConfig().getLocationConfig().getId();
     }
 
 }
