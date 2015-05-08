@@ -10,6 +10,8 @@ import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
@@ -29,19 +31,24 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
     }
 
     private final PowerService powerService;
-    
+
     public PowerPlugController(final UnitConfigType.UnitConfig config, final Device device, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
         this(config, device, builder, device.getDefaultServiceFactory());
     }
-    
+
     public PowerPlugController(final UnitConfigType.UnitConfig config, final Device device, final PowerPlug.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
         super(config, PowerPlugController.class, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
     }
 
-    public void updatePower(final PowerType.Power.PowerState state)  throws CouldNotPerformException{
-        data.getPowerStateBuilder().setState(state);
-        notifyChange();
+    public void updatePower(final PowerType.Power.PowerState value) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<PowerPlug.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getPowerStateBuilder().setState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+        }
     }
 
     @Override
@@ -51,7 +58,11 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return data.getPowerState().getState();
+    public PowerType.Power.PowerState getPower() throws NotAvailableException {
+        try {
+            return getData().getPowerState().getState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("power", ex);
+        }
     }
 }

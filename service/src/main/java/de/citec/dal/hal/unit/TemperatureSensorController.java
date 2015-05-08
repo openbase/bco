@@ -8,6 +8,8 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.TemperatureSensorType;
@@ -28,14 +30,22 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         super(config, TemperatureSensorController.class, device, builder);
     }
 
-    public void updateTemperature(final float temperature) {
-        data.setTemperature(temperature);
-        notifyChange();
+    public void updateTemperature(final float value) throws CouldNotPerformException {
+        logger.debug("Apply temperature Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setTemperature(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply temperature Update[" + value + "] for " + this + "!", ex);
+        }
     }
 
     @Override
-    public float getTemperature() throws CouldNotPerformException {
-        logger.debug("Getting [" + getLabel() + "] Temperature: [" + data.getTemperature() + "]");
-        return data.getTemperature();
+    public float getTemperature() throws NotAvailableException {
+        try {
+            return getData().getTemperature();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("temperature", ex);
+        }
     }
 }

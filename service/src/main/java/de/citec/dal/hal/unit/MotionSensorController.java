@@ -7,9 +7,8 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import rsb.RSBException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionType;
@@ -34,29 +33,27 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     }
 
-    public void updateMotion(MotionType.Motion motion) throws CouldNotPerformException {
-        //TODO tamino: need to be tested! Please write an unit test.
-        if (motion.getState() == MotionState.MOVEMENT) {
-            motion = motion.toBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-        }
+    public void updateMotion(MotionType.Motion value) throws CouldNotPerformException {
+        logger.debug("Apply motion Update[" + value + "] for " + this + ".");
+        try (ClosableDataBuilder<MotionSensor.Builder> dataBuilder = getDataBuilder(this)) {
 
-        try (ClosableDataBuilder builder = getClosableDataBuilder()) {
-            builder.builder.setMotionState(motion);
+            //TODO tamino: need to be tested! Please write an unit test.
+            if (value.getState() == MotionState.MOVEMENT) {
+                value = value.toBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+            }
+
+            dataBuilder.getInternalBuilder().setMotionState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply data change!", ex);
+            throw new CouldNotPerformException("Could not apply motion Update[" + value + "] for " + this + "!", ex);
         }
-
-        notifyChange();
     }
 
     @Override
-    public MotionType.Motion getMotion() throws CouldNotPerformException {
+    public MotionType.Motion getMotion() throws NotAvailableException {
         try {
-            MotionType.Motion motionState = getData().getMotionState();
-            logger.debug("Getting [" + getLabel() + "] State: [" + motionState + "]");
-            return motionState;
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not return motion data.", ex);
+            return getData().getMotionState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("motion", ex);
         }
     }
 }

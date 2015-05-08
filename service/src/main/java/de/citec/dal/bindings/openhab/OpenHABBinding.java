@@ -8,9 +8,9 @@ package de.citec.dal.bindings.openhab;
 import de.citec.dal.bindings.AbstractDALBinding;
 import de.citec.dal.DALService;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
-import de.citec.jul.rsb.com.RSBCommunicationService;
-import de.citec.jul.rsb.com.RSBInformerInterface.InformerType;
-import de.citec.jul.rsb.com.RSBRemoteService;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.com.RSBInformerInterface.InformerType;
+import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -18,6 +18,7 @@ import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.InvocationFailedException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
@@ -84,16 +85,18 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
                 }
             };
 
-            dalCommunicationService.init(InformerType.Single);
+            dalCommunicationService.init();
 
             if (!JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
                 // Init Openhab connection
                 openhabRemoteService.activate();
                 dalCommunicationService.activate();
 
-                dalCommunicationService.getData().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
-                dalCommunicationService.notifyChange();
-
+                try (ClosableDataBuilder<DALBinding.Builder> dataBuilder = dalCommunicationService.getDataBuilder(this)) {
+                    dataBuilder.getInternalBuilder().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not setup dalCommunicationService as active.", ex);
+                }
             }
         } catch (CouldNotPerformException ex) {
             throw new de.citec.jul.exception.InstantiationException(this, ex);

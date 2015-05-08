@@ -12,19 +12,18 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.com.RSBCommunicationService;
-import de.citec.jul.rsb.com.RSBInformerInterface;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.com.RSBInformerInterface;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.rsb.scope.ScopeTransformer;
+import de.citec.jul.extension.rsb.scope.ScopeTransformer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import rsb.RSBException;
-import rsb.Scope;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -36,7 +35,7 @@ import rst.homeautomation.unit.UnitTemplateType;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements Unit {
+public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Unit {
 
     public final static String TYPE_FILED_ID = "id";
 //    public final static String TYPE_FILED_NAME = "name";

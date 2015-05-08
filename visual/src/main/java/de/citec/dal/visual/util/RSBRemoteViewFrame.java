@@ -5,7 +5,7 @@
  */
 package de.citec.dal.visual.util;
 
-import de.citec.jul.rsb.com.RSBRemoteService;
+import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;

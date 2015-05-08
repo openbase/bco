@@ -6,8 +6,8 @@
 package de.citec.dal.data;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.rsb.scope.ScopeProvider;
-import de.citec.jul.rsb.scope.ScopeTransformer;
+import de.citec.jul.extension.rsb.scope.ScopeProvider;
+import de.citec.jul.extension.rsb.scope.ScopeTransformer;
 import rsb.Scope;
 import rst.spatial.LocationConfigType.LocationConfig;
 

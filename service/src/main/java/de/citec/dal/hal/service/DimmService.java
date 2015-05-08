@@ -9,7 +9,7 @@ import de.citec.dal.hal.provider.DimmProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
-import de.citec.jul.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -20,6 +20,8 @@ import rsb.patterns.EventCallback;
  * @author thuxohl
  */
 public interface DimmService extends Service, DimmProvider {
+
+    //TODO tamino: rename to DimService. Dimm is not a valid english word ;)
 
     public void setDimm(Double dimm) throws CouldNotPerformException;
 

@@ -5,17 +5,20 @@ import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
 import rst.homeautomation.unit.LightType;
+import rst.homeautomation.unit.LightType.Light;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  * @author thuxohl
  */
-public class LightController extends AbstractUnitController<LightType.Light, LightType.Light.Builder> implements LightInterface {
+public class LightController extends AbstractUnitController<Light, Light.Builder> implements LightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightType.Light.getDefaultInstance()));
@@ -33,10 +36,14 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
         this.powerService = serviceFactory.newPowerService(device, this);
     }
 
-    public void updatePower(final PowerType.Power.PowerState state) {
-        logger.debug("Updating [" + getLabel() + "] to Power [" + state.name() + "]");
-        data.getPowerStateBuilder().setState(state);
-        notifyChange();
+    public void updatePower(final PowerType.Power.PowerState value) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<Light.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getPowerStateBuilder().setState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+        }
     }
 
     @Override
@@ -46,7 +53,11 @@ public class LightController extends AbstractUnitController<LightType.Light, Lig
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return data.getPowerState().getState();
+    public PowerType.Power.PowerState getPower() throws NotAvailableException {
+        try {
+            return getData().getPowerState().getState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("power", ex);
+        }
     }
 }

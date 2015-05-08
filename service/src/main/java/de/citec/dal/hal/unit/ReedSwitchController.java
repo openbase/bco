@@ -8,6 +8,8 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.OpenClosedType;
@@ -30,14 +32,22 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         super(config, ReedSwitchController.class, device, builder);
     }
 
-    public void updateReedSwitch(final OpenClosedType.OpenClosed.OpenClosedState state) {
-        data.getReedSwitchStateBuilder().setState(state);
-        notifyChange();
+    public void updateReedSwitch(final OpenClosedType.OpenClosed.OpenClosedState value) throws CouldNotPerformException {
+        logger.debug("Apply reed switch Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<ReedSwitch.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getReedSwitchStateBuilder().setState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply reed switch Update[" + value + "] for " + this + "!", ex);
+        }
     }
 
     @Override
-    public OpenClosedState getReedSwitch() throws CouldNotPerformException {
-        logger.debug("Getting [" + getLabel() + "] State: [" + data.getReedSwitchState() + "]");
-        return data.getReedSwitchState().getState();
+    public OpenClosedState getReedSwitch() throws NotAvailableException {
+        try {
+            return getData().getReedSwitchState().getState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("reed switch", ex);
+        }
     }
 }

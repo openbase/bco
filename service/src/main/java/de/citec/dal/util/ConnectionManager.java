@@ -9,7 +9,6 @@ import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.iface.Activatable;
-import de.citec.jul.rsb.com.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class ConnectionManager implements Activatable {
 					logger.error("Could not activate: " + device, ex);
 				}
 			}
-			RSBInformerPool.getInstance().activate();
+//			RSBInformerPool.getInstance().activate();
 		}
 	}
 

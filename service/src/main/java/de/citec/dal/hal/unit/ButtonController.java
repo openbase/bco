@@ -8,10 +8,11 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ClickType;
-import rst.homeautomation.state.MotionType;
 import rst.homeautomation.unit.ButtonType;
 import rst.homeautomation.unit.ButtonType.Button;
 import rst.homeautomation.unit.UnitConfigType;
@@ -32,17 +33,31 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         super(config, ButtonController.class, device, builder);
     }
 
-    //TODO Tamino: rename Click Type into button state.
-    public void updateButton(ClickType.Click click) {
-        if (click.getState() == ClickType.Click.ClickState.CLICKED || click.getState() == ClickType.Click.ClickState.DOUBLE_CLICKED) {
-            click = click.toBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
+    //TODO Tamino: rename ClickState Type into ButtonState.
+    //TODO Tamino: rename Click into ButtonStateHolder?
+    public void updateButton(ClickType.Click value) throws CouldNotPerformException {
+
+        logger.debug("Apply button Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<Button.Builder> dataBuilder = getDataBuilder(this)) {
+
+            //TODO tamino: need to be tested! Please write an unit test.
+            if (value.getState() == ClickType.Click.ClickState.CLICKED || value.getState() == ClickType.Click.ClickState.DOUBLE_CLICKED) {
+                value = value.toBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
+            }
+
+            dataBuilder.getInternalBuilder().setButtonState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply button Update[" + value + "] for " + this + "!", ex);
         }
-        data.setButtonState(click);
-        notifyChange();
     }
 
     @Override
-    public ClickType.Click getButton() throws CouldNotPerformException {
-        return data.getButtonState();
+    public ClickType.Click getButton() throws NotAvailableException {
+        try {
+            return getData().getButtonState();
+        } catch(CouldNotPerformException ex) {
+            throw new NotAvailableException("buttion state", ex);
+        }
     }
 }

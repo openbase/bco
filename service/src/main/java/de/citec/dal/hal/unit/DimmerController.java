@@ -10,17 +10,20 @@ import de.citec.dal.hal.service.DimmService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerType;
 import rst.homeautomation.unit.DimmerType;
+import rst.homeautomation.unit.DimmerType.Dimmer;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  * @author thuxohl
  */
-public class DimmerController extends AbstractUnitController<DimmerType.Dimmer, DimmerType.Dimmer.Builder> implements DimmerInterface {
+public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Builder> implements DimmerInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerType.Dimmer.getDefaultInstance()));
@@ -40,9 +43,14 @@ public class DimmerController extends AbstractUnitController<DimmerType.Dimmer, 
         this.dimmService = serviceFactory.newDimmService(device, this);
     }
 
-    public void updatePower(final PowerType.Power.PowerState state) {
-        data.getPowerStateBuilder().setState(state);
-        notifyChange();
+    public void updatePower(final PowerType.Power.PowerState value) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getPowerStateBuilder().setState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+        }
     }
 
     @Override
@@ -52,13 +60,22 @@ public class DimmerController extends AbstractUnitController<DimmerType.Dimmer, 
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return data.getPowerState().getState();
+    public PowerType.Power.PowerState getPower() throws NotAvailableException {
+        try {
+            return getData().getPowerState().getState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("power", ex);
+        }
     }
 
-    public void updateDimm(final Double dimm) {
-        data.setValue(dimm);
-        notifyChange();
+    public void updateDimm(final Double value) throws CouldNotPerformException {
+        logger.debug("Apply dim Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setValue(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply dim Update[" + value + "] for " + this + "!", ex);
+        }
     }
 
     @Override
@@ -67,7 +84,11 @@ public class DimmerController extends AbstractUnitController<DimmerType.Dimmer, 
     }
 
     @Override
-    public Double getDimm() throws CouldNotPerformException {
-        return data.getValue();
+    public Double getDimm() throws NotAvailableException {
+        try {
+            return getData().getValue();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("dim", ex);
+        }
     }
 }

@@ -8,6 +8,8 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BatteryType;
@@ -28,19 +30,22 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
         super(config, BatteryController.class, device, builder);
     }
     
-    public void updateBattery(final double batteryState) {
-        logger.debug("Updating Battery level of [" + this.getClass().getSimpleName() + "] to [" + batteryState + "]");
-        data.getBatteryStateBuilder().setLevel(batteryState);
-        notifyChange();
-    }
+    public void updateBattery(final double value) throws CouldNotPerformException {
+        logger.debug("Apply battery Update[" + value + "] for " + this + ".");
 
-    @Override
-    public Battery requestStatus() throws CouldNotPerformException {
-        return super.requestStatus(); 
+        try (ClosableDataBuilder<Battery.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getBatteryStateBuilder().setLevel(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply battery Update[" + value + "] for " + this + "!", ex);
+        }
     }
     
     @Override
-    public double getBattery() throws CouldNotPerformException {
-        return data.getBatteryState().getLevel();
+    public double getBattery() throws NotAvailableException {
+        try {
+            return getData().getBatteryState().getLevel();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("battery", ex);
+        }
     }
 }

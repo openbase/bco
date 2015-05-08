@@ -10,7 +10,7 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.iface.Identifiable;
-import de.citec.jul.rsb.com.RSBRemoteService;
+import de.citec.jul.extension.rsb.com.RSBRemoteService;
 
 /**
  *

@@ -91,7 +91,7 @@ public class RollershutterRemoteTest {
         ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
         rollershutterRemote.setShutter(state);
         rollershutterRemote.requestStatus();
-        assertEquals("Shutter has not been set in time!",state,  rollershutterRemote.getData().getShutterState().getState());
+        assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState().getState());
     }
 
     /**

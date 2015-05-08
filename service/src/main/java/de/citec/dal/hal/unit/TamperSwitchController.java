@@ -8,6 +8,8 @@ package de.citec.dal.hal.unit;
 import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperType;
@@ -30,17 +32,27 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         super(config, TamperSwitchController.class, device, builder);
     }
 
-    public void updateTamper(TamperType.Tamper tamperState) {
-        logger.debug("Updating tamper of [" + this + "] to [" + tamperState + "]");
-        if (tamperState.getState() == TamperType.Tamper.TamperState.TAMPER) {
-            tamperState = tamperState.toBuilder().setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
+    public void updateTamper(TamperType.Tamper value) throws CouldNotPerformException {
+        logger.debug("Apply tamper Update[" + value + "] for " + this + ".");
+        try (ClosableDataBuilder<TamperSwitch.Builder> dataBuilder = getDataBuilder(this)) {
+
+            //TODO tamino: need to be tested! Please write an unit test.
+            if (value.getState() == TamperType.Tamper.TamperState.TAMPER) {
+                value = value.toBuilder().setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
+            }
+
+            dataBuilder.getInternalBuilder().setTamperState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply tamper Update[" + value + "] for " + this + "!", ex);
         }
-        data.setTamperState(tamperState);
-        notifyChange();
     }
 
     @Override
-    public TamperType.Tamper getTamper() throws CouldNotPerformException {
-        return data.getTamperState();
+    public TamperType.Tamper getTamper() throws NotAvailableException {
+        try {
+            return getData().getTamperState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("tamper", ex);
+        }
     }
 }

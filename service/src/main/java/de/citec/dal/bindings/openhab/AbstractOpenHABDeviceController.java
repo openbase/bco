@@ -19,7 +19,7 @@ import rst.homeautomation.device.DeviceConfigType;
  * @param <M>
  * @param <MB>
  */
-public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends AbstractDeviceController<M, MB> {
+public abstract class AbstractOpenHABDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractDeviceController<M, MB> {
 
     public static final String ITEM_ID_DELIMITER = "_";
     private final static ServiceFactory defaultServiceFactory = new OpenhabServiceFactory();

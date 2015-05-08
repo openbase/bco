@@ -15,23 +15,21 @@ import de.citec.dal.transform.UnitConfigToUnitClassTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.rsb.com.RSBCommunicationService;
-import de.citec.jul.rsb.com.RSBInformerInterface.InformerType;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.com.RSBInformerInterface.InformerType;
 import java.util.Collection;
 import java.util.Collections;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
-import de.citec.jul.rsb.processing.StringProcessor;
+import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import de.citec.jul.extension.rsb.processing.StringProcessor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.lang.reflect.Method;
 import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.fibaro.F_FGS_221Type;
-import rst.homeautomation.device.fibaro.F_FIB_FGWPF_101Type;
-import rst.homeautomation.device.fibaro.F_MotionSensorType;
-import rst.homeautomation.unit.LightType.Light;
+import rst.homeautomation.device.gira.GI_5133Type;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
@@ -40,7 +38,7 @@ import rst.homeautomation.unit.UnitConfigType;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends GeneratedMessage.Builder> extends RSBCommunicationService<M, MB> implements Device {
+public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Device {
 
 //	public final static String TYPE_FILED_ID = "id";
 //	public final static String TYPE_FILED_NAME = "name";
@@ -169,31 +167,38 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     private <B extends GeneratedMessage.Builder> B registerUnitBuilder(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
-        try {
+        try(ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
+            MB builder = dataBuilder.getInternalBuilder();
+            Class builderClass = builder.getClass();
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
             String repeatedUnitFieldName = "unit_" + unitConfig.getTemplate().getType().name().toLowerCase();
-            MB data = getData();
-            Class<? extends M> messageClass = detectMessageClass();
-            Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = data.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
+            Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
             
             if(repeatedUnitFieldDescriptor == null) {
-                throw new CouldNotPerformException("Missing FieldDescriptor["+repeatedUnitFieldName+"] in protobuf Type["+data.getClass().getName()+"]!");
+                throw new CouldNotPerformException("Missing FieldDescriptor["+repeatedUnitFieldName+"] in protobuf Type["+builder.getClass().getName()+"]!");
             }
 
             GeneratedMessage.Builder unitBuilder = loadUnitBuilder(unitConfig);
+            Method addUnitMethod;
             try {
-                messageClass.getMethod("addUnit" + unitTypeName, unitBuilder.getClass()).invoke(data, unitBuilder);
-
+                 addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName, unitBuilder.getClass());
             } catch (Exception ex) {
-                throw new CouldNotPerformException("Missing repeated field for "+unitBuilder.getClass().getSimpleName()+" in Message["+data.getClass().getSimpleName()+"]!", ex);
+                throw new CouldNotPerformException("Missing repeated field for "+unitBuilder.getClass().getName()+" in protobuf Type["+builder.getClass().getName()+"]! ", ex);
             }
+
             try {
-                
-                return (B) messageClass.getMethod("getUnit" + unitTypeName + "Builder", int.class).invoke(data, data.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
+                addUnitMethod.invoke(builder, unitBuilder);
+            } catch(Exception ex) {
+                throw new CouldNotPerformException("Could not add "+unitBuilder.getClass().getName()+" to message of Type["+builder.getClass().getName()+"]! ", ex);
+            }
+
+            try {
+                return (B) builderClass.getMethod("getUnit" + unitTypeName + "Builder", int.class).invoke(builder, builder.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not create Builder!", ex);
             }
-        } catch (CouldNotPerformException ex) {
+
+        } catch (Exception ex) {
             throw new CouldNotPerformException("Could register UnitBuilder[" + unitConfig + "]!", ex);
         }
     }

@@ -19,7 +19,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.rsb.com.RSBInformerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,8 +75,7 @@ public class DALService implements RegistryProvider {
     }
 
     private void initBindings() throws CouldNotPerformException {
-        bindingRegistry.register(OpenHABBinding.class
-        );
+        bindingRegistry.register(OpenHABBinding.class);
     }
 
     public void activate() {
@@ -98,7 +96,7 @@ public class DALService implements RegistryProvider {
 
     public void shutdown() {
         deactivate();
-        RSBInformerPool.getInstance().shutdown();
+//        RSBInformerPool.getInstance().shutdown();
         bindingRegistry.clean();
         deviceRegistry.clean();
         unitRegistry.clean();

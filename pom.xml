@@ -44,7 +44,7 @@
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
-            <artifactId>jul.rsb.scope</artifactId>
+            <artifactId>jul.extension.rsb.scope</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
          <dependency>
