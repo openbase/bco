@@ -5,6 +5,8 @@
  */
 package de.citec.csra.dm.registry;
 
+import de.citec.csra.dm.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
+import de.citec.csra.dm.consistency.ServiceConfigUnitIdConsistencyHandler;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
@@ -38,13 +40,15 @@ import rsb.Scope;
 import rst.geometry.PoseType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
-import rst.homeautomation.device.DeviceClassType;
+import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.service.BindingServiceConfigType.BindingServiceConfig;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import rst.spatial.LocationConfigType;
 import rst.spatial.PlacementConfigType;
@@ -58,14 +62,14 @@ public class DeviceRegistryImplTest {
     private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryImplTest.class);
 
     public static final String LOCATION_LABEL = "paradise";
-    
-    private static DeviceRegistryService registry;
-    private static DeviceClassType.DeviceClass.Builder deviceClass;
-    private static DeviceConfigType.DeviceConfig.Builder deviceConfig;
 
-    private static DeviceClassType.DeviceClass.Builder deviceClassRemote;
-    private static DeviceClassType.DeviceClass.Builder returnValue;
-    private static DeviceConfigType.DeviceConfig.Builder deviceConfigRemote;
+    private static DeviceRegistryService registry;
+    private static DeviceClass.Builder deviceClass;
+    private static DeviceConfig.Builder deviceConfig;
+
+    private static DeviceClass.Builder deviceClassRemote;
+    private static DeviceClass.Builder returnValue;
+    private static DeviceConfig.Builder deviceConfigRemote;
     private static DeviceRegistryRemote remote;
 
     public DeviceRegistryImplTest() {
@@ -118,7 +122,9 @@ public class DeviceRegistryImplTest {
     @AfterClass
     public static void tearDownClass() {
         remote.shutdown();
-        if (registry != null) {             registry.shutdown();         }
+        if (registry != null) {
+            registry.shutdown();
+        }
     }
 
     @Before
@@ -150,8 +156,6 @@ public class DeviceRegistryImplTest {
         assertTrue(registry.containsDeviceConfig(deviceConfig.clone().build()));
     }
 
-    
-
     /**
      * Test of registerDeviceConfigWithUnits method, of class
      * DeviceRegistryImpl.
@@ -170,12 +174,12 @@ public class DeviceRegistryImplTest {
         String deviceScope = "/" + LOCATION_LABEL + "/" + deviceLabel.toLowerCase() + "/";
 
         String unitLabel = "Battery";
-        String unitScope = "/" + LOCATION_LABEL + "/" +UnitTemplateType.UnitTemplate.UnitType.BATTERY.name().toLowerCase()+ "/" + unitLabel.toLowerCase() + "/";
+        String unitScope = "/" + LOCATION_LABEL + "/" + UnitTemplate.UnitType.BATTERY.name().toLowerCase() + "/" + unitLabel.toLowerCase() + "/";
         String unitID = unitScope;
 
-        ArrayList<UnitConfigType.UnitConfig> units = new ArrayList<>();
+        ArrayList<UnitConfig> units = new ArrayList<>();
         DeviceClass motionSensorClass = registry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
-        units.add(getUnitConfig(UnitTemplateType.UnitTemplate.UnitType.BATTERY, unitLabel));
+        units.add(getUnitConfig(UnitTemplate.UnitType.BATTERY, unitLabel));
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, units);
 
         motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);
@@ -200,7 +204,7 @@ public class DeviceRegistryImplTest {
         String deviceId = company + "_" + productNumber + "_" + serialNumber;
 
         DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company));
-        DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<UnitConfigType.UnitConfig>());
+        DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<UnitConfig>());
         deviceWithoutLabel = registry.registerDeviceConfig(deviceWithoutLabel);
 
         assertEquals("The device label is not set as the id if it is empty!", deviceId, deviceWithoutLabel.getLabel());
@@ -215,10 +219,10 @@ public class DeviceRegistryImplTest {
         String serialNumber1 = "FIRST_DEV";
         String serialNumber2 = "BAD_DEV";
         String deviceLabel = "SameLabelSameLocation";
-        
+
         DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", "xyz", "HuxGMBH"));
-        DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, clazz, new ArrayList<UnitConfigType.UnitConfig>());
-        DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, clazz, new ArrayList<UnitConfigType.UnitConfig>());
+        DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, clazz, new ArrayList<UnitConfig>());
+        DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, clazz, new ArrayList<UnitConfig>());
 
         registry.registerDeviceConfig(deviceWithLabel1);
         try {
@@ -229,6 +233,31 @@ public class DeviceRegistryImplTest {
         }
     }
 
+    /**
+     * Test if the unit id of is set in the device service.
+     */
+    @Test
+    public void testServiceConsistencyHandling() throws Exception {
+        UnitConfig unitConfig = getUnitConfig(UnitTemplate.UnitType.LIGHT, "ServiceTest");
+        BindingServiceConfig bindingConfig = BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        ServiceConfig serviceConfig = ServiceConfig.newBuilder().setType(ServiceType.POWER_PROVIDER).setBindingServiceConfig(bindingConfig).build();
+        unitConfig = unitConfig.toBuilder().addServiceConfig(serviceConfig).build();
+        ArrayList<UnitConfig> units = new ArrayList<>();
+        units.add(unitConfig);
+
+        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("ServiceUnitIdTest", "8383838", "ServiceGMBH"));
+
+        DeviceConfig deviceConfig = registry.registerDeviceConfig(getDeviceConfig("ServiceTest", "123456", clazz, units));
+
+        assertTrue("Unit id is not set.", !deviceConfig.getUnitConfig(0).getId().equals(""));
+        assertTrue("Unit id in service config is not set.", !deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(""));
+        assertTrue("Unit id in service config does not match id in unit config.", deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(deviceConfig.getUnitConfig(0).getId()));
+
+        String itemId = OpenhabServiceConfigItemIdConsistenyHandler.generateItemName(deviceConfig, unitConfig, serviceConfig);
+
+        assertTrue("OpenHAB item id is not set.", itemId.equals(deviceConfig.getUnitConfig(0).getServiceConfig(0).getBindingServiceConfig().getOpenhabBindingServiceConfig().getItemId()));
+    }
+
     private PlacementConfigType.PlacementConfig getDefaultPlacement() {
         RotationType.Rotation rotation = RotationType.Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
@@ -237,11 +266,11 @@ public class DeviceRegistryImplTest {
         return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel(LOCATION_LABEL).setScope(locationScope).setId(LOCATION_LABEL).build()).build();
     }
 
-    private UnitConfigType.UnitConfig getUnitConfig(UnitTemplateType.UnitTemplate.UnitType type, String label) {
-        return UnitConfigType.UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(UnitTemplateType.UnitTemplate.newBuilder().setType(type).build()).setLabel(label).build();
+    private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) {
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(UnitTemplate.newBuilder().setType(type).build()).setLabel(label).build();
     }
 
-    private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfigType.UnitConfig> units) {
+    private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
         return DeviceConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setSerialNumber(serialNumber).setDeviceClass(clazz).addAllUnitConfig(units).build();
     }
 
