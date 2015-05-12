@@ -12,6 +12,13 @@ import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.util.DeviceInitializer;
+import de.citec.jp.JPDeviceClassDatabaseDirectory;
+import de.citec.jp.JPDeviceConfigDatabaseDirectory;
+import de.citec.jp.JPDeviceDatabaseDirectory;
+import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jp.JPLocationConfigDatabaseDirectory;
+import de.citec.jp.JPLocationDatabaseDirectory;
+import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -127,10 +134,19 @@ public class DALService implements RegistryProvider {
      * @throws java.lang.Throwable
      */
     public static void main(String[] args) throws Throwable {
+
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.registerProperty(JPLocationDatabaseDirectory.class);
+        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPLocationRegistryScope.class);
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class);
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPDeviceRegistryScope.class);
+
         JPService.parseAndExitOnError(args);
 
         try {
@@ -141,7 +157,6 @@ public class DALService implements RegistryProvider {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
 
-        logger.info(APP_NAME
-                + " successfully started.");
+        logger.info(APP_NAME + " successfully started.");
     }
 }
