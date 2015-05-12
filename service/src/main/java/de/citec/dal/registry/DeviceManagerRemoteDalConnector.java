@@ -48,6 +48,7 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
                     deviceRegistryRemote.shutdown();
                 }
             }));
+            logger.info("Request registry sync.");
             deviceRegistryRemote.requestStatus();
             for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
                 try {
@@ -56,6 +57,7 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
+            logger.info(registry.size()+" devices successfully loaded. "+MultiException.size(exceptionStack) + " skipped.");
             MultiException.checkAndThrow("Could not init all registered devices!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not init devices!", ex);
