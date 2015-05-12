@@ -60,7 +60,7 @@ public class DeviceManager {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/vol/csra/data/db/device-db"));
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
 

@@ -10,7 +10,6 @@ import de.citec.jul.storage.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.ValidationException;
 import de.citec.jps.preset.AbstractJPDirectory;
-import de.citec.jps.preset.JPTestMode;
 import de.citec.jps.tools.FileHandler;
 import java.io.File;
 
@@ -20,16 +19,21 @@ import java.io.File;
  */
 public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--device-class-db-dir"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--device-class-db"};
 	
 	public JPDeviceClassDatabaseDirectory() {
 		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.On);
 	}
 
+    @Override
+    public File getParentDirectory() {
+        return JPService.getProperty(JPDeviceDatabaseDirectory.class).getValue();
+    }
+    
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getProperty(JPDeviceDatabaseDirectory.class).getValue(), "device-class-db");
-	}
+		return new File("device-class-db");
+    }
 
     @Override
     public void validate() throws ValidationException {
@@ -42,6 +46,6 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	public String getDescription() {
-		return "Specifies the device class database location.";
+		return "Specifies the device class database directory.";
 	}
 }

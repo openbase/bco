@@ -19,15 +19,20 @@ import java.io.File;
  */
 public class JPDeviceConfigDatabaseDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--device-config-db-dir"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--device-config-db"};
 	
 	public JPDeviceConfigDatabaseDirectory() {
 		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.On);
 	}
+    
+    @Override
+    public File getParentDirectory() {
+        return JPService.getProperty(JPDeviceDatabaseDirectory.class).getValue();
+    }
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File(JPService.getProperty(JPDeviceDatabaseDirectory.class).getValue(), "device-config-db");
+		return new File("device-config-db");
 	}
     
     @Override
@@ -41,6 +46,6 @@ public class JPDeviceConfigDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	public String getDescription() {
-		return "Specifies the device config database location.";
+		return "Specifies the device config database directory.";
 	}
 }

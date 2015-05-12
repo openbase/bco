@@ -19,14 +19,13 @@ import java.io.File;
  */
 public class JPDeviceDatabaseDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--database-dir"};
-	public final static String[] ARGUMENT_IDENTIFIERS = {"DIR"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--db", "--database"};
 
 	public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
 	public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 	
 	public JPDeviceDatabaseDirectory() {
-		super(COMMAND_IDENTIFIERS, ARGUMENT_IDENTIFIERS, existenceHandling, autoMode);
+		super(COMMAND_IDENTIFIERS, existenceHandling, autoMode);
 	}
     
     @Override
@@ -40,11 +39,11 @@ public class JPDeviceDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File("/tmp/.registry/db");
+		return new File(System.getProperty("user.home")+"/.local/share/device-manager/db");
 	}
 
 	@Override
 	public String getDescription() {
-		return "Specifies the database directory.";
+		return "Specifies the device database directory.";
 	}
 }

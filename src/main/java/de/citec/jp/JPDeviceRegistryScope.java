@@ -14,7 +14,7 @@ import rsb.Scope;
  */
 public class JPDeviceRegistryScope extends JPScope {
     
-	public final static String[] COMMAND_IDENTIFIERS = {"--deviceRegistryScope"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--device-registry-scope"};
 
 	public JPDeviceRegistryScope() {
 		super(COMMAND_IDENTIFIERS);
