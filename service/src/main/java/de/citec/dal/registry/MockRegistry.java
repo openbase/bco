@@ -5,10 +5,8 @@
  */
 package de.citec.dal.registry;
 
-import de.citec.csra.dm.DeviceManager;
-import de.citec.csra.dm.remote.DeviceRegistryRemote;
-import de.citec.csra.lm.LocationManager;
-import de.citec.csra.lm.remote.LocationRegistryRemote;
+import de.citec.dm.core.DeviceManager;
+import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceDatabaseDirectory;
@@ -20,6 +18,8 @@ import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.lm.core.LocationManager;
+import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
