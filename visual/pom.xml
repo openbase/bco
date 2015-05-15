@@ -43,7 +43,7 @@
                     <programs>
                         <program>
                             <mainClass>de.citec.dal.DeviceViewerFrame</mainClass>
-                            <name>dal-visual-remote</name>
+                            <id>dal-visual-remote</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

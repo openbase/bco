@@ -43,7 +43,7 @@
                     <programs>
                         <program>
                             <mainClass>de.citec.dal.remote.DALRemote</mainClass>
-                            <name>dal-remote</name>
+                            <id>dal-remote</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

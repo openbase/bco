@@ -45,7 +45,7 @@ public class DeviceFactory implements DeviceFactoryInterface {
             Class deviceClass = getClass().getClassLoader().loadClass(AbstractDeviceController.class.getPackage().getName() + "." + deviceConfig.getDeviceClass().getCompany() + "." + deviceConfig.getDeviceClass().getLabel() + "Controller");
             return (Device) deviceClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not instantiate Device[" + deviceConfig + "]!", ex);
+            throw new CouldNotPerformException("Could not instantiate Device[" + deviceConfig.getId() + "]!", ex);
         }
     }
 }

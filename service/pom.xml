@@ -43,7 +43,7 @@
                     <programs>
                         <program>
                             <mainClass>de.citec.dal.DALService</mainClass>
-                            <name>dal-service</name>
+                            <id>dal-service</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
