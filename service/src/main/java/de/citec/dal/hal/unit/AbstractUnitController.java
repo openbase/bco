@@ -13,10 +13,11 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.com.RSBInformerInterface;
+import de.citec.jul.extension.rsb.iface.RSBInformerInterface;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.scope.ScopeTransformer;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
             DALService.getRegistryProvider().getUnitRegistry().register(this);
 
-            init(RSBInformerInterface.InformerType.Distributed);
+            init();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -153,7 +154,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 //        return location.getScope().concat(new Scope(Scope.COMPONENT_SEPARATOR + name).concat(new Scope(Scope.COMPONENT_SEPARATOR + label)));
 //    }
     @Override
-    public void registerMethods(LocalServer server) throws RSBException {
+    public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
         ServiceType.registerServiceMethods(server, this);
     }
 
