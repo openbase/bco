@@ -7,10 +7,7 @@ package test;
 
 import java.util.HashMap;
 import junit.framework.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
-import rst.homeautomation.device.fibaro.F_FGS_221Type;
-import rst.homeautomation.unit.ButtonType.Button;
 
 /**
  *
