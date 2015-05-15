@@ -43,10 +43,18 @@ public class DeviceFactory implements DeviceFactoryInterface {
             if (!deviceConfig.getPlacementConfig().hasLocationConfig()) {
                 throw new NotAvailableException("deviceConfig.placement.location");
             }
-            Class deviceClass = getClass().getClassLoader().loadClass(AbstractDeviceController.class.getPackage().getName() + "." + deviceConfig.getDeviceClass().getCompany() + "." + StringProcessor.replaceHyphenWithUnderscore(deviceConfig.getDeviceClass().getProductNumber()) + "Controller");
+            Class deviceClass = getClass().getClassLoader().loadClass(getDeviceControllerClass(deviceConfig));
             return (Device) deviceClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not instantiate Device[" + deviceConfig.getId() + "]!", ex);
         }
+    }
+    
+    private String getDeviceControllerClass(DeviceConfig deviceConfig) {
+        return AbstractDeviceController.class.getPackage().getName() + "." 
+                + deviceConfig.getDeviceClass().getCompany() + "."
+                + deviceConfig.getDeviceClass().getCompany() + "_"
+                + StringProcessor.replaceHyphenWithUnderscore(deviceConfig.getDeviceClass().getProductNumber())
+                + "Controller";
     }
 }
