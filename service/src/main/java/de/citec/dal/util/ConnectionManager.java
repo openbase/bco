@@ -29,7 +29,7 @@ public class ConnectionManager implements Activatable {
 	}
 
 	@Override
-	public void activate() {
+	public void activate() throws InterruptedException {
 		synchronized (SYNC_LOCK) {
 			active = true;
 
@@ -40,7 +40,6 @@ public class ConnectionManager implements Activatable {
 					logger.error("Could not activate: " + device, ex);
 				}
 			}
-//			RSBInformerPool.getInstance().activate();
 		}
 	}
 

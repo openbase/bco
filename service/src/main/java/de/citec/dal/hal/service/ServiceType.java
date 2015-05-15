@@ -15,6 +15,7 @@ import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,12 +101,12 @@ public enum ServiceType {
 		return serviceClassList;
 	}
 
-	public static void registerServiceMethods(final LocalServer server, final Service service) {
+	public static void registerServiceMethods(final RSBLocalServerInterface server, final Service service) {
 		for (ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
 			for (Method method : serviceType.getDeclaredMethods()) {
 				try {
 					server.addMethod(method.getName(), getCallback(method, service, serviceType));
-				} catch (RSBException | CouldNotPerformException ex) {
+				} catch (CouldNotPerformException ex) {
 					logger.warn("Could not register callback for service methode " + method.toGenericString(), ex);
 				}
 			}

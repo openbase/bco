@@ -16,20 +16,18 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.com.RSBInformerInterface.InformerType;
 import java.util.Collection;
 import java.util.Collections;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.processing.StringProcessor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.gira.GI_5133Type;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
@@ -66,7 +64,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 //		setField(TYPE_FILED_LABEL, label);
 
         try {
-            init(InformerType.Distributed);
+            init();
         } catch (InitializationException ex) {
             throw new InstantiationException("Could not init RSBCommunicationService!", ex);
         }
@@ -129,7 +127,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     @Override
-    public void registerMethods(LocalServer server) {
+    public void registerMethods(RSBLocalServerInterface server) {
         // dummy construct: For registering methods overwrite this method.
     }
 

@@ -9,7 +9,6 @@ import de.citec.dal.bindings.AbstractDALBinding;
 import de.citec.dal.DALService;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.com.RSBInformerInterface.InformerType;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -19,9 +18,8 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
-import java.util.concurrent.ExecutionException;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -80,7 +78,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
             dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
 
                 @Override
-                public void registerMethods(LocalServer server) throws RSBException {
+                public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
                     OpenHABBinding.this.registerMethods(server);
                 }
             };
@@ -117,10 +115,10 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
         }
     }
 
-    public final void registerMethods(final LocalServer server) {
+    public final void registerMethods(final RSBLocalServerInterface server) {
         try {
             server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
-        } catch (RSBException ex) {
+        } catch (CouldNotPerformException ex) {
             logger.warn("Could not add methods to local server in [" + getClass().getSimpleName() + "]", ex);
         }
     }
