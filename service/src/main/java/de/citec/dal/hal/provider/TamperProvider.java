@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.TamperType;
+import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
@@ -20,7 +20,7 @@ import rst.homeautomation.state.TamperType;
  */
 public interface TamperProvider extends Provider {
 
-    public TamperType.Tamper getTamper() throws CouldNotPerformException;
+    public TamperState getTamper() throws CouldNotPerformException;
 
     public class GetTamperCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface TamperProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(TamperType.Tamper.class, provider.getTamper());
+                return new Event(TamperState.class, provider.getTamper());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

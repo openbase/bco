@@ -12,21 +12,20 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import de.citec.jul.exception.InstantiationException;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.fibaro.F_MotionSensorType;
-import rst.homeautomation.device.fibaro.F_MotionSensorType.F_MotionSensor;
+import rst.homeautomation.device.fibaro.Fibaro_FGMS_001Type.Fibaro_FGMS_001;
 
 /**
  *
  * @author mpohling
  */
-public class F_MotionSensorController extends AbstractOpenHABDeviceController<F_MotionSensor, F_MotionSensor.Builder> {
+public class Fibaro_MotionSensorController extends AbstractOpenHABDeviceController<Fibaro_FGMS_001, Fibaro_FGMS_001.Builder> {
 
 	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_MotionSensorType.F_MotionSensor.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Fibaro_FGMS_001.getDefaultInstance()));
 	}
 
-	public F_MotionSensorController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-		super(config, F_MotionSensor.newBuilder());
+	public Fibaro_MotionSensorController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+		super(config, Fibaro_FGMS_001.newBuilder());
 		try {
 			registerUnits(config.getUnitConfigList());
 		} catch (CouldNotPerformException ex) {

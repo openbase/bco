@@ -6,7 +6,7 @@
 package de.citec.dal.hal.service;
 
 import de.citec.dal.bindings.openhab.service.OpenHABService;
-import de.citec.dal.hal.provider.BatteryProvider;
+import de.citec.dal.hal.provider.EnergyProvider;
 import de.citec.dal.hal.provider.ButtonProvider;
 import de.citec.dal.hal.provider.HandleProvider;
 import de.citec.dal.hal.provider.MotionProvider;
@@ -32,7 +32,7 @@ import rsb.patterns.LocalServer;
 public enum ServiceType {
 
 	MULTI(MultiService.class),
-	BATTERY(BatteryProvider.class),
+	BATTERY(EnergyProvider.class),
 	BRIGHTNESS(BrightnessService.class),
 	BUTTON(ButtonProvider.class),
 	COLOR(ColorService.class),
@@ -43,7 +43,7 @@ public enum ServiceType {
 	SHUTTER(ShutterService.class),
 	OPENING_RATIO(OpeningRatioService.class),
 	MOTION(MotionProvider.class),
-        DIMM(DimmService.class);
+        DIMM(DimService.class);
 
 	public static final String SET = "set";
 	public static final String UPDATE = "update";

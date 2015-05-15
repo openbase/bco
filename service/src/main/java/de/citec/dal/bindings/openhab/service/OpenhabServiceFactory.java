@@ -10,7 +10,7 @@ import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.device.Device;
-import de.citec.dal.hal.service.DimmService;
+import de.citec.dal.hal.service.DimService;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.jul.exception.InstantiationException;
@@ -47,7 +47,7 @@ public class OpenhabServiceFactory implements ServiceFactory {
     }
 
     @Override
-    public DimmService newDimmService(Device device, DimmService unit) throws InstantiationException {
+    public DimService newDimmService(Device device, DimService unit) throws InstantiationException {
        return new DimmServiceImpl(device, unit);
     }
 }

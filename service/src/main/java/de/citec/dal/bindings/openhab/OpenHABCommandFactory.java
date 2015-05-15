@@ -19,8 +19,8 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
 import rst.homeautomation.openhab.PercentType;
 import rst.homeautomation.openhab.StopMoveHolderType;
 import rst.homeautomation.openhab.UpDownHolderType;
-import rst.homeautomation.state.PowerType;
-import rst.homeautomation.state.ShutterType;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
 import rst.vision.HSVColorType;
 
 /**
@@ -43,7 +43,7 @@ public class OpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.HSB).setHsb(color);
     }
 
-    public static OpenhabCommandType.OpenhabCommand.Builder newOnOffCommand(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public static OpenhabCommandType.OpenhabCommand.Builder newOnOffCommand(final PowerState.State state) throws CouldNotPerformException {
         return newOnOffCommand(PowerStateTransformer.transform(state));
     }
 
@@ -59,7 +59,7 @@ public class OpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.PERCENT).setPercent(percent);
     }
 
-    public static OpenhabCommandType.OpenhabCommand.Builder newStopMoveCommand(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+    public static OpenhabCommandType.OpenhabCommand.Builder newStopMoveCommand(final ShutterState.State state) throws CouldNotPerformException {
         return newStopMoveCommand(StopMoveStateTransformer.transform(state));
     }
     
@@ -67,7 +67,7 @@ public class OpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.STOPMOVE).setStopMove(state);
     }
 
-    public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+    public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final ShutterState.State state) throws CouldNotPerformException {
         return newUpDownCommand(UpDownStateTransformer.transform(state));
     }
 

@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.TamperType;
+import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
@@ -95,9 +95,9 @@ public class TamperSwitchRemoteTest {
     @Test
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
-        TamperType.Tamper tamperState = TamperType.Tamper.newBuilder().setState(TamperType.Tamper.TamperState.TAMPER).build();
+        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         ((TamperSwitchController) dalService.getUnitRegistry().get(tamperSwitchRemote.getId())).updateTamper(tamperState);
         tamperSwitchRemote.requestStatus();
-        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().getState().equals(tamperState.getState()));
+        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().getValue().equals(tamperState.getValue()));
     }
 }

@@ -9,29 +9,30 @@ import de.citec.dal.hal.unit.HandleSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.OpenClosedTiltedType;
-import rst.homeautomation.unit.HandleSensorType;
+import rst.homeautomation.state.HandleStateType.HandleState;
+import rst.homeautomation.unit.HandleSensorType.HandleSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class HandleSensorRemote extends DALRemoteService<HandleSensorType.HandleSensor> implements HandleSensorInterface {
+public class HandleSensorRemote extends DALRemoteService<HandleSensor> implements HandleSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
     }
 
     public HandleSensorRemote() {
     }
 
     @Override
-    public void notifyUpdated(HandleSensorType.HandleSensor data) {
+    public void notifyUpdated(HandleSensor data) {
     }
 
     @Override
-    public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getHandle() throws CouldNotPerformException {
-        return this.getData().getHandleState().getState();
+    public HandleState getHandle() throws CouldNotPerformException {
+        return this.getData().getHandleState();
     }
 
 }

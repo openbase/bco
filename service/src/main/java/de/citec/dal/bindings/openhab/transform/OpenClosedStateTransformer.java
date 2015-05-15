@@ -9,7 +9,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.state.OpenClosedType;
+import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 import rst.homeautomation.openhab.OpenClosedHolderType;
 
 /**
@@ -18,20 +18,20 @@ import rst.homeautomation.openhab.OpenClosedHolderType;
  */
 public class OpenClosedStateTransformer {
 
-	public static OpenClosedType.OpenClosed.OpenClosedState transform(OpenClosedHolderType.OpenClosedHolder.OpenClosed openClosedType) throws CouldNotTransformException {
+	public static ReedSwitchState.State transform(OpenClosedHolderType.OpenClosedHolder.OpenClosed openClosedType) throws CouldNotTransformException {
 		switch (openClosedType) {
 			case CLOSED:
-				return OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
+				return ReedSwitchState.State.CLOSED;
 			case OPEN:
-				return OpenClosedType.OpenClosed.OpenClosedState.OPEN;
+				return ReedSwitchState.State.OPEN;
 			default:
 				throw new CouldNotTransformException("Could not transform " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getName() + "! " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getSimpleName() + "[" + openClosedType.name() + "] is unknown!");
 		}
 	}
 
-	public static OpenClosedHolderType.OpenClosedHolder transform(OpenClosedType.OpenClosed.OpenClosedState openClosedState) throws CouldNotTransformException {
+	public static OpenClosedHolderType.OpenClosedHolder transform(ReedSwitchState.State reedSwitchState) throws CouldNotTransformException {
 		try {
-			switch (openClosedState) {
+			switch (reedSwitchState) {
 				case CLOSED:
 					return OpenClosedHolderType.OpenClosedHolder.newBuilder().setState(OpenClosedHolderType.OpenClosedHolder.OpenClosed.CLOSED).build();
 				case OPEN:
@@ -39,10 +39,10 @@ public class OpenClosedStateTransformer {
 				case UNKNOWN:
 					throw new InvalidStateException("Unknown state is invalid!");
 				default:
-					throw new TypeNotSupportedException(openClosedState, OpenClosedHolderType.OpenClosedHolder.class);
+					throw new TypeNotSupportedException(reedSwitchState, OpenClosedHolderType.OpenClosedHolder.class);
 			}
 		} catch (CouldNotPerformException ex) {
-			throw new CouldNotTransformException("Could not transform " + OpenClosedHolderType.OpenClosedHolder.OpenClosed.class.getName() + "!", ex);
+			throw new CouldNotTransformException("Could not transform " + ReedSwitchState.State.class.getName() + "!", ex);
 		}
 
 	}

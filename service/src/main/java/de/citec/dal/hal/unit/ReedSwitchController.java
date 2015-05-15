@@ -12,9 +12,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.OpenClosedType;
-import rst.homeautomation.state.OpenClosedType.OpenClosed.OpenClosedState;
-import rst.homeautomation.unit.ReedSwitchType;
+import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 import rst.homeautomation.unit.ReedSwitchType.ReedSwitch;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -25,27 +23,28 @@ import rst.homeautomation.unit.UnitConfigType;
 public class ReedSwitchController extends AbstractUnitController<ReedSwitch, ReedSwitch.Builder> implements ReedSwitchInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchType.ReedSwitch.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitch.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
     }
 
     public ReedSwitchController(final UnitConfigType.UnitConfig config, Device device, ReedSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(config, ReedSwitchController.class, device, builder);
     }
 
-    public void updateReedSwitch(final OpenClosedType.OpenClosed.OpenClosedState value) throws CouldNotPerformException {
+    public void updateReedSwitch(final ReedSwitchState.State value) throws CouldNotPerformException {
         logger.debug("Apply reed switch Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<ReedSwitch.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getReedSwitchStateBuilder().setState(value);
+            dataBuilder.getInternalBuilder().getReedSwitchStateBuilder().setValue(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply reed switch Update[" + value + "] for " + this + "!", ex);
         }
     }
 
     @Override
-    public OpenClosedState getReedSwitch() throws NotAvailableException {
+    public ReedSwitchState getReedSwitch() throws NotAvailableException {
         try {
-            return getData().getReedSwitchState().getState();
+            return getData().getReedSwitchState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("reed switch", ex);
         }

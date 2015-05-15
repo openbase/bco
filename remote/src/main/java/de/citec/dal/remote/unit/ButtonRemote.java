@@ -9,29 +9,29 @@ import de.citec.dal.hal.unit.ButtonInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ClickType;
-import rst.homeautomation.unit.ButtonType;
+import rst.homeautomation.state.ButtonStateType.ButtonState;
+import rst.homeautomation.unit.ButtonType.Button;
 
 /**
  *
  * @author thuxohl
  */
-public class ButtonRemote extends DALRemoteService<ButtonType.Button> implements ButtonInterface {
+public class ButtonRemote extends DALRemoteService<Button> implements ButtonInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonType.Button.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
 
     public ButtonRemote() {
     }
 
     @Override
-    public void notifyUpdated(ButtonType.Button data) {
+    public void notifyUpdated(Button data) {
     }
 
     @Override
-    public ClickType.Click getButton() throws CouldNotPerformException {
+    public ButtonState getButton() throws CouldNotPerformException {
         return this.getData().getButtonState();
     }
 }

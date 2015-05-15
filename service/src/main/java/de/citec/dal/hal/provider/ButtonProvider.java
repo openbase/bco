@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.ClickType;
+import rst.homeautomation.state.ButtonStateType.ButtonState;
 
 /**
  *
@@ -20,7 +20,7 @@ import rst.homeautomation.state.ClickType;
  */
 public interface ButtonProvider extends Provider {
 
-    public ClickType.Click getButton() throws CouldNotPerformException;
+    public ButtonState getButton() throws CouldNotPerformException;
 
     public class GetButtonCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface ButtonProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(ClickType.Click.class, provider.getButton());
+                return new Event(ButtonState.class, provider.getButton());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

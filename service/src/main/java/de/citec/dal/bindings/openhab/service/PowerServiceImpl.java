@@ -11,7 +11,7 @@ import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
@@ -25,12 +25,12 @@ public class PowerServiceImpl<ST extends PowerService & Unit> extends OpenHABSer
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
+    public PowerState getPower() throws CouldNotPerformException {
         return unit.getPower();
     }
 
     @Override
-    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(PowerState.State state) throws CouldNotPerformException {
         executeCommand(OpenHABCommandFactory.newOnOffCommand(state));
     }
 }

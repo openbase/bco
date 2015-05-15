@@ -15,7 +15,6 @@ import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,7 +23,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
@@ -94,10 +93,10 @@ public class DimmerRemoteTest {
     @Test
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
+        PowerState.State state = PowerState.State.ON;
         dimmerRemote.setPower(state);
         dimmerRemote.requestStatus();
-        assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState().getState());
+        assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -106,10 +105,10 @@ public class DimmerRemoteTest {
     @Test
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
+        PowerState.State state = PowerState.State.OFF;
         ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updatePower(state);
         dimmerRemote.requestStatus();
-        assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
+        assertEquals("Power has not been set in time!", state, dimmerRemote.getPower().getValue());
     }
 
     /**
@@ -119,7 +118,7 @@ public class DimmerRemoteTest {
     public void testSetDimm() throws Exception {
         System.out.println("setDimm");
         Double dimm = 66d;
-        dimmerRemote.setDimm(dimm);
+        dimmerRemote.setDim(dimm);
         dimmerRemote.requestStatus();
         assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getData().getValue(), 0.1);
     }
@@ -131,8 +130,8 @@ public class DimmerRemoteTest {
     public void testGetDimm() throws Exception {
         System.out.println("getDimm");
         Double dimm = 70.0d;
-        ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updateDimm(dimm);
+        ((DimmerController) dalService.getUnitRegistry().get(dimmerRemote.getId())).updateDim(dimm);
         dimmerRemote.requestStatus();
-        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getDimm());
+        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getDim());
     }
 }

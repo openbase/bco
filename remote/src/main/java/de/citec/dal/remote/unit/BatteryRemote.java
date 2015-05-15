@@ -9,29 +9,29 @@ import de.citec.dal.hal.unit.BatteryInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.BatteryType;
+import rst.homeautomation.unit.BatteryType.Battery;
+import rst.homeautomation.state.EnergyStateType.EnergyState;
 
 /**
  *
  * @author thuxohl
  */
-public class BatteryRemote extends DALRemoteService<BatteryType.Battery> implements BatteryInterface {
+public class BatteryRemote extends DALRemoteService<Battery> implements BatteryInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryType.Battery.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Battery.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(EnergyState.getDefaultInstance()));
     }
     
     public BatteryRemote() {
-        
     }
 
     @Override
-    public void notifyUpdated(BatteryType.Battery data) {
-
+    public void notifyUpdated(Battery data) {
     }
 
     @Override
-    public double getBattery() throws CouldNotPerformException {
-        return this.getData().getBatteryState().getLevel();
+    public EnergyState getEnergy() throws CouldNotPerformException {
+        return this.getData().getEnergyState();
     }
 }

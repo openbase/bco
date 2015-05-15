@@ -12,21 +12,20 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.plugwise.PW_PowerPlugType;
-import rst.homeautomation.device.plugwise.PW_PowerPlugType.PW_PowerPlug;
+import rst.homeautomation.device.plugwise.Plugwise_070140Type.Plugwise_070140;
 
 /**
  *
  * @author mpohling
  */
-public class PW_PowerPlugController extends AbstractOpenHABDeviceController<PW_PowerPlug, PW_PowerPlug.Builder> {
+public class Plugwise_070140Controller extends AbstractOpenHABDeviceController<Plugwise_070140, Plugwise_070140.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PW_PowerPlugType.PW_PowerPlug.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Plugwise_070140.getDefaultInstance()));
     }
 
-    public PW_PowerPlugController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, PW_PowerPlugType.PW_PowerPlug.newBuilder());
+    public Plugwise_070140Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, Plugwise_070140.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {

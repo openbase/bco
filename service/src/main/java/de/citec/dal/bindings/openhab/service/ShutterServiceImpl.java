@@ -11,7 +11,7 @@ import de.citec.dal.hal.service.ShutterService;
 import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
-import rst.homeautomation.state.ShutterType;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
  *
@@ -25,12 +25,12 @@ public class ShutterServiceImpl<ST extends ShutterService & Unit> extends OpenHA
     }
 
     @Override
-    public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+    public void setShutter(ShutterState.State state) throws CouldNotPerformException {
         executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
     }
 
     @Override
-    public ShutterType.Shutter.ShutterState getShutter() throws CouldNotPerformException {
+    public ShutterState getShutter() throws CouldNotPerformException {
         return unit.getShutter();
     }
 

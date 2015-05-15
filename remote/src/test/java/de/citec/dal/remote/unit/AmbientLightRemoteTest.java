@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.vision.HSVColorType;
 
 /**
@@ -135,10 +135,10 @@ public class AmbientLightRemoteTest {
     @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
+        PowerState.State state = PowerState.State.ON;
         ambientLightRemote.setPower(state);
         ambientLightRemote.requestStatus();
-        assertEquals("Power state has not been set in time!", state, ambientLightRemote.getData().getPowerState().getState());
+        assertEquals("Power state has not been set in time!", state, ambientLightRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -149,10 +149,10 @@ public class AmbientLightRemoteTest {
     @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
+        PowerState.State state = PowerState.State.OFF;
         ambientLightRemote.setPower(state);
         ambientLightRemote.requestStatus();
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, ambientLightRemote.getPower());
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, ambientLightRemote.getPower().getValue());
     }
 
     /**

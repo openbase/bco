@@ -28,8 +28,6 @@ public final class OpenhabCommandTransformer {
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceData", ex);
         }
-
-        //TODO tamino: 
         
         // Transform service data.
         switch (command.getType()) {

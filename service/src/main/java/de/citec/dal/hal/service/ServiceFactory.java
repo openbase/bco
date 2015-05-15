@@ -24,5 +24,5 @@ public interface ServiceFactory {
     
     public abstract ShutterService newShutterService(Device device, ShutterService unit) throws InstantiationException;
     
-    public abstract DimmService newDimmService(Device device, DimmService unit) throws InstantiationException;
+    public abstract DimService newDimmService(Device device, DimService unit) throws InstantiationException;
 }

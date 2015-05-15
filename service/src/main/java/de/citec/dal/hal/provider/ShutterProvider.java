@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.ShutterType;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
  *
@@ -20,7 +20,7 @@ import rst.homeautomation.state.ShutterType;
  */
 public interface ShutterProvider extends Provider {
 
-    public ShutterType.Shutter.ShutterState getShutter() throws CouldNotPerformException;
+    public ShutterState getShutter() throws CouldNotPerformException;
 
     public class GetShutterCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface ShutterProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(ShutterType.Shutter.ShutterState.class, provider.getShutter());
+                return new Event(ShutterState.class, provider.getShutter());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

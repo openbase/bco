@@ -12,29 +12,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
+import rst.homeautomation.state.EnergyStateType.EnergyState;
 
 /**
  *
  * @author thuxohl
  */
-public interface BatteryProvider extends Provider {
+public interface EnergyProvider extends Provider {
 
-    public double getBattery() throws CouldNotPerformException;
+    public EnergyState getEnergy() throws CouldNotPerformException;
     
-    public class GetBatteryCallback extends EventCallback {
+    public class GetEnergyCallback extends EventCallback {
 
-		private static final Logger logger = LoggerFactory.getLogger(GetBatteryCallback.class);
+		private static final Logger logger = LoggerFactory.getLogger(GetEnergyCallback.class);
 
-		private final BatteryProvider provider;
+		private final EnergyProvider provider;
 
-		public GetBatteryCallback(final BatteryProvider provider) {
+		public GetEnergyCallback(final EnergyProvider provider) {
 			this.provider = provider;
 		}
 
 		@Override
 		public Event invoke(final Event request) throws Throwable {
 			try {
-				return new Event(Double.class, provider.getBattery());
+				return new Event(EnergyState.class, provider.getEnergy());
 			} catch (Exception ex) {
 				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
 			}

@@ -11,9 +11,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.MotionType;
-import rst.homeautomation.state.MotionType.Motion.MotionState;
-import rst.homeautomation.unit.MotionSensorType;
+import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.unit.MotionSensorType.MotionSensor;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
@@ -25,7 +23,8 @@ import rst.timing.TimestampType;
 public class MotionSensorController extends AbstractUnitController<MotionSensor, MotionSensor.Builder> implements MotionSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
 
     public MotionSensorController(final UnitConfigType.UnitConfig config, final Device device, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
@@ -33,12 +32,12 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     }
 
-    public void updateMotion(MotionType.Motion value) throws CouldNotPerformException {
+    public void updateMotion(MotionState value) throws CouldNotPerformException {
         logger.debug("Apply motion Update[" + value + "] for " + this + ".");
         try (ClosableDataBuilder<MotionSensor.Builder> dataBuilder = getDataBuilder(this)) {
 
             //TODO tamino: need to be tested! Please write an unit test.
-            if (value.getState() == MotionState.MOVEMENT) {
+            if (value.getValue()== MotionState.State.MOVEMENT) {
                 value = value.toBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
             }
 
@@ -49,7 +48,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
     }
 
     @Override
-    public MotionType.Motion getMotion() throws NotAvailableException {
+    public MotionState getMotion() throws NotAvailableException {
         try {
             return getData().getMotionState();
         } catch (CouldNotPerformException ex) {

@@ -23,8 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.MotionType;
-import rst.homeautomation.state.MotionType.Motion.MotionState;
+import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
@@ -96,9 +95,9 @@ public class MotionSensorRemoteTest {
     @Test
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
-        MotionType.Motion motion = MotionType.Motion.newBuilder().setState(MotionState.MOVEMENT).build();
+        MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
         ((MotionSensorController) dalService.getUnitRegistry().get(motionSensorRemote.getId())).updateMotion(motion);
         motionSensorRemote.requestStatus();
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotion().getState(), motion.getState());
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotion().getValue(), motion.getValue());
     }
 }

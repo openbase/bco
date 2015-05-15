@@ -5,13 +5,13 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.service.DimmService;
+import de.citec.dal.hal.service.DimService;
 import de.citec.dal.hal.service.PowerService;
 
 /**
  *
  * @author thuxohl
  */
-public interface DimmerInterface extends PowerService, DimmService {
+public interface DimmerInterface extends PowerService, DimService {
     
 }

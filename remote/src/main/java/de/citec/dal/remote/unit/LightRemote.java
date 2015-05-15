@@ -9,34 +9,34 @@ import de.citec.dal.hal.unit.LightInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerType;
-import rst.homeautomation.unit.LightType;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.LightType.Light;
 
 /**
  *
  * @author thuxohl
  */
-public class LightRemote extends DALRemoteService<LightType.Light> implements LightInterface {
+public class LightRemote extends DALRemoteService<Light> implements LightInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightType.Light.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Light.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
     public LightRemote() {
     }
 
     @Override
-    public void notifyUpdated(LightType.Light data) {
+    public void notifyUpdated(Light data) {
     }
 
     @Override
-    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethod("setPower", PowerType.Power.newBuilder().setState(state).build());
+    public void setPower(PowerState.State state) throws CouldNotPerformException {
+        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState().getState();
+    public PowerState getPower() throws CouldNotPerformException {
+        return this.getData().getPowerState();
     }
 }

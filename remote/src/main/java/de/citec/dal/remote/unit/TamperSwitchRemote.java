@@ -9,28 +9,28 @@ import de.citec.dal.hal.unit.TamperSwitchInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.TamperType;
-import rst.homeautomation.unit.TamperSwitchType;
+import rst.homeautomation.state.TamperStateType.TamperState;
+import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
 
 /**
  *
  * @author thuxohl
  */
-public class TamperSwitchRemote extends DALRemoteService<TamperSwitchType.TamperSwitch> implements TamperSwitchInterface {
+public class TamperSwitchRemote extends DALRemoteService<TamperSwitch> implements TamperSwitchInterface {
     
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitchType.TamperSwitch.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitch.getDefaultInstance()));
     }
 
     public TamperSwitchRemote() {
     }
 
     @Override
-    public void notifyUpdated(TamperSwitchType.TamperSwitch data) {
+    public void notifyUpdated(TamperSwitch data) {
     }
 
     @Override
-    public TamperType.Tamper getTamper() throws CouldNotPerformException {
+    public TamperState getTamper() throws CouldNotPerformException {
         return this.getData().getTamperState();
     }
     

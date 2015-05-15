@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.OpenClosedTiltedType;
+import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**
  *
@@ -93,9 +93,9 @@ public class HandleSensorRemoteTest {
     @Test
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
-        OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState state = OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.TILTED;
+        HandleState.State state = HandleState.State.TILTED;
         ((HandleSensorController) dalService.getUnitRegistry().get(handleSensorRemote.getId())).updateHandle(state);
         handleSensorRemote.requestStatus();
-        Assert.assertEquals("The getter for the handle state returns the wrong value!",state, handleSensorRemote.getHandle());
+        Assert.assertEquals("The getter for the handle state returns the wrong value!",state, handleSensorRemote.getHandle().getValue());
     }
 }

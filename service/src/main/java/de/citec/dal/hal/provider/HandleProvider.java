@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.OpenClosedTiltedType;
+import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**
  *
@@ -20,7 +20,7 @@ import rst.homeautomation.state.OpenClosedTiltedType;
  */
 public interface HandleProvider extends Provider {
 
-    public OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState getHandle() throws CouldNotPerformException;
+    public HandleState getHandle() throws CouldNotPerformException;
 
     public class GetHandleCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface HandleProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState.class, provider.getHandle());
+                return new Event(HandleState.class, provider.getHandle());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

@@ -16,7 +16,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.AmbientLightType.AmbientLight;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.vision.HSVColorType.HSVColor;
@@ -31,7 +31,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLight.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
     private final ColorService colorService;
@@ -49,11 +49,11 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         this.brightnessService = serviceFactory.newBrightnessService(device, this);
     }
 
-    public void updatePower(final PowerType.Power.PowerState value) throws CouldNotPerformException {
+    public void updatePower(final PowerState.State value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getPowerStateBuilder().setState(value);
+            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
         }
@@ -61,15 +61,15 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     }
 
     @Override
-    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException {
+    public void setPower(final PowerState.State state) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state.name() + "]");
         powerService.setPower(state);
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws NotAvailableException {
+    public PowerState getPower() throws NotAvailableException {
         try {
-            return getData().getPowerState().getState();
+            return getData().getPowerState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("power", ex);
         }

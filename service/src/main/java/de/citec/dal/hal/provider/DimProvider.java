@@ -17,24 +17,24 @@ import rsb.patterns.EventCallback;
  *
  * @author thuxohl
  */
-public interface DimmProvider extends Provider {
+public interface DimProvider extends Provider {
 
-    public Double getDimm() throws CouldNotPerformException;
+    public Double getDim() throws CouldNotPerformException;
 
-    public class GetDimmCallback extends EventCallback {
+    public class GetDimCallback extends EventCallback {
 
-        private static final Logger logger = LoggerFactory.getLogger(GetDimmCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(GetDimCallback.class);
 
-        private final DimmProvider provider;
+        private final DimProvider provider;
 
-        public GetDimmCallback(final DimmProvider provider) {
+        public GetDimCallback(final DimProvider provider) {
             this.provider = provider;
         }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(Double.class, provider.getDimm());
+                return new Event(Double.class, provider.getDim());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

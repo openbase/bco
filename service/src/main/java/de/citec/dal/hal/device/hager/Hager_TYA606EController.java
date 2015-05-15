@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.device.homematic;
+package de.citec.dal.hal.device.hager;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -12,21 +12,20 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.homematic.HM_ReedSwitchType;
-import rst.homeautomation.device.homematic.HM_ReedSwitchType.HM_ReedSwitch;
+import rst.homeautomation.device.hager.Hager_TYA606EType.Hager_TYA606E;
 
 /**
  *
  * @author mpohling
  */
-public class HM_ReedSwitchController extends AbstractOpenHABDeviceController<HM_ReedSwitch, HM_ReedSwitch.Builder> {
+public class Hager_TYA606EController extends AbstractOpenHABDeviceController<Hager_TYA606E, Hager_TYA606E.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HM_ReedSwitchType.HM_ReedSwitch.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Hager_TYA606E.getDefaultInstance()));
     }
 
-    public HM_ReedSwitchController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, HM_ReedSwitchType.HM_ReedSwitch.newBuilder());
+    public Hager_TYA606EController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, Hager_TYA606E.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {

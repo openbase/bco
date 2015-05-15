@@ -23,7 +23,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.ShutterType;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
  *
@@ -88,10 +88,10 @@ public class RollershutterRemoteTest {
     @Test
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
-        ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.DOWN;
+        ShutterState.State state = ShutterState.State.DOWN;
         rollershutterRemote.setShutter(state);
         rollershutterRemote.requestStatus();
-        assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState().getState());
+        assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState().getValue());
     }
 
     /**
@@ -102,10 +102,10 @@ public class RollershutterRemoteTest {
     @Test
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
-        ShutterType.Shutter.ShutterState state = ShutterType.Shutter.ShutterState.STOP;
+        ShutterState.State state = ShutterState.State.STOP;
         ((RollershutterController) dalService.getUnitRegistry().get(rollershutterRemote.getId())).updateShutter(state);
         rollershutterRemote.requestStatus();
-        assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
+        assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter().getValue(), state);
     }
 
     /**

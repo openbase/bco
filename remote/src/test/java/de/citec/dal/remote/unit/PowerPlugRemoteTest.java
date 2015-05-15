@@ -24,7 +24,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
@@ -89,10 +89,10 @@ public class PowerPlugRemoteTest {
     @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
+        PowerState.State state = PowerState.State.ON;
         powerPlugRemote.setPower(state);
         powerPlugRemote.requestStatus();
-        assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState().getState());
+        assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -103,10 +103,10 @@ public class PowerPlugRemoteTest {
     @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
+        PowerState.State state = PowerState.State.OFF;
         ((PowerPlugController) dalService.getUnitRegistry().get(powerPlugRemote.getId())).updatePower(state);
         powerPlugRemote.requestStatus();
-        assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
+        assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower().getValue());
     }
 
     /**

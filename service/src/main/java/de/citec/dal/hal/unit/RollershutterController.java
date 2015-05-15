@@ -15,9 +15,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ShutterType;
-import rst.homeautomation.state.ShutterType.Shutter;
-import rst.homeautomation.unit.RollershutterType;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
 import rst.homeautomation.unit.RollershutterType.Rollershutter;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -28,43 +26,43 @@ import rst.homeautomation.unit.UnitConfigType;
 public class RollershutterController extends AbstractUnitController<Rollershutter, Rollershutter.Builder> implements RollershutterInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Rollershutter.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterState.getDefaultInstance()));
     }
 
     private final ShutterService shutterService;
     private final OpeningRatioService openingRatioService;
 
-    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, RollershutterType.Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
         this(config, device, builder, device.getDefaultServiceFactory());
     }
 
-    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, RollershutterType.Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
         super(config, RollershutterController.class, device, builder);
         this.shutterService = serviceFactory.newShutterService(device, this);
         this.openingRatioService = serviceFactory.newOpeningRatioService(device, this);
     }
 
-    public void updateShutter(final ShutterType.Shutter.ShutterState value) throws CouldNotPerformException {
+    public void updateShutter(final ShutterState.State value) throws CouldNotPerformException {
         logger.debug("Apply shutter Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getShutterStateBuilder().setState(value);
+            dataBuilder.getInternalBuilder().getShutterStateBuilder().setValue(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply shutter Update[" + value + "] for " + this + "!", ex);
         }
     }
 
     @Override
-    public void setShutter(final ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
+    public void setShutter(final ShutterState.State state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to ShutterState [" + state.name() + "]");
         this.shutterService.setShutter(state);
     }
 
     @Override
-    public Shutter.ShutterState getShutter() throws NotAvailableException {
+    public ShutterState getShutter() throws NotAvailableException {
         try {
-            return getData().getShutterState().getState();
+            return getData().getShutterState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("shutter", ex);
         }

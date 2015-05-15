@@ -9,35 +9,35 @@ import de.citec.dal.hal.unit.RollershutterInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ShutterType;
-import rst.homeautomation.unit.RollershutterType;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
+import rst.homeautomation.unit.RollershutterType.Rollershutter;
 
 /**
  *
  * @author thuxohl
  */
-public class RollershutterRemote extends DALRemoteService<RollershutterType.Rollershutter> implements RollershutterInterface {
+public class RollershutterRemote extends DALRemoteService<Rollershutter> implements RollershutterInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollershutterType.Rollershutter.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterType.Shutter.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Rollershutter.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterState.getDefaultInstance()));
     }
 
     public RollershutterRemote() {
     }
 
     @Override
-    public void notifyUpdated(RollershutterType.Rollershutter data) {
+    public void notifyUpdated(Rollershutter data) {
     }
 
     @Override
-    public void setShutter(ShutterType.Shutter.ShutterState state) throws CouldNotPerformException {
-        callMethod("setShutter", ShutterType.Shutter.newBuilder().setState(state).build());
+    public void setShutter(ShutterState.State state) throws CouldNotPerformException {
+        callMethod("setShutter", ShutterState.newBuilder().setValue(state).build());
     }
 
     @Override
-    public ShutterType.Shutter.ShutterState getShutter() throws CouldNotPerformException {
-        return this.getData().getShutterState().getState();
+    public ShutterState getShutter() throws CouldNotPerformException {
+        return this.getData().getShutterState();
     }
 
     @Override

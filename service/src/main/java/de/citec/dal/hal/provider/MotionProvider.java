@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.MotionType;
+import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
@@ -20,7 +20,7 @@ import rst.homeautomation.state.MotionType;
  */
 public interface MotionProvider extends Provider {
 
-    public MotionType.Motion getMotion() throws CouldNotPerformException;
+    public MotionState getMotion() throws CouldNotPerformException;
 
     public class GetMotionCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface MotionProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(MotionType.Motion.class, provider.getMotion());
+                return new Event(MotionState.class, provider.getMotion());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

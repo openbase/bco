@@ -7,7 +7,7 @@ package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.openhab.OnOffHolderType;
 
 /**
@@ -16,18 +16,18 @@ import rst.homeautomation.openhab.OnOffHolderType;
  */
 public class PowerStateTransformer {
 
-	public static PowerType.Power.PowerState transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws CouldNotTransformException {
+	public static PowerState.State transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws CouldNotTransformException {
 		switch (onOffType) {
 			case OFF:
-				return PowerType.Power.PowerState.OFF;
+				return PowerState.State.OFF;
 			case ON:
-				return PowerType.Power.PowerState.ON;
+				return PowerState.State.ON;
 			default:
 				throw new CouldNotTransformException("Could not transform " + OnOffHolderType.OnOffHolder.OnOff.class.getName() + "! " + OnOffHolderType.OnOffHolder.OnOff.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
 		}
 	}
 
-	public static OnOffHolderType.OnOffHolder transform(PowerType.Power.PowerState powerState) throws TypeNotSupportedException, CouldNotTransformException {
+	public static OnOffHolderType.OnOffHolder transform(PowerState.State powerState) throws TypeNotSupportedException, CouldNotTransformException {
 		switch (powerState) {
 			case OFF:
 				return OnOffHolderType.OnOffHolder.newBuilder().setState(OnOffHolderType.OnOffHolder.OnOff.OFF).build();
@@ -36,7 +36,7 @@ public class PowerStateTransformer {
 			case UNKNOWN:
 				throw new TypeNotSupportedException(powerState, OnOffHolderType.OnOffHolder.OnOff.class);
 			default:
-				throw new CouldNotTransformException("Could not transform " + PowerType.Power.PowerState.class.getName() + "! " + PowerType.Power.PowerState.class.getSimpleName() + "[" + powerState.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + PowerState.State.class.getName() + "! " + PowerState.State.class.getSimpleName() + "[" + powerState.name() + "] is unknown!");
 		}
 	}
 }

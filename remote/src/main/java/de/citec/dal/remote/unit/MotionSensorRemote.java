@@ -9,28 +9,29 @@ import de.citec.dal.hal.unit.MotionSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.MotionType;
-import rst.homeautomation.unit.MotionSensorType;
+import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.homeautomation.unit.MotionSensorType.MotionSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class MotionSensorRemote extends DALRemoteService<MotionSensorType.MotionSensor> implements MotionSensorInterface {
+public class MotionSensorRemote extends DALRemoteService<MotionSensor> implements MotionSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensorType.MotionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
 
     public MotionSensorRemote() {
     }
 
     @Override
-    public void notifyUpdated(MotionSensorType.MotionSensor data) {
+    public void notifyUpdated(MotionSensor data) {
     }
 
     @Override
-    public MotionType.Motion getMotion() throws CouldNotPerformException {
+    public MotionState getMotion() throws CouldNotPerformException {
         return this.getData().getMotionState();
     }
 

@@ -12,20 +12,20 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.hager.HA_TYA663AType;
+import rst.homeautomation.device.hager.Hager_TYA628CType.Hager_TYA628C;
 
 /**
  *
  * @author mpohling
  */
-public class HA_TYA663AController extends AbstractOpenHABDeviceController<HA_TYA663AType.HA_TYA663A, HA_TYA663AType.HA_TYA663A.Builder> {
+public class Hager_TYA628CController extends AbstractOpenHABDeviceController<Hager_TYA628C, Hager_TYA628C.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HA_TYA663AType.HA_TYA663A.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Hager_TYA628C.getDefaultInstance()));
     }
 
-    public HA_TYA663AController(final DeviceConfigType.DeviceConfig config) throws CouldNotTransformException, InstantiationException {
-        super(config, HA_TYA663AType.HA_TYA663A.newBuilder());
+    public Hager_TYA628CController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, Hager_TYA628C.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {

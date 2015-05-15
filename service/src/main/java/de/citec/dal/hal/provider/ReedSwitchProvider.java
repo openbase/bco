@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.OpenClosedType;
+import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 
 /**
  *
@@ -20,7 +20,7 @@ import rst.homeautomation.state.OpenClosedType;
  */
 public interface ReedSwitchProvider extends Provider {
 
-    public OpenClosedType.OpenClosed.OpenClosedState getReedSwitch() throws CouldNotPerformException;
+    public ReedSwitchState getReedSwitch() throws CouldNotPerformException;
 
     public class GetReedSwitchCallback extends EventCallback {
 
@@ -35,7 +35,7 @@ public interface ReedSwitchProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(OpenClosedType.OpenClosed.OpenClosedState.class, provider.getReedSwitch());
+                return new Event(ReedSwitchState.class, provider.getReedSwitch());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
             }

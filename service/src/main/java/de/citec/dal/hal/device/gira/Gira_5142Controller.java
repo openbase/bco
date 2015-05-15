@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.device.philips;
+package de.citec.dal.hal.device.gira;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -12,21 +12,20 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.philips.PH_Hue_GU10Type;
-import rst.homeautomation.device.philips.PH_Hue_GU10Type.PH_Hue_GU10;
+import rst.homeautomation.device.gira.Gira_5142Type.Gira_5142;
 
 /**
  *
  * @author mpohling
  */
-public class PH_Hue_GU10Controller extends AbstractOpenHABDeviceController<PH_Hue_GU10, PH_Hue_GU10.Builder> {
+public class Gira_5142Controller extends AbstractOpenHABDeviceController<Gira_5142, Gira_5142.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PH_Hue_GU10Type.PH_Hue_GU10.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Gira_5142.getDefaultInstance()));
     }
 
-    public PH_Hue_GU10Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, PH_Hue_GU10Type.PH_Hue_GU10.newBuilder());
+    public Gira_5142Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, Gira_5142.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {

@@ -9,44 +9,44 @@ import de.citec.dal.hal.unit.DimmerInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerType;
-import rst.homeautomation.unit.DimmerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.DimmerType.Dimmer;
 
 /**
  *
  * @author thuxohl
  */
-public class DimmerRemote extends DALRemoteService<DimmerType.Dimmer> implements DimmerInterface {
+public class DimmerRemote extends DALRemoteService<Dimmer> implements DimmerInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerType.Dimmer.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Dimmer.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
     public DimmerRemote() {
     }
 
     @Override
-    public void notifyUpdated(DimmerType.Dimmer data) {
+    public void notifyUpdated(Dimmer data) {
     }
 
     @Override
-    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethod("setPower", PowerType.Power.newBuilder().setState(state).build());
+    public void setPower(PowerState.State state) throws CouldNotPerformException {
+        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState().getState();
+    public PowerState getPower() throws CouldNotPerformException {
+        return this.getData().getPowerState();
     }
 
     @Override
-    public void setDimm(Double dimm) throws CouldNotPerformException {
+    public void setDim(Double dimm) throws CouldNotPerformException {
         callMethod("setDimm", dimm);
     }
 
     @Override
-    public Double getDimm() throws CouldNotPerformException {
+    public Double getDim() throws CouldNotPerformException {
         return this.getData().getValue();
     }
 

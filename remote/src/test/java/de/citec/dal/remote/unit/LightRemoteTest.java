@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
@@ -89,10 +89,10 @@ public class LightRemoteTest {
     @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.ON;
+        PowerState.State state = PowerState.State.ON;
         lightRemote.setPower(state);
         lightRemote.requestStatus();
-        assertEquals("Power has not been set in time!", state, lightRemote.getData().getPowerState().getState());
+        assertEquals("Power has not been set in time!", state, lightRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -103,9 +103,9 @@ public class LightRemoteTest {
     @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerType.Power.PowerState state = PowerType.Power.PowerState.OFF;
+        PowerState.State state = PowerState.State.OFF;
         ((LightController) dalService.getUnitRegistry().get(lightRemote.getId())).updatePower(state);
         lightRemote.requestStatus();
-        assertEquals("Light has not been set in time!", state, lightRemote.getPower());
+        assertEquals("Light has not been set in time!", state, lightRemote.getPower().getValue());
     }
 }

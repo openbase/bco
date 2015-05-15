@@ -12,8 +12,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ClickType;
-import rst.homeautomation.unit.ButtonType;
+import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonType.Button;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
@@ -25,24 +24,22 @@ import rst.timing.TimestampType;
 public class ButtonController extends AbstractUnitController<Button, Button.Builder> implements ButtonInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonType.Button.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClickType.Click.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
 
     public ButtonController(final UnitConfigType.UnitConfig config, Device device, Button.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(config, ButtonController.class, device, builder);
     }
 
-    //TODO Tamino: rename ClickState Type into ButtonState.
-    //TODO Tamino: rename Click into ButtonStateHolder?
-    public void updateButton(ClickType.Click value) throws CouldNotPerformException {
+    public void updateButton(ButtonState value) throws CouldNotPerformException {
 
         logger.debug("Apply button Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Button.Builder> dataBuilder = getDataBuilder(this)) {
 
             //TODO tamino: need to be tested! Please write an unit test.
-            if (value.getState() == ClickType.Click.ClickState.CLICKED || value.getState() == ClickType.Click.ClickState.DOUBLE_CLICKED) {
+            if (value.getValue()== ButtonState.State.CLICKED || value.getValue()== ButtonState.State.DOUBLE_CLICKED) {
                 value = value.toBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
             }
 
@@ -53,7 +50,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
     }
 
     @Override
-    public ClickType.Click getButton() throws NotAvailableException {
+    public ButtonState getButton() throws NotAvailableException {
         try {
             return getData().getButtonState();
         } catch(CouldNotPerformException ex) {

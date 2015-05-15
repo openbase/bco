@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
@@ -22,7 +22,7 @@ import rst.homeautomation.state.PowerType;
  */
 public interface PowerService extends Service, PowerProvider {
 
-    public void setPower(final PowerType.Power.PowerState state) throws CouldNotPerformException;
+    public void setPower(final PowerState.State state) throws CouldNotPerformException;
 
     public class SetPowerCallback extends EventCallback {
 
@@ -37,7 +37,7 @@ public interface PowerService extends Service, PowerProvider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setPower(((PowerType.Power) request.getData()).getState());
+                service.setPower(((PowerState) request.getData()).getValue());
                 return RSBCommunicationService.RPC_SUCCESS;
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));

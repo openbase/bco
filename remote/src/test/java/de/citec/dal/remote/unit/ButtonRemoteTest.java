@@ -23,7 +23,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.ClickType;
+import rst.homeautomation.state.ButtonStateType.ButtonState;
 
 /**
  *
@@ -95,9 +95,9 @@ public class ButtonRemoteTest {
     @Test
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
-        ClickType.Click buttonState = ClickType.Click.newBuilder().setState(ClickType.Click.ClickState.CLICKED).build();
+        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
         ((ButtonController) dalService.getUnitRegistry().get(buttonRemote.getId())).updateButton(buttonState);
         buttonRemote.requestStatus();
-        assertEquals("The getter for the button returns the wrong value!", buttonState.getState(), buttonRemote.getButton().getState());
+        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButton().getValue());
     }
 }

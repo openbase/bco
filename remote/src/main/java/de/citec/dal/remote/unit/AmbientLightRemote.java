@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.AmbientLightType;
-import rst.homeautomation.state.PowerType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -28,7 +28,7 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColorType.HSVColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
     public AmbientLightRemote() {
@@ -58,13 +58,13 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
 
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState().getState();
+    public PowerState getPower() throws CouldNotPerformException {
+        return this.getData().getPowerState();
     }
 
     @Override
-    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethod("setPower", PowerType.Power.newBuilder().setState(state).build());
+    public void setPower(PowerState.State state) throws CouldNotPerformException {
+        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
     }
 
     @Override

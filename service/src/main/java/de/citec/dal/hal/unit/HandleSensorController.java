@@ -12,8 +12,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.OpenClosedTiltedType.OpenClosedTilted.OpenClosedTiltedState;
-import rst.homeautomation.unit.HandleSensorType;
+import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.homeautomation.unit.HandleSensorType.HandleSensor;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -24,30 +23,28 @@ import rst.homeautomation.unit.UnitConfigType;
 public class HandleSensorController extends AbstractUnitController<HandleSensor, HandleSensor.Builder> implements HandleSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensorType.HandleSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
     }
 
     public HandleSensorController(final UnitConfigType.UnitConfig config, Device device, HandleSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(config, HandleSensorController.class, device, builder);
     }
 
-    //TODO tamino: rename OpenClosedTiltedState to HandleState
-
-    public void updateHandle(final OpenClosedTiltedState value) throws CouldNotPerformException {
+    public void updateHandle(final HandleState.State value) throws CouldNotPerformException {
         logger.debug("Apply handle state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<HandleSensor.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getHandleStateBuilder().setState(value);
+            dataBuilder.getInternalBuilder().getHandleStateBuilder().setValue(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply handle state Update[" + value + "] for " + this + "!", ex);
         }
     }
 
-    //TODO tamino: rename to getHandleState
     @Override
-    public OpenClosedTiltedState getHandle() throws NotAvailableException {
+    public HandleState getHandle() throws NotAvailableException {
         try {
-            return getData().getHandleState().getState();
+            return getData().getHandleState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("handle state", ex);
         }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.device.gira;
+package de.citec.dal.hal.device.hager;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -12,20 +12,20 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.gira.GI_5142Type;
+import rst.homeautomation.device.hager.Hager_TYA663AType.Hager_TYA663A;
 
 /**
  *
  * @author mpohling
  */
-public class GI_5142Controller extends AbstractOpenHABDeviceController<GI_5142Type.GI_5142, GI_5142Type.GI_5142.Builder> {
+public class Hager_TYA663AController extends AbstractOpenHABDeviceController<Hager_TYA663A, Hager_TYA663A.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GI_5142Type.GI_5142.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Hager_TYA663A.getDefaultInstance()));
     }
 
-    public GI_5142Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, GI_5142Type.GI_5142.newBuilder());
+    public Hager_TYA663AController(final DeviceConfigType.DeviceConfig config) throws CouldNotTransformException, InstantiationException {
+        super(config, Hager_TYA663A.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {

@@ -9,35 +9,35 @@ import de.citec.dal.hal.unit.PowerPlugInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerType;
-import rst.homeautomation.unit.PowerPlugType;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.PowerPlugType.PowerPlug;
 
 /**
  *
  * @author thuxohl
  */
-public class PowerPlugRemote extends DALRemoteService<PowerPlugType.PowerPlug> implements PowerPlugInterface {
+public class PowerPlugRemote extends DALRemoteService<PowerPlug> implements PowerPlugInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerPlugType.PowerPlug.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerType.Power.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerPlug.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
     public PowerPlugRemote() {
     }
 
     @Override
-    public void notifyUpdated(PowerPlugType.PowerPlug data) {
+    public void notifyUpdated(PowerPlug data) {
     }
 
     @Override
-    public void setPower(PowerType.Power.PowerState state) throws CouldNotPerformException {
-        callMethod("setPower", PowerType.Power.newBuilder().setState(state).build());
+    public void setPower(PowerState.State state) throws CouldNotPerformException {
+        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
     }
 
     @Override
-    public PowerType.Power.PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState().getState();
+    public PowerState getPower() throws CouldNotPerformException {
+        return this.getData().getPowerState();
     }
 
 }

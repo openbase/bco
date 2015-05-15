@@ -3,33 +3,35 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.device.hager;
+package de.citec.dal.hal.device.fibaro;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.hager.HA_TYA606EType;
+import rst.homeautomation.device.fibaro.Fibaro_FGS_221Type.Fibaro_FGS_221;
+import de.citec.jul.exception.InstantiationException;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
  * @author mpohling
  */
-public class HA_TYA606EController extends AbstractOpenHABDeviceController<HA_TYA606EType.HA_TYA606E, HA_TYA606EType.HA_TYA606E.Builder> {
+public class Fibaro_FGS221Controller extends AbstractOpenHABDeviceController<Fibaro_FGS_221, Fibaro_FGS_221.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HA_TYA606EType.HA_TYA606E.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Fibaro_FGS_221.getDefaultInstance()));
     }
 
-    public HA_TYA606EController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, HA_TYA606EType.HA_TYA606E.newBuilder());
+    public Fibaro_FGS221Controller(final DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, Fibaro_FGS_221.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
+
+    
 }

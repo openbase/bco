@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.OpenClosedType;
+import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 
 /**
  *
@@ -97,9 +97,9 @@ public class ReedSwitchRemoteTest {
     @Test
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
-        OpenClosedType.OpenClosed.OpenClosedState state = OpenClosedType.OpenClosed.OpenClosedState.CLOSED;
+        ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
         ((ReedSwitchController) dalService.getUnitRegistry().get(reedSwitchRemote.getId())).updateReedSwitch(state);
         reedSwitchRemote.requestStatus();
-        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch());
+        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch().getValue());
     }
 }

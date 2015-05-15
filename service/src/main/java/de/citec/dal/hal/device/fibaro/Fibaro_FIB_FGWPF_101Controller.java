@@ -10,7 +10,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.fibaro.F_FIB_FGWPF_101Type;
+import rst.homeautomation.device.fibaro.Fibaro_FIB_FGWPF_101Type.Fibaro_FIB_FGWPF_101;
 import de.citec.jul.exception.InstantiationException;
 import rst.homeautomation.device.DeviceConfigType;
 
@@ -18,14 +18,14 @@ import rst.homeautomation.device.DeviceConfigType;
  *
  * @author thuxohl
  */
-public class F_FIB_FGWPF_101Controller extends AbstractOpenHABDeviceController<F_FIB_FGWPF_101Type.F_FIB_FGWPF_101, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.Builder> {
+public class Fibaro_FIB_FGWPF_101Controller extends AbstractOpenHABDeviceController<Fibaro_FIB_FGWPF_101, Fibaro_FIB_FGWPF_101.Builder> {
 
 	static {
-		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.getDefaultInstance()));
+		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Fibaro_FIB_FGWPF_101.getDefaultInstance()));
 	}
 
-	public F_FIB_FGWPF_101Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-		super(config, F_FIB_FGWPF_101Type.F_FIB_FGWPF_101.newBuilder());
+	public Fibaro_FIB_FGWPF_101Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+		super(config, Fibaro_FIB_FGWPF_101.newBuilder());
 		try {
 			registerUnits(config.getUnitConfigList());
 		} catch (CouldNotPerformException ex) {
