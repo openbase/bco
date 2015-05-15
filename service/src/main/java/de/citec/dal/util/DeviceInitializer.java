@@ -9,5 +9,5 @@ import de.citec.jul.exception.CouldNotPerformException;
  */
 public interface DeviceInitializer {
 
-    public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException;
+    public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException, InterruptedException;
 }
