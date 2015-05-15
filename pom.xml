@@ -36,7 +36,7 @@
                     <programs>
                         <program>
                             <mainClass>de.citec.csra.dm.DeviceManager</mainClass>
-                            <name>device-manager</name>
+                            <id>device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
