@@ -18,13 +18,13 @@ import rst.homeautomation.device.fibaro.Fibaro_FGMS_001Type.Fibaro_FGMS_001;
  *
  * @author mpohling
  */
-public class Fibaro_MotionSensorController extends AbstractOpenHABDeviceController<Fibaro_FGMS_001, Fibaro_FGMS_001.Builder> {
+public class Fibaro_FGMS_001Controller extends AbstractOpenHABDeviceController<Fibaro_FGMS_001, Fibaro_FGMS_001.Builder> {
 
 	static {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Fibaro_FGMS_001.getDefaultInstance()));
 	}
 
-	public Fibaro_MotionSensorController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+	public Fibaro_FGMS_001Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
 		super(config, Fibaro_FGMS_001.newBuilder());
 		try {
 			registerUnits(config.getUnitConfigList());

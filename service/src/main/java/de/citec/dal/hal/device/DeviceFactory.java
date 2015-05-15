@@ -7,6 +7,7 @@ package de.citec.dal.hal.device;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.processing.StringProcessor;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -42,7 +43,7 @@ public class DeviceFactory implements DeviceFactoryInterface {
             if (!deviceConfig.getPlacementConfig().hasLocationConfig()) {
                 throw new NotAvailableException("deviceConfig.placement.location");
             }
-            Class deviceClass = getClass().getClassLoader().loadClass(AbstractDeviceController.class.getPackage().getName() + "." + deviceConfig.getDeviceClass().getCompany() + "." + deviceConfig.getDeviceClass().getLabel() + "Controller");
+            Class deviceClass = getClass().getClassLoader().loadClass(AbstractDeviceController.class.getPackage().getName() + "." + deviceConfig.getDeviceClass().getCompany() + "." + StringProcessor.replaceHyphenWithUnderscore(deviceConfig.getDeviceClass().getProductNumber()) + "Controller");
             return (Device) deviceClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not instantiate Device[" + deviceConfig.getId() + "]!", ex);
