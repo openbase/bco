@@ -27,10 +27,8 @@ import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import rsb.RSBException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.patterns.LocalServer;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
@@ -41,6 +39,7 @@ import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
 import de.citec.jul.extension.rsb.container.transformer.MessageTransformer;
 import de.citec.jul.extension.rsb.util.RPCHelper;
@@ -112,7 +111,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
-    public void registerMethods(LocalServer server) throws RSBException {
+    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
         RPCHelper.registerInterface(DeviceRegistryInterface.class, this, server);
     }
 

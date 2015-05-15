@@ -17,7 +17,7 @@ import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.extension.rsb.com.RSBInformerInterface;
+import de.citec.jul.extension.rsb.iface.RSBInformerInterface;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class DeviceManager {
     public DeviceManager() throws InitializationException {
         try {
             this.deviceRegistry = new DeviceRegistryService();
-            this.deviceRegistry.init(RSBInformerInterface.InformerType.Single);
+            this.deviceRegistry.init();
             this.deviceRegistry.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

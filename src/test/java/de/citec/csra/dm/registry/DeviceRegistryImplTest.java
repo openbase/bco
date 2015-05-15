@@ -6,7 +6,6 @@
 package de.citec.csra.dm.registry;
 
 import de.citec.csra.dm.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
-import de.citec.csra.dm.consistency.ServiceConfigUnitIdConsistencyHandler;
 import de.citec.csra.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
@@ -20,13 +19,11 @@ import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import de.citec.jul.extension.rsb.com.RSBInformerInterface;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import static junit.framework.TestCase.assertEquals;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
@@ -77,26 +74,14 @@ public class DeviceRegistryImplTest {
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException {
-        File dbFile = new File("/tmp/db/");
-        File dbDeviceClasses = new File("/tmp/db/device-classes");
-        File dbDeviceConfig = new File("/tmp/db/device-config");
-        Scope scope = new Scope("/test/registry/devicemanager");
-
-        dbFile.mkdir();
-
-        FileUtils.deleteDirectory(dbDeviceClasses);
-        FileUtils.deleteDirectory(dbDeviceConfig);
-        dbDeviceClasses.mkdir();
-        dbDeviceConfig.mkdir();
-
-        JPService.registerProperty(JPDeviceRegistryScope.class, scope);
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class, dbFile);
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, dbDeviceConfig);
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, dbDeviceClasses);
+        JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/db/"));
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
 
         registry = new DeviceRegistryService();
-        registry.init(RSBInformerInterface.InformerType.Single);
+        registry.init();
         registry.activate();
 
         deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
