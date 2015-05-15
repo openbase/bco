@@ -68,11 +68,11 @@ public class DALService implements RegistryProvider {
         return registryProvider;
     }
 
-    public void init() throws CouldNotPerformException {
+    public void init() throws CouldNotPerformException, InterruptedException {
         init(new DeviceManagerRemoteDalConnector());
     }
 
-    public void init(final DeviceInitializer initializer) throws CouldNotPerformException {
+    public void init(final DeviceInitializer initializer) throws CouldNotPerformException, InterruptedException {
         try {
             initBindings();
             initializer.initDevices(deviceRegistry);
