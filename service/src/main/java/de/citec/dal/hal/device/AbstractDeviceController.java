@@ -38,9 +38,6 @@ import rst.homeautomation.unit.UnitConfigType;
  */
 public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Device {
 
-//	public final static String TYPE_FILED_ID = "id";
-//	public final static String TYPE_FILED_NAME = "name";
-//	public final static String TYPE_FILED_LABEL = "label";
     public final static String DEVICE_TYPE_FILED_CONFIG = "config";
 
     protected final String id;
@@ -59,9 +56,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.unitMap = new HashMap<>();
 
         setField(DEVICE_TYPE_FILED_CONFIG, config);
-//		setField(TYPE_FILED_ID, id);
-//		setField(TYPE_FILED_NAME, name);
-//		setField(TYPE_FILED_LABEL, label);
 
         try {
             init();

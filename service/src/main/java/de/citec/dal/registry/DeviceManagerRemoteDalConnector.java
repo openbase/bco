@@ -35,32 +35,41 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
     }
 
     @Override
-    public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException {
+    public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
-        try {
-            logger.info("Init devices...");
-            deviceRegistryRemote.init();
-            deviceRegistryRemote.activate();
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        while (true) {
+            try {
+                logger.info("Init devices...");
+                deviceRegistryRemote.init();
+                deviceRegistryRemote.activate();
+                Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
-                @Override
-                public void run() {
-                    deviceRegistryRemote.shutdown();
+                    @Override
+                    public void run() {
+                        deviceRegistryRemote.shutdown();
+                    }
+                }));
+                logger.info("Request registry sync.");
+                deviceRegistryRemote.requestStatus();
+                for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
+                    try {
+                        registry.register(factory.newDevice(config));
+                    } catch (Exception ex) {
+                        exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    }
                 }
-            }));
-            logger.info("Request registry sync.");
-            deviceRegistryRemote.requestStatus();
-            for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
-                try {
-                    registry.register(factory.newDevice(config));
-                } catch (Exception ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
-                }
+
+                MultiException.checkAndThrow("Could not init all registered devices!", exceptionStack);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not init devices!", ex);
             }
-            logger.info(registry.size()+" devices successfully loaded. "+MultiException.size(exceptionStack) + " skipped.");
-            MultiException.checkAndThrow("Could not init all registered devices!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not init devices!", ex);
+            if (registry.isEmpty()) {
+                logger.warn("No devices found... try again in 30 sec..");
+                Thread.sleep(30000);
+                continue;
+            }
+            break;
         }
+        logger.info(registry.size() + " devices successfully loaded. " + MultiException.size(exceptionStack) + " skipped.");
     }
 }
