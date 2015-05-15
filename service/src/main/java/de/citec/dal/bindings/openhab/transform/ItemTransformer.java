@@ -10,7 +10,7 @@ import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.extension.rsb.processing.StringProcessor;
+import de.citec.jul.processing.StringProcessor;
 import rsb.Scope;
 import rst.homeautomation.openhab.OpenhabCommandType;
 

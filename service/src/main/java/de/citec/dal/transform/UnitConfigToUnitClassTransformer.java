@@ -8,7 +8,7 @@ package de.citec.dal.transform;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.hal.unit.LightController;
 import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.extension.rsb.processing.StringProcessor;
+import de.citec.jul.processing.StringProcessor;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**

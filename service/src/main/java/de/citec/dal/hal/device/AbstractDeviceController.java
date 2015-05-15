@@ -23,7 +23,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.rsb.processing.StringProcessor;
+import de.citec.jul.processing.StringProcessor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
