@@ -30,7 +30,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
-                <version>1.8.1</version>
+                <version>1.10</version>
                 <executions>
                     <execution>
                         <phase>install</phase>
@@ -42,7 +42,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.csra.dm.core.DeviceManager</mainClass>
+                            <mainClass>de.citec.dm.core.DeviceManager</mainClass>
                             <id>device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
