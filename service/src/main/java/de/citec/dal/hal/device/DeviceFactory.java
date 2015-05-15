@@ -52,7 +52,7 @@ public class DeviceFactory implements DeviceFactoryInterface {
     
     private String getDeviceControllerClass(DeviceConfig deviceConfig) {
         return AbstractDeviceController.class.getPackage().getName() + "." 
-                + deviceConfig.getDeviceClass().getCompany() + "."
+                + deviceConfig.getDeviceClass().getCompany().toLowerCase() + "."
                 + deviceConfig.getDeviceClass().getCompany() + "_"
                 + StringProcessor.replaceHyphenWithUnderscore(deviceConfig.getDeviceClass().getProductNumber())
                 + "Controller";
