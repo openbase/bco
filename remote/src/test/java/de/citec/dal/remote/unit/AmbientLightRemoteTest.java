@@ -46,7 +46,7 @@ public class AmbientLightRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockFactory.newMockRegistry();
 
