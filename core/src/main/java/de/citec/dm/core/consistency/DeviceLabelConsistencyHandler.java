@@ -47,6 +47,11 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
 
     private void checkUniqueness(final DeviceConfig config) throws CouldNotPerformException {
         try {
+
+            if (!config.hasId()) {
+                throw new NotAvailableException("deviceconfig.id");
+            }
+
             if (!config.hasLabel()) {
                 throw new NotAvailableException("deviceconfig.label");
             }
@@ -55,9 +60,11 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
                 throw new NotAvailableException("deviceconfig.label");
             }
 
-            if (labelConsistencyMap.containsKey(generateKey(config))) {
-                if (!config.getId().equals(labelConsistencyMap.get(generateKey(config)))) {
-                    throw new VerificationFailedException("Device[" + config.getId() + "] and Device[" + labelConsistencyMap.get(config.getLabel()) + "] are registerted with equal label on the same location which is not allowed!");
+            String deviceKey = generateKey(config);
+
+            if (labelConsistencyMap.containsKey(deviceKey)) {
+                if (!config.getId().equals(labelConsistencyMap.get(deviceKey))) {
+                    throw new VerificationFailedException("Device[" + config.getId() + "] and Device[" + labelConsistencyMap.get(deviceKey) + "] are registerted with equal Label["+config.getLabel()+"] on the same Location["+config.getPlacementConfig().getLocationConfig().getId()+"] which is not allowed!");
                 }
             }
 
@@ -85,9 +92,38 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
             throw new CouldNotPerformException("Could not gernerate unit label!", ex);
         }
     }
-    
-    private String generateKey(DeviceConfig deviceConfig) {
-        return deviceConfig.getLabel() + deviceConfig.getPlacementConfig().getLocationConfig().getId();
+
+    private String generateKey(DeviceConfig config) throws NotAvailableException {
+
+        if (!config.hasId()) {
+            throw new NotAvailableException("deviceconfig.id");
+        }
+
+        if (!config.hasLabel()) {
+            throw new NotAvailableException("deviceconfig.label");
+        }
+
+        if (config.getLabel().isEmpty()) {
+            throw new NotAvailableException("field deviceconfig.label is empty");
+        }
+
+        if (!config.hasPlacementConfig()) {
+            throw new NotAvailableException("deviceconfig.placementconfig");
+        }
+
+        if (!config.getPlacementConfig().hasLocationConfig()) {
+            throw new NotAvailableException("deviceconfig.placementconfig.locationconfig");
+        }
+
+        if (!config.getPlacementConfig().getLocationConfig().hasId()) {
+            throw new NotAvailableException("deviceconfig.placementconfig.locationconfig.id");
+        }
+
+        if (config.getPlacementConfig().getLocationConfig().getId().isEmpty()) {
+            throw new NotAvailableException("field deviceconfig.placementconfig.locationconfig.id is empty");
+        }
+
+        return config.getPlacementConfig().getLocationConfig().getId() + "_" + config.getLabel();
     }
 
 }

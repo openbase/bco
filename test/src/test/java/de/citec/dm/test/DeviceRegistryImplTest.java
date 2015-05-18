@@ -15,6 +15,7 @@ import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
+import de.citec.jps.preset.JPTestMode;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
@@ -22,6 +23,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
+import de.citec.jul.storage.jp.JPInitializeDB;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,6 +78,7 @@ public class DeviceRegistryImplTest {
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException {
+        JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
         JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/db/"));
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));

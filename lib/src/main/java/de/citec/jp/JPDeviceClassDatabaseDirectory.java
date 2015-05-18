@@ -22,7 +22,7 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
 	public final static String[] COMMAND_IDENTIFIERS = {"--device-class-db"};
 	
 	public JPDeviceClassDatabaseDirectory() {
-		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.On);
+		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
 	}
 
     @Override
@@ -39,13 +39,13 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
     public void validate() throws ValidationException {
         if(JPService.getProperty(JPInitializeDB.class).getValue()) {
             setAutoCreateMode(FileHandler.AutoMode.On);
-            setExistenceHandling(FileHandler.ExistenceHandling.MustBeNew);
+            setExistenceHandling(FileHandler.ExistenceHandling.Must);
         }
         super.validate();
     }
 
 	@Override
 	public String getDescription() {
-		return "Specifies the device class database directory.";
+		return "Specifies the device class database directory. Use  "+JPInitializeDB.COMMAND_IDENTIFIERS[0]+ " to auto create database directories.";
 	}
 }
