@@ -32,7 +32,7 @@ public class DeviceManager {
 
     private final DeviceRegistryService deviceRegistry;
 
-    public DeviceManager() throws InitializationException {
+    public DeviceManager() throws InitializationException, InterruptedException {
         try {
             this.deviceRegistry = new DeviceRegistryService();
             this.deviceRegistry.init();

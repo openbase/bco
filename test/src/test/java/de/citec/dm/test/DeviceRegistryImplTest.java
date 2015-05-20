@@ -5,7 +5,6 @@
  */
 package de.citec.dm.test;
 
-import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.dm.remote.DeviceRegistryRemote;
@@ -15,7 +14,7 @@ import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
-import de.citec.jps.preset.JPTestMode;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
@@ -77,7 +76,7 @@ public class DeviceRegistryImplTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException {
+    public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException {
         JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
         JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/db/"));

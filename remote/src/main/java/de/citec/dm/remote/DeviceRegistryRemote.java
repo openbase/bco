@@ -28,8 +28,10 @@ import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -170,11 +172,35 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         return unitConfigs;
     }
 
+    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
+        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
+                if(unitConfig.getTemplate().getType() == type) {
+                    unitConfigs.add(unitConfig);
+                }
+            }
+        }
+        return unitConfigs;
+    }
+
     @Override
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
+        }
+        return serviceConfigs;
+    }
+    
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException {
+        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
+            for(ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                if(serviceConfig.getType() == serviceType) {
+                    serviceConfigs.add(serviceConfig);
+                }
+            }
         }
         return serviceConfigs;
     }
