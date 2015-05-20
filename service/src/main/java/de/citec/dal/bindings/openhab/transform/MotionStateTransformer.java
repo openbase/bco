@@ -10,6 +10,9 @@ import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.homeautomation.state.MotionStateType.MotionState.State;
+import static rst.homeautomation.state.MotionStateType.MotionState.State.MOVEMENT;
+import static rst.homeautomation.state.MotionStateType.MotionState.State.NO_MOVEMENT;
 
 /**
  *
@@ -17,21 +20,23 @@ import rst.homeautomation.state.MotionStateType.MotionState;
  */
 public class MotionStateTransformer {
 
-    public static MotionState.State transform(final Double decimalType) throws CouldNotTransformException {
+    public static MotionState transform(final Double decimalType) throws CouldNotTransformException {
+        MotionState.Builder motionState = MotionState.newBuilder();
         try {
             if (decimalType.intValue() == 0) {
-                return MotionState.State.NO_MOVEMENT;
+                motionState.setValue(State.NO_MOVEMENT);
             } else {
-                return MotionState.State.MOVEMENT;
+                motionState.setValue(State.MOVEMENT);
             }
+            return motionState.build();
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + decimalType + "] is unknown!", ex);
         }
     }
 
-    public static Double transform(final MotionState.State motionState) throws CouldNotTransformException {
+    public static Double transform(final MotionState motionState) throws CouldNotTransformException {
         try {
-            switch (motionState) {
+            switch (motionState.getValue()) {
                 case NO_MOVEMENT:
                     return 0d;
                 case MOVEMENT:
