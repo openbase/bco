@@ -103,7 +103,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     @Override
-    public void activate() {
+    public void activate() throws InterruptedException {
         super.activate();
 
         for (AbstractUnitController unit : unitMap.values()) {

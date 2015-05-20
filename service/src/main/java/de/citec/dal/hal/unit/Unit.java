@@ -9,6 +9,7 @@ import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.MultiService;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.extension.rsb.scope.ScopeProvider;
+import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -17,11 +18,12 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface Unit extends MultiService, ScopeProvider, Identifiable<String> {
 
-//    public String getName();
     public String getLabel();
 
     public UnitType getType();
 
     public Location getLocation();
+    
+    public UnitConfigType.UnitConfig getUnitConfig();
 
 }

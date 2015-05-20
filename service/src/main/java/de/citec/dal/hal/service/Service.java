@@ -5,10 +5,13 @@
  */
 package de.citec.dal.hal.service;
 
+import rst.homeautomation.service.ServiceConfigType;
+
 /**
  *
  * @author Divine Threepwood
  */
 public interface Service {
 	public ServiceType getServiceType();
+    public ServiceConfigType.ServiceConfig getServiceConfig();
 }

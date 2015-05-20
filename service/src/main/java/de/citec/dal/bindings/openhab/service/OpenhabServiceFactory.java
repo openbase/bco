@@ -48,6 +48,6 @@ public class OpenhabServiceFactory implements ServiceFactory {
 
     @Override
     public DimService newDimmService(Device device, DimService unit) throws InstantiationException {
-       return new DimmServiceImpl(device, unit);
+       return new DimServiceImpl(device, unit);
     }
 }

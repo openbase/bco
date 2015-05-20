@@ -17,9 +17,9 @@ import de.citec.jul.exception.InstantiationException;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class DimmServiceImpl<ST extends DimService & Unit> extends OpenHABService<ST> implements DimService {
+public class DimServiceImpl<ST extends DimService & Unit> extends OpenHABService<ST> implements DimService {
 
-    public DimmServiceImpl(Device device, ST unit) throws InstantiationException {
+    public DimServiceImpl(Device device, ST unit) throws InstantiationException {
         super(device, unit);
     }
 

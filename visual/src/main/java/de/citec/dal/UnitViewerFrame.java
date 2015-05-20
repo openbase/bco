@@ -5,28 +5,28 @@
  */
 package de.citec.dal;
 
-import de.citec.dal.hal.unit.AbstractUnitController;
-import de.citec.dal.hal.unit.AmbientLightController;
 import de.citec.dal.visual.unit.AmbientLightView;
 import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
 import de.citec.jul.exception.InstantiationException;
+import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
  * @author mpohling
  */
-public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Scope> {
+public class UnitViewerFrame extends javax.swing.JFrame implements Observer<UnitConfigType.UnitConfig> {
 
     private final Object REMOTE_VIEW_LOCK = new Object();
 
-    protected static final Logger logger = LoggerFactory.getLogger(DeviceViewerFrame.class);
+    protected static final Logger logger = LoggerFactory.getLogger(UnitViewerFrame.class);
 
     private RSBRemoteView remoteView;
 
@@ -34,8 +34,9 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
      * Creates new form DeviceViewerFrame
      *
      * @throws de.citec.jul.exception.InstantiationException
+     * @throws java.lang.InterruptedException
      */
-    public DeviceViewerFrame() throws InstantiationException {
+    public UnitViewerFrame() throws InstantiationException, InterruptedException {
         try {
             initComponents();
             initTypeComboBox();
@@ -46,7 +47,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         }
     }
 
-    public final void setRemoteView(RSBRemoteView remoteView) throws CouldNotPerformException {
+    public final void setRemoteView(RSBRemoteView remoteView) throws CouldNotPerformException, InterruptedException {
         synchronized (REMOTE_VIEW_LOCK) {
             logger.info("Set remote view: " + remoteView.getClass().getSimpleName());
 
@@ -58,7 +59,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             // Init RemoteView
             this.remoteView = remoteView;
             try {
-                remoteView.setScope(unitPanel.getScope());
+                remoteView.setUnitConfig(unitPanel.getUnitConfig());
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not setup remote view!", ex);
             }
@@ -96,24 +97,19 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     }
 
     private void initTypeComboBox() {
-        ArrayList<Class<? extends AbstractUnitController>> unitClasses = new ArrayList();
-//		for (Class<? extends AbstractUnitController> unitClass : registry.getRegisteredUnitClasses()) {
-//			unitClasses.add(unitClass);
-//		}
-        unitClasses.add(AmbientLightController.class);
-        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitClasses.toArray()));
-        typeComboBox.setSelectedItem(0);
-        unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
+        typeComboBox.setModel(new javax.swing.DefaultComboBoxModel(UnitTemplateType.UnitTemplate.UnitType.values()));
+        typeComboBox.setSelectedItem(UnitTemplateType.UnitTemplate.UnitType.AMBIENT_LIGHT);
+        unitPanel.fillComboBox((UnitTemplateType.UnitTemplate.UnitType) typeComboBox.getSelectedItem());
     }
 
     @Override
-    public synchronized void update(final Observable<Scope> source, final Scope scope) throws CouldNotPerformException {
+    public synchronized void update(final Observable<UnitConfig> source, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         if (remoteView == null) {
             return;
         }
 
         remoteView.setEnabled(false);
-        remoteView.setScope(scope);
+        remoteView.setUnitConfig(unitConfig);
         remoteView.setEnabled(true);
     }
 
@@ -130,9 +126,16 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
         typeComboBox = new javax.swing.JComboBox();
         jPanel3 = new javax.swing.JPanel();
         remoteContextPanel = new javax.swing.JPanel();
-        unitPanel = new de.citec.dal.visual.unit.UnitPanel();
+        try {
+            unitPanel = new de.citec.dal.visual.unit.UnitPanel();
+        } catch (de.citec.jul.exception.InstantiationException e1) {
+            e1.printStackTrace();
+        } catch (java.lang.InterruptedException e2) {
+            e2.printStackTrace();
+        }
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Dal Visual Remote");
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Type"));
 
@@ -204,7 +207,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
     }// </editor-fold>//GEN-END:initComponents
 
     private void typeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeComboBoxActionPerformed
-        unitPanel.fillComboBox((Class<? extends AbstractUnitController>) typeComboBox.getSelectedItem());
+        unitPanel.fillComboBox((UnitTemplateType.UnitTemplate.UnitType) typeComboBox.getSelectedItem());
     }//GEN-LAST:event_typeComboBoxActionPerformed
 
     /**
@@ -229,7 +232,7 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             logger.warn("Could not setup look and feel!", ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the form */
@@ -237,10 +240,12 @@ public class DeviceViewerFrame extends javax.swing.JFrame implements Observer<Sc
             @Override
             public void run() {
                 try {
-                    new DeviceViewerFrame().setVisible(true);
+                    new UnitViewerFrame().setVisible(true);
                 } catch (InstantiationException ex) {
                     logger.error("Could not setup gui!", ex);
                     System.exit(1);
+                } catch (InterruptedException ex) {
+                    ExceptionPrinter.printHistory(logger, ex);
                 }
             }
         });

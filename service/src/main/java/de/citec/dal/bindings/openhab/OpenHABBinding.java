@@ -62,7 +62,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
     }
 
-    public OpenHABBinding() throws InstantiationException {
+    public OpenHABBinding() throws InstantiationException, InterruptedException {
         try {
             this.commandExecutor = new OpenHABCommandExecutor(DALService.getRegistryProvider().getUnitRegistry());
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
@@ -112,6 +113,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return device;
     }
 
+    @Override
+    public UnitConfig getUnitConfig() {
+        return config;
+    }
+
     public Collection<Service> getServices() {
         return Collections.unmodifiableList(serviceList);
     }
@@ -162,5 +168,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[" + config.getTemplate().getType() + "[" + config.getLabel() + "]]";
+    }
+
+    // TODO mpohing: please check if unit need to be a service!
+    @Override
+    public ServiceConfigType.ServiceConfig getServiceConfig() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -5,7 +5,6 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.dal.DALService;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.unit.AmbientLightInterface;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -23,7 +22,7 @@ import rst.vision.HSVColorType.HSVColor;
  */
 public class AmbientLightRemote extends DALRemoteService<AmbientLightType.AmbientLight> implements AmbientLightInterface {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DALService.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemote.class);
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));
@@ -56,7 +55,6 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
         callMethodAsync("setBrightness", brightness);
     }
 
-
     @Override
     public PowerState getPower() throws CouldNotPerformException {
         return this.getData().getPowerState();
@@ -68,8 +66,8 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public HSVColor getColor() throws CouldNotPerformException{
-            return this.getData().getColor();
+    public HSVColor getColor() throws CouldNotPerformException {
+        return this.getData().getColor();
     }
 
     @Override

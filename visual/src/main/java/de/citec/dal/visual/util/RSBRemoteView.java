@@ -6,16 +6,16 @@
 package de.citec.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.remote.unit.DALRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -23,7 +23,7 @@ import rsb.Scope;
  * @param <M>
  * @param <R>
  */
-public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
+public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -78,8 +78,8 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
         return getRemoteService().getData();
     }
 
-    public void setScope(final Scope scope) throws CouldNotPerformException {
-        logger.info("Update Scope: " + scope);
+    public void setUnitConfig(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        logger.info("Update Scope: " + unitConfig);
 
         R service;
 
@@ -90,7 +90,7 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends RSBRem
 
             try {
                 service = remoteServiceClass.newInstance();
-                service.init(scope);
+                service.init(unitConfig);
             } catch (java.lang.InstantiationException | IllegalAccessException ex) {
                 throw new InstantiationException("RemoteService could not be instaniated!", ex);
             }

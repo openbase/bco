@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.openhab.OpenhabCommandType;
+import rst.homeautomation.service.ServiceConfigType;
 
 /**
  *
@@ -37,18 +38,29 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 	protected final ST unit;
 	private final String itemName;
 	private final ServiceType serviceType;
+    private final ServiceConfigType.ServiceConfig config;
 
 	public OpenHABService(final Device device, final ST unit) throws InstantiationException {
 		try {
 			this.device = device;
 			this.unit = unit;
 			this.serviceType = detectServiceType();
+            this.config = loadServiceConfig();
 			this.itemName = ItemTransformer.generateItemName(device, unit, this);
 			this.openhabBinding = DALService.getRegistryProvider().getBindingRegistry().getBinding(OpenHABBinding.class);
 		} catch (CouldNotPerformException ex) {
 			throw new InstantiationException(this, ex);
 		}
 	}
+    
+    private ServiceConfigType.ServiceConfig loadServiceConfig() throws CouldNotPerformException {
+        for(ServiceConfigType.ServiceConfig serviceConfig : ((Unit) unit).getUnitConfig().getServiceConfigList()) {
+            if(serviceConfig.getType() == serviceType.getRSTType()) {
+                return serviceConfig;
+            }
+        }
+        throw new CouldNotPerformException("Could not detect service config!");
+    }
 
 	public final ServiceType detectServiceType() throws NotSupportedException {
 		return ServiceType.valueOfByServiceName(getClass().getSimpleName().replaceFirst("Service", "").replaceFirst("Provider", "").replaceFirst("Impl", ""));
@@ -65,6 +77,11 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 	public String getItemID() {
 		return itemName;
 	}
+
+    @Override
+    public ServiceConfigType.ServiceConfig getServiceConfig() {
+        return config;
+    }
 
 	@Override
 	public ServiceType getServiceType() {

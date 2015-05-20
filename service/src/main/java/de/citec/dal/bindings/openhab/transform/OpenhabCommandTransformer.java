@@ -6,12 +6,11 @@
 package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.dal.bindings.openhab.OpenHABBinding;
-import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
 import rst.homeautomation.openhab.OpenhabCommandType;
+import rst.homeautomation.service.ServiceTypeHolderType;
 
 /**
  *
@@ -19,23 +18,15 @@ import rst.homeautomation.openhab.OpenhabCommandType;
  */
 public final class OpenhabCommandTransformer {
 
-    public static Object getServiceData(OpenhabCommandType.OpenhabCommand command, String serviceName) throws CouldNotPerformException {
-
-        // Detect service type
-        ServiceType serviceType;
-        try {
-            serviceType = ServiceType.valueOfByServiceName(serviceName);
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ServiceData", ex);
-        }
+    public static Object getServiceData(OpenhabCommandType.OpenhabCommand command, ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException {
         
         // Transform service data.
         switch (command.getType()) {
             case DECIMAL:
                 switch (serviceType) {
-                    case MOTION:
+                    case MOTION_PROVIDER:
                         return MotionStateTransformer.transform(command.getDecimal());
-                    case TAMPER:
+                    case TAMPER_PROVIDER:
                         return TamperStateTransformer.transform(command.getDecimal());
                     default:
                         // native double type
@@ -43,7 +34,8 @@ public final class OpenhabCommandTransformer {
                 }
             case HSB:
                 switch (serviceType) {
-                    case COLOR:
+                    case COLOR_PROVIDER:
+                    case COLOR_SERVICE:
                         return HSVColorTransformer.transform(command.getHsb());
                     default:
                         throw new NotSupportedException(serviceType, OpenHABBinding.class);
@@ -53,9 +45,10 @@ public final class OpenhabCommandTransformer {
                 throw new NotSupportedException(command.getType(), OpenhabCommandTransformer.class);
             case ONOFF:
                 switch (serviceType) {
-                    case BUTTON:
+                    case BUTTON_PROVIDER:
                         return ButtonStateTransformer.transform(command.getOnOff().getState());
-                    case POWER:
+                    case POWER_PROVIDER:
+                    case POWER_SERVICE:
                         return PowerStateTransformer.transform(command.getOnOff().getState());
                     default:
                         throw new NotSupportedException(serviceType, OpenHABBinding.class);
