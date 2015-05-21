@@ -42,7 +42,6 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
-import de.citec.jul.extension.rsb.container.transformer.MessageTransformer;
 import de.citec.jul.extension.rsb.util.RPCHelper;
 
 /**
@@ -67,6 +66,9 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             
+            deviceClassRegistry.loadRegistry();
+            deviceConfigRegistry.loadRegistry();
+            
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler());
@@ -75,9 +77,6 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
 //            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
-
-            deviceClassRegistry.loadRegistry();
-            deviceConfigRegistry.loadRegistry();
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 

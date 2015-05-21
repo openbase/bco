@@ -43,7 +43,14 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
             unitConfig.clearServiceConfig();
             for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
                 if (serviceConfig.getBindingServiceConfig().getType().equals(BindingType.OPENHAB)) {
-                    OpenHABBindingServiceConfig.Builder openHABServiceConfig = serviceConfig.getBindingServiceConfig().getOpenhabBindingServiceConfig().toBuilder();
+                    
+                    OpenHABBindingServiceConfig.Builder openHABServiceConfig;
+                    if(!serviceConfig.getBindingServiceConfig().hasOpenhabBindingServiceConfig()) {
+                        openHABServiceConfig = OpenHABBindingServiceConfig.newBuilder();
+                    } else {
+                        openHABServiceConfig = serviceConfig.getBindingServiceConfig().getOpenhabBindingServiceConfig().toBuilder();
+                    }
+                     
                     if (!openHABServiceConfig.hasItemId() || openHABServiceConfig.getItemId().isEmpty() || !openHABServiceConfig.getItemId().equals(generateItemName(entry.getMessage(), unitConfig.clone().build(), serviceConfig.clone().build()))) {
                         openHABServiceConfig.setItemId(generateItemName(entry.getMessage(), unitConfig.clone().build(), serviceConfig.clone().build()));
                         modification = true;
