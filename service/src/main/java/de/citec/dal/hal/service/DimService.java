@@ -37,7 +37,7 @@ public interface DimService extends Service, DimProvider {
         public Event invoke(final Event request) throws Throwable {
             try {
                 service.setDim(((double) request.getData()));
-                return RSBCommunicationService.RPC_SUCCESS;
+                return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
             }

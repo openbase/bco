@@ -12,11 +12,13 @@ import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.state.MotionStateType;
 
 /**
  *
@@ -66,6 +68,33 @@ public class DALServiceTest {
         }
         instance.activate();
         instance.deactivate();
+    }
+    
+    @Test
+    public void testProtobuf() {
+        MotionStateType.MotionState.Builder builder = MotionStateType.MotionState.newBuilder();
+        builder.setValue(MotionStateType.MotionState.State.UNKNOWN);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.UNKNOWN);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.UNKNOWN);
+        builder.setValue(MotionStateType.MotionState.State.MOVEMENT);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.MOVEMENT);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.MOVEMENT);
+        builder.build();
+        
+        MotionStateType.MotionState.Builder clone = builder.clone();
+        
+        builder.setValue(MotionStateType.MotionState.State.NO_MOVEMENT);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
+        Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.MOVEMENT);
+        Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.MOVEMENT);
+        clone.setValue(MotionStateType.MotionState.State.UNKNOWN);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
+        Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.UNKNOWN);
+        Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.UNKNOWN);
+        
+        
     }
 
 }

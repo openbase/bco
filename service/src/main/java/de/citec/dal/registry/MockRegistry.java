@@ -22,6 +22,7 @@ import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.geometry.PoseType.Pose;
@@ -29,6 +30,8 @@ import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -76,7 +79,7 @@ public class MockRegistry {
         MOTION_SENSOR(UnitType.MOTION_SENSOR, ServiceType.MOTION_PROVIDER),
         BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, ServiceType.BRIGHTNESS_PROVIDER),
         BUTTON(UnitType.BUTTON, ServiceType.BUTTON_PROVIDER),
-        DIMMER(UnitType.DIMMER, ServiceType.DIMM_SERVICE),
+        DIMMER(UnitType.DIMMER, ServiceType.DIMM_SERVICE, ServiceType.POWER_SERVICE),
         HANDLE_SENSOR(UnitType.HANDLE_SENSOR, ServiceType.HANDLE_PROVIDER),
         POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, ServiceType.POWER_CONSUMPTION_PROVIDER),
         POWER_PLUG(UnitType.POWER_PLUG, ServiceType.POWER_SERVICE),
@@ -86,7 +89,6 @@ public class MockRegistry {
         TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TEMPERATURE_PROVIDER),
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, ServiceType.TEMPERATURE_PROVIDER), // TODO mpohling: whats about temperature service?
         BATTERY(UnitType.BATTERY, ServiceType.BATTERY_PROVIDER);
-
 
         private final UnitTemplate template;
 
@@ -103,15 +105,13 @@ public class MockRegistry {
             return template;
         }
 
-
-
         public static UnitTemplate getTemplate(UnitType type) throws CouldNotPerformException {
-            for(MockUnitTemplate templateType : values()) {
-                if(templateType.getTemplate().getType() == type) {
+            for (MockUnitTemplate templateType : values()) {
+                if (templateType.getTemplate().getType() == type) {
                     return templateType.getTemplate();
                 }
             }
-            throw new CouldNotPerformException("Could not find template for "+type+"!");
+            throw new CouldNotPerformException("Could not find template for " + type + "!");
         }
     }
 
@@ -191,7 +191,7 @@ public class MockRegistry {
 
         units.clear();
         // handle
-        DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "HM_Sec_RHS", "homematic"));
+        DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "HM_Sec_RHS", "Homematic"));
         units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE_SENSOR, HANDLE_SENSOR_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units));
 
@@ -228,8 +228,17 @@ public class MockRegistry {
         return PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(paradise).build();
     }
 
+    private Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
+        List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
+        for (ServiceType type : template.getServiceTypeList()) {
+            serviceConfigList.add(ServiceConfig.newBuilder().setType(type).build());
+        }
+        return serviceConfigList;
+    }
+
     private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(MockUnitTemplate.getTemplate(type)).setLabel(label).build();
+        UnitTemplate template = MockUnitTemplate.getTemplate(type);
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(template).addAllServiceConfig(getServiceConfig(template)).setLabel(label).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {

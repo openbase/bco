@@ -62,7 +62,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
                 return serviceConfig;
             }
         }
-        throw new CouldNotPerformException("Could not detect service config! Type["+serviceType.getRSTType().name()+"] is not defined for Unit["+((Unit) unit).getId()+"] to any service type!");
+        throw new CouldNotPerformException("Could not detect service config! Service["+serviceType.getRSTType().name()+"] is not configured in Unit["+((Unit) unit).getId()+"]!");
     }
 
 	public final ServiceType detectServiceType() throws NotSupportedException {

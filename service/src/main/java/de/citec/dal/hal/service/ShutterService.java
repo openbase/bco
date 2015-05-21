@@ -41,7 +41,7 @@ public interface ShutterService extends Service, ShutterProvider {
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
             }
-            return RSBCommunicationService.RPC_SUCCESS;
+            return new Event(Void.class);
         }
     }
 }

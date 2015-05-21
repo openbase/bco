@@ -38,7 +38,7 @@ public interface ColorService extends ColorProvider {
         public Event invoke(final Event request) throws Throwable {
             try {
                 service.setColor(((HSVColorType.HSVColor) request.getData()));
-                return RSBCommunicationService.RPC_SUCCESS;
+                return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
             }

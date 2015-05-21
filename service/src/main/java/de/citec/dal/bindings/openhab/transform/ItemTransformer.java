@@ -9,6 +9,7 @@ import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
 
 /**
  *
@@ -20,6 +21,22 @@ public class ItemTransformer {
     public static final String ITEM_SEGMENT_DELIMITER = "__";
 
     public static String generateItemName(final Device device, final Unit unit, final Service service) throws CouldNotPerformException {
+        try {
+        if(!service.getServiceConfig().hasBindingServiceConfig()) {
+            throw new NotAvailableException("binding service config");
+        }
+        
+        if(!service.getServiceConfig().getBindingServiceConfig().hasOpenhabBindingServiceConfig()) {
+            throw new NotAvailableException("openhab binding service config");
+        }
+        
+        if(!service.getServiceConfig().getBindingServiceConfig().getOpenhabBindingServiceConfig().hasItemId() || service.getServiceConfig().getBindingServiceConfig().getOpenhabBindingServiceConfig().getItemId().isEmpty()) {
+            throw new NotAvailableException("item id");
+        }
+        
         return service.getServiceConfig().getBindingServiceConfig().getOpenhabBindingServiceConfig().getItemId();
+        } catch (CouldNotPerformException ex)  {
+            throw new CouldNotPerformException("Could not generate item name!", ex);
+        }
     }
 }

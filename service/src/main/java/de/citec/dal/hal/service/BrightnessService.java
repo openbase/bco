@@ -9,7 +9,6 @@ import de.citec.dal.hal.provider.BrightnessProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -40,7 +39,7 @@ public interface BrightnessService extends Service, BrightnessProvider {
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
             }
-            return RSBCommunicationService.RPC_SUCCESS;
+            return new Event(Void.class);
         }
     }
 }

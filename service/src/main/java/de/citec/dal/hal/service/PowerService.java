@@ -38,7 +38,7 @@ public interface PowerService extends Service, PowerProvider {
         public Event invoke(final Event request) throws Throwable {
             try {
                 service.setPower(((PowerState) request.getData()).getValue());
-                return RSBCommunicationService.RPC_SUCCESS;
+                return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
             }

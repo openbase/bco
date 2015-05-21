@@ -17,6 +17,7 @@ import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.InvocationFailedException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.util.concurrent.Future;
@@ -141,13 +142,22 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
             } catch (Throwable cause) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
             }
-            return RSBCommunicationService.RPC_SUCCESS;
+            return new Event(Void.class);
         }
     }
 
     @Override
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
         try {
+            
+            if(!command.hasItem() || command.getItem().isEmpty()) {
+                throw new NotAvailableException("command item");
+            }
+            
+            if(!command.hasType()) {
+                throw new NotAvailableException("command type");
+            }
+            
             if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
                 internalReceiveUpdate(command);
                 return null;
