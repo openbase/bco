@@ -59,8 +59,6 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
-    private MessageTransformer<DeviceClass, DeviceClass.Builder> deviceClassMessageTransformer;
-    private MessageTransformer<DeviceConfig, DeviceClass.Builder> deviceConfigMessageTransformer;
 
     public DeviceRegistryService() throws InstantiationException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
@@ -68,9 +66,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            deviceClassRegistry.loadRegistry();
-            deviceConfigRegistry.loadRegistry();
-
+            
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler());
@@ -79,6 +75,9 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
 //            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+
+            deviceClassRegistry.loadRegistry();
+            deviceConfigRegistry.loadRegistry();
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 

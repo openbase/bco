@@ -11,6 +11,7 @@ import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
@@ -59,6 +60,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     public void init() throws InitializationException {
         super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+        try {
+            notifyUpdated(requestStatus());
+        } catch(CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
+        }
     }
 
     @Override
