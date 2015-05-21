@@ -54,12 +54,15 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 	}
     
     private ServiceConfigType.ServiceConfig loadServiceConfig() throws CouldNotPerformException {
+//        if(((Unit) unit).getId().equals("/paradise/light/light_unit_test/")) {
+//            System.out.println("hold");
+//        }
         for(ServiceConfigType.ServiceConfig serviceConfig : ((Unit) unit).getUnitConfig().getServiceConfigList()) {
             if(serviceConfig.getType() == serviceType.getRSTType()) {
                 return serviceConfig;
             }
         }
-        throw new CouldNotPerformException("Could not detect service config!");
+        throw new CouldNotPerformException("Could not detect service config! Type["+serviceType.getRSTType().name()+"] is not defined for Unit["+((Unit) unit).getId()+"] to any service type!");
     }
 
 	public final ServiceType detectServiceType() throws NotSupportedException {

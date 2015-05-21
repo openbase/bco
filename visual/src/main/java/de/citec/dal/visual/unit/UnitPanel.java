@@ -10,9 +10,11 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.scope.ScopeTransformer;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import java.io.NotActiveException;
 import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.unit.UnitConfigType;
@@ -34,6 +36,7 @@ public class UnitPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form UnitPanel
+     *
      * @throws de.citec.jul.exception.InstantiationException
      */
     public UnitPanel() throws InstantiationException, InterruptedException {
@@ -43,7 +46,7 @@ public class UnitPanel extends javax.swing.JPanel {
             this.registryRemote = new DeviceRegistryRemote();
             this.registryRemote.init();
             this.registryRemote.activate();
-            
+
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -72,12 +75,14 @@ public class UnitPanel extends javax.swing.JPanel {
         }
     }
 
-    public UnitConfig getUnitConfig() {
-        return ((UnitContainer) unitComboBox.getSelectedItem()).getUnitConfig();
+    public UnitConfig getUnitConfig() throws NotAvailableException {
+        try {
+            return ((UnitContainer) unitComboBox.getSelectedItem()).getUnitConfig();
+        } catch (Exception ex) {
+            throw new NotAvailableException("unit config");
+        }
     }
 
-    
-    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -151,7 +156,6 @@ public class UnitPanel extends javax.swing.JPanel {
 //        public AbstractUnitController getUnit() {
 //            return unit;
 //        }
-
         public UnitConfigType.UnitConfig getUnitConfig() {
             return unitConfig;
         }
