@@ -5,6 +5,7 @@
  */
 package de.citec.dal.registry;
 
+import de.citec.dal.DALService;
 import de.citec.dal.hal.device.DeviceFactory;
 import de.citec.dal.util.DeviceInitializer;
 import de.citec.dm.remote.DeviceRegistryRemote;
@@ -22,14 +23,12 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceManagerRemoteDalConnector.class);
-    private final DeviceRegistryRemote deviceRegistryRemote;
     private final DeviceFactory factory;
 
     public DeviceManagerRemoteDalConnector() throws InstantiationException {
         try {
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.factory = new DeviceFactory();
-        } catch (CouldNotPerformException ex) {
+        } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -37,18 +36,10 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
     @Override
     public void initDevices(final DeviceRegistry registry) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
+        DeviceRegistryRemote deviceRegistryRemote = DALService.getRegistryProvider().getDeviceRegistryRemote();
+        
         while (true) {
             try {
-                logger.info("Init devices...");
-                deviceRegistryRemote.init();
-                deviceRegistryRemote.activate();
-                Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        deviceRegistryRemote.shutdown();
-                    }
-                }));
                 logger.info("Request registry sync.");
                 deviceRegistryRemote.requestStatus();
                 for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {

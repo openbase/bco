@@ -163,9 +163,9 @@ public class UnitPanel extends javax.swing.JPanel {
         @Override
         public String toString() {
             try {
-                return unitConfig.getLabel() + "@" + unitConfig.getPlacementConfig().getLocationConfig().getLabel() + " [" + ScopeTransformer.transform(unitConfig.getScope()) + "]";
+                return unitConfig.getLabel() + "@" + unitConfig.getPlacementConfig().getLocationId() + " [" + ScopeTransformer.transform(unitConfig.getScope()) + "]";
             } catch (CouldNotTransformException ex) {
-                return unitConfig.getLabel() + "@" + unitConfig.getPlacementConfig().getLocationConfig().getLabel() + "]";
+                return unitConfig.getLabel() + "@" + unitConfig.getPlacementConfig().getLocationId() + "]";
             }
         }
     }
