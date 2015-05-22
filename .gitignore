@@ -1,7 +1,7 @@
 *~
 *.swp
 **./target
-**./nbactions.xml
+**/nbactions.xml
 /core/target/
 /lib/target/
 /remote/target/
