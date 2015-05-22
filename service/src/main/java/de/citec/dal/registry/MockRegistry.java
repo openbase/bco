@@ -227,7 +227,7 @@ public class MockRegistry {
         Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        return PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(paradise).build();
+        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(getLocation().getId()).build();
     }
 
     private Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {

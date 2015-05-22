@@ -100,7 +100,7 @@ public class OpenHABItemConfigGenerator {
 //                    serviceEntry += "<" + unitConfig. + ">";
                     serviceEntry += "   ";
                     // groups
-                    serviceEntry += "(" + unitConfig.getTemplate().getType().name().toLowerCase() + "," + unitConfig.getPlacementConfig().getLocationConfig().getLabel().toLowerCase() + ")";
+                    serviceEntry += "(" + unitConfig.getTemplate().getType().name().toLowerCase() + "," + unitConfig.getPlacementConfig().getLocationId().toLowerCase() + ")";
                     serviceEntry += "   ";
 
                     // hardware

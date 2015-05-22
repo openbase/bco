@@ -40,8 +40,8 @@ public class DeviceFactory implements DeviceFactoryInterface {
             if (!deviceConfig.hasPlacementConfig()) {
                 throw new NotAvailableException("deviceConfig.placement");
             }
-            if (!deviceConfig.getPlacementConfig().hasLocationConfig()) {
-                throw new NotAvailableException("deviceConfig.placement.location");
+            if (!deviceConfig.getPlacementConfig().hasLocationId()) {
+                throw new NotAvailableException("deviceConfig.placement.locationId");
             }
             Class deviceClass = getClass().getClassLoader().loadClass(getDeviceControllerClass(deviceConfig));
             return (Device) deviceClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);

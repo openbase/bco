@@ -30,6 +30,10 @@ public class Location implements ScopeProvider {
 //		this(name, NO_PARENT);
 
 	}
+        
+        public Location(final String locationID) {
+            
+        }
 
 //	public Location(String name, Location parent) {
 //		this.name = name;

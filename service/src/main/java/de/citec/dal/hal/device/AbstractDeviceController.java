@@ -52,7 +52,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         this.id = config.getId();
         this.name = generateName(builder.getClass().getDeclaringClass());
         this.label = config.getLabel();
-        this.location = new Location(config.getPlacementConfig().getLocationConfig());
+        this.location = new Location(config.getPlacementConfig().getLocationId());
         this.unitMap = new HashMap<>();
 
         setField(DEVICE_TYPE_FILED_CONFIG, config);
