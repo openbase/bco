@@ -6,7 +6,6 @@
 package de.citec.dm.core.consistency;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
@@ -64,7 +63,7 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
 
             if (labelConsistencyMap.containsKey(deviceKey)) {
                 if (!config.getId().equals(labelConsistencyMap.get(deviceKey))) {
-                    throw new VerificationFailedException("Device[" + config.getId() + "] and Device[" + labelConsistencyMap.get(deviceKey) + "] are registerted with equal Label["+config.getLabel()+"] on the same Location["+config.getPlacementConfig().getLocationConfig().getId()+"] which is not allowed!");
+                    throw new VerificationFailedException("Device[" + config.getId() + "] and Device[" + labelConsistencyMap.get(deviceKey) + "] are registerted with equal Label[" + config.getLabel() + "] on the same Location[" + config.getPlacementConfig().getLocationId() + "] which is not allowed!");
                 }
             }
 
@@ -111,19 +110,16 @@ public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistenc
             throw new NotAvailableException("deviceconfig.placementconfig");
         }
 
-        if (!config.getPlacementConfig().hasLocationConfig()) {
-            throw new NotAvailableException("deviceconfig.placementconfig.locationconfig");
+        if (!config.getPlacementConfig().hasLocationId() || config.getPlacementConfig().getLocationId().isEmpty()) {
+            throw new NotAvailableException("deviceconfig.placementconfig.locationid");
         }
 
-        if (!config.getPlacementConfig().getLocationConfig().hasId()) {
-            throw new NotAvailableException("deviceconfig.placementconfig.locationconfig.id");
-        }
+        return config.getPlacementConfig().getLocationId() + "_" + config.getLabel();
+    }
 
-        if (config.getPlacementConfig().getLocationConfig().getId().isEmpty()) {
-            throw new NotAvailableException("field deviceconfig.placementconfig.locationconfig.id is empty");
-        }
-
-        return config.getPlacementConfig().getLocationConfig().getId() + "_" + config.getLabel();
+    @Override
+    public void reset() {
+        labelConsistencyMap.clear();
     }
 
 }

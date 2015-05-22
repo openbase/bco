@@ -48,4 +48,7 @@ public class ServiceConfigUnitIdConsistencyHandler implements ProtoBufRegistryCo
         }
     }
 
+    @Override
+    public void reset() {
+    }
 }

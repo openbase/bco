@@ -12,6 +12,7 @@ import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
+import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -23,6 +24,12 @@ import rst.rsb.ScopeType;
  */
 public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
+    private final LocationRegistryRemote locationRegistryRemote;
+
+    public UnitScopeConsistencyHandler(final LocationRegistryRemote locationRegistryRemote) {
+        this.locationRegistryRemote = locationRegistryRemote;
+    }
+    
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
@@ -30,7 +37,8 @@ public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyH
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-            ScopeType.Scope newScope = ScopeGenerator.generateUnitScope(unitConfig.clone().build());
+            UnitConfig unitConfigClone = UnitConfig.newBuilder(unitConfig.build()).build();
+            ScopeType.Scope newScope = ScopeGenerator.generateUnitScope(unitConfigClone, locationRegistryRemote.getLocationConfigById(unitConfigClone.getPlacementConfig().getLocationId()));
 
             // verify and update scope
             if (!ScopeGenerator.generateStringRep(unitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
@@ -43,5 +51,9 @@ public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyH
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
         }
+    }
+
+    @Override
+    public void reset() {
     }
 }

@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rct.TransformPublisher;
 import rct.TransformType;
-import rct.TransformerException;
 import rct.TransformerFactory;
 import rst.geometry.PoseType;
 import rst.geometry.RotationType;
@@ -59,7 +58,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
         if (!deviceConfig.hasId()) {
             throw new NotAvailableException("deviceconfig.id");
         }
-        
+
         if (!deviceConfig.hasPlacementConfig()) {
             throw new NotAvailableException("deviceconfig.placement");
         }
@@ -68,17 +67,12 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             throw new NotAvailableException("deviceconfig.placement.position");
         }
 
-        if (!deviceConfig.getPlacementConfig().hasLocationConfig()) {
-            throw new NotAvailableException("deviceconfig.placement.location");
-        }
-        
-        if (!deviceConfig.getPlacementConfig().getLocationConfig().hasId()) {
-            throw new NotAvailableException("deviceconfig.placement.location.id");
+        if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
+            throw new NotAvailableException("unitconfig.placement.locationid");
         }
 
         // publish device transformation
-
-        Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationConfig().getId(), deviceConfig.getId());
+        Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationId(), deviceConfig.getId());
 
         try {
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
@@ -87,7 +81,6 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
         }
 
         // publish unit transformation
-
         for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
 
             if (!unitConfig.hasPlacementConfig()) {
@@ -98,15 +91,11 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
                 throw new NotAvailableException("unitconfig.placement.position");
             }
 
-            if (!unitConfig.getPlacementConfig().hasLocationConfig()) {
-                throw new NotAvailableException("unitconfig.placement.location");
-            }
-            
-             if (!unitConfig.getPlacementConfig().getLocationConfig().hasId()) {
-                throw new NotAvailableException("unitconfig.placement.location.id");
+            if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                throw new NotAvailableException("unitconfig.placement.locationid");
             }
 
-            transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationConfig().getId(), unitConfig.getId());
+            transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationId(), unitConfig.getId());
             //TODO mpohling: refactory unitConfig.getPlacement into getPlacementConfig
 
             try {
@@ -125,5 +114,9 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
         Vector3d jTranslation = new Vector3d(pTranslation.getX(), pTranslation.getY(), pTranslation.getZ());
         Transform3D transform = new Transform3D(jRotation, jTranslation, 1.0);
         return new Transform(transform, frameParent, frameChild, System.currentTimeMillis());
+    }
+
+    @Override
+    public void reset() {
     }
 }

@@ -13,6 +13,7 @@ import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
+import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.binding.BindingTypeHolderType.BindingTypeHolder.BindingType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig;
@@ -29,7 +30,10 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
 
-    public OpenhabServiceConfigItemIdConsistenyHandler() {
+    private final LocationRegistryRemote locationRegistryRemote;
+
+    public OpenhabServiceConfigItemIdConsistenyHandler(final LocationRegistryRemote locationRegistryRemote) {
+        this.locationRegistryRemote = locationRegistryRemote;
     }
 
     @Override
@@ -43,19 +47,19 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
             unitConfig.clearServiceConfig();
             for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
 
-                if(!serviceConfig.hasBindingServiceConfig()) {
+                if (!serviceConfig.hasBindingServiceConfig()) {
                     throw new NotAvailableException("binding service config");
                 }
 
                 if (serviceConfig.getBindingServiceConfig().getType().equals(BindingType.OPENHAB)) {
-                    
+
                     OpenHABBindingServiceConfig.Builder openHABServiceConfig;
-                    if(!serviceConfig.getBindingServiceConfig().hasOpenhabBindingServiceConfig()) {
+                    if (!serviceConfig.getBindingServiceConfig().hasOpenhabBindingServiceConfig()) {
                         openHABServiceConfig = OpenHABBindingServiceConfig.newBuilder();
                     } else {
                         openHABServiceConfig = serviceConfig.getBindingServiceConfig().getOpenhabBindingServiceConfig().toBuilder();
                     }
-                     
+
                     if (!openHABServiceConfig.hasItemId() || openHABServiceConfig.getItemId().isEmpty() || !openHABServiceConfig.getItemId().equals(generateItemName(entry.getMessage(), unitConfig.clone().build(), serviceConfig.clone().build()))) {
                         openHABServiceConfig.setItemId(generateItemName(entry.getMessage(), unitConfig.clone().build(), serviceConfig.clone().build()));
                         modification = true;
@@ -72,22 +76,22 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
         }
     }
 
-    public static String generateItemName(final DeviceConfig device, final UnitConfig unit, final ServiceConfig service) throws CouldNotPerformException {
-        if(device == null) {
+    public String generateItemName(final DeviceConfig device, final UnitConfig unit, final ServiceConfig service) throws CouldNotPerformException {
+        if (device == null) {
             throw new NotAvailableException("deviceconfig");
         }
-        
-        if(unit == null) {
+
+        if (unit == null) {
             throw new NotAvailableException("unitconfig");
         }
-        
-        if(service == null) {
+
+        if (service == null) {
             throw new NotAvailableException("serviceconfig");
         }
-        
+
         return device.getDeviceClass().getLabel()
                 + ITEM_SEGMENT_DELIMITER
-                + generateLocationId(unit.getPlacementConfig().getLocationConfig())
+                + generateLocationId(locationRegistryRemote.getLocationConfigById(unit.getPlacementConfig().getLocationId()))
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(unit.getTemplate().getType().toString())
                 + ITEM_SEGMENT_DELIMITER
@@ -114,5 +118,9 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
             location_id += component;
         }
         return location_id;
+    }
+
+    @Override
+    public void reset() {
     }
 }

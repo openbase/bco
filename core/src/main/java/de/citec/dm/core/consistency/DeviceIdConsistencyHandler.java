@@ -42,4 +42,8 @@ public class DeviceIdConsistencyHandler implements ProtoBufRegistryConsistencyHa
             throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
         }
     }
+    
+    @Override
+    public void reset() {
+    }
 }

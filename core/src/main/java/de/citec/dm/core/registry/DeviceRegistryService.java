@@ -43,6 +43,7 @@ import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
 import de.citec.jul.extension.rsb.util.RPCHelper;
+import de.citec.lm.remote.LocationRegistryRemote;
 
 /**
  *
@@ -59,22 +60,28 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
 
-    public DeviceRegistryService() throws InstantiationException {
+    private final LocationRegistryRemote locationRegistryRemote;
+
+    public DeviceRegistryService() throws InstantiationException, InterruptedException {
         super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            
+
+            locationRegistryRemote = new LocationRegistryRemote();
+            locationRegistryRemote.init();
+            locationRegistryRemote.activate();
+
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
-            
+
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
+            deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
 //            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
 

@@ -64,4 +64,8 @@ public class UnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHand
 //            throw new CouldNotPerformException("Could not generate unti id!");
 //        }
 //    }
+    
+    @Override
+    public void reset() {
+    }
 }
