@@ -42,6 +42,11 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
             UnitConfig.Builder unitConfigClone = unitConfig.clone();
             unitConfig.clearServiceConfig();
             for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
+
+                if(!serviceConfig.hasBindingServiceConfig()) {
+                    throw new NotAvailableException("binding service config");
+                }
+
                 if (serviceConfig.getBindingServiceConfig().getType().equals(BindingType.OPENHAB)) {
                     
                     OpenHABBindingServiceConfig.Builder openHABServiceConfig;
