@@ -74,7 +74,7 @@ public class OpenHABCommandExecutor {
         }
         
         public String getServiceTypeName() {
-            return StringProcessor.transformFirstCharToUpperCase(serviceType.name().toLowerCase().replaceAll("_provider", "").replaceAll("_service", ""));
+            return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
         }
 
         public ServiceTypeHolder.ServiceType getServiceType() {

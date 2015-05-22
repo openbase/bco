@@ -42,7 +42,7 @@ public class DimmerRemote extends DALRemoteService<Dimmer> implements DimmerInte
 
     @Override
     public void setDim(Double dimm) throws CouldNotPerformException {
-        callMethod("setDimm", dimm);
+        callMethod("setDim", dimm);
     }
 
     @Override

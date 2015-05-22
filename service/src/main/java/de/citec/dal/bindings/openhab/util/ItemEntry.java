@@ -60,8 +60,8 @@ public class ItemEntry {
                 return "Number";
             case BRIGHTNESS_PROVIDER:
             case BRIGHTNESS_SERVICE:
-            case DIMM_PROVIDER:
-            case DIMM_SERVICE:
+            case DIM_PROVIDER:
+            case DIM_SERVICE:
                 return "Dimmer";
             default:
 //                throw new AssertionError("Unkown Service Type: " + type);

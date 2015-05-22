@@ -115,12 +115,12 @@ public class DimmerRemoteTest {
      * Test of setDimm method, of class DimmerRemote.
      */
     @Test
-    public void testSetDimm() throws Exception {
-        System.out.println("setDimm");
-        Double dimm = 66d;
-        dimmerRemote.setDim(dimm);
+    public void testSetDim() throws Exception {
+        System.out.println("setDim");
+        Double dim = 66d;
+        dimmerRemote.setDim(dim);
         dimmerRemote.requestStatus();
-        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getData().getValue(), 0.1);
+        assertEquals("Dimm has not been set in time!", dim, dimmerRemote.getData().getValue(), 0.1);
     }
 
     /**

@@ -43,7 +43,7 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
 
     @Override
     public void setColor(final HSVColor color) throws CouldNotPerformException {
-        callMethodAsync("setColor", color);
+        callMethod("setColor", color);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
 
     @Override
     public void setBrightness(Double brightness) throws CouldNotPerformException {
-        callMethodAsync("setBrightness", brightness);
+        callMethod("setBrightness", brightness);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
 
     @Override
     public void setPower(PowerState.State state) throws CouldNotPerformException {
-        callMethodAsync("setPower", PowerState.newBuilder().setValue(state).build());
+        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
     }
 
     @Override

@@ -9,7 +9,6 @@ import de.citec.dal.hal.provider.DimProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;

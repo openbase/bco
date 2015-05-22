@@ -43,7 +43,7 @@ public enum ServiceType {
     SHUTTER(ShutterService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SHUTTER_SERVICE),
     OPENING_RATIO(OpeningRatioService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.OPENING_RATIO_PROVIDER),
     MOTION(MotionProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.MOTION_PROVIDER),
-    DIMM(DimService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIMM_SERVICE),
+    DIM(DimService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_SERVICE),
     REED_SWITCH(ReedSwitchProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.REED_SWITCH_PROVIDER);
 
     public static final String SET = "set";

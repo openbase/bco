@@ -28,8 +28,10 @@ import rsb.Scope;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
+import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTypeHolderType;
@@ -79,7 +81,7 @@ public class MockRegistry {
         MOTION_SENSOR(UnitType.MOTION_SENSOR, ServiceType.MOTION_PROVIDER),
         BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, ServiceType.BRIGHTNESS_PROVIDER),
         BUTTON(UnitType.BUTTON, ServiceType.BUTTON_PROVIDER),
-        DIMMER(UnitType.DIMMER, ServiceType.DIMM_SERVICE, ServiceType.POWER_SERVICE),
+        DIMMER(UnitType.DIMMER, ServiceType.DIM_SERVICE, ServiceType.POWER_SERVICE),
         HANDLE_SENSOR(UnitType.HANDLE_SENSOR, ServiceType.HANDLE_PROVIDER),
         POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, ServiceType.POWER_CONSUMPTION_PROVIDER),
         POWER_PLUG(UnitType.POWER_PLUG, ServiceType.POWER_SERVICE),
@@ -231,7 +233,8 @@ public class MockRegistry {
     private Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
         for (ServiceType type : template.getServiceTypeList()) {
-            serviceConfigList.add(ServiceConfig.newBuilder().setType(type).build());
+            BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = BindingServiceConfigType.BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+            serviceConfigList.add(ServiceConfig.newBuilder().setType(type).setBindingServiceConfig(bindingServiceConfig).build());
         }
         return serviceConfigList;
     }
