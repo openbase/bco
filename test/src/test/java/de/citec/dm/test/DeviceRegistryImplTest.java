@@ -12,6 +12,7 @@ import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -23,6 +24,7 @@ import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.lm.core.registry.LocationRegistryService;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import rst.spatial.LocationConfigType;
+import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType;
 
 /**
@@ -62,10 +65,13 @@ public class DeviceRegistryImplTest {
     private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryImplTest.class);
 
     public static final String LOCATION_LABEL = "paradise";
+    public static LocationConfig LOCATION;
 
-    private static DeviceRegistryService registry;
+    private static DeviceRegistryService deviceRegistry;
     private static DeviceClass.Builder deviceClass;
     private static DeviceConfig.Builder deviceConfig;
+
+    private static LocationRegistryService locationRegistry;
 
     private static DeviceClass.Builder deviceClassRemote;
     private static DeviceClass.Builder returnValue;
@@ -79,14 +85,19 @@ public class DeviceRegistryImplTest {
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException {
         JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
+        JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
         JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/db/"));
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
 
-        registry = new DeviceRegistryService();
-        registry.init();
-        registry.activate();
+        deviceRegistry = new DeviceRegistryService();
+        deviceRegistry.init();
+        deviceRegistry.activate();
+
+        locationRegistry = new LocationRegistryService();
+        locationRegistry.init();
+        locationRegistry.activate();
 
         deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClass.setLabel("TestDeviceClassLabel");
@@ -106,13 +117,18 @@ public class DeviceRegistryImplTest {
         remote = new DeviceRegistryRemote();
         remote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
         remote.activate();
+        
+        LOCATION = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel(LOCATION_LABEL).build());
     }
 
     @AfterClass
     public static void tearDownClass() {
         remote.shutdown();
-        if (registry != null) {
-            registry.shutdown();
+        if (deviceRegistry != null) {
+            deviceRegistry.shutdown();
+        }
+        if (locationRegistry != null) {
+            locationRegistry.shutdown();
         }
     }
 
@@ -130,8 +146,8 @@ public class DeviceRegistryImplTest {
     @Test
     public void testRegisterDeviceClass() throws Exception {
         System.out.println("registerDeviceClass");
-        registry.registerDeviceClass(deviceClass.clone().build());
-        assertTrue(registry.containsDeviceClass(deviceClass.clone().build()));
+        deviceRegistry.registerDeviceClass(deviceClass.clone().build());
+        assertTrue(deviceRegistry.containsDeviceClass(deviceClass.clone().build()));
 //		assertEquals(true, registry.getData().getDeviceClassesBuilderList().contains(deviceClass));
     }
 
@@ -141,8 +157,8 @@ public class DeviceRegistryImplTest {
     @Test
     public void testRegisterDeviceConfig() throws Exception {
         System.out.println("registerDeviceConfig");
-        registry.registerDeviceConfig(deviceConfig.clone().build());
-        assertTrue(registry.containsDeviceConfig(deviceConfig.clone().build()));
+        deviceRegistry.registerDeviceConfig(deviceConfig.clone().build());
+        assertTrue(deviceRegistry.containsDeviceConfig(deviceConfig.clone().build()));
     }
 
     /**
@@ -167,11 +183,11 @@ public class DeviceRegistryImplTest {
         String unitID = unitScope;
 
         ArrayList<UnitConfig> units = new ArrayList<>();
-        DeviceClass motionSensorClass = registry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
+        DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
         units.add(getUnitConfig(UnitTemplate.UnitType.BATTERY, unitLabel));
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, units);
 
-        motionSensorConfig = registry.registerDeviceConfig(motionSensorConfig);
+        motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig);
 
         assertEquals("Device id is not set properly", deviceId, motionSensorConfig.getId());
         assertEquals("Device scope is not set properly", deviceScope, ScopeGenerator.generateStringRep(motionSensorConfig.getScope()));
@@ -194,9 +210,9 @@ public class DeviceRegistryImplTest {
 
         String deviceId = company + "_" + productNumber + "_" + serialNumber;
 
-        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company));
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company));
         DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<UnitConfig>());
-        deviceWithoutLabel = registry.registerDeviceConfig(deviceWithoutLabel);
+        deviceWithoutLabel = deviceRegistry.registerDeviceConfig(deviceWithoutLabel);
 
         assertEquals("The device label is not set as the id if it is empty!", deviceId, deviceWithoutLabel.getLabel());
     }
@@ -211,13 +227,13 @@ public class DeviceRegistryImplTest {
         String serialNumber2 = "BAD_DEV";
         String deviceLabel = "SameLabelSameLocation";
 
-        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("WithoutLabel", "xyz", "HuxGMBH"));
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("WithoutLabel", "xyz", "HuxGMBH"));
         DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, clazz, new ArrayList<UnitConfig>());
         DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, clazz, new ArrayList<UnitConfig>());
 
-        registry.registerDeviceConfig(deviceWithLabel1);
+        deviceRegistry.registerDeviceConfig(deviceWithLabel1);
         try {
-            registry.registerDeviceConfig(deviceWithLabel2);
+            deviceRegistry.registerDeviceConfig(deviceWithLabel2);
             fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
         } catch (Exception ex) {
             assertTrue(true);
@@ -236,14 +252,14 @@ public class DeviceRegistryImplTest {
         ArrayList<UnitConfig> units = new ArrayList<>();
         units.add(unitConfig);
 
-        DeviceClass clazz = registry.registerDeviceClass(getDeviceClass("ServiceUnitIdTest", "8383838", "ServiceGMBH"));
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("ServiceUnitIdTest", "8383838", "ServiceGMBH"));
 
-        DeviceConfig deviceConfig = registry.registerDeviceConfig(getDeviceConfig("ServiceTest", "123456", clazz, units));
+        DeviceConfig deviceConfig = deviceRegistry.registerDeviceConfig(getDeviceConfig("ServiceTest", "123456", clazz, units));
 
 //        assertTrue("Unit id is not set.", !deviceConfig.getUnitConfig(0).getId().equals(""));
 //        assertTrue("Unit id in service config is not set.", !deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(""));
 //        assertTrue("Unit id in service config does not match id in unit config.", deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(deviceConfig.getUnitConfig(0).getId()));
-        String itemId = OpenhabServiceConfigItemIdConsistenyHandler.generateItemName(deviceConfig, unitConfig, serviceConfig);
+        String itemId = OpenhabServiceConfigItemIdConsistenyHandler.generateItemName(deviceConfig, unitConfig, serviceConfig, LOCATION);
 
 //        assertTrue("OpenHAB item id is not set.", itemId.equals(deviceConfig.getUnitConfig(0).getServiceConfig(0).getBindingServiceConfig().getOpenhabBindingServiceConfig().getItemId()));
     }
@@ -253,7 +269,7 @@ public class DeviceRegistryImplTest {
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
         ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION_LABEL);
-        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationConfig(LocationConfigType.LocationConfig.newBuilder().setLabel(LOCATION_LABEL).setScope(locationScope).setId(LOCATION_LABEL).build()).build();
+        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION_LABEL).build();
     }
 
     private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) {
@@ -266,7 +282,6 @@ public class DeviceRegistryImplTest {
 
     private DeviceClass getDeviceClass(String label, String productNumber, String company) {
         return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).build();
-
     }
 
     /**
