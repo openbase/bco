@@ -8,6 +8,8 @@ package de.citec.dal;
 import de.citec.dal.bindings.DALBindingRegistry;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
+import de.citec.dm.remote.DeviceRegistryRemote;
+import de.citec.lm.remote.LocationRegistryRemote;
 
 /**
  *
@@ -15,6 +17,8 @@ import de.citec.dal.registry.UnitRegistry;
  */
     public interface RegistryProvider {
 
+    public DeviceRegistryRemote getDeviceRegistryRemote();
+    public LocationRegistryRemote getLocationRegistryRemote();
 	public DeviceRegistry getDeviceRegistry();
 	public UnitRegistry getUnitRegistry();
     public DALBindingRegistry getBindingRegistry();

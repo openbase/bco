@@ -17,63 +17,19 @@ import rst.spatial.LocationConfigType.LocationConfig;
  */
 public class Location implements ScopeProvider {
 
-//	private static final Location NO_PARENT = null;
-
-//	private final String name;
-//	private final List<Location> children;
-//	private final Location parent;
-//	private final Scope scope;
     private final LocationConfig config;
 
 	public Location(final LocationConfig config) {
         this.config = config;
-//		this(name, NO_PARENT);
-
 	}
-        
-        public Location(final String locationID) {
-            
-        }
-
-//	public Location(String name, Location parent) {
-//		this.name = name;
-//		this.parent = parent;
-//		this.scope = generateScope(this);
-//		this.children = new ArrayList<>();
-//
-//		if (!isRootLocation()) {
-//			this.parent.addChild(this);
-//		}
-//	}
-
-//	protected void addChild(Location location) {
-//		children.add(location);
-//	}
 
 	public String getLabel() {
 		return config.getLabel();
 	}
 
-//	public List<Location> getChildren() {
-//		return Collections.unmodifiableList(children);
-//	}
-
 	public final boolean isRoot() {
 		return config.getRoot();
 	}
-
-
-//	public static Scope generateScope(final Location location) {
-//		if (location.isRootLocation()) {
-//			return new Scope(Scope.COMPONENT_SEPARATOR + location.getName().toLowerCase());
-//		}
-//
-//		try {
-//			return generateScope(location.getParent()).concat(new Scope(Scope.COMPONENT_SEPARATOR + location.getName().toLowerCase()));
-//		} catch (NotAvailableException ex) {
-//			throw new AssertionError("Parent location must be available for non root location!", ex);
-//		}
-//	}
 
 	@Override
 	public Scope getScope() throws CouldNotPerformException{

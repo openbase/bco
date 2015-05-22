@@ -7,6 +7,7 @@ package de.citec.dal.hal.device;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
+import de.citec.dal.DALService;
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.data.Location;
@@ -49,17 +50,21 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
     public AbstractDeviceController(final DeviceConfig config, final MB builder) throws InstantiationException, CouldNotTransformException {
         super(config.getScope(), builder);
-        this.id = config.getId();
-        this.name = generateName(builder.getClass().getDeclaringClass());
-        this.label = config.getLabel();
-        this.location = new Location(config.getPlacementConfig().getLocationId());
-        this.unitMap = new HashMap<>();
-
-        setField(DEVICE_TYPE_FILED_CONFIG, config);
-
         try {
-            init();
-        } catch (InitializationException ex) {
+            this.id = config.getId();
+            this.name = generateName(builder.getClass().getDeclaringClass());
+            this.label = config.getLabel();
+            this.location = new Location(DALService.getRegistryProvider().getLocationRegistryRemote().getLocationConfigById(config.getPlacementConfig().getLocationId()));
+            this.unitMap = new HashMap<>();
+
+            setField(DEVICE_TYPE_FILED_CONFIG, config);
+
+            try {
+                init();
+            } catch (InitializationException ex) {
+                throw new InstantiationException("Could not init RSBCommunicationService!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
             throw new InstantiationException("Could not init RSBCommunicationService!", ex);
         }
     }
@@ -159,29 +164,29 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     private <B extends GeneratedMessage.Builder> B registerUnitBuilder(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
-        try(ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
             MB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
             String repeatedUnitFieldName = "unit_" + unitConfig.getTemplate().getType().name().toLowerCase();
             Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
-            
-            if(repeatedUnitFieldDescriptor == null) {
-                throw new CouldNotPerformException("Missing FieldDescriptor["+repeatedUnitFieldName+"] in protobuf Type["+builder.getClass().getName()+"]!");
+
+            if (repeatedUnitFieldDescriptor == null) {
+                throw new CouldNotPerformException("Missing FieldDescriptor[" + repeatedUnitFieldName + "] in protobuf Type[" + builder.getClass().getName() + "]!");
             }
 
             GeneratedMessage.Builder unitBuilder = loadUnitBuilder(unitConfig);
             Method addUnitMethod;
             try {
-                 addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName, unitBuilder.getClass());
+                addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName, unitBuilder.getClass());
             } catch (Exception ex) {
-                throw new CouldNotPerformException("Missing repeated field for "+unitBuilder.getClass().getName()+" in protobuf Type["+builder.getClass().getName()+"]! ", ex);
+                throw new CouldNotPerformException("Missing repeated field for " + unitBuilder.getClass().getName() + " in protobuf Type[" + builder.getClass().getName() + "]! ", ex);
             }
 
             try {
                 addUnitMethod.invoke(builder, unitBuilder);
-            } catch(Exception ex) {
-                throw new CouldNotPerformException("Could not add "+unitBuilder.getClass().getName()+" to message of Type["+builder.getClass().getName()+"]! ", ex);
+            } catch (Exception ex) {
+                throw new CouldNotPerformException("Could not add " + unitBuilder.getClass().getName() + " to message of Type[" + builder.getClass().getName() + "]! ", ex);
             }
 
             try {

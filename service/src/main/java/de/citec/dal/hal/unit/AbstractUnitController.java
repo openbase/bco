@@ -68,7 +68,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
             this.config = config;
             this.device = device;
-            this.location = new Location(config.getPlacementConfig().getLocationId());
+            this.location = new Location(DALService.getRegistryProvider().getLocationRegistryRemote().getLocationConfigById(config.getPlacementConfig().getLocationId()));
             this.serviceList = new ArrayList<>();
 
             setField(TYPE_FILED_ID, getId());

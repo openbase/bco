@@ -12,6 +12,7 @@ import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
 import de.citec.dal.util.ConnectionManager;
 import de.citec.dal.util.DeviceInitializer;
+import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceDatabaseDirectory;
@@ -26,6 +27,8 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.lm.core.LocationManager;
+import de.citec.lm.remote.LocationRegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +49,9 @@ public class DALService implements RegistryProvider {
     private final DeviceRegistry deviceRegistry;
     private final UnitRegistry unitRegistry;
     private final ConnectionManager connectionManager;
+    private final LocationRegistryRemote locationRegistryRemote;
+    private final DeviceRegistryRemote deviceRegistryRemote;
+    
 
     public DALService() throws InstantiationException {
         try {
@@ -53,7 +59,9 @@ public class DALService implements RegistryProvider {
             this.deviceRegistry = new DeviceRegistry();
             this.unitRegistry = new UnitRegistry();
             this.connectionManager = new ConnectionManager(deviceRegistry);
-
+            this.locationRegistryRemote = new LocationRegistryRemote();
+            this.deviceRegistryRemote = new DeviceRegistryRemote();
+            
             registryProvider = this;
 
         } catch (CouldNotPerformException ex) {
@@ -74,6 +82,11 @@ public class DALService implements RegistryProvider {
 
     public void init(final DeviceInitializer initializer) throws CouldNotPerformException, InterruptedException {
         try {
+            locationRegistryRemote.init();
+            locationRegistryRemote.activate();
+            deviceRegistryRemote.init();
+            deviceRegistryRemote.activate();
+            
             initBindings();
             initializer.initDevices(deviceRegistry);
         } catch (CouldNotPerformException ex) {
@@ -103,10 +116,11 @@ public class DALService implements RegistryProvider {
 
     public void shutdown() {
         deactivate();
-//        RSBInformerPool.getInstance().shutdown();
         bindingRegistry.clean();
         deviceRegistry.clean();
         unitRegistry.clean();
+        locationRegistryRemote.shutdown();
+        deviceRegistryRemote.shutdown();
         registryProvider = null;
     }
 
@@ -123,6 +137,16 @@ public class DALService implements RegistryProvider {
     @Override
     public UnitRegistry getUnitRegistry() {
         return unitRegistry;
+    }
+    
+    @Override
+    public DeviceRegistryRemote getDeviceRegistryRemote() {
+        return deviceRegistryRemote;
+    }
+
+    @Override
+    public LocationRegistryRemote getLocationRegistryRemote() {
+        return locationRegistryRemote;
     }
 
     public ConnectionManager getConnectionManager() {
