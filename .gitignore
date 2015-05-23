@@ -1,6 +1,6 @@
 *~
 *.swp
-**./target
+**/target
 **/nbactions.xml
 /core/target/
 /lib/target/

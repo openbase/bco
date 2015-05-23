@@ -8,18 +8,21 @@ package de.citec.dm.core.registry;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.dm.core.consistency.DeviceIdConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceLabelConsistencyHandler;
+import de.citec.dm.core.consistency.DeviceLocationIdConsistencyHandler;
 import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
 import de.citec.dm.lib.generator.DeviceClassIdGenerator;
 import de.citec.dm.core.consistency.DeviceScopeConsistencyHandler;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitIdConsistencyHandler;
+import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitScopeConsistencyHandler;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -70,8 +73,6 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             locationRegistryRemote = new LocationRegistryRemote();
-            locationRegistryRemote.init();
-            locationRegistryRemote.activate();
 
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
@@ -83,6 +84,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationRegistryRemote));
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationRegistryRemote));
 //            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
@@ -102,6 +105,34 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
+        }
+    }
+    
+    @Override
+    public void init() throws InitializationException {
+        super.init();
+        locationRegistryRemote.init();
+    }
+    
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        try {
+            super.activate();
+            locationRegistryRemote.activate();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not activate location registry!", ex);
+        }
+        
+        try {
+            deviceClassRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            logger.warn("Initial consistency check failed!");
+        }
+        
+        try {
+            deviceConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            logger.warn("Initial consistency check failed!");
         }
     }
 

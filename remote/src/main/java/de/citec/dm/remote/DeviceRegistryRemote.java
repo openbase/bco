@@ -88,17 +88,17 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+    public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException, NotAvailableException {
         return deviceClassRemoteRegistry.getMessage(deviceClassId);
     }
 
     @Override
-    public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
+    public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException, NotAvailableException {
         return deviceConfigRemoteRegistry.getMessage(deviceConfigId);
     }
 
     @Override
-    public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
+    public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException, NotAvailableException {
         getData();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
@@ -176,15 +176,18 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
+        if (unitConfigs.isEmpty()) {
+            throw new NotAvailableException("unit config");
+        }
         return unitConfigs;
     }
 
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
@@ -193,19 +196,25 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 }
             }
         }
+        if (unitConfigs.isEmpty()) {
+            throw new NotAvailableException("unit config");
+        }
         return unitConfigs;
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException, NotAvailableException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
+        if (serviceConfigs.isEmpty()) {
+            throw new NotAvailableException("service config");
+        }
         return serviceConfigs;
     }
     
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException {
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             for(ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -214,16 +223,27 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 }
             }
         }
+        if (serviceConfigs.isEmpty()) {
+            throw new NotAvailableException("service config");
+        }
         return serviceConfigs;
     }
 
     @Override
-    public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
-        return deviceClassRemoteRegistry.getMessages();
+    public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
+        List<DeviceClass> messages = deviceClassRemoteRegistry.getMessages();
+        if (messages.isEmpty()) {
+            throw new NotAvailableException("device class");
+        }
+        return messages;
     }
 
     @Override
-    public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException {
-        return deviceConfigRemoteRegistry.getMessages();
+    public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException, NotAvailableException {
+        List<DeviceConfig> messages = deviceConfigRemoteRegistry.getMessages();
+        if (messages.isEmpty()) {
+            throw new NotAvailableException("device config");
+        }
+        return messages;
     }
 }

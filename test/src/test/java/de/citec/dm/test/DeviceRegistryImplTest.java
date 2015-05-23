@@ -16,6 +16,7 @@ import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
@@ -28,6 +29,7 @@ import de.citec.lm.core.registry.LocationRegistryService;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
@@ -52,7 +54,6 @@ import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.Servic
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
-import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType;
 
@@ -73,9 +74,9 @@ public class DeviceRegistryImplTest {
 
     private static LocationRegistryService locationRegistry;
 
-    private static DeviceClass.Builder deviceClassRemote;
+    private static DeviceClass.Builder deviceClassRemoteMessage;
     private static DeviceClass.Builder returnValue;
-    private static DeviceConfig.Builder deviceConfigRemote;
+    private static DeviceConfig.Builder deviceConfigRemoteMessage;
     private static DeviceRegistryRemote remote;
 
     public DeviceRegistryImplTest() {
@@ -92,12 +93,40 @@ public class DeviceRegistryImplTest {
         JPService.setupJUnitTestMode();
 
         deviceRegistry = new DeviceRegistryService();
-        deviceRegistry.init();
-        deviceRegistry.activate();
-
         locationRegistry = new LocationRegistryService();
+
+        deviceRegistry.init();
         locationRegistry.init();
-        locationRegistry.activate();
+
+        Thread deviceRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    deviceRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(logger, ex);
+                }
+            }
+        });
+
+        Thread locationRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    locationRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(logger, ex);
+                }
+            }
+        });
+
+        deviceRegistryThread.start();
+        locationRegistryThread.start();
+
+        deviceRegistryThread.join();
+        locationRegistryThread.join();
 
         deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClass.setLabel("TestDeviceClassLabel");
@@ -108,27 +137,28 @@ public class DeviceRegistryImplTest {
         deviceConfig.setSerialNumber("0001-0004-2245");
         deviceConfig.setDeviceClass(deviceClass.clone().setId("TestDeviceClassLabel"));
 
-        deviceClassRemote = DeviceClass.getDefaultInstance().newBuilderForType();
-        deviceClassRemote.setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
-        deviceConfigRemote = DeviceConfig.getDefaultInstance().newBuilderForType();
-        deviceConfigRemote.setLabel("RemoteTestDeviceConfig").setSerialNumber("1123-5813-2134");
-        deviceConfigRemote.setDeviceClass(deviceClassRemote.clone().setId("RemoteTestDeviceClass"));
+        deviceClassRemoteMessage = DeviceClass.getDefaultInstance().newBuilderForType();
+        deviceClassRemoteMessage.setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
+        deviceConfigRemoteMessage = DeviceConfig.getDefaultInstance().newBuilderForType();
+        deviceConfigRemoteMessage.setLabel("RemoteTestDeviceConfig").setSerialNumber("1123-5813-2134");
+        deviceConfigRemoteMessage.setDeviceClass(deviceClassRemoteMessage.clone().setId("RemoteTestDeviceClass"));
 
         remote = new DeviceRegistryRemote();
-        remote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
+        remote.init();
         remote.activate();
-        
+
         LOCATION = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel(LOCATION_LABEL).build());
     }
 
     @AfterClass
     public static void tearDownClass() {
         remote.shutdown();
-        if (deviceRegistry != null) {
-            deviceRegistry.shutdown();
-        }
+
         if (locationRegistry != null) {
             locationRegistry.shutdown();
+        }
+        if (deviceRegistry != null) {
+            deviceRegistry.shutdown();
         }
     }
 
@@ -303,13 +333,13 @@ public class DeviceRegistryImplTest {
             }
         });
 
-        returnValue = remote.registerDeviceClass(deviceClassRemote.clone().build()).toBuilder();
+        returnValue = remote.registerDeviceClass(deviceClassRemoteMessage.clone().build()).toBuilder();
         logger.info("Returned device class id [" + returnValue.getId() + "]");
-        deviceClassRemote.setId(returnValue.getId());
+        deviceClassRemoteMessage.setId(returnValue.getId());
 
         while (true) {
             try {
-                if (remote.getData().getDeviceClassList().contains(deviceClassRemote.clone().build())) {
+                if (remote.getData().getDeviceClassList().contains(deviceClassRemoteMessage.clone().build())) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -317,7 +347,7 @@ public class DeviceRegistryImplTest {
             }
             Thread.yield();
         }
-        assertTrue(remote.containsDeviceClass(deviceClassRemote.clone().build()));
+        assertTrue(remote.containsDeviceClass(deviceClassRemoteMessage.clone().build()));
     }
 
     /**
@@ -326,13 +356,13 @@ public class DeviceRegistryImplTest {
     @Test(timeout = 3000)
     public void testRegisterDeviceConfigPerRemote() throws Exception {
         System.out.println("registerDeviceConfigPerRemote");
-        remote.registerDeviceConfig(deviceConfigRemote.clone().build());
+        remote.registerDeviceConfig(deviceConfigRemoteMessage.clone().build());
         while (true) {
-            if (remote.containsDeviceConfig(deviceConfigRemote.clone().build())) {
+            if (remote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build())) {
                 break;
             }
             Thread.yield();
         }
-        assertTrue(remote.containsDeviceConfig(deviceConfigRemote.clone().build()));
+        assertTrue(remote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build()));
     }
 }
