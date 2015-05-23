@@ -16,6 +16,7 @@ import de.citec.jp.JPLocationDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.storage.jp.JPInitializeDB;
 import de.citec.lm.core.LocationManager;
@@ -128,14 +129,42 @@ public class MockRegistry {
             JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/device_registry"));
             JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/location_registry"));
             JPService.setupJUnitTestMode();
-            deviceManager = new DeviceManager();
-            locationManager = new LocationManager();
+
+            Thread deviceRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        deviceManager = new DeviceManager();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(logger, ex);
+                    }
+                }
+            });
+
+            Thread locationRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        locationManager = new LocationManager();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(logger, ex);
+                    }
+                }
+            });
+            
+            deviceRegistryThread.start();
+            locationRegistryThread.start();
+
+            deviceRegistryThread.join();
+            locationRegistryThread.join();
 
             deviceRemote = new DeviceRegistryRemote();
             locationRemote = new LocationRegistryRemote();
 
-            deviceRemote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
-            locationRemote.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
+            deviceRemote.init();
+            locationRemote.init();
 
             deviceRemote.activate();
             locationRemote.activate();

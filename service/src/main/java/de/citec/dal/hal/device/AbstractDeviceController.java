@@ -108,7 +108,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     @Override
-    public void activate() throws InterruptedException {
+    public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
 
         for (AbstractUnitController unit : unitMap.values()) {
@@ -117,7 +117,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     @Override
-    public void deactivate() throws InterruptedException {
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
 
         for (AbstractUnitController unit : unitMap.values()) {
