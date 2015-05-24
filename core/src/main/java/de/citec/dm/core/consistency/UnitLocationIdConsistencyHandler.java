@@ -6,6 +6,7 @@
 package de.citec.dm.core.consistency;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
 import de.citec.jul.extension.rsb.container.ProtoBufMessageMapInterface;
@@ -13,10 +14,8 @@ import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import de.citec.lm.remote.LocationRegistryRemote;
-import java.util.List;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
-import rst.spatial.LocationConfigType;
 import rst.spatial.PlacementConfigType;
 
 /**
@@ -36,16 +35,25 @@ public class UnitLocationIdConsistencyHandler implements ProtoBufRegistryConsist
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         boolean modification = false;
+        deviceConfig.clearUnitConfig();
         for (UnitConfigType.UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
+
+            // Check if placement is available
             if (!unitConfig.hasPlacementConfig()) {
                 throw new NotAvailableException("unit.placementconfig");
             }
-            
+
+            // Setup device location if unit has no location configured.
             if(!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                List<LocationConfigType.LocationConfig> rootLocationConfigs = locationRegistryRemote.getRootLocationConfigs();
-                unitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(rootLocationConfigs.get(0).getId()));
+                unitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(deviceConfig.getPlacementConfig().getLocationId()));
                 modification = true;
             }
+            
+            // verify if configured location exists.
+            if(!locationRegistryRemote.containsLocationConfigById(unitConfig.getPlacementConfig().getLocationId())) {
+                throw new InvalidStateException("The configured Location["+unitConfig.getPlacementConfig().getLocationId()+"] of Unit["+unitConfig.getId()+"] is unknown!");
+            }
+
             deviceConfig.addUnitConfig(unitConfig);
         }
 
