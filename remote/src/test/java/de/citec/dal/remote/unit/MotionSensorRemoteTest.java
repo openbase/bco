@@ -97,7 +97,6 @@ public class MotionSensorRemoteTest {
         System.out.println("getMotionState");
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
         ((MotionSensorController) dalService.getUnitRegistry().get(motionSensorRemote.getId())).updateMotion(motion);
-        motionSensorRemote.requestStatus();
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motionSensorRemote.getMotion().getValue(), motion.getValue());
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionSensorRemote.requestStatus().getMotionState().getValue());
     }
 }
