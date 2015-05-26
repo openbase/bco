@@ -37,29 +37,6 @@ public class OpenHABConfigGenerator {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote);
-            this.deviceRegistryRemote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
-
-                @Override
-                public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
-                    try {
-                        generate();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(logger, ex);
-                    }
-                }
-            });
-            this.locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
-
-                @Override
-                public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
-                    try {
-                        generate();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(logger, ex);
-                    }
-                }
-            });
-
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -72,6 +49,29 @@ public class OpenHABConfigGenerator {
         locationRegistryRemote.init();
         locationRegistryRemote.activate();
         itemConfigGenerator.init();
+
+        this.deviceRegistryRemote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
+
+            @Override
+            public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
+                try {
+                    generate();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(logger, ex);
+                }
+            }
+        });
+        this.locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
+
+            @Override
+            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
+                try {
+                    generate();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(logger, ex);
+                }
+            }
+        });
     }
 
     private synchronized void generate() throws CouldNotPerformException {
