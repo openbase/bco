@@ -74,7 +74,9 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
         // publish device transformation
         Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationId(), deviceConfig.getId());
 
+        
         try {
+            transformation.setAuthority(DeviceManager.APP_NAME);
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
@@ -96,7 +98,6 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             }
 
             transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationId(), unitConfig.getId());
-            //TODO mpohling: refactory unitConfig.getPlacement into getPlacementConfig
 
             try {
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
@@ -112,8 +113,9 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
         TranslationType.Translation pTranslation = position.getTranslation();
         Quat4d jRotation = new Quat4d(pRotation.getQx(), pRotation.getQy(), pRotation.getQz(), pRotation.getQw());
         Vector3d jTranslation = new Vector3d(pTranslation.getX(), pTranslation.getY(), pTranslation.getZ());
-        Transform3D transform = new Transform3D(jRotation, jTranslation, 1.0);
-        return new Transform(transform, frameParent, frameChild, System.currentTimeMillis());
+        Transform3D transform3D = new Transform3D(jRotation, jTranslation, 1.0);
+        Transform transform = new Transform(transform3D, frameParent, frameChild, System.currentTimeMillis());
+        return transform;
     }
 
     @Override

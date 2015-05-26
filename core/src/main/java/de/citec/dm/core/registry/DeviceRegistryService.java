@@ -15,6 +15,7 @@ import de.citec.dm.core.consistency.DeviceScopeConsistencyHandler;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
 import de.citec.dm.core.consistency.ServiceConfigUnitIdConsistencyHandler;
+import de.citec.dm.core.consistency.TransformationConsistencyHandler;
 import de.citec.dm.core.consistency.UnitIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
@@ -101,7 +102,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote));
-//            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
 
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
