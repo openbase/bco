@@ -49,7 +49,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>de.citec.dal.bindings.openhab.util.OpenHABConfigGenerator</mainClass>
+                            <mainClass>de.citec.dal.bindings.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
                             <id>dal-openhab-config-generator</id>
                             <platforms>
                                 <platform>unix</platform>

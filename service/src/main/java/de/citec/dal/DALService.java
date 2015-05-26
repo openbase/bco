@@ -116,9 +116,9 @@ public class DALService implements RegistryProvider {
 
     public void shutdown() {
         deactivate();
-        bindingRegistry.clean();
-        deviceRegistry.clean();
-        unitRegistry.clean();
+        bindingRegistry.clear();
+        deviceRegistry.clear();
+        unitRegistry.clear();
         locationRegistryRemote.shutdown();
         deviceRegistryRemote.shutdown();
         registryProvider = null;
