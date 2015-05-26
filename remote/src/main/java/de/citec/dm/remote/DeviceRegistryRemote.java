@@ -89,11 +89,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException, NotAvailableException {
+        getData();
         return deviceClassRemoteRegistry.getMessage(deviceClassId);
     }
 
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException, NotAvailableException {
+        getData();
         return deviceConfigRemoteRegistry.getMessage(deviceConfigId);
     }
 
@@ -112,11 +114,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Boolean containsDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+        getData();
         return deviceConfigRemoteRegistry.contains(deviceConfig);
     }
 
     @Override
     public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException {
+        getData();
         return deviceConfigRemoteRegistry.contains(deviceConfigId);
     }
 
@@ -149,11 +153,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Boolean containsDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+        getData();
         return deviceClassRemoteRegistry.contains(deviceClass);
     }
 
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
+        getData();
         return deviceClassRemoteRegistry.contains(deviceClassId);
     }
 
@@ -177,6 +183,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
+        getData();
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
@@ -188,6 +195,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException, NotAvailableException {
+        getData();
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
@@ -215,6 +223,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
     
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
+        getData();
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             for(ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -231,6 +240,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
+        getData();
         List<DeviceClass> messages = deviceClassRemoteRegistry.getMessages();
         if (messages.isEmpty()) {
             throw new NotAvailableException("device class");
@@ -240,6 +250,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException, NotAvailableException {
+        getData();
         List<DeviceConfig> messages = deviceConfigRemoteRegistry.getMessages();
         if (messages.isEmpty()) {
             throw new NotAvailableException("device config");
