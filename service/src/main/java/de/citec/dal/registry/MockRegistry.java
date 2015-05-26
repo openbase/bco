@@ -29,6 +29,8 @@ import rsb.Scope;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
+import rst.homeautomation.binding.BindingConfigType;
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -278,8 +280,15 @@ public class MockRegistry {
     }
 
     private DeviceClass getDeviceClass(String label, String productNumber, String company) {
-        return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).build();
+        
+        return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).setBindingConfig(getBindingConfig()).build();
 
+    }
+    
+    private BindingConfig getBindingConfig() {
+        BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
+        bindingConfigBuilder.setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB);
+        return bindingConfigBuilder.build();
     }
 
     public LocationConfig getLocation() {
