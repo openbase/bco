@@ -44,9 +44,9 @@ public class ItemEntry {
         this.label = unitConfig.getLabel();
         this.icon = "sun";
         this.groups = new ArrayList<>();
-        this.groups.add(unitConfig.getTemplate().getType().name().toLowerCase());
-        this.groups.add(serviceConfig.getType().name().toLowerCase());
-        this.groups.add(unitConfig.getPlacementConfig().getLocationId().toLowerCase());
+        this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name()));
+        this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
+        this.groups.add(unitConfig.getPlacementConfig().getLocationId());
         this.hardwareConfig = openHABBindingServiceConfig.getItemHardwareConfig();
         this.calculateGaps();
     }
