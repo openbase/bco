@@ -44,14 +44,24 @@ public class UnitLocationIdConsistencyHandler implements ProtoBufRegistryConsist
             }
 
             // Setup device location if unit has no location configured.
-            if(!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+            if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+
+                // Check if device placement is available
+                if (!deviceConfig.hasPlacementConfig()) {
+                    throw new NotAvailableException("device.placementconfig");
+                }
+
+                if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                    throw new NotAvailableException("device.placementconfig.locationid");
+                }
+
                 unitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(deviceConfig.getPlacementConfig().getLocationId()));
                 modification = true;
             }
-            
+
             // verify if configured location exists.
-            if(!locationRegistryRemote.containsLocationConfigById(unitConfig.getPlacementConfig().getLocationId())) {
-                throw new InvalidStateException("The configured Location["+unitConfig.getPlacementConfig().getLocationId()+"] of Unit["+unitConfig.getId()+"] is unknown!");
+            if (!locationRegistryRemote.containsLocationConfigById(unitConfig.getPlacementConfig().getLocationId())) {
+                throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + unitConfig.getId() + "] is unknown!");
             }
 
             deviceConfig.addUnitConfig(unitConfig);

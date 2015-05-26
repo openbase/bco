@@ -6,6 +6,7 @@
 package de.citec.dm.core.consistency;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
 import de.citec.jul.extension.rsb.container.ProtoBufMessageMapInterface;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
@@ -38,6 +39,15 @@ public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyH
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
             UnitConfig unitConfigClone = UnitConfig.newBuilder(unitConfig.build()).build();
+
+            if(!unitConfigClone.hasPlacementConfig()) {
+                throw new NotAvailableException("placementconfig");
+            }
+
+            if(!unitConfigClone.getPlacementConfig().hasLocationId() || unitConfigClone.getPlacementConfig().getLocationId().isEmpty()) {
+                throw new NotAvailableException("placementconfig.locationid");
+            }
+
             ScopeType.Scope newScope = ScopeGenerator.generateUnitScope(unitConfigClone, locationRegistryRemote.getLocationConfigById(unitConfigClone.getPlacementConfig().getLocationId()));
 
             // verify and update scope

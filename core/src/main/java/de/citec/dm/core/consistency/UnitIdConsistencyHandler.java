@@ -8,11 +8,14 @@ package de.citec.dm.core.consistency;
 import de.citec.dm.lib.generator.UnitConfigIdGenerator;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
 import de.citec.jul.extension.rsb.container.ProtoBufMessageMapInterface;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
+import java.util.Map;
+import java.util.TreeMap;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -23,16 +26,10 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class UnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    //TODO mpohling: verify unit id.
-//    private final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry;
+    private final Map<String, UnitConfig> unitMap;
 
     public UnitIdConsistencyHandler() throws InstantiationException {
-//        try {
-//            this.registry = new Registry<>();
-//        } catch (InstantiationException ex) {
-//            throw new InstantiationException(this, ex);
-        
-//        }
+        this.unitMap = new TreeMap<>();
     }
 
     @Override
@@ -46,6 +43,12 @@ public class UnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHand
                 unitConfig.setId(UnitConfigIdGenerator.getInstance().generateId(unitConfig.build()));
                 modification = true;
             }
+
+            // check if unit id is unique.
+            if (unitMap.containsKey(unitConfig.getId())) {
+                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getDeviceId() + "]!");
+            }
+            unitMap.put(unitConfig.getId(), unitConfig.build());
             deviceConfig.addUnitConfig(unitConfig);
         }
 
@@ -54,18 +57,8 @@ public class UnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHand
         }
     }
 
-//    private String generateUnitId(final UnitConfigType.UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
-//        try {
-//            if (unitConfig.hasScope()) {
-//                throw new NotAvailableException("unitconfig.scope");
-//            }
-//            return ScopeGenerator.generateStringRep(unitConfig.getScope());
-//        } catch (CouldNotPerformException ex) {
-//            throw new CouldNotPerformException("Could not generate unti id!");
-//        }
-//    }
-    
     @Override
     public void reset() {
+        unitMap.clear();
     }
 }

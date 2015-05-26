@@ -37,7 +37,7 @@ public class UnitConfigIdGenerator implements IdGenerator<String, UnitConfigType
             }
             return ScopeGenerator.generateStringRep(unitConfig.getScope());
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate unti id!", ex);
+            throw new CouldNotPerformException("Could not generate unit id!", ex);
         }
     }
 }
