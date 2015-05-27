@@ -51,7 +51,6 @@ public class DALService implements RegistryProvider {
     private final ConnectionManager connectionManager;
     private final LocationRegistryRemote locationRegistryRemote;
     private final DeviceRegistryRemote deviceRegistryRemote;
-    
 
     public DALService() throws InstantiationException {
         try {
@@ -61,7 +60,7 @@ public class DALService implements RegistryProvider {
             this.connectionManager = new ConnectionManager(deviceRegistry);
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.deviceRegistryRemote = new DeviceRegistryRemote();
-            
+
             registryProvider = this;
 
         } catch (CouldNotPerformException ex) {
@@ -86,9 +85,13 @@ public class DALService implements RegistryProvider {
             locationRegistryRemote.activate();
             deviceRegistryRemote.init();
             deviceRegistryRemote.activate();
-            
+
             initBindings();
-            initializer.initDevices(deviceRegistry);
+            try {
+                initializer.initDevices(deviceRegistry);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(logger, ex);
+            }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -138,7 +141,7 @@ public class DALService implements RegistryProvider {
     public UnitRegistry getUnitRegistry() {
         return unitRegistry;
     }
-    
+
     @Override
     public DeviceRegistryRemote getDeviceRegistryRemote() {
         return deviceRegistryRemote;
