@@ -14,6 +14,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -43,6 +44,11 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
                 logger.info("Request registry sync.");
                 deviceRegistryRemote.requestStatus();
                 for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
+                    
+                    if(!config.getDeviceClass().getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
+                        continue;
+                    }
+                    
                     try {
                         registry.register(factory.newDevice(config));
                     } catch (Exception ex) {

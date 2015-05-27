@@ -102,21 +102,21 @@ public class ItemEntry {
     }
 
     public String getLabelStringRep() {
-        if(label.isEmpty()) {
+        if (label.isEmpty()) {
             return "";
         }
         return "\"" + label + "\"";
     }
 
     public String getIconStringRep() {
-        if(icon.isEmpty()) {
+        if (icon.isEmpty()) {
             return "";
         }
         return "<" + icon + ">";
     }
 
     public String getGroupsStringRep() {
-        if(groups.isEmpty()) {
+        if (groups.isEmpty()) {
             return "";
         }
         String stringRep = "(";
@@ -158,7 +158,7 @@ public class ItemEntry {
 
         // hardware
         stringRep += StringProcessor.fillWithSpaces(getHardwareConfigStringRep(), maxHardwareConfigSize + TAB_SIZE);
-        
+
         return stringRep;
     }
 
@@ -167,17 +167,22 @@ public class ItemEntry {
             case COLOR_SERVICE:
                 return "Color";
             case OPENING_RATIO_PROVIDER:
+            case POWER_CONSUMPTION_PROVIDER:
                 return "Number";
             case BATTERY_PROVIDER:
-            case SHUTTER_SERVICE:
                 return "Percent";
+            case SHUTTER_PROVIDER:
+            case SHUTTER_SERVICE:
+                return "Rollershutter";
             case POWER_SERVICE:
+            case POWER_PROVIDER:
+            case BUTTON_PROVIDER:
                 return "Switch";
             case TEMPERATURE_PROVIDER:
             case MOTION_PROVIDER:
             case TAMPER_PROVIDER:
-                return "Number";
             case BRIGHTNESS_PROVIDER:
+                return "Number";
             case BRIGHTNESS_SERVICE:
             case DIM_PROVIDER:
             case DIM_SERVICE:
@@ -185,7 +190,6 @@ public class ItemEntry {
             default:
                 logger.warn("Unkown Service Type: " + type);
                 return "";
-
         }
     }
 }

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
+@Deprecated
 public class CSRADeviceInitializerImpl implements DeviceInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(CSRADeviceInitializerImpl.class);
