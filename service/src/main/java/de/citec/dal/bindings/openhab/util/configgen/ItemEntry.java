@@ -193,6 +193,10 @@ public class ItemEntry {
             case DIM_PROVIDER:
             case DIM_SERVICE:
                 return "Dimmer";
+            case REED_SWITCH_PROVIDER:
+                return "Contact";
+            case HANDLE_PROVIDER:
+                return "String";
             default:
                 logger.warn("Unkown Service Type: " + type);
                 return "";
