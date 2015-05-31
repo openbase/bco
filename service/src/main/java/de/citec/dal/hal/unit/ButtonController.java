@@ -32,18 +32,20 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         super(config, ButtonController.class, device, builder);
     }
 
-    public void updateButton(ButtonState value) throws CouldNotPerformException {
+    public void updateButton(ButtonState.State value) throws CouldNotPerformException {
 
         logger.debug("Apply button Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Button.Builder> dataBuilder = getDataBuilder(this)) {
 
+            ButtonState.Builder buttonState = ButtonState.newBuilder();
+            buttonState.setValue(value);
             //TODO tamino: need to be tested! Please write an unit test.
-            if (value.getValue()== ButtonState.State.CLICKED || value.getValue()== ButtonState.State.DOUBLE_CLICKED) {
-                value = value.toBuilder().setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
+            if (value == ButtonState.State.CLICKED || value== ButtonState.State.DOUBLE_CLICKED) {
+                buttonState.setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
             }
 
-            dataBuilder.getInternalBuilder().setButtonState(value);
+            dataBuilder.getInternalBuilder().setButtonState(buttonState.build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply button Update[" + value + "] for " + this + "!", ex);
         }

@@ -212,9 +212,9 @@ public class MockRegistry {
 
         units.clear();
         // button
-        DeviceClass buttonClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_5133", "5133", "Gira"));
+        DeviceClass buttonClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira"));
         units.add(getUnitConfig(UnitTemplate.UnitType.BUTTON, BUTTON_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("GI_5133_Device", serialNumber, buttonClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass, units));
 
         units.clear();
         // dimmer

@@ -28,25 +28,25 @@ import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder;
  * @author Divine Threepwood
  */
 public class OpenHABCommandExecutor {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(OpenHABCommandExecutor.class);
-
+    
     private final UnitRegistry unitRegistry;
-
+    
     public OpenHABCommandExecutor(UnitRegistry unitRegistry) {
         this.unitRegistry = unitRegistry;
     }
-
+    
     private class OpenhabCommandMetaData {
-
+        
         private final OpenhabCommandType.OpenhabCommand command;
         private final ServiceTypeHolder.ServiceType serviceType;
         private final String unitId;
         private final String locationId;
-
+        
         public OpenhabCommandMetaData(OpenhabCommand command) throws CouldNotPerformException {
             this.command = command;
-
+            
             try {
                 String[] nameSegment = command.getItem().split(ITEM_SEGMENT_DELIMITER);
                 try {
@@ -68,7 +68,7 @@ public class OpenHABCommandExecutor {
                 throw new CouldNotPerformException("Could not extract meta data out of openhab command because Item[" + command.getItem() + "] not compatible!", ex);
             }
         }
-
+        
         public OpenhabCommand getCommand() {
             return command;
         }
@@ -76,32 +76,32 @@ public class OpenHABCommandExecutor {
         public String getServiceTypeName() {
             return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
         }
-
+        
         public ServiceTypeHolder.ServiceType getServiceType() {
             return serviceType;
         }
-
+        
         public String getUnitId() {
             return unitId;
         }
-
+        
         public String getLocationId() {
             return locationId;
         }
     }
-
+    
     public void receiveUpdate(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
         logger.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
-
+        
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
-
+        
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
         Method relatedMethod;
         Unit unit;
-
+        
         try {
             unit = unitRegistry.get(metaData.getUnitId());
-
+            
             String updateMethodName = ServiceType.UPDATE + metaData.getServiceTypeName();
             try {
                 relatedMethod = unit.getClass().getMethod(updateMethodName, serviceData.getClass());
@@ -114,7 +114,7 @@ public class OpenHABCommandExecutor {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Unit not compatible!", ex);
         }
-
+        
         try {
             relatedMethod.invoke(unit, serviceData);
         } catch (IllegalAccessException ex) {

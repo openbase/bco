@@ -44,7 +44,13 @@ public class ItemEntry {
         this.label = unitConfig.getLabel();
         this.icon = "sun";
         this.groups = new ArrayList<>();
-        this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name()));
+
+        // TODO: maybe think of another strategy to name groups
+        // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
+        String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
+        if (!(templateName.equals("Dimmer") || templateName.equals("Rollershutter"))) {
+            this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name()));
+        }
         this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
         this.groups.add(unitConfig.getPlacementConfig().getLocationId());
         this.hardwareConfig = openHABBindingServiceConfig.getItemHardwareConfig();
@@ -187,6 +193,10 @@ public class ItemEntry {
             case DIM_PROVIDER:
             case DIM_SERVICE:
                 return "Dimmer";
+            case REED_SWITCH_PROVIDER:
+                return "Contact";
+            case HANDLE_PROVIDER:
+                return "String";
             default:
                 logger.warn("Unkown Service Type: " + type);
                 return "";

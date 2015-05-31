@@ -96,7 +96,7 @@ public class ButtonRemoteTest {
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
-        ((ButtonController) dalService.getUnitRegistry().get(buttonRemote.getId())).updateButton(buttonState);
+        ((ButtonController) dalService.getUnitRegistry().get(buttonRemote.getId())).updateButton(buttonState.getValue());
         buttonRemote.requestStatus();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButton().getValue());
     }
