@@ -11,11 +11,11 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSVColorType;
@@ -25,17 +25,17 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public class ColorControl {
+public class PowerControl {
 
     public final static Random random = new Random();
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private final ArrayList<HSVColor> colorList;
     private final List<AmbientLightRemote> ambientLightRemoteList;
+    private final PowerState.State powerState;
 
-    public ColorControl(final String locationId, final Collection<HSVColorType.HSVColor> colors) throws InstantiationException, InterruptedException {
+    public PowerControl(final String locationId, final PowerState.State powerState) throws InstantiationException, InterruptedException {
         try {
-            this.colorList = new ArrayList<>(colors);
+            this.powerState = powerState;
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
@@ -60,27 +60,14 @@ public class ColorControl {
 
             @Override
             public void run() {
-                try {
-                    while (!isInterrupted()) {
-                        Collections.shuffle(ambientLightRemoteList);
-                        for (AmbientLightRemote remote : ambientLightRemoteList) {
-                            try {
-                                remote.setColor(getRandomColor());
-                                Thread.sleep(100);
-                            } catch (CouldNotPerformException ex) {
-                                Logger.getLogger(ColorControl.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                    for (AmbientLightRemote remote : ambientLightRemoteList) {
+                        try {
+                            remote.setPower(powerState);
+                        } catch (CouldNotPerformException ex) {
+                            Logger.getLogger(PowerControl.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ColorControl.class.getName()).log(Level.SEVERE, null, ex);
-                }
             }
         }.start();
     }
-
-    public HSVColor getRandomColor() {
-        return colorList.get(random.nextInt(colorList.size()));
-    }
-
 }
