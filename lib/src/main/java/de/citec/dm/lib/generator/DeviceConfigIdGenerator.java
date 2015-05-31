@@ -8,6 +8,7 @@ package de.citec.dm.lib.generator;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.extension.rsb.util.IdGenerator;
+import de.citec.jul.processing.StringProcessor;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -44,7 +45,7 @@ public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig
             id = message.getDeviceClass().getId();
             id += "_";
             id += message.getSerialNumber();
-            return id;
+            return StringProcessor.transformToIdString(id);
 
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate id!", ex);

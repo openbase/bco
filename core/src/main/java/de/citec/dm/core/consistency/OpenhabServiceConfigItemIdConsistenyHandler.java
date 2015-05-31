@@ -89,13 +89,13 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
             throw new NotAvailableException("serviceconfig");
         }
 
-        return device.getDeviceClass().getLabel()
+        return StringProcessor.transformToIdString(device.getDeviceClass().getLabel())
                 + ITEM_SEGMENT_DELIMITER
                 + generateLocationId(location)
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(unit.getTemplate().getType().toString())
                 + ITEM_SEGMENT_DELIMITER
-                + unit.getLabel()
+                + StringProcessor.transformToIdString(unit.getLabel())
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(service.getType().toString());
     }
