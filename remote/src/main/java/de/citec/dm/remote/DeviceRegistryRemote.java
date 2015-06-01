@@ -81,8 +81,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public DeviceConfigType.DeviceConfig registerDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfigType.DeviceConfig) callMethodAsync("registerDeviceConfig", deviceConfig).get();
-        } catch (ExecutionException ex) {
+            return (DeviceConfigType.DeviceConfig) callMethod("registerDeviceConfig", deviceConfig);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device config!", ex);
         }
     }
@@ -127,8 +127,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public DeviceConfigType.DeviceConfig updateDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfigType.DeviceConfig) callMethodAsync("updateDeviceConfig", deviceConfig).get();
-        } catch (ExecutionException ex) {
+            return (DeviceConfigType.DeviceConfig) callMethod("updateDeviceConfig", deviceConfig);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device config!", ex);
         }
     }
@@ -136,8 +136,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public DeviceConfigType.DeviceConfig removeDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfigType.DeviceConfig) callMethodAsync("removeDeviceConfig", deviceConfig).get();
-        } catch (ExecutionException ex) {
+            return (DeviceConfigType.DeviceConfig) callMethod("removeDeviceConfig", deviceConfig);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device config!", ex);
         }
     }
@@ -145,8 +145,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public DeviceClassType.DeviceClass registerDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClassType.DeviceClass) callMethodAsync("registerDeviceClass", deviceClass).get();
-        } catch (ExecutionException ex) {
+            return (DeviceClassType.DeviceClass) callMethod("registerDeviceClass", deviceClass);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device class!", ex);
         }
     }
@@ -166,8 +166,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public DeviceClassType.DeviceClass updateDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClassType.DeviceClass) callMethodAsync("updateDeviceClass", deviceClass).get();
-        } catch (ExecutionException ex) {
+            return (DeviceClassType.DeviceClass) callMethod("updateDeviceClass", deviceClass);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device class!", ex);
         }
     }
@@ -175,8 +175,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public DeviceClassType.DeviceClass removeDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClassType.DeviceClass) callMethodAsync("removeDeviceClass", deviceClass).get();
-        } catch (ExecutionException ex) {
+            return (DeviceClassType.DeviceClass) callMethod("removeDeviceClass", deviceClass);
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }
     }

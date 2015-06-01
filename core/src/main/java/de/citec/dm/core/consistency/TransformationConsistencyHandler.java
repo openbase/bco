@@ -52,7 +52,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public synchronized void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfig deviceConfig = entry.getMessage();
 
         if (!deviceConfig.hasId()) {
@@ -76,7 +76,6 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
 
         
         try {
-            transformation.setAuthority(DeviceManager.APP_NAME);
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
