@@ -27,9 +27,9 @@ public class AgentTest {
         colorList.add(HSVColor.newBuilder().setHue(259).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(290).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(120).setSaturation(100).setValue(100).build());
-//        ColorControl colorControl1 = new ColorControl("Home", colorList);
+//        ColorControl colorControl1 = new ColorControl("Kitchen", colorList);
 //        colorControl1.activate();
-//        ColorControl colorControl2 = new ColorControl("Sports", colorList);
+//        ColorControl colorControl2 = new ColorControl("Kitchen", colorList);
 //        colorControl2.activate();
 //        ColorControl colorControl3 = new ColorControl("Kitchen", colorList);
 //        colorControl3.activate();

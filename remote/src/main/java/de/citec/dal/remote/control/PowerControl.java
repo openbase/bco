@@ -5,16 +5,19 @@
  */
 package de.citec.dal.remote.control;
 
+import de.citec.dal.hal.service.ServiceType;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -43,6 +46,10 @@ public class PowerControl {
             this.ambientLightRemoteList = new ArrayList<>();
             AmbientLightRemote ambientLightRemote;
             for (UnitConfig unitConfig : unitConfigs) {
+//                if(!unitConfig.getTemplate().getServiceTypeList().contains(ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_SERVICE)) {
+//                    continue;
+//                }
+                
                 ambientLightRemote = new AmbientLightRemote();
                 ambientLightRemote.init(unitConfig);
                 ambientLightRemoteList.add(ambientLightRemote);
@@ -62,7 +69,9 @@ public class PowerControl {
             public void run() {
                     for (AmbientLightRemote remote : ambientLightRemoteList) {
                         try {
-                            remote.setPower(powerState);
+                            remote.setColor(Color.BLACK);
+                            remote.callMethodAsync("setPower", PowerState.newBuilder().setValue(powerState).build());
+//                            remote.setPower(powerState);
                         } catch (CouldNotPerformException ex) {
                             Logger.getLogger(PowerControl.class.getName()).log(Level.SEVERE, null, ex);
                         }

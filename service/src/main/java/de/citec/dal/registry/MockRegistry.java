@@ -29,7 +29,6 @@ import rsb.Scope;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
-import rst.homeautomation.binding.BindingConfigType;
 import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -39,6 +38,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -155,7 +155,7 @@ public class MockRegistry {
                     }
                 }
             });
-            
+
             deviceRegistryThread.start();
             locationRegistryThread.start();
 
@@ -276,15 +276,22 @@ public class MockRegistry {
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
-        return DeviceConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setSerialNumber(serialNumber).setDeviceClass(clazz).addAllUnitConfig(units).build();
+        return DeviceConfig.newBuilder()
+                .setPlacementConfig(getDefaultPlacement())
+                .setLabel(label)
+                .setSerialNumber(serialNumber)
+                .setDeviceClass(clazz)
+                .addAllUnitConfig(units)
+                .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.INSTALLED))
+                .build();
     }
 
     private DeviceClass getDeviceClass(String label, String productNumber, String company) {
-        
+
         return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).setBindingConfig(getBindingConfig()).build();
 
     }
-    
+
     private BindingConfig getBindingConfig() {
         BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
         bindingConfigBuilder.setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB);
