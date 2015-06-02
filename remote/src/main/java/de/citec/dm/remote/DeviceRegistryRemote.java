@@ -188,9 +188,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
-        if (unitConfigs.isEmpty()) {
-            throw new NotAvailableException("unit config");
-        }
         return unitConfigs;
     }
 
@@ -204,9 +201,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 }
             }
         }
-        if (unitConfigs.isEmpty()) {
-            throw new NotAvailableException("unit config");
-        }
         return unitConfigs;
     }
 
@@ -215,9 +209,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
-        }
-        if (serviceConfigs.isEmpty()) {
-            throw new NotAvailableException("service config");
         }
         return serviceConfigs;
     }
@@ -232,9 +223,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 }
             }
         }
-        if (serviceConfigs.isEmpty()) {
-            throw new NotAvailableException("service config");
-        }
         return serviceConfigs;
     }
 
@@ -242,9 +230,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
         getData();
         List<DeviceClass> messages = deviceClassRemoteRegistry.getMessages();
-        if (messages.isEmpty()) {
-            throw new NotAvailableException("device class");
-        }
         return messages;
     }
 
@@ -252,9 +237,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
         List<DeviceConfig> messages = deviceConfigRemoteRegistry.getMessages();
-        if (messages.isEmpty()) {
-            throw new NotAvailableException("device config");
-        }
         return messages;
     }
 }
