@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.state.InventoryStateType;
 
 /**
  *
@@ -46,6 +47,11 @@ public class DeviceManagerRemoteDalConnector implements DeviceInitializer {
                 for (DeviceConfig config : deviceRegistryRemote.getDeviceConfigs()) {
                     
                     if(!config.getDeviceClass().getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
+                        continue;
+                    }
+                    
+                    if(config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        logger.info("Skip Device["+config.getLabel()+"] because it is currently not installed!");
                         continue;
                     }
                     
