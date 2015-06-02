@@ -2,8 +2,3 @@
 *.swp
 **/target
 **/nbactions.xml
-/core/target/
-/lib/target/
-/remote/target/
-/test/target/
-/target/
