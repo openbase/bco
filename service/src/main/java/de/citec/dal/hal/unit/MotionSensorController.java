@@ -32,18 +32,26 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
 
     }
 
-    public void updateMotion(MotionState value) throws CouldNotPerformException {
-        logger.debug("Apply motion Update[" + value + "] for " + this + ".");
+    public void updateMotion(MotionState state) throws CouldNotPerformException {
+        
+        logger.debug("Apply motion Update[" + state + "] for " + this + ".");
+        
         try (ClosableDataBuilder<MotionSensor.Builder> dataBuilder = getDataBuilder(this)) {
 
+            MotionState.Builder motionStateBuilder = dataBuilder.getInternalBuilder().getMotionStateBuilder();
+            
+            // Update value
+            motionStateBuilder.setValue(state.getValue());
+            
+            // Update timestemp if necessary
+            if (state.getValue()== MotionState.State.MOVEMENT) {
             //TODO tamino: need to be tested! Please write an unit test.
-            if (value.getValue()== MotionState.State.MOVEMENT) {
-                value = value.toBuilder().setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+                motionStateBuilder.setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 
-            dataBuilder.getInternalBuilder().setMotionState(value);
+            dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply motion Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply motion Update[" + state + "] for " + this + "!", ex);
         }
     }
 

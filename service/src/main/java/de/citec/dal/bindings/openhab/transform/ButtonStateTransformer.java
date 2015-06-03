@@ -9,6 +9,7 @@ import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.openhab.OnOffHolderType;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
+import rst.homeautomation.state.ButtonStateType.ButtonState.State;
 
 /**
  *
@@ -16,19 +17,19 @@ import rst.homeautomation.state.ButtonStateType.ButtonState;
  */
 public class ButtonStateTransformer {
 
-	public static ButtonState.State transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws CouldNotTransformException {
+	public static ButtonState transform(OnOffHolderType.OnOffHolder.OnOff onOffType) throws CouldNotTransformException {
 		switch (onOffType) {
 			case OFF:
-				return ButtonState.State.RELEASED;
+				return ButtonState.newBuilder().setValue(State.RELEASED).build();
 			case ON:
-				return ButtonState.State.CLICKED;
+                return ButtonState.newBuilder().setValue(State.CLICKED).build();
 			default:
 				throw new CouldNotTransformException("Could not transform " + OnOffHolderType.OnOffHolder.OnOff.class.getName() + "! " + OnOffHolderType.OnOffHolder.OnOff.class.getSimpleName() + "[" + onOffType.name() + "] is unknown!");
 		}
 	}
 
-	public static OnOffHolderType.OnOffHolder transform(ButtonState.State buttonState) throws TypeNotSupportedException, CouldNotTransformException {
-		switch (buttonState) {
+	public static OnOffHolderType.OnOffHolder transform(ButtonState buttonState) throws TypeNotSupportedException, CouldNotTransformException {
+		switch (buttonState.getValue()) {
 			case RELEASED:
 				return OnOffHolderType.OnOffHolder.newBuilder().setState(OnOffHolderType.OnOffHolder.OnOff.OFF).build();
 			case CLICKED:
@@ -36,7 +37,7 @@ public class ButtonStateTransformer {
 			case UNKNOWN:
 				throw new TypeNotSupportedException(buttonState, OnOffHolderType.OnOffHolder.OnOff.class);
 			default:
-				throw new CouldNotTransformException("Could not transform " + ButtonState.State.class.getName() + "! " + ButtonState.State.class.getSimpleName() + "[" + buttonState.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + ButtonState.State.class.getName() + "! " + ButtonState.State.class.getSimpleName() + "[" + buttonState.getValue().name() + "] is unknown!");
 		}
 	}
 }

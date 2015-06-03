@@ -15,19 +15,19 @@ import rst.homeautomation.state.TamperStateType.TamperState;
  */
 public class TamperStateTransformer {
 
-	public static TamperState.State transform(final double state) throws CouldNotTransformException {
+	public static TamperState transform(final double state) throws CouldNotTransformException {
 		switch ((int) state) {
 			case 0:
-				return TamperState.State.NO_TAMPER;
+				return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
 			case 255:
-				return TamperState.State.TAMPER;
+				return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
 			default:
 				throw new CouldNotTransformException("Could not transform " + Double.class.getName() + "! " + Double.class.getSimpleName() + "[" + state + "] is unknown!");
 		}
 	}
 
-	public static double transform(final TamperState.State tamperState) throws TypeNotSupportedException, CouldNotTransformException {
-		switch (tamperState) {
+	public static double transform(final TamperState tamperState) throws TypeNotSupportedException, CouldNotTransformException {
+		switch (tamperState.getValue()) {
 			case NO_TAMPER:
 				return 0d;
 			case TAMPER:
@@ -35,7 +35,7 @@ public class TamperStateTransformer {
 			case UNKNOWN:
 				throw new TypeNotSupportedException(tamperState, Double.class);
 			default:
-				throw new CouldNotTransformException("Could not transform " + TamperState.State.class.getName() + "! " + TamperState.State.class.getSimpleName() + "[" + tamperState.name() + "] is unknown!");
+				throw new CouldNotTransformException("Could not transform " + TamperState.State.class.getName() + "! " + TamperState.State.class.getSimpleName() + "[" + tamperState.getValue().name() + "] is unknown!");
 		}
 	}
 }

@@ -32,22 +32,26 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         super(config, ButtonController.class, device, builder);
     }
 
-    public void updateButton(ButtonState.State value) throws CouldNotPerformException {
+    public void updateButton(final ButtonState state) throws CouldNotPerformException {
 
-        logger.debug("Apply button Update[" + value + "] for " + this + ".");
+        logger.debug("Apply button Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<Button.Builder> dataBuilder = getDataBuilder(this)) {
-
-            ButtonState.Builder buttonState = ButtonState.newBuilder();
-            buttonState.setValue(value);
-            //TODO tamino: need to be tested! Please write an unit test.
-            if (value == ButtonState.State.CLICKED || value== ButtonState.State.DOUBLE_CLICKED) {
-                buttonState.setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build());
+            
+            ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
+            
+            // Update value
+            buttonState.setValue(state.getValue());
+            
+            // Update timestemp if necessary
+            if (state.getValue() == ButtonState.State.CLICKED || state.getValue() == ButtonState.State.DOUBLE_CLICKED) {
+                //TODO tamino: need to be tested! Please write an unit test.
+                buttonState.setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 
-            dataBuilder.getInternalBuilder().setButtonState(buttonState.build());
+            dataBuilder.getInternalBuilder().setButtonState(buttonState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply button Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply button Update[" + state + "] for " + this + "!", ex);
         }
     }
 

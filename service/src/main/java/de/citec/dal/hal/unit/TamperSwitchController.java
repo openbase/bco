@@ -32,18 +32,26 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         super(config, TamperSwitchController.class, device, builder);
     }
 
-    public void updateTamper(TamperState value) throws CouldNotPerformException {
-        logger.debug("Apply tamper Update[" + value + "] for " + this + ".");
+    public void updateTamper(TamperState state) throws CouldNotPerformException {
+        
+        logger.debug("Apply tamper Update[" + state + "] for " + this + ".");
+        
         try (ClosableDataBuilder<TamperSwitch.Builder> dataBuilder = getDataBuilder(this)) {
-
-            //TODO tamino: need to be tested! Please write an unit test.
-            if (value.getValue()== TamperState.State.TAMPER) {
-                value = value.toBuilder().setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()).build()).build();
+            
+            TamperState.Builder tamperStateBuilder = dataBuilder.getInternalBuilder().getTamperStateBuilder();
+            
+            // Update value
+            tamperStateBuilder.setValue(state.getValue());
+            
+            // Update timestemp if necessary
+            if (state.getValue()== TamperState.State.TAMPER) {
+                //TODO tamino: need to be tested! Please write an unit test.
+                tamperStateBuilder.setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 
-            dataBuilder.getInternalBuilder().setTamperState(value);
+            dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply tamper Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply tamper Update[" + state + "] for " + this + "!", ex);
         }
     }
 
