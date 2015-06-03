@@ -12,20 +12,20 @@ import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.homematic.Homematic_HM_Sec_RHSType.Homematic_HM_Sec_RHS;
+import rst.homeautomation.device.homematic.Homematic_HM_Sec_SC_2Type.Homematic_HM_Sec_SC_2;
 
 /**
  *
- * @author thuxohl
+ * @author mpohling
  */
-public class Homematic_HM_Sec_RHSController extends AbstractOpenHABDeviceController<Homematic_HM_Sec_RHS, Homematic_HM_Sec_RHS.Builder> {
+public class Homematic_Sec_SC_2Controller extends AbstractOpenHABDeviceController<Homematic_HM_Sec_SC_2, Homematic_HM_Sec_SC_2.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Homematic_HM_Sec_RHS.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Homematic_HM_Sec_SC_2.getDefaultInstance()));
     }
 
-    public Homematic_HM_Sec_RHSController(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, Homematic_HM_Sec_RHS.newBuilder());
+    public Homematic_Sec_SC_2Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, Homematic_HM_Sec_SC_2.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {
