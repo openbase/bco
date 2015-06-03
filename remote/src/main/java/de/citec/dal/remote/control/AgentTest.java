@@ -27,10 +27,13 @@ public class AgentTest {
         colorList.add(HSVColor.newBuilder().setHue(259).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(290).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(120).setSaturation(100).setValue(100).build());
-//        ColorControl colorControl1 = new ColorControl("Kitchen", colorList);
-//        colorControl1.activate();
-//        ColorControl colorControl2 = new ColorControl("Kitchen", colorList);
-//        colorControl2.activate();
+
+        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
+        powerControl.activate();
+        ColorControl colorControl1 = new ColorControl("Kitchen", colorList);
+        colorControl1.activate();
+        ColorControl colorControl2 = new ColorControl("Kitchen", colorList);
+        colorControl2.activate();
 //        ColorControl colorControl3 = new ColorControl("Kitchen", colorList);
 //        colorControl3.activate();
 //        ColorControl colorControl4 = new ColorControl("Bath", colorList);
@@ -40,9 +43,6 @@ public class AgentTest {
 //        ColorControl colorControl6 = new ColorControl("Control", colorList);
 //        colorControl6.activate();
 //        Thread.sleep(60000);
-
-        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.OFF);
-        powerControl.activate();
 
     }
 

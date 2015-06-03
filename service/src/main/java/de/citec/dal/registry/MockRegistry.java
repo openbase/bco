@@ -224,7 +224,7 @@ public class MockRegistry {
 
         units.clear();
         // handle
-        DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "HM_Sec_RHS", "Homematic"));
+        DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic"));
         units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE_SENSOR, HANDLE_SENSOR_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units));
 
@@ -243,7 +243,7 @@ public class MockRegistry {
 
         units.clear();
         // reedSwitch 
-        DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "HM_Sev_SC_2", "Homematic"));
+        DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic"));
         units.add(getUnitConfig(UnitTemplate.UnitType.REED_SWITCH, REED_SWITCH_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units));
 
