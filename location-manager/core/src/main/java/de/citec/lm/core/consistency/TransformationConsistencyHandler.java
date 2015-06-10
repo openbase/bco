@@ -64,6 +64,8 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
                 throw new NotAvailableException("locationconfig.parentid");
             }
 
+            logger.info("Publish "+locationConfig.getParentId()+" to "+locationConfig.getId());
+            
             // Create the rct transform object with source and target frames
             Transform transformation = transform(locationConfig.getPosition(), locationConfig.getParentId(), locationConfig.getId());
 

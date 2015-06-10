@@ -5,6 +5,7 @@
  */
 package de.citec.dm.core.registry;
 
+import de.citec.dm.core.consistency.DeviceConfigDeviceClassConsistencyHandler;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.dm.core.consistency.DeviceIdConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceLabelConsistencyHandler;
@@ -92,6 +93,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.loadRegistry();
 
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));

@@ -71,11 +71,14 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             throw new NotAvailableException("unitconfig.placement.locationid");
         }
 
+        
         // publish device transformation
+        logger.info("Publish "+deviceConfig.getPlacementConfig().getLocationId()+" to "+deviceConfig.getId());
         Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationId(), deviceConfig.getId());
 
         
         try {
+            
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
