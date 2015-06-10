@@ -27,6 +27,7 @@ import de.citec.jul.extension.rsb.util.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
+import de.citec.lm.core.consistency.PositionConsistencyHandler;
 import de.citec.lm.core.consistency.TransformationConsistencyHandler;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
-
+            locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
             locationConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>>() {
 
