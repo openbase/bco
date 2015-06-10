@@ -5,39 +5,45 @@
  */
 package de.citec.dal.remote.control;
 
-import de.citec.dal.bindings.openhab.transform.HSVColorTransformer;
 import de.citec.dal.remote.unit.AmbientLightRemote;
-import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
  * @author Divine <DivineThreepwood@gmail.com>
  */
-public class ColorControl {
+public class ColorLoopControl {
 
     public final static Random random = new Random();
 
     private final LocationRegistryRemote locationRegistryRemote;
+    private final ArrayList<HSVColor> colorList;
     private final List<AmbientLightRemote> ambientLightRemoteList;
+    private final long delay;
 
-    public ColorControl(final String locationId) throws InstantiationException, InterruptedException {
+    
+    public ColorLoopControl(final String locationId, final Collection<HSVColorType.HSVColor> colors) throws InstantiationException, InterruptedException {
+        this(locationId,colors, 500);
+    }
+    
+    public ColorLoopControl(final String locationId, final Collection<HSVColorType.HSVColor> colors, final long delay) throws InstantiationException, InterruptedException {
         try {
+            this.delay = delay;
+            this.colorList = new ArrayList<>(colors);
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
@@ -54,29 +60,39 @@ public class ColorControl {
         }
     }
 
-    public Future<HSVColor> execute(final Color color) throws InterruptedException, CouldNotPerformException {
-        return execute(HSVColorToRGBColorTransformer.transform(color));
-    }
-    
-    public Future<HSVColor> execute(final HSVColor color) throws InterruptedException, CouldNotPerformException {
+    public void activate() throws InterruptedException, CouldNotPerformException {
         for (AmbientLightRemote remote : ambientLightRemoteList) {
             remote.activate();
         }
-
-        return Executors.newSingleThreadExecutor().submit(new Callable<HSVColor>() {
+        new Thread() {
 
             @Override
-            public HSVColor call() throws Exception {
-                for (AmbientLightRemote remote : ambientLightRemoteList) {
-                    try {
-                        remote.setColor(color);
-                    } catch (CouldNotPerformException ex) {
-                        Logger.getLogger(ColorControl.class.getName()).log(Level.SEVERE, null, ex);
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Collections.shuffle(ambientLightRemoteList);
+                        for (AmbientLightRemote remote : ambientLightRemoteList) {
+                            try {
+                                remote.setColor(getRandomColor());
+                                if(delay > 0) {
+                                    Thread.sleep(delay);
+                                } else {
+                                    Thread.yield();
+                                }
+                            } catch (CouldNotPerformException ex) {
+                                Logger.getLogger(ColorLoopControl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
                     }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ColorLoopControl.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                return color;
             }
-        });
-
+        }.start();
     }
+
+    public HSVColor getRandomColor() {
+        return colorList.get(random.nextInt(colorList.size()));
+    }
+
 }

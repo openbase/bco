@@ -7,8 +7,10 @@ package de.citec.dal.remote.control;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import rst.homeautomation.state.PowerStateType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -21,19 +23,32 @@ public class AgentTest {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws InstantiationException, InterruptedException, CouldNotPerformException {
+    public static void main(String[] args) throws InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
 
         List<HSVColor> colorList = new ArrayList<>();
         colorList.add(HSVColor.newBuilder().setHue(259).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(290).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(120).setSaturation(100).setValue(100).build());
 
-        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
-        powerControl.activate();
-        ColorControl colorControl1 = new ColorControl("Kitchen", colorList);
-        colorControl1.activate();
-        ColorControl colorControl2 = new ColorControl("Kitchen", colorList);
-        colorControl2.activate();
+//        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
+//        powerControl.activate();
+        ColorControl colorControl = new ColorControl("Home");
+        colorControl.execute(Color.RED).get();
+        colorControl.execute(Color.BLUE).get();
+        colorControl.execute(Color.ORANGE).get();
+        
+//        ColorLoopControl colorControlX = new ColorLoopControl("Home", colorList);
+//        colorControlX.activate();
+//        ColorLoopControl colorControlXX = new ColorLoopControl("Kitchen", colorList);
+//        colorControlXX.activate();
+//        ColorLoopControl colorControl2 = new ColorLoopControl("Kitchen", colorList);
+//        colorControl2.activate();
+//        ColorLoopControl colorControl3 = new ColorLoopControl("Living", colorList);
+//        colorControl3.activate();
+//        ColorLoopControl colorControl4 = new ColorLoopControl("Bath", colorList);
+//        colorControl4.activate();
+//        ColorLoopControl colorControlC = new ColorLoopControl("Control", colorList);
+//        colorControlC.activate();
 //        ColorControl colorControl3 = new ColorControl("Kitchen", colorList);
 //        colorControl3.activate();
 //        ColorControl colorControl4 = new ColorControl("Bath", colorList);

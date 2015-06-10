@@ -29,6 +29,7 @@ public final class OpenhabCommandTransformer {
                     case TAMPER_PROVIDER:
                         return TamperStateTransformer.transform(command.getDecimal());
                     case BRIGHTNESS_PROVIDER:
+                    case POWER_CONSUMPTION_PROVIDER:
                         return (float) command.getDecimal();
                     default:
                         // native double type
