@@ -32,7 +32,8 @@ public class AgentTest {
 
 //        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
 //        powerControl.activate();
-        ColorControl colorControl = new ColorControl("Home");
+        ColorControl colorControl = new ColorControl("Living");
+        
         colorControl.execute(Color.RED).get();
         colorControl.execute(Color.BLUE).get();
         colorControl.execute(Color.ORANGE).get();
