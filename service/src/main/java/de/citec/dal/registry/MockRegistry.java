@@ -230,7 +230,7 @@ public class MockRegistry {
 
         units.clear();
         // light 
-        DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGS221", "FGS221", "Fibaro"));
+        DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro"));
         units.add(getUnitConfig(UnitTemplate.UnitType.LIGHT, LIGHT_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units));
 

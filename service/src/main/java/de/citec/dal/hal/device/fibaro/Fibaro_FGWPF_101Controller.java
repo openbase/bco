@@ -18,13 +18,13 @@ import rst.homeautomation.device.DeviceConfigType;
  *
  * @author thuxohl
  */
-public class Fibaro_FIB_FGWPF_101Controller extends AbstractOpenHABDeviceController<Fibaro_FIB_FGWPF_101, Fibaro_FIB_FGWPF_101.Builder> {
+public class Fibaro_FGWPF_101Controller extends AbstractOpenHABDeviceController<Fibaro_FIB_FGWPF_101, Fibaro_FIB_FGWPF_101.Builder> {
 
 	static {
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Fibaro_FIB_FGWPF_101.getDefaultInstance()));
 	}
 
-	public Fibaro_FIB_FGWPF_101Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+	public Fibaro_FGWPF_101Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
 		super(config, Fibaro_FIB_FGWPF_101.newBuilder());
 		try {
 			registerUnits(config.getUnitConfigList());
