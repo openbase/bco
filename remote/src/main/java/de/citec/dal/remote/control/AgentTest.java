@@ -32,12 +32,18 @@ public class AgentTest {
 
 //        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
 //        powerControl.activate();
-        ColorControl colorControl = new ColorControl("Living");
-        
-        colorControl.execute(Color.RED).get();
-        colorControl.execute(Color.BLUE).get();
-        colorControl.execute(Color.ORANGE).get();
-        
+        ColorControl colorControl = new ColorControl("Chillerstrasse");
+
+        while (true) {
+            System.out.println("RED");
+            colorControl.execute(Color.RED).get();
+            System.out.println("BLUE");
+            colorControl.execute(Color.BLUE).get();
+//            System.out.println("GREEN");
+//            colorControl.execute(Color.ORANGE).get();
+//            Thread.sleep(30000);
+        }
+
 //        ColorLoopControl colorControlX = new ColorLoopControl("Home", colorList);
 //        colorControlX.activate();
 //        ColorLoopControl colorControlXX = new ColorLoopControl("Kitchen", colorList);
@@ -59,7 +65,6 @@ public class AgentTest {
 //        ColorControl colorControl6 = new ColorControl("Control", colorList);
 //        colorControl6.activate();
 //        Thread.sleep(60000);
-
     }
 
 }

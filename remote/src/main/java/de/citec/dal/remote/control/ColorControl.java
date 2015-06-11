@@ -48,6 +48,8 @@ public class ColorControl {
                 ambientLightRemote = new AmbientLightRemote();
                 ambientLightRemote.init(unitConfig);
                 ambientLightRemoteList.add(ambientLightRemote);
+                ambientLightRemote.activate();
+
             }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -59,9 +61,6 @@ public class ColorControl {
     }
     
     public Future<HSVColor> execute(final HSVColor color) throws InterruptedException, CouldNotPerformException {
-        for (AmbientLightRemote remote : ambientLightRemoteList) {
-            remote.activate();
-        }
 
         return Executors.newSingleThreadExecutor().submit(new Callable<HSVColor>() {
 
