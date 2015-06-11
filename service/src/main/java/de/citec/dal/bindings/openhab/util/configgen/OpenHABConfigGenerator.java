@@ -16,6 +16,11 @@ import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
+import org.apache.commons.io.monitor.FileAlterationMonitor;
+import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceRegistryType;
 import rst.spatial.LocationRegistryType;
@@ -106,13 +111,40 @@ public class OpenHABConfigGenerator {
             final OpenHABConfigGenerator openHABConfigGenerator = new OpenHABConfigGenerator();
             openHABConfigGenerator.init();
             openHABConfigGenerator.generate();
+            
+            FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(JPService.getProperty(JPOpenHABItemConfig.class).getValue().getParent());
+            fileAlterationObserver.initialize();
+            fileAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
+
+                @Override
+                public void onFileDelete(File file) {
+                    try {
+                        logger.info("Detect config file deletion!");
+                        openHABConfigGenerator.generate();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not regenerate config!", ex));
+                    }
+                }
+            });
+
+            final FileAlterationMonitor monitor = new FileAlterationMonitor(10000);
+            monitor.addObserver(fileAlterationObserver);
+            monitor.start();
+            
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
                 @Override
                 public void run() {
                     openHABConfigGenerator.shutdown();
+                    try {
+                        monitor.stop();
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory(logger, ex);
+                    }
                 }
             }));
+
+
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistory(logger, ex);
         }
