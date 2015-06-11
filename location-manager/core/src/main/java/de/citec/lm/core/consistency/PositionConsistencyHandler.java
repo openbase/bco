@@ -11,7 +11,6 @@ import de.citec.jul.extension.rsb.container.ProtoBufMessageMapInterface;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
-import rst.geometry.PoseType;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
