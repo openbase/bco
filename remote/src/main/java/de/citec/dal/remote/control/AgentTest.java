@@ -30,18 +30,18 @@ public class AgentTest {
         colorList.add(HSVColor.newBuilder().setHue(290).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(120).setSaturation(100).setValue(100).build());
 
-//        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
-//        powerControl.activate();
-        ColorControl colorControl = new ColorControl("Chillerstrasse");
+        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
+        powerControl.activate();
+        ColorControl colorControl = new ColorControl("Home");
 
         while (true) {
             System.out.println("RED");
             colorControl.execute(Color.RED).get();
             System.out.println("BLUE");
             colorControl.execute(Color.BLUE).get();
-//            System.out.println("GREEN");
-//            colorControl.execute(Color.ORANGE).get();
-//            Thread.sleep(30000);
+            System.out.println("YELLOW");
+            colorControl.execute(Color.YELLOW).get();
+            Thread.sleep(30000);
         }
 
 //        ColorLoopControl colorControlX = new ColorLoopControl("Home", colorList);
