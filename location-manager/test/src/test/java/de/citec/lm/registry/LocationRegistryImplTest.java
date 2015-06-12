@@ -22,10 +22,9 @@ import de.citec.lm.core.registry.LocationRegistryService;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import java.io.IOException;
-import java.io.NotActiveException;
-import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -34,8 +33,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.homeautomation.unit.AmbientLightType;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.geometry.PoseType.Pose;
+import rst.geometry.RotationType.Rotation;
+import rst.geometry.TranslationType.Translation;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -177,7 +177,30 @@ public class LocationRegistryImplTest {
         assertTrue("The new location isn't registered as a root location.", registeredHome.getRoot());
         remote.requestStatus();
         assertFalse("Root hasn't become a child location after setting its parent.", remote.getLocationConfigById(registeredLiving.getId()).getRoot());
+    }
+    
+    @Test
+    public void testPositionChanges() throws Exception {
+        LocationConfig root = LocationConfig.newBuilder().setLabel("RootPosition").build();
+        root = remote.registerLocationConfig(root);
+        assertTrue("The new location isn't registered as a root location.", root.getRoot());
 
+        LocationConfig child = LocationConfig.newBuilder().setLabel("ChildPosition").setParentId(root.getId()).build();
+        child = remote.registerLocationConfig(child);
+        assertTrue("The new location isn't registered as a child location.", !child.getRoot());
+        remote.requestStatus(); 
+        
+        Translation translation = Translation.newBuilder().setX(1).setY(2).setZ(3).build();
+        Rotation rotation = Rotation.newBuilder().setQw(1).setQx(2).setQy(3).setQz(4).build();
+        Pose position = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
+        root = root.toBuilder().setPosition(position).build();
+        root = remote.updateLocationConfig(root);
+        assertEquals("The position for the root location has not been updated", position, root.getPosition());
+        
+        child = child.toBuilder().setPosition(position).build();
+        root = root.toBuilder().setChild(0, child).build();
+        root = remote.updateLocationConfig(root);
+        assertEquals("The position for the child location has not been updated", position, root.getChild(0).getPosition());
     }
 
     @Test

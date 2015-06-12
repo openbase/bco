@@ -68,6 +68,12 @@ public class ParentChildConsistencyHandler implements ProtoBufRegistryConsistenc
                 if (!childLocationConfig.getParentId().equals(locationConfig.getId())) {
                     throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
                 }
+
+                // check if the position of a child has been changed in the parent location
+                // TODO:critical because every time the value in the parent is set for the child. What is if the child is updated?
+                if (!childLocationConfig.getPosition().equals(child.getMessage().getPosition())) {
+                    throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPosition(childLocationConfig.getPosition())), this);
+                }
             }
         } finally { //sync children with registry
             if (!locationConfig.getChildList().isEmpty()) {
