@@ -13,7 +13,10 @@ import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.DimService;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ShutterService;
+import de.citec.dal.hal.service.StandbyService;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotSupportedException;
 
 /**
  *
@@ -49,5 +52,10 @@ public class OpenhabServiceFactory implements ServiceFactory {
     @Override
     public DimService newDimmService(Device device, DimService unit) throws InstantiationException {
        return new DimServiceImpl(device, unit);
+    }
+
+    @Override
+    public StandbyService newStandbyService(Device device, StandbyService unit) throws InstantiationException {
+        throw new InstantiationException(this, new NotSupportedException("newStandbyService", this));
     }
 }

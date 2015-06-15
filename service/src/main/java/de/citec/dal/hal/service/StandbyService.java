@@ -5,7 +5,6 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.provider.PowerProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
@@ -13,30 +12,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
  * @author mpohling
  */
-public interface PowerService extends Service, PowerProvider {
+public interface StandbyService extends Service, StandbyProvider {
 
-    public void setPower(final PowerState.State state) throws CouldNotPerformException;
+    public void setStandby(final StandbyState.State state) throws CouldNotPerformException;
 
-    public class SetPowerCallback extends EventCallback {
+    public class SetStandbyCallback extends EventCallback {
 
-        private static final Logger logger = LoggerFactory.getLogger(SetPowerCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(SetStandbyCallback.class);
 
-        private final PowerService service;
+        private final StandbyService service;
 
-        public SetPowerCallback(final PowerService service) {
+        public SetStandbyCallback(final StandbyService service) {
             this.service = service;
         }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setPower(((PowerState) request.getData()).getValue());
+                service.setStandby(((StandbyState) request.getData()).getValue());
                 return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
