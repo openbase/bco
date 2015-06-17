@@ -13,7 +13,7 @@ import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
- * @author Divine <DivineThreepwood@gmail.com>
+ * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class UnitConfigIdGenerator implements IdGenerator<String, UnitConfigType.UnitConfig> {
 
