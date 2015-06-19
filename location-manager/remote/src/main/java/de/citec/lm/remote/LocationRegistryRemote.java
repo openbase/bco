@@ -76,7 +76,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         try {
             notifyUpdated(requestStatus());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
+            ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
         }
     }
 
@@ -143,6 +143,13 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         return messages;
     }
 
+    /**
+     * Method returns all unit configurations which are direct or recursive related to the given location id.
+     * @param locationConfigId
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException 
+     */
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
@@ -152,6 +159,14 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         return unitConfigList;
     }
 
+    /**
+     * Method returns all unit configurations which are direct or recursive related to the given location id and an instance of the given unit type.
+     * @param type
+     * @param locationConfigId
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException 
+     */
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTemplateType.UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
@@ -163,6 +178,14 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         return unitConfigList;
     }
 
+    /**
+     * Method returns all service configurations which are direct or recursive related to the given location id.
+     * 
+     * @param locationConfigId
+     * @return the list of service configurations.
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException is thrown if the given location config id is unknown.
+     */
     @Override
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
@@ -172,11 +195,37 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         return serviceConfigList;
     }
 
+    
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException 
+     */
+    public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
+        getData();
+        for (LocationConfig locationConfig : locationRemoteRegistry.getMessages()) {
+            if (locationConfig.hasRoot() && locationConfig.getRoot()) {
+                return locationConfig;
+            }
+        }
+        throw new NotAvailableException("rootlocation");
+    }
+    
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException
+     * @deprecated may deprecated in a future release, use getRootLocationConfig() instead.
+     */
+    
+    @Deprecated
     public List<LocationConfig> getRootLocationConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
         List<LocationConfig> rootLocationConfigs = new ArrayList<>();
         for (LocationConfig locationConfig : locationRemoteRegistry.getMessages()) {
-            if (locationConfig.hasRoot()) {
+            if (locationConfig.hasRoot() && locationConfig.getRoot()) {
                 rootLocationConfigs.add(locationConfig);
             }
         }

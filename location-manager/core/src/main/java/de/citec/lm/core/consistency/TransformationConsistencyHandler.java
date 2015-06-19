@@ -74,7 +74,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
                 transformation.setAuthority(LocationManager.APP_NAME);
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+                ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
             }
         }
     }

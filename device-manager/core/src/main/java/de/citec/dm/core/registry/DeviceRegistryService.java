@@ -174,7 +174,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
     }
 

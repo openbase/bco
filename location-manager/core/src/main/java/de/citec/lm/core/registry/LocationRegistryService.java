@@ -138,7 +138,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
     }
 

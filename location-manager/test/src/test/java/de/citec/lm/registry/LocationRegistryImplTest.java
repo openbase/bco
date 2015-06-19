@@ -83,7 +83,7 @@ public class LocationRegistryImplTest {
                 try {
                     deviceRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                 }
             }
         });
@@ -95,7 +95,7 @@ public class LocationRegistryImplTest {
                 try {
                     locationRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                 }
             }
         });

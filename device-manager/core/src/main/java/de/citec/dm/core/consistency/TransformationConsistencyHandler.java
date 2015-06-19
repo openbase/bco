@@ -81,7 +81,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+            ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
         }
 
         // publish unit transformation
@@ -104,7 +104,7 @@ public class TransformationConsistencyHandler implements ProtoBufRegistryConsist
             try {
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+                ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
             }
         }
     }

@@ -105,7 +105,7 @@ public class DeviceRegistryImplTest {
                 try {
                     deviceRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                 }
             }
         });
@@ -117,7 +117,7 @@ public class DeviceRegistryImplTest {
                 try {
                     locationRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                 }
             }
         });
