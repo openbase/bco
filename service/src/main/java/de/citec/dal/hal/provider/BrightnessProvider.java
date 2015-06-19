@@ -36,7 +36,7 @@ public interface BrightnessProvider extends Provider {
 			try {
 				return new Event(Double.class, provider.getBrightness());
 			} catch (Exception ex) {
-				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+				throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
 			}
 		}
 	}

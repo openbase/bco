@@ -37,7 +37,7 @@ public interface TamperProvider extends Provider {
             try {
                 return new Event(TamperState.class, provider.getTamper());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

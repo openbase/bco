@@ -36,7 +36,7 @@ public interface PowerConsumptionProvider extends Provider {
             try {
                 return new Event(Float.class, provider.getPowerConsumption());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

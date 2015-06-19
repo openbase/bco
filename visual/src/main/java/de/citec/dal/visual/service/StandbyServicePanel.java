@@ -9,12 +9,12 @@ package de.citec.dal.visual.service;
  *
  * @author mpohling
  */
-public class ColorService extends javax.swing.JPanel {
+public class StandbyServicePanel extends AbstractServicePanel {
 
     /**
-     * Creates new form ColorService
+     * Creates new form StandbyService
      */
-    public ColorService() {
+    public StandbyServicePanel() throws de.citec.jul.exception.InstantiationException {
         initComponents();
     }
 
@@ -27,26 +27,23 @@ public class ColorService extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        colorChooser = new javax.swing.JColorChooser();
-
-        setBorder(javax.swing.BorderFactory.createTitledBorder("Color"));
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 649, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(0, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGap(0, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JColorChooser colorChooser;
     // End of variables declaration//GEN-END:variables
+    @Override
+    protected void updateDynamicComponents() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

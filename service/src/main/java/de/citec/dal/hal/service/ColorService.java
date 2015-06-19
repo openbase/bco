@@ -39,7 +39,7 @@ public interface ColorService extends ColorProvider {
                 service.setColor(((HSVColorType.HSVColor) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
             }
         }
     }

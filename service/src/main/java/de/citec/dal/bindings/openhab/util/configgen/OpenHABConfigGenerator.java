@@ -62,7 +62,7 @@ public class OpenHABConfigGenerator {
                 try {
                     generate();
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                 }
             }
         });
@@ -73,7 +73,7 @@ public class OpenHABConfigGenerator {
                 try {
                     generate();
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                 }
             }
         });
@@ -94,7 +94,7 @@ public class OpenHABConfigGenerator {
         try {
             itemConfigGenerator.generate();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
         deviceRegistryRemote.shutdown();
     }
@@ -122,7 +122,7 @@ public class OpenHABConfigGenerator {
                         logger.info("Detect config file deletion!");
                         openHABConfigGenerator.generate();
                     } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not regenerate config!", ex));
+                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not regenerate config!", ex));
                     }
                 }
             });
@@ -139,14 +139,14 @@ public class OpenHABConfigGenerator {
                     try {
                         monitor.stop();
                     } catch (Exception ex) {
-                        ExceptionPrinter.printHistory(logger, ex);
+                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
                     }
                 }
             }));
 
 
         } catch (Exception ex) {
-            throw ExceptionPrinter.printHistory(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
     }
 }

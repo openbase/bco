@@ -8,43 +8,39 @@ package de.citec.dal.visual.util;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.remote.unit.DALRemoteService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import de.citec.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
+import rst.rsb.ScopeType.Scope;
 
 /**
  *
  * @author mpohling
- * @param <M>
- * @param <R>
  */
-public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
+public abstract class RSBRemoteView extends javax.swing.JPanel implements Observer<GeneratedMessage> {
+//public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Class<R> remoteServiceClass;
-    private R remoteService;
+    private DALRemoteService remoteService;
 
     /**
      * Creates new form RSBViewService
      */
     public RSBRemoteView() {
         this.initComponents();
-        this.remoteServiceClass = null;
         logger.warn("DO NOT USE THIS CONSTRUCTOR! This constructor is just for netbeans gui gen support.");
     }
 
-    public RSBRemoteView(Class<R> remoteServiceClass) {
-        this.initComponents();
-        this.remoteServiceClass = remoteServiceClass;
-    }
-
-    private synchronized void setRemoteService(final R remoteService) {
+    private synchronized void setRemoteService(final DALRemoteService remoteService) {
 
         if (this.remoteService != null) {
             this.remoteService.shutdown();
@@ -63,47 +59,79 @@ public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRem
     }
 
     @Override
-    public void update(Observable<M> source, M data) {
+    public void update(Observable<GeneratedMessage> source, GeneratedMessage data) {
         updateDynamicComponents(data);
     }
 
-    public R getRemoteService() throws NotAvailableException {
+    public DALRemoteService getRemoteService() throws NotAvailableException {
         if (remoteService == null) {
             throw new NotAvailableException("remoteService");
         }
         return remoteService;
     }
-
-    public M getData() throws CouldNotPerformException {
-        return getRemoteService().getData();
-    }
-
-    public void setUnitConfig(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        logger.info("Update Scope: " + unitConfig);
-
-        R service;
-
+//    public M getData() throws CouldNotPerformException {
+//        return getRemoteService().getData();
+//    }
+    public void setUnitRemote(final UnitTemplateType.UnitTemplate.UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
+        logger.info("Setup unit remote: " + unitType + ".");
         try {
-            if (remoteServiceClass == null) {
-                throw new InvalidStateException("RemoteService is not configurated!");
-            }
-
-            try {
-                service = remoteServiceClass.newInstance();
-                service.init(unitConfig);
-            } catch (java.lang.InstantiationException | IllegalAccessException ex) {
-                throw new InstantiationException("RemoteService could not be instaniated!", ex);
-            }
-            
-        } catch (InstantiationException | InvalidStateException ex) {
-            throw new CouldNotPerformException("Could not setup scope!", ex);
+            Class<? extends DALRemoteService> remoteClass = loadUnitRemoteClass(unitType);
+            DALRemoteService unitRemote = instantiatUnitRemote(remoteClass);
+            initUnitRemote(unitRemote, scope);
+            unitRemote.activate();
+            setRemoteService(unitRemote);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not setup unit remote config!", ex);
         }
-
-        service.activate();
-        setRemoteService(service);
     }
 
-    protected abstract void updateDynamicComponents(M data);
+    public void setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        logger.info("Setup unit remote: " + unitConfig.getId());
+        try {
+            Class<? extends DALRemoteService> remoteClass = loadUnitRemoteClass(unitConfig.getTemplate().getType());
+            DALRemoteService unitRemote = instantiatUnitRemote(remoteClass);
+            initUnitRemote(unitRemote, unitConfig);
+            unitRemote.activate();
+            setRemoteService(unitRemote);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not setup unit remote config!", ex);
+        }
+    }
+
+    private Class<? extends DALRemoteService> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+        try {
+            return (Class<? extends DALRemoteService>) getClass().getClassLoader().loadClass(remoteClassName);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not detect remote class for UnitType[" + unitType.name() + "]", ex);
+        }
+    }
+
+    private DALRemoteService instantiatUnitRemote(Class<? extends DALRemoteService> remoteClass) throws InstantiationException {
+        try {
+            return remoteClass.newInstance();
+        } catch (Exception ex) {
+            throw new InstantiationException("Could not instantiate unit remote out of RemoteClass[" + remoteClass.getSimpleName() + "]!", ex);
+        }
+    }
+
+    private void initUnitRemote(DALRemoteService unitRemote, UnitConfig config) throws CouldNotPerformException {
+        try {
+            unitRemote.init(config);
+        } catch (InitializationException ex) {
+            throw new CouldNotPerformException("Could not init " + unitRemote + "!", ex);
+        }
+    }
+
+    private void initUnitRemote(DALRemoteService unitRemote, Scope scope) throws CouldNotPerformException {
+        try {
+            unitRemote.init(scope);
+        } catch (InitializationException ex) {
+            throw new CouldNotPerformException("Could not init " + unitRemote + "!", ex);
+        }
+    }
+
+    protected abstract void updateDynamicComponents(GeneratedMessage data);
 
     /**
      * This method is called from within the constructor to initialize the form.

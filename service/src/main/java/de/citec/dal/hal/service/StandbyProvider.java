@@ -38,7 +38,7 @@ public interface StandbyProvider extends Provider {
             try {
                 return new Event(StandbyStateType.StandbyState.class, provider.getStandby());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

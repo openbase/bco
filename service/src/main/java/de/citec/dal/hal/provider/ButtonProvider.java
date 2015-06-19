@@ -37,7 +37,7 @@ public interface ButtonProvider extends Provider {
             try {
                 return new Event(ButtonState.class, provider.getButton());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

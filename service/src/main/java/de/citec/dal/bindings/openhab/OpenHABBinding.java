@@ -24,12 +24,10 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
-import rsb.RSBException;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.EventCallback;
-import rsb.patterns.LocalServer;
 import rst.homeautomation.openhab.DALBindingType;
 import rst.homeautomation.openhab.DALBindingType.DALBinding;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -140,7 +138,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
             try {
                 OpenHABBinding.this.internalReceiveUpdate((OpenhabCommand) request.getData());
             } catch (Throwable cause) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
             }
             return new Event(Void.class);
         }

@@ -36,7 +36,7 @@ public interface OpeningRatioProvider extends Provider {
             try {
                 return new Event(Double.class, provider.getOpeningRatio());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

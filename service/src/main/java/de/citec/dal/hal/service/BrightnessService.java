@@ -37,7 +37,7 @@ public interface BrightnessService extends Service, BrightnessProvider {
             try {
                 service.setBrightness(((double) request.getData()));
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, service, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
             }
             return new Event(Void.class);
         }

@@ -37,7 +37,7 @@ public interface EnergyProvider extends Provider {
 			try {
 				return new Event(EnergyState.class, provider.getEnergy());
 			} catch (Exception ex) {
-				throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+				throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
 			}
 		}
 	}

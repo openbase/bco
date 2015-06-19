@@ -36,7 +36,7 @@ public interface TemperatureProvider extends Provider {
             try {
                 return new Event(Float.class, provider.getTemperature());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistory(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
         }
     }

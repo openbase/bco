@@ -64,7 +64,7 @@ public class DALServiceTest {
         try {
             instance.init();
         } catch (Exception ex) {
-            throw ExceptionPrinter.printHistory(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
         instance.activate();
         instance.deactivate();
