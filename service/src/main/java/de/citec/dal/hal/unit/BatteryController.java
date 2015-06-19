@@ -12,7 +12,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.EnergyStateType.EnergyState;
+import rst.homeautomation.state.BatteryStateType.BatteryState;
 import rst.homeautomation.unit.BatteryType.Battery;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -21,30 +21,30 @@ import rst.homeautomation.unit.UnitConfigType;
  * @author thuxohl
  */
 public class BatteryController extends AbstractUnitController<Battery, Battery.Builder> implements BatteryInterface {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Battery.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(EnergyState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
-    
+
     public BatteryController(final UnitConfigType.UnitConfig config, Device device, Battery.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(config, BatteryController.class, device, builder);
     }
-    
-    public void updateEnergy(final EnergyState value) throws CouldNotPerformException {
+
+    public void updateBattery(final BatteryState value) throws CouldNotPerformException {
         logger.debug("Apply battery Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Battery.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setEnergyState(value);
+            dataBuilder.getInternalBuilder().setBatteryState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply battery Update[" + value + "] for " + this + "!", ex);
         }
     }
-    
+
     @Override
-    public EnergyState getEnergy() throws NotAvailableException {
+    public BatteryState getBattery() throws NotAvailableException {
         try {
-            return getData().getEnergyState();
+            return getData().getBatteryState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("battery", ex);
         }

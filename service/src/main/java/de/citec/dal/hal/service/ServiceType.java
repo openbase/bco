@@ -6,7 +6,7 @@
 package de.citec.dal.hal.service;
 
 import de.citec.dal.bindings.openhab.service.OpenHABService;
-import de.citec.dal.hal.provider.EnergyProvider;
+import de.citec.dal.hal.provider.BatteryProvider;
 import de.citec.dal.hal.provider.ButtonProvider;
 import de.citec.dal.hal.provider.HandleProvider;
 import de.citec.dal.hal.provider.MotionProvider;
@@ -32,7 +32,7 @@ import rst.homeautomation.service.ServiceTypeHolderType;
 public enum ServiceType {
 
     MULTI(MultiService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.UNKNOWN),
-    BATTERY(EnergyProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BATTERY_PROVIDER),
+    BATTERY(BatteryProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BATTERY_PROVIDER),
     BRIGHTNESS(BrightnessService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BRIGHTNESS_SERVICE),
     BUTTON(ButtonProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BUTTON_PROVIDER),
     COLOR(ColorService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.COLOR_SERVICE),

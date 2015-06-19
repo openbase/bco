@@ -24,7 +24,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.EnergyStateType.EnergyState;
+import rst.homeautomation.state.BatteryStateType.BatteryState;
 
 /**
  *
@@ -97,8 +97,9 @@ public class BatteryRemoteTest {
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         double level = 34.0;
-        ((BatteryController) dalService.getUnitRegistry().get(batteryRemote.getId())).updateEnergy(EnergyState.newBuilder().setLevel(level).build());
+        BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
+        ((BatteryController) dalService.getUnitRegistry().get(batteryRemote.getId())).updateBattery(state);
         batteryRemote.requestStatus();
-        assertEquals("The getter for the battery level returns the wrong value!", level, batteryRemote.getEnergy().getLevel(), 0.1);
+        assertEquals("The getter for the battery level returns the wrong value!", state, batteryRemote.getBattery());
     }
 }

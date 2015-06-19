@@ -30,6 +30,8 @@ public final class OpenhabCommandTransformer {
                         return MotionStateTransformer.transform(command.getDecimal());
                     case TAMPER_PROVIDER:
                         return TamperStateTransformer.transform(command.getDecimal());
+                    case BATTERY_PROVIDER:
+                        return BatteryStateTransformer.transform(command.getDecimal());
                     default:
                         // native double type
                         return command.getDecimal();
