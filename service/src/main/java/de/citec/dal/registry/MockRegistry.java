@@ -18,6 +18,7 @@ import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.storage.jp.JPInitializeDB;
 import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
@@ -122,14 +123,15 @@ public class MockRegistry {
 
     public MockRegistry() throws InstantiationException {
         try {
+            String user = ScopeGenerator.convertIntoValidScopeComponent(System.getProperty("user.name"));
             JPService.registerProperty(JPInitializeDB.class, true);
-            JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/test-device-registry"));
-            JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/test-location-registry"));
+            JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/" + user + "/test-device-registry"));
+            JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/" + user + "/test-location-registry"));
             JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
             JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
             JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
-            JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/device_registry"));
-            JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/location_registry"));
+            JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/" + user + "/device_registry"));
+            JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/" + user + "/location_registry"));
             JPService.setupJUnitTestMode();
 
             Thread deviceRegistryThread = new Thread(new Runnable() {
