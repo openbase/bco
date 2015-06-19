@@ -30,7 +30,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         super(config, TemperatureSensorController.class, device, builder);
     }
 
-    public void updateTemperature(final float value) throws CouldNotPerformException {
+    public void updateTemperature(final Double value) throws CouldNotPerformException {
         logger.debug("Apply temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
@@ -41,7 +41,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
     }
 
     @Override
-    public float getTemperature() throws NotAvailableException {
+    public Double getTemperature() throws NotAvailableException {
         try {
             return getData().getTemperature();
         } catch (CouldNotPerformException ex) {

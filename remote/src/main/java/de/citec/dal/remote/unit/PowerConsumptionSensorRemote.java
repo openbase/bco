@@ -29,7 +29,7 @@ public class PowerConsumptionSensorRemote extends DALRemoteService<PowerConsumpt
     }   
 
     @Override
-    public float getPowerConsumption() throws CouldNotPerformException {
+    public Double getPowerConsumption() throws CouldNotPerformException {
         return this.getData().getConsumption();
     }
 }

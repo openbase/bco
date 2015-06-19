@@ -19,7 +19,7 @@ import rsb.patterns.EventCallback;
  */
 public interface PowerConsumptionProvider extends Provider {
 
-    public float getPowerConsumption() throws CouldNotPerformException;
+    public Double getPowerConsumption() throws CouldNotPerformException;
 
     public class GetPowerConsumptionCallback extends EventCallback {
 

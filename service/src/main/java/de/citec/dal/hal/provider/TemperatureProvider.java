@@ -19,7 +19,7 @@ import rsb.patterns.EventCallback;
  */
 public interface TemperatureProvider extends Provider {
 
-    public float getTemperature() throws CouldNotPerformException;
+    public Double getTemperature() throws CouldNotPerformException;
 
     public class GetTemperatureCallback extends EventCallback {
 

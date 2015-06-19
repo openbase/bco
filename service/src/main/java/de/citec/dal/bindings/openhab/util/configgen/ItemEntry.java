@@ -174,9 +174,12 @@ public class ItemEntry {
                 return "Color";
             case OPENING_RATIO_PROVIDER:
             case POWER_CONSUMPTION_PROVIDER:
-                return "Number";
+            case TEMPERATURE_PROVIDER:
+            case MOTION_PROVIDER:
+            case TAMPER_PROVIDER:
+            case BRIGHTNESS_PROVIDER:
             case BATTERY_PROVIDER:
-                return "Percent";
+                return "Number";
             case SHUTTER_PROVIDER:
             case SHUTTER_SERVICE:
                 return "Rollershutter";
@@ -184,11 +187,6 @@ public class ItemEntry {
             case POWER_PROVIDER:
             case BUTTON_PROVIDER:
                 return "Switch";
-            case TEMPERATURE_PROVIDER:
-            case MOTION_PROVIDER:
-            case TAMPER_PROVIDER:
-            case BRIGHTNESS_PROVIDER:
-                return "Number";
             case BRIGHTNESS_SERVICE:
             case DIM_PROVIDER:
             case DIM_SERVICE:
