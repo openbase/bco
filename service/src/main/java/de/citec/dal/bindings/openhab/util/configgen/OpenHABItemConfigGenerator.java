@@ -23,6 +23,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.OpenHABBindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -85,10 +86,19 @@ public class OpenHABItemConfigGenerator {
     private void generateItemEntries() throws CouldNotPerformException {
         try {
             List<DeviceConfigType.DeviceConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceConfigList();
+            
             for (DeviceConfig deviceConfig : deviceConfigList) {
+                
+                // ignore non openhab items
                 if (deviceConfig.getDeviceClass().getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
                     continue;
                 }
+                
+                // ignore non installed items
+                if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                    continue;
+                }
+                
                 for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
