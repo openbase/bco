@@ -30,7 +30,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         super(config, PowerConsumptionSensorController.class, device, builder);
     }
 
-    public void updatePowerConsumption(final float value) throws CouldNotPerformException {
+    public void updatePowerConsumption(final Float value) throws CouldNotPerformException {
         logger.debug("Apply power consumption Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<PowerConsumptionSensor.Builder> dataBuilder = getDataBuilder(this)) {
@@ -44,7 +44,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
     public float getPowerConsumption() throws NotAvailableException {
         try {
             return getData().getConsumption();
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("power consumption", ex);
         }
     }
