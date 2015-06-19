@@ -30,7 +30,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 		super(config, BrightnessSensorController.class, device, builder);
 	}
 
-	public void updateBrightness(final Float value) throws CouldNotPerformException {
+	public void updateBrightness(final Double value) throws CouldNotPerformException {
         logger.debug("Apply brightness Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<BrightnessSensor.Builder> dataBuilder = getDataBuilder(this)) {
@@ -44,7 +44,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 	public Double getBrightness() throws NotAvailableException {
         try {
             //TODO mpohling: check double or float?
-            return (double) getData().getBrightness();
+            return getData().getBrightness();
         } catch(CouldNotPerformException ex) {
             throw new NotAvailableException("brightness", ex);
         }

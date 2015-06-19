@@ -16,7 +16,7 @@ import rst.homeautomation.unit.TemperatureSensorType;
  * @author thuxohl
  */
 public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensorType.TemperatureSensor> implements TemperatureSensorInterface {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
     }
@@ -29,7 +29,7 @@ public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensorT
     }
 
     @Override
-    public float getTemperature() throws CouldNotPerformException {
+    public Double getTemperature() throws CouldNotPerformException {
         return this.getData().getTemperature();
     }
 

@@ -19,7 +19,7 @@ import rst.homeautomation.service.ServiceTypeHolderType;
 public final class OpenhabCommandTransformer {
 
     public static Object getServiceData(OpenhabCommandType.OpenhabCommand command, ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException {
-        
+
         // Transform service data.
         switch (command.getType()) {
             case DECIMAL:
@@ -28,9 +28,6 @@ public final class OpenhabCommandTransformer {
                         return MotionStateTransformer.transform(command.getDecimal());
                     case TAMPER_PROVIDER:
                         return TamperStateTransformer.transform(command.getDecimal());
-                    case BRIGHTNESS_PROVIDER:
-                    case POWER_CONSUMPTION_PROVIDER:
-                        return (float) command.getDecimal();
                     default:
                         // native double type
                         return command.getDecimal();

@@ -95,7 +95,7 @@ public class PowerConsumptionSensorRemoteTest {
     @Test
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
-        float consumption = 0.0F;
+        double consumption = 0.0F;
         ((PowerConsumptionSensorController) dalService.getUnitRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(consumption);
         powerConsumptionRemote.requestStatus();
         Assert.assertEquals("The getter for the power consumption returns the wrong value!", consumption, powerConsumptionRemote.getPowerConsumption(), 0.1);

@@ -95,7 +95,7 @@ public class TemperatureSensorRemoteTest {
     @Test
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
-        float temperature = 37.0F;
+        double temperature = 37.0F;
         ((TemperatureSensorController) dalService.getUnitRegistry().get(temperatureSensorRemote.getId())).updateTemperature(temperature);
         temperatureSensorRemote.requestStatus();
         Assert.assertEquals("The getter for the tamper switch state returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);

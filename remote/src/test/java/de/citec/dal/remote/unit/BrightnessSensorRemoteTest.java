@@ -95,7 +95,7 @@ public class BrightnessSensorRemoteTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         double brightness = 0.5;
-        ((BrightnessSensorController) dalService.getUnitRegistry().get(brightnessSensorRemote.getId())).updateBrightness((float) brightness);
+        ((BrightnessSensorController) dalService.getUnitRegistry().get(brightnessSensorRemote.getId())).updateBrightness(brightness);
         brightnessSensorRemote.requestStatus();
         assertEquals("The getter for the brightness returns the wrong value!", brightness, brightnessSensorRemote.getBrightness(), 0.1);
     }
