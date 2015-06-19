@@ -9,27 +9,29 @@ import de.citec.dal.hal.unit.PowerConsumptionSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.PowerConsumptionSensorType;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class PowerConsumptionSensorRemote extends DALRemoteService<PowerConsumptionSensorType.PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
-    
+public class PowerConsumptionSensorRemote extends DALRemoteService<PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
+
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorType.PowerConsumptionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
 
     public PowerConsumptionSensorRemote() {
     }
 
     @Override
-    public void notifyUpdated(PowerConsumptionSensorType.PowerConsumptionSensor data) {
-    }   
+    public void notifyUpdated(PowerConsumptionSensor data) {
+    }
 
     @Override
-    public Double getPowerConsumption() throws CouldNotPerformException {
-        return this.getData().getConsumption();
+    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
+        return this.getData().getPowerConsumptionState();
     }
 }

@@ -24,6 +24,8 @@ public final class OpenhabCommandTransformer {
         switch (command.getType()) {
             case DECIMAL:
                 switch (serviceType) {
+                    case POWER_CONSUMPTION_PROVIDER:
+                        return PowerConsumptionStateTransformer.transform(command.getDecimal());
                     case MOTION_PROVIDER:
                         return MotionStateTransformer.transform(command.getDecimal());
                     case TAMPER_PROVIDER:

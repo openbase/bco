@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
  *
@@ -95,9 +96,12 @@ public class PowerConsumptionSensorRemoteTest {
     @Test
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
-        double consumption = 0.0F;
-        ((PowerConsumptionSensorController) dalService.getUnitRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(consumption);
+        double consumption = 200d;
+        double voltage = 100d;
+        double current = 2d;
+        PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
+        ((PowerConsumptionSensorController) dalService.getUnitRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(state);
         powerConsumptionRemote.requestStatus();
-        Assert.assertEquals("The getter for the power consumption returns the wrong value!", consumption, powerConsumptionRemote.getPowerConsumption(), 0.1);
+        Assert.assertEquals("The getter for the power consumption returns the wrong value!", state, powerConsumptionRemote.getPowerConsumption());
     }
 }

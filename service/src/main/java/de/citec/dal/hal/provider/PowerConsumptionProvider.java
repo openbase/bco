@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
  *
@@ -19,7 +20,7 @@ import rsb.patterns.EventCallback;
  */
 public interface PowerConsumptionProvider extends Provider {
 
-    public Double getPowerConsumption() throws CouldNotPerformException;
+    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException;
 
     public class GetPowerConsumptionCallback extends EventCallback {
 
@@ -34,7 +35,7 @@ public interface PowerConsumptionProvider extends Provider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(Float.class, provider.getPowerConsumption());
+                return new Event(PowerConsumptionState.class, provider.getPowerConsumption());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }
