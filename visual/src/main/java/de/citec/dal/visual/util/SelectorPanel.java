@@ -22,10 +22,14 @@ import de.citec.lm.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -56,6 +60,8 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private boolean init = false;
 
+    private ExecutorService serviceExecuterService;
+
     /**
      * Creates new form SelectorPanel
      *
@@ -63,6 +69,7 @@ public class SelectorPanel extends javax.swing.JPanel {
      */
     public SelectorPanel() throws InstantiationException {
         try {
+            this.serviceExecuterService = Executors.newSingleThreadExecutor();
             this.unitConfigObservable = new Observable<>();
             this.initComponents();
             this.setEnable(false);
@@ -175,6 +182,11 @@ public class SelectorPanel extends javax.swing.JPanel {
                     }
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
+
+                        // ignore non installed units
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getDeviceId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            continue;
+                        }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
                     }
                 }
@@ -185,6 +197,10 @@ public class SelectorPanel extends javax.swing.JPanel {
                     }
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
+                        // ignore non installed units
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getDeviceId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            continue;
+                        }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
                     }
                 }
@@ -488,7 +504,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_scopeCancelButtonActionPerformed
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-        if(scopeApplyButton.isEnabled()) {
+        if (scopeApplyButton.isEnabled()) {
             scopeApplyButtonActionPerformed(evt);
         }
     }//GEN-LAST:event_scopeTextFieldActionPerformed
@@ -498,34 +514,54 @@ public class SelectorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_locationComboBoxActionPerformed
 
     private void unitConfigComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unitConfigComboBoxActionPerformed
-        try {
-            unitConfigComboBox.setForeground(Color.BLACK);
-            UnitConfig selectedUnitConfig = ((UnitConfigHolder) unitConfigComboBox.getSelectedItem()).getConfig();
-            unitConfigObservable.notifyObservers(selectedUnitConfig);
-            scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
-        } catch (MultiException ex) {
-            unitConfigComboBox.setForeground(Color.RED);
-            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
-        }
-        updatenButtonStates();
+
+        final UnitConfigHolder unitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
+        final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
+
+        statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, serviceExecuterService.submit(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                try {
+                    unitConfigComboBox.setForeground(Color.BLACK);
+
+                    unitConfigObservable.notifyObservers(selectedUnitConfig);
+                    scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
+                } catch (MultiException ex) {
+                    unitConfigComboBox.setForeground(Color.RED);
+                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
+                }
+                updatenButtonStates();
+                return null;
+            }
+        }));
+
     }//GEN-LAST:event_unitConfigComboBoxActionPerformed
 
     private void scopeApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeApplyButtonActionPerformed
-        try {
-            scopeTextField.setForeground(Color.BLACK);
-            Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
-            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setTemplate(UnitTemplateType.UnitTemplate.newBuilder().setType(detectUnitTypeOutOfScope(scope)));
-            unitConfigObservable.notifyObservers(unitConfig.build());
-            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
-        } catch (CouldNotPerformException ex) {
-            scopeTextField.setForeground(Color.RED);
-            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
-        }
+        statusPanel.setStatus("Load new remote control " + scopeTextField.getText().toLowerCase() + "...", StatusPanel.StatusType.INFO, serviceExecuterService.submit(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                try {
+                    scopeTextField.setForeground(Color.BLACK);
+                    Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
+                    UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setTemplate(UnitTemplateType.UnitTemplate.newBuilder().setType(detectUnitTypeOutOfScope(scope)));
+                    unitConfigObservable.notifyObservers(unitConfig.build());
+                    scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
+                } catch (CouldNotPerformException ex) {
+                    scopeTextField.setForeground(Color.RED);
+                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
+                }
+                return null;
+                
+            }
+        }));
         updatenButtonStates();
     }//GEN-LAST:event_scopeApplyButtonActionPerformed
 
     private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
-        
+
     }//GEN-LAST:event_scopeTextFieldKeyTyped
 
     private void scopeTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyReleased
@@ -546,7 +582,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         boolean validScope;
 
         String text = scopeTextField.getText().toLowerCase();
-        
+
         try {
             detectUnitTypeOutOfScope(ScopeTransformer.transform(new rsb.Scope(text)));
             validScope = true;
@@ -559,12 +595,12 @@ public class SelectorPanel extends javax.swing.JPanel {
         } catch (NotAvailableException ex) {
             changes = !scopeTextField.getText().isEmpty();
         }
-        
+
         scopeApplyButton.setEnabled(validScope && changes);
         scopeCancelButton.setEnabled(changes);
 
         if (validScope) {
-            if(changes) {
+            if (changes) {
                 scopeTextField.setForeground(Color.BLACK);
             } else {
                 scopeTextField.setForeground(Color.BLUE.darker());

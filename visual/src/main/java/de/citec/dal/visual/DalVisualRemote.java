@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import javax.swing.ImageIcon;
 
 /**
@@ -43,8 +46,8 @@ public class DalVisualRemote extends javax.swing.JFrame {
             initComponents();
             setIconImage(new ImageIcon(ClassLoader.getSystemResource("dal-visual-remote.png")).getImage());
             selectorPanel.addObserver(genericUnitPanel.getUnitConfigObserver());
-            selectorPanel.init();
-        } catch (CouldNotPerformException ex) {
+            init();
+        } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -52,8 +55,20 @@ public class DalVisualRemote extends javax.swing.JFrame {
     public StatusPanel getStatusPanel() {
         return statusPanel;
     }
-    
-    
+
+    public void init() throws InterruptedException, CouldNotPerformException {
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    selectorPanel.init();
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(logger, ex);
+                }
+            }
+        });
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -107,7 +122,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
      *
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws InterruptedException, InvocationTargetException {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -129,12 +144,13 @@ public class DalVisualRemote extends javax.swing.JFrame {
         JPService.setApplicationName("dal-visual-remote");
         JPService.parseAndExitOnError(args);
 
+
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
                 try {
-                    new DalVisualRemote().setVisible(true);
+                    new DalVisualRemote().setVisible(true);;
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory(logger, ex);
                     System.exit(1);

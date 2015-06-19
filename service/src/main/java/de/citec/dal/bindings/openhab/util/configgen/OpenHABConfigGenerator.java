@@ -16,8 +16,6 @@ import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;

@@ -57,12 +57,6 @@ public class GenericUnitPanel extends RSBRemoteView {
     private void updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         setUnitRemote(unitConfig);
         
-        String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name())
-                    + "[" + unitConfig.getLabel() + "]"
-                    + " @ " + unitConfig.getPlacementConfig().getLocationId();
-        
-        setBorder(BorderFactory.createTitledBorder("Remote Control - "+remoteLabel));
-        
         contextPanel.removeAll();
         List<JComponent> componentList = new ArrayList<>();
         JPanel servicePanel;
@@ -77,6 +71,12 @@ public class GenericUnitPanel extends RSBRemoteView {
                 ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceType.name() + "]",ex ));
             }
         }
+        
+        String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name())
+                    + "[" + unitConfig.getLabel() + "]"
+                    + " @ " + unitConfig.getPlacementConfig().getLocationId();
+        
+        setBorder(BorderFactory.createTitledBorder("Remote Control - "+remoteLabel));
         
         LayoutGenerator.designList(contextPanel, componentList);
         validate();

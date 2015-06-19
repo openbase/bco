@@ -7,12 +7,8 @@ package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
-import de.citec.dal.visual.util.StatusPanel;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
-import de.citec.jul.exception.NotAvailableException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import de.citec.jul.exception.InstantiationException;

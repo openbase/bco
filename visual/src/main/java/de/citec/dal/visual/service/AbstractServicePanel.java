@@ -9,15 +9,18 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.visual.DalVisualRemote;
 import de.citec.dal.visual.util.StatusPanel;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import de.citec.jul.schedule.SyncObject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.lang.Thread;
+import java.util.logging.Level;
 
 /**
  *
@@ -32,14 +35,17 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     private Observable observable;
     private final Observer observer;
     protected StatusPanel statusPanel;
+    private ScheduledExecutorService serviceExecuterService;
+    private SyncObject executerSync = new SyncObject("ExecuterSync");
 
     /**
      * Creates new form AbstractServiceView
+     *
      * @throws de.citec.jul.exception.InstantiationException
      */
     public AbstractServicePanel() throws InstantiationException {
         try {
-//        initComponents();
+            this.serviceExecuterService = Executors.newSingleThreadScheduledExecutor();
             this.observer = new Observer() {
 
                 @Override
@@ -48,6 +54,25 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
                 }
             };
             this.statusPanel = DalVisualRemote.getInstance().getStatusPanel();
+            new Thread() {
+
+                @Override
+                public void run() {
+                    while (!isInterrupted()) {
+                        synchronized (executerSync) {
+                            if (lastCallable == null) {
+                                try {
+                                    executerSync.wait();
+                                } catch (InterruptedException ex) {
+                                    break;
+                                }
+                            }
+                            serviceExecuterService.submit(lastCallable);
+                            lastCallable = null;
+                        }
+                    }
+                }
+            }.start();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -60,12 +85,26 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         return service.getServiceType().name();
     }
 
+    private Callable<Void> lastCallable;
+
     public void execute(Callable<Void> callable) {
-        try {
-            statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, Executors.newSingleThreadExecutor().submit(callable));
-        } catch (NotAvailableException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+        synchronized (executerSync) {
+            lastCallable = callable;
+            executerSync.notifyAll();
         }
+
+//        try {
+////            try {
+//            if (serviceExecuterService.isTerminated()) {
+//                lastCallable = null;
+//                statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, serviceExecuterService.submit(callable));
+//            } else {
+//                lastCallable = callable;
+//            }
+////            } catch (InterruptedException ex) {
+////
+////            }
+//       
     }
 
     public S getService() throws NotAvailableException {
