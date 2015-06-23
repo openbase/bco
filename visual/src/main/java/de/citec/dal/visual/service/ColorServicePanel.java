@@ -8,6 +8,7 @@ package de.citec.dal.visual.service;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -35,7 +36,6 @@ public class ColorServicePanel extends AbstractServicePanel<ColorService> {
                 new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-
                         execute(new Callable<Void>() {
 
                             @Override
@@ -43,7 +43,7 @@ public class ColorServicePanel extends AbstractServicePanel<ColorService> {
                                 try {
                                     getService().setColor(HSVColorToRGBColorTransformer.transform(colorChooser.getColor()));
                                 } catch (CouldNotPerformException ex) {
-                                    logger.error("Could not set color value!", ex);
+                                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set color value!", ex));
                                 }
                                 return null;
                             }

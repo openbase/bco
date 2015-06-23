@@ -9,6 +9,7 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.visual.DalVisualRemote;
 import de.citec.dal.visual.util.StatusPanel;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
@@ -67,7 +68,11 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
                                     break;
                                 }
                             }
-                            serviceExecuterService.submit(lastCallable);
+                            try {
+                                statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, serviceExecuterService.submit(lastCallable));
+                            } catch (NotAvailableException ex) {
+                                ExceptionPrinter.printHistory(logger, ex);
+                            }
                             lastCallable = null;
                         }
                     }

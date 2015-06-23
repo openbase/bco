@@ -30,6 +30,6 @@ public class BrightnessSensorRemote extends DALRemoteService<BrightnessSensorTyp
 
     @Override
     public Double getBrightness() throws CouldNotPerformException {
-        return (double) this.getData().getBrightness();
+        return this.getData().getBrightness();
     }
 }

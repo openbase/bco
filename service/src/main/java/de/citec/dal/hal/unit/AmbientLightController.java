@@ -101,10 +101,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     }
 
     public void updateBrightness(Double value) throws CouldNotPerformException {
-        logger.debug("Apply brightness Update[" + value + "] for " + this + ".");
+        logger.info("Apply brightness Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setColor(dataBuilder.getInternalBuilder().getColor().newBuilderForType().setValue(value).build());
+            dataBuilder.getInternalBuilder().setColor(dataBuilder.getInternalBuilder().getColor().toBuilder().setValue(value).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness Update[" + value + "] for " + this + "!", ex);
         }

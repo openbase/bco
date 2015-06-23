@@ -96,6 +96,7 @@ public class StatusPanel extends javax.swing.JPanel {
                 } catch (ExecutionException | InterruptedException ex) {
                     setError(ex);
                 }
+                cancelButton.setEnabled(false);
             }
         });
 

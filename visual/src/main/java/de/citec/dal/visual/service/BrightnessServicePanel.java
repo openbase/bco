@@ -19,7 +19,7 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
     /**
      * Creates new form BrightnessService
      */
-    public BrightnessServicePanel()  throws de.citec.jul.exception.InstantiationException {
+    public BrightnessServicePanel() throws de.citec.jul.exception.InstantiationException {
         initComponents();
     }
 
@@ -37,6 +37,11 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
 
         brightnessSlider.setPaintLabels(true);
         brightnessSlider.setPaintTicks(true);
+        brightnessSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                brightnessSliderStateChanged(evt);
+            }
+        });
         brightnessSlider.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 brightnessSliderPropertyChange(evt);
@@ -66,19 +71,22 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
 
     private void brightnessSliderPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_brightnessSliderPropertyChange
         System.out.println("brightnessSliderPropertyChange");
-//        execute(new Callable<Void>() {
-
-//            @Override
-//            public Void call() throws Exception {
-//                try {
-//                    getService().setBrightness((double) brightnessSlider.getValue()/100);
-//                } catch (CouldNotPerformException ex) {
-//                    logger.error("Could not set brightness value!", ex);
-//                }
-//                return null;
-//            }
-//        });
     }//GEN-LAST:event_brightnessSliderPropertyChange
+
+    private void brightnessSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_brightnessSliderStateChanged
+        execute(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                try {
+                    getService().setBrightness((double) brightnessSlider.getValue());
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set brightness value!", ex));
+                }
+                return null;
+            }
+        });
+    }//GEN-LAST:event_brightnessSliderStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -90,9 +98,8 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
     protected void updateDynamicComponents() {
         try {
             brightnessBar.setValue(getService().getBrightness().intValue());
-//            brightnessSlider.setValue(getService().getBrightness().intValue());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(logger, ex);
         }
     }
 }
