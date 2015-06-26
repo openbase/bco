@@ -26,6 +26,7 @@ import rst.spatial.LocationConfigType;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
+import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -172,6 +173,25 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             UnitConfigType.UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
             if (unitConfig.getTemplate().getType().equals(type)) {
+                unitConfigList.add(unitConfig);
+            }
+        }
+        return unitConfigList;
+    }
+    
+    /**  
+     * Method returns all unit configurations which are direct or recursive related to the given location id and an implement the given service type.
+     * @param type
+     * @param locationConfigId
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException 
+     */
+    public List<UnitConfigType.UnitConfig> getUnitConfigs(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
+            UnitConfigType.UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+            if (unitConfig.getTemplate().getServiceTypeList().contains(type)) {
                 unitConfigList.add(unitConfig);
             }
         }
