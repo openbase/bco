@@ -20,14 +20,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.lang.Thread;
-import java.util.logging.Level;
 
 /**
  *
  * @author mpohling
  * @param <S>
  */
+
 public abstract class AbstractServicePanel<S extends Service> extends javax.swing.JPanel {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());

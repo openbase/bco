@@ -5,14 +5,24 @@
  */
 package de.citec.dal.visual.service;
 
+import de.citec.dal.hal.service.StandbyService;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.processing.StringProcessor;
+import java.awt.Color;
+import java.util.concurrent.Callable;
+import rst.homeautomation.state.StandbyStateType;
+
 /**
  *
  * @author mpohling
  */
-public class StandbyServicePanel extends AbstractServicePanel {
+public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
 
     /**
-     * Creates new form StandbyService
+     * Creates new form BrightnessService
+     * @throws de.citec.jul.exception.InstantiationException
      */
     public StandbyServicePanel() throws de.citec.jul.exception.InstantiationException {
         initComponents();
@@ -27,23 +37,120 @@ public class StandbyServicePanel extends AbstractServicePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        standbyButton = new javax.swing.JButton();
+        standbyStatePanel = new javax.swing.JPanel();
+        standbyStatusLabel = new javax.swing.JLabel();
+
+        standbyButton.setText("PowerButton");
+        standbyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                standbyButtonActionPerformed(evt);
+            }
+        });
+
+        standbyStatePanel.setBackground(new java.awt.Color(204, 204, 204));
+        standbyStatePanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 5, true));
+        standbyStatePanel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+
+        standbyStatusLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        standbyStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        standbyStatusLabel.setText("PowerState");
+        standbyStatusLabel.setFocusable(false);
+        standbyStatusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
+        javax.swing.GroupLayout standbyStatePanelLayout = new javax.swing.GroupLayout(standbyStatePanel);
+        standbyStatePanel.setLayout(standbyStatePanelLayout);
+        standbyStatePanelLayout.setHorizontalGroup(
+            standbyStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(standbyStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+        );
+        standbyStatePanelLayout.setVerticalGroup(
+            standbyStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(standbyStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(standbyStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(standbyButton, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(standbyStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(standbyButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void standbyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standbyButtonActionPerformed
+        execute(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                try {
+                    switch (getService().getStandby().getValue()) {
+                        case STANDBY:
+                            getService().setStandby(StandbyStateType.StandbyState.State.RUNNING);
+                            break;
+                        case RUNNING:
+                        case UNKNOWN:
+                            getService().setStandby(StandbyStateType.StandbyState.State.STANDBY);
+                            break;
+                        default:
+                            throw new InvalidStateException("State[" + getService().getStandby().getValue().name() + "] is unknown.");
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set standby state!", ex));
+                }
+                return null;
+            }
+        });
+    }//GEN-LAST:event_standbyButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton standbyButton;
+    private javax.swing.JPanel standbyStatePanel;
+    private javax.swing.JLabel standbyStatusLabel;
     // End of variables declaration//GEN-END:variables
+
     @Override
     protected void updateDynamicComponents() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("updateDynamicComponents");
+
+        try {
+            switch (getService().getStandby().getValue()) {
+                case STANDBY:
+                    standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
+                    standbyStatePanel.setBackground(Color.BLUE.lightGray);
+                    standbyButton.setText("Wakeup");
+                    break;
+                case RUNNING:
+                    standbyStatusLabel.setForeground(Color.BLACK);
+                    standbyStatePanel.setBackground(Color.GREEN.darker());
+                    standbyButton.setText("Activate Standby");
+                    break;
+
+                case UNKNOWN:
+                    standbyStatusLabel.setForeground(Color.BLACK);
+                    standbyStatePanel.setBackground(Color.ORANGE.darker());
+                    standbyButton.setText("Activate Standby");
+                    break;
+                default:
+                    throw new InvalidStateException("State[" + getService().getStandby().getValue() + "] is unknown.");
+            }
+            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getStandby().getValue().name()));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(logger, ex);
+        }
     }
 }

@@ -91,7 +91,6 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
     }// </editor-fold>//GEN-END:initComponents
 
     private void powerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
-        System.out.println("action: "+evt.getActionCommand());
         execute(new Callable<Void>() {
 
             @Override
@@ -125,8 +124,6 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
 
     @Override
     protected void updateDynamicComponents() {
-        System.out.println("updateDynamicComponents");
-
         try {
             System.out.println("stae: " + getService().getPower().getValue().name());
             switch (getService().getPower().getValue()) {
@@ -148,7 +145,7 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
                 default:
                     throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");
             }
-            powerStatusLabel.setText("Current PowerState = "+ StringProcessor.transformUpperCaseToCamelCase(getService().getPower().getValue().name()));
+            powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getPower().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(logger, ex);
         }

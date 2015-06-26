@@ -48,6 +48,8 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
             }
         });
 
+        brightnessBar.setStringPainted(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
