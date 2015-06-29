@@ -15,7 +15,7 @@ import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
- * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
+ * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class AgentTest {
 
