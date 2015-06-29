@@ -6,15 +6,45 @@
 package de.citec.dal.bindings.openhab.util.configgen;
 
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.processing.StringProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
+import rst.configuration.EntryType.Entry;
+import rst.configuration.MetaConfigType.MetaConfig;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTypeHolderType;
+import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BATTERY_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BRIGHTNESS_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BRIGHTNESS_SERVICE;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BUTTON_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.COLOR_SERVICE;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_SERVICE;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.HANDLE_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.MOTION_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.OPENING_RATIO_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_CONSUMPTION_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_SERVICE;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.REED_SWITCH_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SHUTTER_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SHUTTER_SERVICE;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TAMPER_PROVIDER;
+import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TEMPERATURE_PROVIDER;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
@@ -29,16 +59,16 @@ public class ItemEntry {
     private final String label;
     private final String icon;
     private final List<String> groups;
-    private final String hardwareConfig;
+    private final String bindingConfig;
 
     private static int maxCommandTypeSize = 0;
     private static int maxItemIdSize = 0;
     private static int maxLabelSize = 0;
     private static int maxIconSize = 0;
     private static int maxGroupSize = 0;
-    private static int maxHardwareConfigSize = 0;
+    private static int maxBindingConfigSize = 0;
 
-    public ItemEntry(final UnitConfig unitConfig, final ServiceConfig serviceConfig, final OpenHABBindingServiceConfig openHABBindingServiceConfig) {
+    public ItemEntry(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final OpenHABBindingServiceConfig openHABBindingServiceConfig) {
         this.commandType = getCommand(serviceConfig.getType());
         this.itemId = openHABBindingServiceConfig.getItemId();
         this.label = unitConfig.getLabel();
@@ -53,8 +83,101 @@ public class ItemEntry {
         }
         this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
         this.groups.add(unitConfig.getPlacementConfig().getLocationId());
-        this.hardwareConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+
+        String bindingConfig;
+        try {
+            bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig); //openHABBindingServiceConfig.getItemHardwareConfig();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(logger, ex);
+//            bindingConfig = "";
+            bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+        }
+        this.bindingConfig = bindingConfig;
         this.calculateGaps();
+    }
+
+    public String SERVICE_TEMPLATE_BINDING_DEVICE_ID_VAR = "${DEVICE_ID}";
+    public String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
+    public String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
+    public String SERVICE_CONFIG_BINDING_DEVICE_ID = "DEVICE_ID";
+
+    private String generateBindingConfig(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
+        try {
+            String config = "";
+
+            MetaConfig serviceTemplateMetaConfig = lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig();
+
+            String deviceId = resolveVariable(SERVICE_CONFIG_BINDING_DEVICE_ID, serviceConfig.getMetaConfig(), unitConfig.getMetaConfig(), deviceConfig.getMetaConfig());
+
+            config += getMetaConfig(serviceTemplateMetaConfig, SERVICE_TEMPLATE_BINDING_TYPE);
+            config += "=\"";
+            config += getMetaConfig(serviceTemplateMetaConfig, SERVICE_TEMPLATE_BINDING_CONFIG);
+            config = config.replaceAll(SERVICE_TEMPLATE_BINDING_DEVICE_ID_VAR, deviceId);
+            config += "\"";
+            return config;
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not generate binding config!", ex);
+        }
+    }
+
+    private String resolveVariable(final String variable, final MetaConfig... metaConfigs) throws MultiException {
+        MultiException.ExceptionStack exceptionStack = null;
+        for (MetaConfig metaConfig : metaConfigs) {
+            try {
+                return getMetaConfig(metaConfig, variable);
+            } catch (NotAvailableException ex) {
+                exceptionStack = MultiException.push(logger, ex, exceptionStack);
+                continue;
+            }
+        }
+        MultiException.checkAndThrow("Could not resolve Variable["+variable+"]!", exceptionStack);
+        throw new AssertionError("Fatal error during variable resolving.");
+    }
+
+    /**
+     * Resolves the key to the value entry of the given meta config.
+     *
+     * @param metaConfig key value set
+     * @param key the key to resolve
+     * @return the related value of the given key.
+     */
+    private String getMetaConfig(final MetaConfig metaConfig, final String key) throws NotAvailableException {
+        for (Entry entry : metaConfig.getEntryList()) {
+            if (entry.getKey().equals(key)) {
+                return entry.getValue();
+            }
+        }
+        throw new NotAvailableException("value for Key[" + key + "]");
+    }
+
+    /**
+     * Lookups the service template of the given ServiceType out of the unit
+     * config.
+     *
+     * @param unitConfig to lookup service template.
+     * @param serviceConfig the service config providing the service type.
+     * @return the related service template for the given service config.
+     */
+    private ServiceTemplate lookupServiceTemplate(final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
+        return lookupServiceTemplate(unitConfig.getTemplate(), serviceConfig.getType());
+    }
+
+    /**
+     * Lookups the service template of the given ServiceType out of the unit
+     * template.
+     *
+     * @param unitTemplate to lookup the service template.
+     * @param serviceType the service type to resolve the template.
+     * @return the related service template for the given service type.
+     * @throws NotAvailableException
+     */
+    private ServiceTemplate lookupServiceTemplate(final UnitTemplateType.UnitTemplate unitTemplate, final ServiceType serviceType) throws NotAvailableException {
+        for (ServiceTemplate template : unitTemplate.getServiceTemplateList()) {
+            if (template.getSericeType() == serviceType) {
+                return template;
+            }
+        }
+        throw new NotAvailableException("service template for ServiceType[" + serviceType.name() + "]");
     }
 
     private void calculateGaps() {
@@ -63,7 +186,7 @@ public class ItemEntry {
         maxLabelSize = Math.max(maxLabelSize, getLabelStringRep().length());
         maxIconSize = Math.max(maxIconSize, getIconStringRep().length());
         maxGroupSize = Math.max(maxGroupSize, getGroupsStringRep().length());
-        maxHardwareConfigSize = Math.max(maxHardwareConfigSize, getHardwareConfigStringRep().length());
+        maxBindingConfigSize = Math.max(maxBindingConfigSize, getBindingConfigStringRep().length());
     }
 
     public static void reset() {
@@ -72,7 +195,7 @@ public class ItemEntry {
         maxLabelSize = 0;
         maxIconSize = 0;
         maxGroupSize = 0;
-        maxHardwareConfigSize = 0;
+        maxBindingConfigSize = 0;
     }
 
     public String getCommandType() {
@@ -95,8 +218,8 @@ public class ItemEntry {
         return Collections.unmodifiableList(groups);
     }
 
-    public String getHardwareConfig() {
-        return hardwareConfig;
+    public String getBindingConfig() {
+        return bindingConfig;
     }
 
     public String getCommandTypeStringRep() {
@@ -139,8 +262,8 @@ public class ItemEntry {
         return stringRep;
     }
 
-    public String getHardwareConfigStringRep() {
-        return "{ " + hardwareConfig + " }";
+    public String getBindingConfigStringRep() {
+        return "{ " + bindingConfig + " }";
     }
 
     public String buildStringRep() {
@@ -162,8 +285,8 @@ public class ItemEntry {
         // groups
         stringRep += StringProcessor.fillWithSpaces(getGroupsStringRep(), maxGroupSize + TAB_SIZE);
 
-        // hardware
-        stringRep += StringProcessor.fillWithSpaces(getHardwareConfigStringRep(), maxHardwareConfigSize + TAB_SIZE);
+        // binding config
+        stringRep += StringProcessor.fillWithSpaces(getBindingConfigStringRep(), maxBindingConfigSize + TAB_SIZE);
 
         return stringRep;
     }

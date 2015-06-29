@@ -104,7 +104,7 @@ public class OpenHABItemConfigGenerator {
                         BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
 
                         OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig openhabBindingServiceConfig = bindingServiceConfig.getOpenhabBindingServiceConfig();
-                        itemEntryList.add(new ItemEntry(unitConfig, serviceConfig, openhabBindingServiceConfig));
+                        itemEntryList.add(new ItemEntry(deviceConfig, unitConfig, serviceConfig, openhabBindingServiceConfig));
                     }
                 }
             }
