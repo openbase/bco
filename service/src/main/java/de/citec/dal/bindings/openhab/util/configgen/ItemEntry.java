@@ -11,11 +11,12 @@ import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.processing.StringProcessor;
+import de.citec.jul.processing.VariableProcessor;
+import de.citec.jul.processing.VariableProvider;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -96,58 +97,27 @@ public class ItemEntry {
         this.calculateGaps();
     }
 
-    public String SERVICE_TEMPLATE_BINDING_DEVICE_ID_VAR = "${DEVICE_ID}";
     public String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
     public String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
-    public String SERVICE_CONFIG_BINDING_DEVICE_ID = "DEVICE_ID";
 
     private String generateBindingConfig(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
             String config = "";
 
-            MetaConfig serviceTemplateMetaConfig = lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig();
+            MetaConfigPool configPool = new MetaConfigPool();
+            configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
 
-            String deviceId = resolveVariable(SERVICE_CONFIG_BINDING_DEVICE_ID, serviceConfig.getMetaConfig(), unitConfig.getMetaConfig(), deviceConfig.getMetaConfig());
-
-            config += getMetaConfig(serviceTemplateMetaConfig, SERVICE_TEMPLATE_BINDING_TYPE);
+            config += configPool.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
             config += "=\"";
-            config += getMetaConfig(serviceTemplateMetaConfig, SERVICE_TEMPLATE_BINDING_CONFIG);
-            config = config.replaceAll(SERVICE_TEMPLATE_BINDING_DEVICE_ID_VAR, deviceId);
+            config += configPool.getValue(SERVICE_TEMPLATE_BINDING_CONFIG);
             config += "\"";
             return config;
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not generate binding config!", ex);
         }
-    }
-
-    private String resolveVariable(final String variable, final MetaConfig... metaConfigs) throws MultiException {
-        MultiException.ExceptionStack exceptionStack = null;
-        for (MetaConfig metaConfig : metaConfigs) {
-            try {
-                return getMetaConfig(metaConfig, variable);
-            } catch (NotAvailableException ex) {
-                exceptionStack = MultiException.push(logger, ex, exceptionStack);
-                continue;
-            }
-        }
-        MultiException.checkAndThrow("Could not resolve Variable["+variable+"]!", exceptionStack);
-        throw new AssertionError("Fatal error during variable resolving.");
-    }
-
-    /**
-     * Resolves the key to the value entry of the given meta config.
-     *
-     * @param metaConfig key value set
-     * @param key the key to resolve
-     * @return the related value of the given key.
-     */
-    private String getMetaConfig(final MetaConfig metaConfig, final String key) throws NotAvailableException {
-        for (Entry entry : metaConfig.getEntryList()) {
-            if (entry.getKey().equals(key)) {
-                return entry.getValue();
-            }
-        }
-        throw new NotAvailableException("value for Key[" + key + "]");
     }
 
     /**
@@ -321,6 +291,87 @@ public class ItemEntry {
             default:
                 logger.warn("Unkown Service Type: " + type);
                 return "";
+        }
+    }
+
+    /**
+     * Resolves the key to the value entry of the given meta config.
+     *
+     * @param metaConfig key value set
+     * @param key the key to resolve
+     * @return the related value of the given key.
+     */
+    public static String getMetaConfig(final MetaConfig metaConfig, final String key) throws NotAvailableException {
+        for (Entry entry : metaConfig.getEntryList()) {
+            if (entry.getKey().equals(key)) {
+                return entry.getValue();
+            }
+        }
+        throw new NotAvailableException("value for Key[" + key + "]");
+    }
+
+    public static String resolveVariable(final String variable, final Collection<VariableProvider> providers) throws MultiException {
+        VariableProvider[] providerArray = new VariableProvider[providers.size()];
+        return resolveVariable(variable, providers.toArray(providerArray));
+    }
+    public static String resolveVariable(final String variable, final VariableProvider... providers) throws MultiException {
+        MultiException.ExceptionStack exceptionStack = null;
+        for (VariableProvider provider : providers) {
+
+            try {
+                return provider.getValue(variable);
+            } catch (NotAvailableException ex) {
+                exceptionStack = MultiException.push(logger, ex, exceptionStack);
+                continue;
+            }
+        }
+        MultiException.checkAndThrow("Could not resolve Variable[" + variable + "]!", exceptionStack);
+        throw new AssertionError("Fatal error during variable resolving.");
+    }
+
+    public class MetaConfigPool {
+
+        private Collection<VariableProvider> variableProviderPool;
+
+        public MetaConfigPool(Collection<VariableProvider> variableProviderPool) {
+            this.variableProviderPool = new ArrayList<>(variableProviderPool);
+        }
+
+        public MetaConfigPool() {
+            this.variableProviderPool = new ArrayList<>();
+        }
+
+        public void register(MetaConfigVariableProvider provider) {
+            variableProviderPool.add(provider);
+        }
+
+        public String getValue(String variable) throws NotAvailableException {
+            try {
+                return VariableProcessor.resolveVariables(resolveVariable(variable, variableProviderPool), false, variableProviderPool);
+            } catch(MultiException ex) {
+                throw new NotAvailableException("Variable["+variable+"]", ex);
+            }
+        }
+    }
+
+    public class MetaConfigVariableProvider implements VariableProvider {
+
+        private final String name;
+        private final MetaConfig metaConfig;
+
+        public MetaConfigVariableProvider(final String name, final MetaConfig metaConfig) {
+            this.name = name;
+            this.metaConfig = metaConfig;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getValue(String variable) throws NotAvailableException {
+            return getMetaConfig(metaConfig, variable);
         }
     }
 }
