@@ -37,7 +37,7 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>0.1.0</version>
+            <version>0.2-snapshot</version>
             <type>jar</type>
         </dependency>
     </dependencies>

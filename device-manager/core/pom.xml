@@ -84,17 +84,17 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>0.1.0</version>
+            <version>0.2-snapshot</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>0.1.0</version>
+            <version>0.2-snapshot</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.processing</artifactId>
-            <version>0.1.0</version>
+            <version>0.2-snapshot</version>
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
