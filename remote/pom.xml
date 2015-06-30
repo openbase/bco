@@ -3,7 +3,7 @@
 
     <groupId>de.citec</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>0.1.0</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DeviceRemoteControl</name>
@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>dal</artifactId>
-        <version>0.1.0</version>
+        <version>0.2-SNAPSHOT</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dal.service</artifactId>
-            <version>0.1.0</version>
+            <version>0.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
