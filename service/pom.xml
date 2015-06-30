@@ -85,19 +85,19 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.core</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>${global.version.registry-manager}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dm.remote</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>${global.version.registry-manager}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.remote</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>${global.version.registry-manager}</version>
             <type>jar</type>
         </dependency>
         <dependency>
