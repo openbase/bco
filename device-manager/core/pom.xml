@@ -3,7 +3,7 @@
 
     <groupId>de.citec</groupId>
     <artifactId>dm.core</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>DeviceManager Core</name>
@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>dm</artifactId>
-        <version>0.3.0-SNAPSHOT</version>
+        <version>0.3.0</version>
     </parent>
     
     <url>http://maven.apache.org</url>
@@ -62,12 +62,12 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.remote</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dm.lib</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -84,22 +84,22 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.processing</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
             <artifactId>rst-sandbox-csra</artifactId>
-            <version>0.12-SNAPSHOT</version>
+            <version>[0.12.33,0.13-SNAPSHOT)</version>
         </dependency>
         <dependency>
             <groupId>rct</groupId>
