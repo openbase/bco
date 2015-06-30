@@ -3,7 +3,7 @@
 
     <groupId>de.citec</groupId>
     <artifactId>lm.lib</artifactId>
-    <version>0.3.0</version>
+    <version>0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>LocationManager Library</name>
@@ -11,7 +11,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>lm</artifactId>
-        <version>0.3.0</version>
+        <version>0.4-SNAPSHOT</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
