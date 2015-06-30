@@ -68,12 +68,12 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.exception</artifactId>
-            <version>0.2-snapshot</version>
+            <version>0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.com</artifactId>
-            <version>0.2-snapshot</version>
+            <version>0.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
