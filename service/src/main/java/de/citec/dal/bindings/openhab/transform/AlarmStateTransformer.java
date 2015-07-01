@@ -18,6 +18,7 @@ import rst.homeautomation.state.AlarmStateType.AlarmState.State;
  */
 public class AlarmStateTransformer {
 
+    //TODO: check if the values from openhab match this transoformation
     public static AlarmState transform(final Double decimalType) throws CouldNotTransformException {
         AlarmState.Builder alarmState = AlarmState.newBuilder();
         try {
