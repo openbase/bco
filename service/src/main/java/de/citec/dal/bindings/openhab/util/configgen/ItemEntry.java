@@ -90,8 +90,8 @@ public class ItemEntry {
             bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig); //openHABBindingServiceConfig.getItemHardwareConfig();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(logger, ex);
-//            bindingConfig = "";
-            bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+            bindingConfig = "";
+//            bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
         }
         this.bindingConfig = bindingConfig;
         this.calculateGaps();
