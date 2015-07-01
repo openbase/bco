@@ -33,8 +33,27 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> 
     private void initComponents() {
 
         batteryLevelBar = new javax.swing.JProgressBar();
+        stateColorPanel = new javax.swing.JPanel();
+        stateLabel = new javax.swing.JLabel();
 
         batteryLevelBar.setStringPainted(true);
+
+        stateColorPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+
+        stateLabel.setFont(new java.awt.Font("Dialog", 1, 15)); // NOI18N
+        stateLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        stateLabel.setText("jLabel1");
+
+        javax.swing.GroupLayout stateColorPanelLayout = new javax.swing.GroupLayout(stateColorPanel);
+        stateColorPanel.setLayout(stateColorPanelLayout);
+        stateColorPanelLayout.setHorizontalGroup(
+            stateColorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(stateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+        );
+        stateColorPanelLayout.setVerticalGroup(
+            stateColorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(stateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -42,13 +61,19 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> 
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(batteryLevelBar, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(stateColorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(batteryLevelBar, javax.swing.GroupLayout.PREFERRED_SIZE, 255, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(stateColorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(batteryLevelBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -57,6 +82,8 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar batteryLevelBar;
+    private javax.swing.JPanel stateColorPanel;
+    private javax.swing.JLabel stateLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -66,20 +93,21 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> 
             batteryLevelBar.setString("Battery Level = "+batteryLevelBar.getValue()+"%");
             switch (getService().getBattery().getValue()) {
                 case OK:
-                    batteryLevelBar.setForeground(Color.GREEN.darker());
+                    stateColorPanel.setBackground(Color.GREEN.darker());
                     break;
                 case CRITICAL:
-                    batteryLevelBar.setForeground(Color.ORANGE.darker());
+                    stateColorPanel.setBackground(Color.ORANGE.darker());
                     break;
                 case INSUFFICIENT:
-                    batteryLevelBar.setForeground(Color.RED.darker());
+                    stateColorPanel.setBackground(Color.RED.darker());
                     break;
                 case UNKNOWN:
-                    batteryLevelBar.setForeground(Color.GRAY);
+                    stateColorPanel.setBackground(Color.GRAY);
                     break;
                 default:
                     break;
             }
+            stateLabel.setText(getService().getBattery().getValue().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(logger, ex);
         }
