@@ -11,7 +11,10 @@ import de.citec.dal.hal.provider.ButtonProvider;
 import de.citec.dal.hal.provider.HandleProvider;
 import de.citec.dal.hal.provider.MotionProvider;
 import de.citec.dal.hal.provider.ReedSwitchProvider;
+import de.citec.dal.hal.provider.SmokeAlarmStateProvider;
+import de.citec.dal.hal.provider.SmokeStateProvider;
 import de.citec.dal.hal.provider.TamperProvider;
+import de.citec.dal.hal.provider.TemperatureAlarmStateProvider;
 import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
@@ -44,7 +47,10 @@ public enum ServiceType {
     OPENING_RATIO(OpeningRatioService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.OPENING_RATIO_PROVIDER),
     MOTION(MotionProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.MOTION_PROVIDER),
     DIM(DimService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_SERVICE),
-    REED_SWITCH(ReedSwitchProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.REED_SWITCH_PROVIDER);
+    REED_SWITCH(ReedSwitchProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.REED_SWITCH_PROVIDER),
+    SMOKE_ALARM_STATE(SmokeAlarmStateProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
+    TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
+    SMOKE_STATE(SmokeStateProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SMOKE_STATE_PROVIDER);
 
     public static final String SET = "set";
     public static final String UPDATE = "update";
@@ -66,7 +72,7 @@ public enum ServiceType {
     public ServiceTypeHolderType.ServiceTypeHolder.ServiceType getRSTType() {
         return rstType;
     }
-    
+
     public Class<? extends Service> getServiceClass() {
         return serviceClass;
     }

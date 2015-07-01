@@ -24,6 +24,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
 
 /**
  *
@@ -98,6 +99,20 @@ public class TemperatureSensorRemoteTest {
         double temperature = 37.0F;
         ((TemperatureSensorController) dalService.getUnitRegistry().get(temperatureSensorRemote.getId())).updateTemperature(temperature);
         temperatureSensorRemote.requestStatus();
-        Assert.assertEquals("The getter for the tamper switch state returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);
+        Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);
+    }
+    
+    /**
+     * Test of getTemperatureAlarmState method, of class TemperatureSensorRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetTemperatureAlarmState() throws Exception {
+        System.out.println("getTemperatureAlarmState");
+        AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
+        ((TemperatureSensorController) dalService.getUnitRegistry().get(temperatureSensorRemote.getId())).updateTemperatureAlarmState(alarmState);
+        temperatureSensorRemote.requestStatus();
+        Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState, temperatureSensorRemote.getTemperatureAlarmState());
     }
 }

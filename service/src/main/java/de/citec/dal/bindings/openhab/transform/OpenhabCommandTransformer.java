@@ -32,6 +32,11 @@ public final class OpenhabCommandTransformer {
                         return TamperStateTransformer.transform(command.getDecimal());
                     case BATTERY_PROVIDER:
                         return BatteryStateTransformer.transform(command.getDecimal());
+                    case TEMPERATURE_ALARM_STATE_PROVIDER:
+                    case SMOKE_ALARM_STATE_PROVIDER:
+                        return AlarmStateTransformer.transform(command.getDecimal());
+                    case SMOKE_STATE_PROVIDER:
+                        return SmokeStateTransformer.transform(command.getDecimal());
                     default:
                         // native double type
                         return command.getDecimal();

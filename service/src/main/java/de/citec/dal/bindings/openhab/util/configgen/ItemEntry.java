@@ -143,7 +143,7 @@ public class ItemEntry {
      */
     private ServiceTemplate lookupServiceTemplate(final UnitTemplateType.UnitTemplate unitTemplate, final ServiceType serviceType) throws NotAvailableException {
         for (ServiceTemplate template : unitTemplate.getServiceTemplateList()) {
-            if (template.getSericeType() == serviceType) {
+            if (template.getServiceType() == serviceType) {
                 return template;
             }
         }
@@ -272,6 +272,9 @@ public class ItemEntry {
             case TAMPER_PROVIDER:
             case BRIGHTNESS_PROVIDER:
             case BATTERY_PROVIDER:
+            case SMOKE_ALARM_STATE_PROVIDER:
+            case SMOKE_STATE_PROVIDER:
+            case TEMPERATURE_ALARM_STATE_PROVIDER:
                 return "Number";
             case SHUTTER_PROVIDER:
             case SHUTTER_SERVICE:
@@ -314,6 +317,7 @@ public class ItemEntry {
         VariableProvider[] providerArray = new VariableProvider[providers.size()];
         return resolveVariable(variable, providers.toArray(providerArray));
     }
+
     public static String resolveVariable(final String variable, final VariableProvider... providers) throws MultiException {
         MultiException.ExceptionStack exceptionStack = null;
         for (VariableProvider provider : providers) {
@@ -348,8 +352,8 @@ public class ItemEntry {
         public String getValue(String variable) throws NotAvailableException {
             try {
                 return VariableProcessor.resolveVariables(resolveVariable(variable, variableProviderPool), false, variableProviderPool);
-            } catch(MultiException ex) {
-                throw new NotAvailableException("Variable["+variable+"]", ex);
+            } catch (MultiException ex) {
+                throw new NotAvailableException("Variable[" + variable + "]", ex);
             }
         }
     }

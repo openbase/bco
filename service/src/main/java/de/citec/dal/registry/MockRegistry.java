@@ -68,6 +68,7 @@ public class MockRegistry {
     public static final String ROLLERSHUTTER_LABEL = "Rollershutter_Unit_Test";
     public static final String TAMPER_SWITCH_LABEL = "Tamper_Switch_Unit_Test";
     public static final String TEMPERATURE_SENSOR_LABEL = "Temperature_Sensor_Unit_Test";
+    public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
 
     private static DeviceManager deviceManager;
@@ -93,6 +94,7 @@ public class MockRegistry {
         ROLLERSHUTTER(UnitType.ROLLERSHUTTER, ServiceType.SHUTTER_SERVICE, ServiceType.OPENING_RATIO_PROVIDER),
         TAMPER_SWITCH(UnitType.TAMPER_SWITCH, ServiceType.TAMPER_PROVIDER),
         TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TEMPERATURE_PROVIDER),
+        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, ServiceType.SMOKE_STATE_PROVIDER, ServiceType.SMOKE_ALARM_STATE_PROVIDER),
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, ServiceType.TEMPERATURE_PROVIDER), // TODO mpohling: whats about temperature service?
         BATTERY(UnitType.BATTERY, ServiceType.BATTERY_PROVIDER);
 
@@ -254,6 +256,12 @@ public class MockRegistry {
         DeviceClass rollershutterClass = deviceRemote.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager"));
         units.add(getUnitConfig(UnitTemplate.UnitType.ROLLERSHUTTER, ROLLERSHUTTER_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units));
+
+        units.clear();
+        // smoke detector 
+        DeviceClass smokeDetector = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro"));
+        units.add(getUnitConfig(UnitTemplate.UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units));
     }
 
     private PlacementConfig getDefaultPlacement() {

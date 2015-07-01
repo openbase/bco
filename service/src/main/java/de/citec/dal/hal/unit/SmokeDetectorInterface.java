@@ -5,13 +5,12 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.provider.TemperatureAlarmStateProvider;
-import de.citec.dal.hal.provider.TemperatureProvider;
+import de.citec.dal.hal.provider.SmokeAlarmStateProvider;
+import de.citec.dal.hal.provider.SmokeStateProvider;
 
 /**
  *
  * @author thuxohl
  */
-public interface TemperatureSensorInterface extends TemperatureProvider, TemperatureAlarmStateProvider {
-    
+public interface SmokeDetectorInterface extends SmokeAlarmStateProvider, SmokeStateProvider {
 }

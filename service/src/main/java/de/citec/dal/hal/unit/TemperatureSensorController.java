@@ -12,7 +12,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.TemperatureSensorType;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -23,7 +23,8 @@ import rst.homeautomation.unit.UnitConfigType;
 public class TemperatureSensorController extends AbstractUnitController<TemperatureSensor, TemperatureSensor.Builder> implements TemperatureSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
     }
 
     public TemperatureSensorController(final UnitConfigType.UnitConfig config, Device device, TemperatureSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
@@ -46,6 +47,25 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
             return getData().getTemperature();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("temperature", ex);
+        }
+    }
+
+    public void updateTemperatureAlarmState(final AlarmState value) throws CouldNotPerformException {
+        logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setTemperatureAlarmState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not alarm state Update[" + value + "] for " + this + "!", ex);
+        }
+    }
+
+    @Override
+    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException {
+        try {
+            return getData().getTemperatureAlarmState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("temperaturealarmstate", ex);
         }
     }
 }

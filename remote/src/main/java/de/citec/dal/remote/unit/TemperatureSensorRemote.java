@@ -9,28 +9,35 @@ import de.citec.dal.hal.unit.TemperatureSensorInterface;
 import de.citec.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.TemperatureSensorType;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
+import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensorType.TemperatureSensor> implements TemperatureSensorInterface {
+public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensor> implements TemperatureSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
     }
 
     public TemperatureSensorRemote() {
     }
 
     @Override
-    public void notifyUpdated(TemperatureSensorType.TemperatureSensor data) {
+    public void notifyUpdated(TemperatureSensor data) {
     }
 
     @Override
     public Double getTemperature() throws CouldNotPerformException {
         return this.getData().getTemperature();
+    }
+
+    @Override
+    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException {
+        return this.getData().getTemperatureAlarmState();
     }
 
 }
