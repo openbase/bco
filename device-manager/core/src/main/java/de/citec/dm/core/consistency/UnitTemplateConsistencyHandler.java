@@ -44,12 +44,8 @@ public class UnitTemplateConsistencyHandler implements ProtoBufRegistryConsisten
                 }
             }
 
-            if (unitTemplate == null) {
-                throw new NotAvailableException("unit template");
-            }
-
             // verify and update scope
-            if (!unitTemplate.equals(unitConfig.getTemplate())) {
+            if (unitTemplate != null && !unitTemplate.equals(unitConfig.getTemplate())) {
                 unitConfig.setTemplate(unitTemplate);
                 modification = true;
             }
