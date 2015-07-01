@@ -9,7 +9,12 @@ import de.citec.dal.hal.provider.PowerConsumptionProvider;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.text.DecimalFormat;
+import javax.swing.JProgressBar;
+import javax.swing.Painter;
+import javax.swing.UIDefaults;
 import rst.vision.HSVColorType;
 
 /**
@@ -19,7 +24,8 @@ import rst.vision.HSVColorType;
 public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionProvider> {
 
     private DecimalFormat numberFormat = new DecimalFormat("#.##");
-    
+    private Color currentColor = Color.BLACK;
+
     /**
      * Creates new form BrightnessService
      */
@@ -41,6 +47,7 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
         jLabel2 = new javax.swing.JLabel();
         voltageValueLabel = new javax.swing.JLabel();
         currentValueLabel = new javax.swing.JLabel();
+        colorPanel = new javax.swing.JPanel();
 
         consumptionBar.setStringPainted(true);
 
@@ -54,6 +61,19 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
         currentValueLabel.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         currentValueLabel.setText("0.0");
 
+        colorPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+
+        javax.swing.GroupLayout colorPanelLayout = new javax.swing.GroupLayout(colorPanel);
+        colorPanel.setLayout(colorPanelLayout);
+        colorPanelLayout.setHorizontalGroup(
+            colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 242, Short.MAX_VALUE)
+        );
+        colorPanelLayout.setVerticalGroup(
+            colorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 38, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -61,37 +81,42 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(consumptionBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(voltageValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(consumptionBar, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel2)
-                            .addGap(7, 7, 7)
-                            .addComponent(currentValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(7, 7, 7)
+                        .addComponent(currentValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(colorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(colorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(consumptionBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(voltageValueLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(currentValueLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel colorPanel;
     private javax.swing.JProgressBar consumptionBar;
     private javax.swing.JLabel currentValueLabel;
     private javax.swing.JLabel jLabel1;
@@ -106,14 +131,12 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
             currentValueLabel.setText(numberFormat.format(getService().getPowerConsumption().getCurrent()) + " A");
             consumptionBar.setString(numberFormat.format(getService().getPowerConsumption().getConsumption()) + " W");
 
-//            double level = (getService().getPowerConsumption().getCurrent() / 16);
-            double level = 0.5;
+            double level = (getService().getPowerConsumption().getCurrent() / 16);
 
             consumptionBar.setValue((int) (level * 100));
 
             double hue = Math.min(180, Math.max(0, 180 - level * 180));
-            consumptionBar.setBackground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
-            consumptionBar.setForeground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
+            colorPanel.setBackground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(logger, ex);
         }
