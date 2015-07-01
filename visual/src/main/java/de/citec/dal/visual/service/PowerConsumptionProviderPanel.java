@@ -5,12 +5,11 @@
  */
 package de.citec.dal.visual.service;
 
-import de.citec.dal.hal.provider.BatteryProvider;
 import de.citec.dal.hal.provider.PowerConsumptionProvider;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
-import java.awt.Color;
+import java.text.DecimalFormat;
 import rst.vision.HSVColorType;
 
 /**
@@ -19,6 +18,8 @@ import rst.vision.HSVColorType;
  */
 public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionProvider> {
 
+    private DecimalFormat numberFormat = new DecimalFormat("#.##");
+    
     /**
      * Creates new form BrightnessService
      */
@@ -101,15 +102,17 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
     @Override
     protected void updateDynamicComponents() {
         try {
-            voltageValueLabel.setText(getService().getPowerConsumption().getVoltage() + " V");
-            currentValueLabel.setText(getService().getPowerConsumption().getCurrent() + " A");
-            consumptionBar.setString(getService().getPowerConsumption().getConsumption() + " W");
+            voltageValueLabel.setText(numberFormat.format(getService().getPowerConsumption().getVoltage()) + " V");
+            currentValueLabel.setText(numberFormat.format(getService().getPowerConsumption().getCurrent()) + " A");
+            consumptionBar.setString(numberFormat.format(getService().getPowerConsumption().getConsumption()) + " W");
 
-            double level = ((getService().getPowerConsumption().getCurrent() / 16000) * 100);
+//            double level = (getService().getPowerConsumption().getCurrent() / 16);
+            double level = 0.5;
 
-            consumptionBar.setValue((int) level);
+            consumptionBar.setValue((int) (level * 100));
 
-            double hue = Math.min(180, Math.max(0, level * 180));
+            double hue = Math.min(180, Math.max(0, 180 - level * 180));
+            consumptionBar.setBackground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
             consumptionBar.setForeground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(logger, ex);
