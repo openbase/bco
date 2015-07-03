@@ -31,6 +31,9 @@
     <modules>
         <module>device-manager</module>
         <module>location-manager</module>
+        <module>scene-manager</module>
+        <module>agent-manager</module>
+        <module>app-manager</module>
     </modules>
     
     <build>
