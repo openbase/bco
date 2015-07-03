@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.remote.control;
+package de.citec.dal.remote.control.app;
 
 /**
  *
- * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
+ * @author mpohling
  */
-public class Agent {
-
+public class App implements AppInterface {
+    
 }

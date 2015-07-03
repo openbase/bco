@@ -72,5 +72,20 @@
             <artifactId>dal.service</artifactId>
             <version>0.2-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>scm.remote</artifactId>
+            <version>0.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>agm.remote</artifactId>
+            <version>0.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>apm.remote</artifactId>
+            <version>0.4-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

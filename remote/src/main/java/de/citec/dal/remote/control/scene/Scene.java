@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.remote.control;
+package de.citec.dal.remote.control.scene;
 
 /**
  *
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class Scene {
+public class Scene implements SceneInterface {
 
 }

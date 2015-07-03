@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.remote.control;
+package de.citec.dal.remote.control.action;
 
 import de.citec.dal.hal.service.Service;
 import de.citec.jul.exception.CouldNotPerformException;

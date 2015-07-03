@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.remote.control;
+package de.citec.dal.remote.control.agent;
 
+import de.citec.dal.remote.control.ColorLoopControl;
+import de.citec.dal.remote.control.PowerControl;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import java.util.ArrayList;
