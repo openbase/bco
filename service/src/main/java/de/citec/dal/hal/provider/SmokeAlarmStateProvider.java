@@ -22,13 +22,13 @@ public interface SmokeAlarmStateProvider extends Provider {
     
     public AlarmState getSmokeAlarmState() throws CouldNotPerformException;
 
-    public class GetSmokeAlarmStateProviderCallback extends EventCallback {
+    public class GetSmokeAlarmStateCallback extends EventCallback {
 
-        private static final Logger logger = LoggerFactory.getLogger(GetSmokeAlarmStateProviderCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(GetSmokeAlarmStateCallback.class);
 
         private final SmokeAlarmStateProvider provider;
 
-        public GetSmokeAlarmStateProviderCallback(final SmokeAlarmStateProvider provider) {
+        public GetSmokeAlarmStateCallback(final SmokeAlarmStateProvider provider) {
             this.provider = provider;
         }
 
