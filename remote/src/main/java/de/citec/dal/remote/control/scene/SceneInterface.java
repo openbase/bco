@@ -5,10 +5,14 @@
  */
 package de.citec.dal.remote.control.scene;
 
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.iface.Activatable;
+import rst.homeautomation.control.scene.SceneConfigType;
+
 /**
  *
  * @author mpohling
  */
-public interface SceneInterface {
-    
+public interface SceneInterface extends Activatable {
+    public SceneConfigType.SceneConfig getConfig() throws NotAvailableException;
 }

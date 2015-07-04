@@ -13,7 +13,7 @@ import rst.homeautomation.control.agent.AgentConfigType;
  *
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class Agent implements AgentInterface {
+public class Agent implements AgentInterface  {
 
     private AgentConfigType.AgentConfig config;
 

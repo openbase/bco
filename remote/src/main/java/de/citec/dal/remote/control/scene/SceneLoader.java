@@ -3,43 +3,41 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.remote.control.agent;
+package de.citec.dal.remote.control.scene;
 
-import de.citec.agm.remote.AgentRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import de.citec.scm.remote.SceneRegistryRemote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentRegistryType;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.control.scene.SceneRegistryType;
 
 /**
  *
  * @author mpohling
  */
-public class AgentScheduler {
+public class SceneLoader {
 
-    private final AgentFactory factory;
-    private final HashMap<String, AgentInterface> agentMap;
-    private final AgentRegistryRemote agentRegistryRemote;
+    private final HashMap<String, SceneInterface> agentMap;
+    private final SceneRegistryRemote agentRegistryRemote;
 
 
-    public AgentScheduler() throws InstantiationException, InterruptedException {
+    public SceneLoader() throws InstantiationException, InterruptedException {
         try {
-            this.factory = new AgentFactory();
             agentMap = new HashMap<>();
 
-            agentRegistryRemote = new AgentRegistryRemote();
-            agentRegistryRemote.addObserver(new Observer<AgentRegistryType.AgentRegistry>() {
+            agentRegistryRemote = new SceneRegistryRemote();
+            agentRegistryRemote.addObserver(new Observer<SceneRegistryType.SceneRegistry>() {
 
                 @Override
-                public void update(Observable<AgentRegistryType.AgentRegistry> source, AgentRegistryType.AgentRegistry data) throws Exception {
-                    updateAgents(data);
+                public void update(Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
+                    updateScenes(data);
                 }
             });
             agentRegistryRemote.init();
@@ -51,14 +49,14 @@ public class AgentScheduler {
         }
     }
 
-    private void updateAgents(final AgentRegistryType.AgentRegistry data) throws InterruptedException {
+    private void updateScenes(final SceneRegistryType.SceneRegistry data) throws InterruptedException {
 
         // add new agents
-        for (AgentConfig config : data.getAgentConfigList()) {
+        for (SceneConfig config : data.getSceneConfigList()) {
 
             if (!agentMap.containsKey(config.getId())) {
                 try {
-                    agentMap.put(config.getId(), createAgent(config));
+                    agentMap.put(config.getId(), createScene(config));
                     
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(null, ex);
@@ -68,11 +66,11 @@ public class AgentScheduler {
 
         boolean found;
         // remove outdated agents
-        for (AgentInterface agent : new ArrayList<>(agentMap.values())) {
+        for (SceneInterface scene : new ArrayList<>(agentMap.values())) {
             found = false;
-            for (AgentConfig config : data.getAgentConfigList()) {
+            for (SceneConfig config : data.getSceneConfigList()) {
                 try {
-                    if (agent.getConfig().getId().equals(config.getId())) {
+                    if (scene.getConfig().getId().equals(config.getId())) {
                         found = true;
                         break;
                     }
@@ -83,7 +81,7 @@ public class AgentScheduler {
 
             if (!found) {
                 try {
-                    agentMap.remove(agent.getConfig().getId()).deactivate();
+                    agentMap.remove(scene.getConfig().getId()).deactivate();
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(null, ex);
                 }
@@ -91,20 +89,20 @@ public class AgentScheduler {
         }
     }
 
-    public AgentInterface createAgent(final AgentConfig config) throws CouldNotPerformException {
-        AgentInterface agent = factory.newAgent(config);
+    public SceneInterface createScene(final SceneConfig config) throws CouldNotPerformException {
+        SceneInterface scene = new Scene(config);
         try {
-            agent.activate();
+            scene.activate();
         } catch (InterruptedException ex) {
             ExceptionPrinter.printHistory(null, ex);
         }
-        return agent;
+        return scene;
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws de.citec.jul.exception.InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
-        new AgentScheduler();
+        new SceneLoader();
     }
 }
