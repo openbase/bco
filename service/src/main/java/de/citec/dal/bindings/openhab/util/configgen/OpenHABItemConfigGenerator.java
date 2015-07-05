@@ -9,6 +9,7 @@ import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.lm.remote.LocationRegistryRemote;
@@ -86,25 +87,29 @@ public class OpenHABItemConfigGenerator {
     private void generateItemEntries() throws CouldNotPerformException {
         try {
             List<DeviceConfigType.DeviceConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceConfigList();
-            
+
             for (DeviceConfig deviceConfig : deviceConfigList) {
-                
+
                 // ignore non openhab items
                 if (deviceConfig.getDeviceClass().getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
                     continue;
                 }
-                
+
                 // ignore non installed items
                 if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                     continue;
                 }
-                
+
                 for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
+                        try {
+                            BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
 
-                        OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig openhabBindingServiceConfig = bindingServiceConfig.getOpenhabBindingServiceConfig();
-                        itemEntryList.add(new ItemEntry(deviceConfig, unitConfig, serviceConfig, openhabBindingServiceConfig));
+                            OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig openhabBindingServiceConfig = bindingServiceConfig.getOpenhabBindingServiceConfig();
+                            itemEntryList.add(new ItemEntry(deviceConfig, unitConfig, serviceConfig, openhabBindingServiceConfig));
+                        } catch (Exception ex) {
+                            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+                        }
                     }
                 }
             }

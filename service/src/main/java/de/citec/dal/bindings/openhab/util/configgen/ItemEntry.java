@@ -8,6 +8,7 @@ package de.citec.dal.bindings.openhab.util.configgen;
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.processing.StringProcessor;
@@ -17,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -55,12 +58,18 @@ public class ItemEntry {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ItemEntry.class);
 
-    private final String commandType;
+    public String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
+    public String SERVICE_TEMPLATE_BINDING_ICON = "OPENHAB_BINDING_ICON";
+    public String SERVICE_TEMPLATE_BINDING_COMMAND = "OPENHAB_BINDING_COMMAND";
+    public String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
+
+    private String commandType;
     private final String itemId;
     private final String label;
-    private final String icon;
+    private String icon;
     private final List<String> groups;
     private final String bindingConfig;
+    private final MetaConfigPool configPool;
 
     private static int maxCommandTypeSize = 0;
     private static int maxItemIdSize = 0;
@@ -69,46 +78,66 @@ public class ItemEntry {
     private static int maxGroupSize = 0;
     private static int maxBindingConfigSize = 0;
 
-    public ItemEntry(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final OpenHABBindingServiceConfig openHABBindingServiceConfig) {
-        this.commandType = getCommand(serviceConfig.getType());
-        this.itemId = openHABBindingServiceConfig.getItemId();
-        this.label = unitConfig.getLabel();
-        this.icon = "sun";
-        this.groups = new ArrayList<>();
+    public ItemEntry(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final OpenHABBindingServiceConfig openHABBindingServiceConfig) throws InstantiationException {
+        try {
+            this.itemId = openHABBindingServiceConfig.getItemId();
+            this.label = unitConfig.getLabel();
+            this.groups = new ArrayList<>();
+
+            configPool = new MetaConfigPool();
+            configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
+
+            try {
+                this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
+            } catch (NotAvailableException ex) {
+                this.commandType = getCommand(serviceConfig.getType());
+            }
+
+            try {
+                this.icon = configPool.getValue(SERVICE_TEMPLATE_BINDING_ICON);
+            } catch (NotAvailableException ex) {
+                this.icon = "sun";
+            }
+
+            try {
+                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+            }
 
         // TODO: maybe think of another strategy to name groups
-        // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
-        String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
-        if (!(templateName.equals("Dimmer") || templateName.equals("Rollershutter"))) {
-            this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name()));
-        }
-        this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
-        this.groups.add(unitConfig.getPlacementConfig().getLocationId());
+            // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
+            String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
+            if (!(templateName.equals("Dimmer") || templateName.equals("Rollershutter"))) {
+                this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name()));
+            }
+            this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
+            this.groups.add(unitConfig.getPlacementConfig().getLocationId());
 
-        String bindingConfig;
-        try {
-            bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig); //openHABBindingServiceConfig.getItemHardwareConfig();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
-            bindingConfig = "";
-//            bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+            String bindingConfig;
+            try {
+                bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(logger, ex);
+                bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+            }
+
+            if (bindingConfig.isEmpty()) {
+                throw new NotAvailableException("bindingConfig");
+            }
+
+            this.bindingConfig = bindingConfig;
+            this.calculateGaps();
+        } catch (Exception ex) {
+            throw new de.citec.jul.exception.InstantiationException(this, ex);
         }
-        this.bindingConfig = bindingConfig;
-        this.calculateGaps();
     }
-
-    public String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
-    public String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
 
     private String generateBindingConfig(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
             String config = "";
-
-            MetaConfigPool configPool = new MetaConfigPool();
-            configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
-            configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
-            configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
-            configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
 
             config += configPool.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
             config += "=\"";

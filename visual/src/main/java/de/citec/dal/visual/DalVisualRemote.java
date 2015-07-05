@@ -44,11 +44,20 @@ public class DalVisualRemote extends javax.swing.JFrame {
         try {
             instance = this;
             initComponents();
-            setIconImage(new ImageIcon(ClassLoader.getSystemResource("dal-visual-remote.png")).getImage());
+            loadImage();
+            
             selectorPanel.addObserver(genericUnitPanel.getUnitConfigObserver());
             init();
         } catch (Exception ex) {
             throw new InstantiationException(this, ex);
+        }
+    }
+
+    private void loadImage() {
+        try {
+            setIconImage(new ImageIcon(ClassLoader.getSystemResource("dal-visual-remote.png")).getImage());
+        } catch(Exception ex) {
+            logger.warn("Could not load app icon!", ex);
         }
     }
 

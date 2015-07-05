@@ -37,7 +37,6 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
      */
     public RSBRemoteView() {
         this.initComponents();
-        logger.warn("DO NOT USE THIS CONSTRUCTOR! This constructor is just for netbeans gui gen support.");
     }
 
     private synchronized void setRemoteService(final DALRemoteService remoteService) {
