@@ -113,5 +113,11 @@
             <version>${global.version.jul}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.extension.protobuf</artifactId>
+            <version>${global.version.jul}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

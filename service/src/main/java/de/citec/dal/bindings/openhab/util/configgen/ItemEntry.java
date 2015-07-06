@@ -11,6 +11,7 @@ import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.protobuf.ProtobufVariableProvider;
 import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.processing.VariableProcessor;
 import de.citec.jul.processing.VariableProvider;
@@ -18,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -58,14 +57,16 @@ public class ItemEntry {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ItemEntry.class);
 
-    public String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
-    public String SERVICE_TEMPLATE_BINDING_ICON = "OPENHAB_BINDING_ICON";
-    public String SERVICE_TEMPLATE_BINDING_COMMAND = "OPENHAB_BINDING_COMMAND";
-    public String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
+    public static final String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
+    public static final String SERVICE_TEMPLATE_BINDING_ICON = "OPENHAB_BINDING_ICON";
+    public static final String SERVICE_TEMPLATE_BINDING_COMMAND = "OPENHAB_BINDING_COMMAND";
+    public static final String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
+    public static final String SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR = "OPENHAB_SERVICE_LABEL_DESCRIPTOR";
+
 
     private String commandType;
     private final String itemId;
-    private final String label;
+    private String label;
     private String icon;
     private final List<String> groups;
     private final String bindingConfig;
@@ -81,13 +82,21 @@ public class ItemEntry {
     public ItemEntry(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final OpenHABBindingServiceConfig openHABBindingServiceConfig) throws InstantiationException {
         try {
             this.itemId = openHABBindingServiceConfig.getItemId();
-            this.label = unitConfig.getLabel();
             this.groups = new ArrayList<>();
 
             configPool = new MetaConfigPool();
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
+            configPool.register(new ProtobufVariableProvider(deviceConfig));
+            configPool.register(new ProtobufVariableProvider(unitConfig));
+            configPool.register(new ProtobufVariableProvider(serviceConfig));
+
+            try {
+                this.label = configPool.getValue(SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR);
+            } catch (NotAvailableException ex) {
+                this.label = unitConfig.getLabel();
+            }
 
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
@@ -374,7 +383,7 @@ public class ItemEntry {
             this.variableProviderPool = new ArrayList<>();
         }
 
-        public void register(MetaConfigVariableProvider provider) {
+        public void register(VariableProvider provider) {
             variableProviderPool.add(provider);
         }
 
@@ -407,4 +416,6 @@ public class ItemEntry {
             return getMetaConfig(metaConfig, variable);
         }
     }
+
+    
 }
