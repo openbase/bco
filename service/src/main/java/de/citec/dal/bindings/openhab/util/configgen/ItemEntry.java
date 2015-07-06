@@ -90,6 +90,12 @@ public class ItemEntry {
             configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
 
             try {
+                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+            }
+
+            try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
             } catch (NotAvailableException ex) {
                 this.commandType = getCommand(serviceConfig.getType());
@@ -99,12 +105,6 @@ public class ItemEntry {
                 this.icon = configPool.getValue(SERVICE_TEMPLATE_BINDING_ICON);
             } catch (NotAvailableException ex) {
                 this.icon = "sun";
-            }
-
-            try {
-                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
             }
 
         // TODO: maybe think of another strategy to name groups
