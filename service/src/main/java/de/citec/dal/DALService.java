@@ -27,7 +27,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,9 +118,9 @@ public class DALService implements RegistryProvider {
 
     public void shutdown() {
         deactivate();
-        bindingRegistry.clear();
-        deviceRegistry.clear();
-        unitRegistry.clear();
+        bindingRegistry.shutdown();
+        deviceRegistry.shutdown();
+        unitRegistry.shutdown();
         locationRegistryRemote.shutdown();
         deviceRegistryRemote.shutdown();
         registryProvider = null;
