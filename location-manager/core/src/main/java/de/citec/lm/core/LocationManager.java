@@ -16,6 +16,7 @@ import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,7 @@ public class LocationManager {
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPLocationDatabaseDirectory.class);
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPGitRegistryPlugin.class);
 
         JPService.parseAndExitOnError(args);
 

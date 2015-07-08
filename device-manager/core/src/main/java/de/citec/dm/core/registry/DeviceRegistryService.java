@@ -52,6 +52,7 @@ import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.container.IdentifiableMessage;
 import de.citec.jul.extension.rsb.util.RPCHelper;
+import de.citec.jul.storage.registry.plugin.GitRegistryPlugin;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
@@ -90,6 +91,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            
+            
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
