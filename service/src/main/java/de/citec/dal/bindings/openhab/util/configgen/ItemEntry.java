@@ -126,12 +126,12 @@ public class ItemEntry {
             this.groups.add(unitConfig.getPlacementConfig().getLocationId());
 
             String bindingConfig;
-            try {
-                bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(logger, ex);
+//            try {
+//                bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
+//            } catch (CouldNotPerformException ex) {
+//                ExceptionPrinter.printHistory(logger, ex);
                 bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
-            }
+//            }
 
             if (bindingConfig.isEmpty()) {
                 throw new NotAvailableException("bindingConfig");
