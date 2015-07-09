@@ -116,7 +116,7 @@ public class ItemEntry {
                 this.icon = "sun";
             }
 
-        // TODO: maybe think of another strategy to name groups
+            // TODO: maybe think of another strategy to name groups
             // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
             String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
             if (!(templateName.equals("Dimmer") || templateName.equals("Rollershutter"))) {
