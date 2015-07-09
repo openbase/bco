@@ -63,7 +63,6 @@ public class ItemEntry {
     public static final String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
     public static final String SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR = "OPENHAB_SERVICE_LABEL_DESCRIPTOR";
 
-
     private String commandType;
     private final String itemId;
     private String label;
@@ -126,12 +125,12 @@ public class ItemEntry {
             this.groups.add(unitConfig.getPlacementConfig().getLocationId());
 
             String bindingConfig;
-//            try {
-//                bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
-//            } catch (CouldNotPerformException ex) {
-//                ExceptionPrinter.printHistory(logger, ex);
+            try {
+                bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(logger, ex);
                 bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
-//            }
+            }
 
             if (bindingConfig.isEmpty()) {
                 throw new NotAvailableException("bindingConfig");
@@ -417,5 +416,4 @@ public class ItemEntry {
         }
     }
 
-    
 }
