@@ -7,7 +7,6 @@ package de.citec.dal.remote.control.action;
 
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
-import rst.communicationpatterns.TaskStateType;
 import rst.homeautomation.service.ServiceConfigType;
 
 /**
@@ -44,7 +43,7 @@ public class Action implements ActionService {
     private String name;
     private String description;
     private ActionPriority priority;
-    private String responsibleFOR;
+    private String origin;
     private long executionDelay;
     private long period;
     private ActionState state;

@@ -14,6 +14,7 @@ import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import de.citec.jul.schedule.Timeout;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
@@ -31,15 +32,34 @@ public class OpenHABConfigGenerator {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(OpenHABConfigGenerator.class);
 
+    public static final long TIMEOUT = 15000;
+
     private final OpenHABItemConfigGenerator itemConfigGenerator;
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
+    private final Timeout generationTimeout;
+
+    private boolean updateDetected;
 
     public OpenHABConfigGenerator() throws InstantiationException {
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote);
+            this.updateDetected = false;
+            this.generationTimeout = new Timeout(TIMEOUT) {
+
+                @Override
+                public void expired() {
+                    try {
+                        if (updateDetected) {
+                            generate();
+                        }
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                    }
+                }
+            };
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -78,10 +98,16 @@ public class OpenHABConfigGenerator {
     }
 
     private synchronized void generate() throws CouldNotPerformException {
+        if (generationTimeout.isActive()) {
+            updateDetected = true;
+            return;
+        }
+
         try {
             logger.info("generate");
+            updateDetected = false;
             itemConfigGenerator.generate();
-
+            generationTimeout.restart();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate ex.", ex);
         }
@@ -89,12 +115,9 @@ public class OpenHABConfigGenerator {
 
     private void shutdown() {
         logger.info("shutdown");
-        try {
-            itemConfigGenerator.generate();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
-        }
+        itemConfigGenerator.shutdown();
         deviceRegistryRemote.shutdown();
+        locationRegistryRemote.shutdown();
     }
 
     /**
@@ -102,14 +125,15 @@ public class OpenHABConfigGenerator {
      */
     public static void main(String[] args) throws Exception {
         JPService.setApplicationName("dal-openhab-config-generator");
-        JPService.registerProperty(JPOpenHABItemConfig.class, new File("/tmp/itemconfig.txt"));
+        JPService
+                .registerProperty(JPOpenHABItemConfig.class, new File("/tmp/itemconfig.txt"));
         JPService.parseAndExitOnError(args);
 
         try {
             final OpenHABConfigGenerator openHABConfigGenerator = new OpenHABConfigGenerator();
             openHABConfigGenerator.init();
             openHABConfigGenerator.generate();
-            
+
             FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(JPService.getProperty(JPOpenHABItemConfig.class).getValue().getParent());
             fileAlterationObserver.initialize();
             fileAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
@@ -128,7 +152,7 @@ public class OpenHABConfigGenerator {
             final FileAlterationMonitor monitor = new FileAlterationMonitor(10000);
             monitor.addObserver(fileAlterationObserver);
             monitor.start();
-            
+
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
                 @Override
@@ -137,11 +161,10 @@ public class OpenHABConfigGenerator {
                     try {
                         monitor.stop();
                     } catch (Exception ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                        ExceptionPrinter.printHistory(logger, ex);
                     }
                 }
             }));
-
 
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);

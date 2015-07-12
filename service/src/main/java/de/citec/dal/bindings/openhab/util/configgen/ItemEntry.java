@@ -87,6 +87,7 @@ public class ItemEntry {
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceConfig.getDeviceClass().getMetaConfig()));
             configPool.register(new ProtobufVariableProvider(deviceConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
