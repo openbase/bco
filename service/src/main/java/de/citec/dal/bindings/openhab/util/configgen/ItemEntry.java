@@ -68,7 +68,7 @@ public class ItemEntry {
     private String label;
     private String icon;
     private final List<String> groups;
-    private final String bindingConfig;
+    private String bindingConfig;
     private final MetaConfigPool configPool;
 
     private static int maxCommandTypeSize = 0;
@@ -93,15 +93,21 @@ public class ItemEntry {
             configPool.register(new ProtobufVariableProvider(serviceConfig));
 
             try {
+                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+            }
+
+            try {
                 this.label = configPool.getValue(SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR);
             } catch (NotAvailableException ex) {
                 this.label = unitConfig.getLabel();
             }
 
             try {
-                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
+                logger.info(SERVICE_TEMPLATE_BINDING_COMMAND+" = " + configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND));
             } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+                logger.info(SERVICE_TEMPLATE_BINDING_COMMAND+" not avail");
             }
 
             try {
@@ -125,7 +131,6 @@ public class ItemEntry {
             this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
             this.groups.add(unitConfig.getPlacementConfig().getLocationId());
 
-            String bindingConfig;
             try {
                 bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
             } catch (CouldNotPerformException ex) {
@@ -137,7 +142,6 @@ public class ItemEntry {
                 throw new NotAvailableException("bindingConfig");
             }
 
-            this.bindingConfig = bindingConfig;
             this.calculateGaps();
         } catch (Exception ex) {
             throw new de.citec.jul.exception.InstantiationException(this, ex);
@@ -345,7 +349,9 @@ public class ItemEntry {
     public static String getMetaConfig(final MetaConfig metaConfig, final String key) throws NotAvailableException {
         for (Entry entry : metaConfig.getEntryList()) {
             if (entry.getKey().equals(key)) {
-                return entry.getValue();
+                if (!entry.getValue().isEmpty()) {
+                    return entry.getValue();
+                }
             }
         }
         throw new NotAvailableException("value for Key[" + key + "]");
@@ -389,7 +395,7 @@ public class ItemEntry {
 
         public String getValue(String variable) throws NotAvailableException {
             try {
-                return VariableProcessor.resolveVariables(resolveVariable(variable, variableProviderPool), false, variableProviderPool);
+                return VariableProcessor.resolveVariables(resolveVariable(variable, variableProviderPool), true, variableProviderPool);
             } catch (MultiException ex) {
                 throw new NotAvailableException("Variable[" + variable + "]", ex);
             }
