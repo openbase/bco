@@ -105,12 +105,6 @@ public class ItemEntry {
             }
 
             try {
-                logger.info(SERVICE_TEMPLATE_BINDING_COMMAND+" = " + configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND));
-            } catch (NotAvailableException ex) {
-                logger.info(SERVICE_TEMPLATE_BINDING_COMMAND+" not avail");
-            }
-
-            try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
             } catch (NotAvailableException ex) {
                 this.commandType = getCommand(serviceConfig.getType());
