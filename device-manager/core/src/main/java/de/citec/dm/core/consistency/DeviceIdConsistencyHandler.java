@@ -7,8 +7,8 @@ package de.citec.dm.core.consistency;
 
 import de.citec.dm.lib.generator.UnitConfigIdGenerator;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.extension.rsb.container.IdentifiableMessage;
-import de.citec.jul.extension.rsb.container.ProtoBufMessageMapInterface;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;

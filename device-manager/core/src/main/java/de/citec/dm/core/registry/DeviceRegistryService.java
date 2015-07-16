@@ -50,7 +50,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.rsb.container.IdentifiableMessage;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.util.RPCHelper;
 import de.citec.jul.storage.registry.plugin.GitRegistryPlugin;
 import de.citec.lm.remote.LocationRegistryRemote;

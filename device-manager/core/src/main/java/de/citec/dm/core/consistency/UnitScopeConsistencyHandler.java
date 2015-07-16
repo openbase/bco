@@ -7,8 +7,8 @@ package de.citec.dm.core.consistency;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.rsb.container.IdentifiableMessage;
-import de.citec.jul.extension.rsb.container.ProtoBufMessageMapInterface;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;

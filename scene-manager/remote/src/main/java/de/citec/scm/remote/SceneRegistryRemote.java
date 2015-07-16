@@ -13,7 +13,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.rsb.container.IdentifiableMessage;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;

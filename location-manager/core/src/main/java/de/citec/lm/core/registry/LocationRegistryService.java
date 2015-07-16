@@ -21,7 +21,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.container.IdentifiableMessage;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.util.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;

@@ -7,7 +7,7 @@ package de.citec.agm.lib.generator;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.extension.rsb.util.IdGenerator;
+import de.citec.jul.extension.protobuf.IdGenerator;
 import de.citec.jul.processing.StringProcessor;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
