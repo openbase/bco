@@ -5,16 +5,19 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen;
 
+import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABConfiguration;
+import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABDistribution;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPPrefix;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import de.citec.jul.schedule.Timeout;
+import de.citec.jul.schedule.RecurrenceEventFilter;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
@@ -37,7 +40,7 @@ public class OpenHABConfigGenerator {
     private final OpenHABItemConfigGenerator itemConfigGenerator;
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
-    private final Timeout generationTimeout;
+    private final RecurrenceEventFilter recurrenceGenerationFilter;
 
     private boolean updateDetected;
 
@@ -47,19 +50,15 @@ public class OpenHABConfigGenerator {
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote);
             this.updateDetected = false;
-            this.generationTimeout = new Timeout(TIMEOUT) {
+            this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
                 @Override
-                public void expired() {
-                    try {
-                        if (updateDetected) {
-                            generate();
-                        }
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
-                    }
+                public void relay() throws Exception {
+                    internalGenerate();
                 }
+
             };
+
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -77,37 +76,27 @@ public class OpenHABConfigGenerator {
 
             @Override
             public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
-                try {
-                    generate();
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
-                }
+                generate();
             }
         });
         this.locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
 
             @Override
             public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
-                try {
-                    generate();
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
-                }
+                generate();
             }
         });
     }
 
-    private synchronized void generate() throws CouldNotPerformException {
-        if (generationTimeout.isActive()) {
-            updateDetected = true;
-            return;
-        }
+    public void generate() {
+        recurrenceGenerationFilter.trigger();
+    }
 
+    private synchronized void internalGenerate() throws CouldNotPerformException {
         try {
             logger.info("generate");
             updateDetected = false;
             itemConfigGenerator.generate();
-            generationTimeout.restart();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate ex.", ex);
         }
@@ -125,8 +114,10 @@ public class OpenHABConfigGenerator {
      */
     public static void main(String[] args) throws Exception {
         JPService.setApplicationName("dal-openhab-config-generator");
-        JPService
-                .registerProperty(JPOpenHABItemConfig.class, new File("/tmp/itemconfig.txt"));
+        JPService.registerProperty(JPPrefix.class);
+        JPService.registerProperty(JPOpenHABItemConfig.class);
+        JPService.registerProperty(JPOpenHABDistribution.class);
+        JPService.registerProperty(JPOpenHABConfiguration.class);
         JPService.parseAndExitOnError(args);
 
         try {
@@ -140,12 +131,8 @@ public class OpenHABConfigGenerator {
 
                 @Override
                 public void onFileDelete(File file) {
-                    try {
-                        logger.info("Detect config file deletion!");
-                        openHABConfigGenerator.generate();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not regenerate config!", ex));
-                    }
+                    logger.warn("Detect config file deletion!");
+                    openHABConfigGenerator.generate();
                 }
             });
 

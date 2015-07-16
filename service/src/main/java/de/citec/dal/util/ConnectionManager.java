@@ -5,10 +5,14 @@
  */
 package de.citec.dal.util;
 
-import de.citec.dal.registry.DeviceRegistry;
-import de.citec.dal.hal.device.Device;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.iface.Activatable;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,51 +20,51 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class ConnectionManager implements Activatable {
+public class ConnectionManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 
-	private final Object SYNC_LOCK = new Object();
-	private boolean active;
-	private final DeviceRegistry registry;
+    private final ExecutorService executorService;
+    private int connectionCounter;
 
-	public ConnectionManager(final DeviceRegistry registry) {
-		this.registry = registry;
-	}
+    public ConnectionManager() {
+        this.executorService = Executors.newCachedThreadPool(); 
+        this.connectionCounter = 0;
+    }
 
-	@Override
-	public void activate() throws InterruptedException {
-		synchronized (SYNC_LOCK) {
-			active = true;
+    public Future<Activatable> activate(final Activatable device) {
+        return executorService.submit(new Callable() {
 
-			for (Device device : registry.getEntries()) {
-				try {
-					device.activate();
-				} catch (CouldNotPerformException ex) {
-					logger.error("Could not activate: " + device, ex);
-				}
-			}
-		}
-	}
+            @Override
+            public Object call() throws Exception {
+                try {
+                    device.activate();
+                    connectionCounter++;
+                    return device;
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not activate: " + device, ex));
+                }
+            }
+        });
+    }
+    
+    public Future<Activatable> deactivate(final Activatable device) {
+        return executorService.submit(new Callable<Activatable>() {
 
-	@Override
-	public void deactivate() {
-		synchronized (SYNC_LOCK) {
-			active = false;
-			for (Device device : registry.getEntries()) {
-				try {
-					device.deactivate();
-				} catch (CouldNotPerformException | InterruptedException ex) {
-					logger.error("Could not deactivate: " + device, ex);
-				}
-			}
-		}
-	}
+            @Override
+            public Activatable call() throws Exception {
+                try {
+                    device.deactivate();
+                    connectionCounter--;
+                    return device;
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not deactivate: " + device, ex));
+                }
+            }
+        });
+    }
 
-	@Override
-	public boolean isActive() {
-		synchronized (SYNC_LOCK) {
-			return active;
-		}
-	}
+    public int getConnections() {
+        return connectionCounter;
+    }
 }

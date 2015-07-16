@@ -7,11 +7,9 @@ package de.citec.dal;
 
 import de.citec.dal.bindings.DALBindingRegistry;
 import de.citec.dal.bindings.openhab.OpenHABBinding;
-import de.citec.dal.registry.DeviceManagerRemoteDalConnector;
+import de.citec.dal.registry.DeviceRegistrySynchronizer;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
-import de.citec.dal.util.ConnectionManager;
-import de.citec.dal.util.DeviceInitializer;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
@@ -46,8 +44,8 @@ public class DALService implements RegistryProvider {
     private final DALBindingRegistry bindingRegistry;
 
     private final DeviceRegistry deviceRegistry;
+    private final DeviceRegistrySynchronizer deviceRegistrySynchronizer;
     private final UnitRegistry unitRegistry;
-    private final ConnectionManager connectionManager;
     private final LocationRegistryRemote locationRegistryRemote;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
@@ -56,9 +54,9 @@ public class DALService implements RegistryProvider {
             this.bindingRegistry = new DALBindingRegistry();
             this.deviceRegistry = new DeviceRegistry();
             this.unitRegistry = new UnitRegistry();
-            this.connectionManager = new ConnectionManager(deviceRegistry);
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.deviceRegistryRemote = new DeviceRegistryRemote();
+            this.deviceRegistrySynchronizer = new DeviceRegistrySynchronizer(deviceRegistry, deviceRegistryRemote);
 
             registryProvider = this;
 
@@ -75,22 +73,13 @@ public class DALService implements RegistryProvider {
     }
 
     public void init() throws CouldNotPerformException, InterruptedException {
-        init(new DeviceManagerRemoteDalConnector());
-    }
-
-    public void init(final DeviceInitializer initializer) throws CouldNotPerformException, InterruptedException {
         try {
             locationRegistryRemote.init();
             locationRegistryRemote.activate();
             deviceRegistryRemote.init();
             deviceRegistryRemote.activate();
-
             initBindings();
-            try {
-                initializer.initDevices(deviceRegistry);
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory(logger, ex);
-            }
+            deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -100,29 +89,13 @@ public class DALService implements RegistryProvider {
         bindingRegistry.register(OpenHABBinding.class);
     }
 
-    public void activate() {
-        try {
-            this.connectionManager.activate();
-        } catch (Exception ex) {
-            logger.warn("Hardware manager could not be activated!", ex);
-        }
-    }
-
-    public void deactivate() {
-        try {
-            this.connectionManager.deactivate();
-        } catch (Exception ex) {
-            logger.warn("Hardware manager could not be deactivated!", ex);
-        }
-    }
-
     public void shutdown() {
-        deactivate();
         bindingRegistry.shutdown();
         deviceRegistry.shutdown();
         unitRegistry.shutdown();
         locationRegistryRemote.shutdown();
         deviceRegistryRemote.shutdown();
+        deviceRegistrySynchronizer.shutdown();
         registryProvider = null;
     }
 
@@ -151,10 +124,6 @@ public class DALService implements RegistryProvider {
         return locationRegistryRemote;
     }
 
-    public ConnectionManager getConnectionManager() {
-        return connectionManager;
-    }
-
     /**
      * @param args the command line arguments
      * @throws java.lang.Throwable
@@ -178,7 +147,6 @@ public class DALService implements RegistryProvider {
         try {
             DALService dalService = new DALService();
             dalService.init();
-            dalService.activate();
         } catch (de.citec.jul.exception.InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
