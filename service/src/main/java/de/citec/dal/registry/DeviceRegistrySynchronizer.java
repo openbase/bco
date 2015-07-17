@@ -15,6 +15,7 @@ import de.citec.jul.extension.protobuf.ProtobufListDiff;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.schedule.RecurrenceEventFilter;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
@@ -64,6 +65,11 @@ public class DeviceRegistrySynchronizer {
 
     public void init() {
         this.remoteRegistry.addObserver(remoteChangeObserver);
+        try {
+            this.internalSync();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Initial sync failed!", ex));
+        }
     }
 
     public void shutdown() {
@@ -75,49 +81,57 @@ public class DeviceRegistrySynchronizer {
         recurrenceSyncFilter.trigger();
     }
 
-    private synchronized void internalSync() {
+    private synchronized void internalSync() throws CouldNotPerformException {
         logger.info("Trigger registry sync...");
 
         MultiException.ExceptionStack exceptionStack = null;
 
         try {
-
             deviceConfigDiff.diff(remoteRegistry.getDeviceConfigs());
-            
-            for (DeviceConfig config : deviceConfigDiff.getUpdatedMessageMap().getValueSet()) {
-                
-            }
-//            
-//            //TDOD... 
-//            ajisj
 
-            for (DeviceConfig config : remoteRegistry.getDeviceConfigs()) {
-
-                if (registry.contains(config.getId())) {
-
-                }
-
-                if (!config.getDeviceClass().getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
-                    continue;
-                }
-
-                if (config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                    logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
-                    continue;
-                }
-
+            for (DeviceConfig config : deviceConfigDiff.getRemovedMessageMap().getMessages()) {
                 try {
-                    registry.register(factory.newDevice(config));
+                    registry.remove(config.getId());
                 } catch (Exception ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
 
-            MultiException.checkAndThrow("Could not init all registered devices!", exceptionStack);
+            for (DeviceConfig config : deviceConfigDiff.getUpdatedMessageMap().getMessages()) {
+                try {
+                    registry.update(factory.newDevice(config));
+                } catch (Exception ex) {
+                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                }
+            }
+
+            for (DeviceConfig config : deviceConfigDiff.getNewMessageMap().getMessages()) {
+                try {
+                    if (verifyDeviceConfig(config)) {
+                        registry.register(factory.newDevice(config));
+                    }
+                } catch (Exception ex) {
+                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                }
+            }
+
             logger.info(registry.size() + " devices successfully loaded. " + MultiException.size(exceptionStack) + " skipped.");
+            MultiException.checkAndThrow("Could not sync all devices!", exceptionStack);
+
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not init devices!", ex));
+            throw new CouldNotPerformException("Device registry sync failed!", ex);
         }
     }
 
+    private boolean verifyDeviceConfig(final DeviceConfig config) {
+        if (!config.getDeviceClass().getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
+            return false;
+        }
+
+        if (config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+            logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
+            return false;
+        }
+        return true;
+    }
 }

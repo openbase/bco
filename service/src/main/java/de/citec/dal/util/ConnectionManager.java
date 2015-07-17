@@ -7,7 +7,6 @@ package de.citec.dal.util;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.iface.Activatable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -28,13 +27,14 @@ public class ConnectionManager {
     private int connectionCounter;
 
     public ConnectionManager() {
-        this.executorService = Executors.newCachedThreadPool(); 
+        this.executorService = Executors.newSingleThreadExecutor(); 
+//        this.executorService = Executors.newCachedThreadPool(); 
         this.connectionCounter = 0;
     }
 
     public Future<Activatable> activate(final Activatable device) {
-        return executorService.submit(new Callable() {
-
+        Future submit = executorService.submit(new Callable() {
+            
             @Override
             public Object call() throws Exception {
                 try {
@@ -46,11 +46,19 @@ public class ConnectionManager {
                 }
             }
         });
+        
+        try {
+            //TODO mpohling: Check way unit tests failed if activation is not synchronized!
+            submit.get();
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(logger, ex);
+        }
+        return submit;
     }
     
     public Future<Activatable> deactivate(final Activatable device) {
-        return executorService.submit(new Callable<Activatable>() {
-
+        Future<Activatable> submit = executorService.submit(new Callable<Activatable>() {
+            
             @Override
             public Activatable call() throws Exception {
                 try {
@@ -62,6 +70,13 @@ public class ConnectionManager {
                 }
             }
         });
+        try {
+            //TODO mpohling: Check way unit tests failed if activation is not synchronized!
+            submit.get();
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(logger, ex);
+        }
+        return submit;
     }
 
     public int getConnections() {
