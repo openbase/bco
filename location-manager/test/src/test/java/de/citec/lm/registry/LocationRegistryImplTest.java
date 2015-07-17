@@ -37,6 +37,7 @@ import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTypeHolderType;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -152,8 +153,8 @@ public class LocationRegistryImplTest {
         LocationConfig registeredChild = remote.registerLocationConfig(child);
         assertTrue("The new location isn't registered as a child location.", !registeredChild.getRoot());
         remote.requestStatus();
-        assertTrue("The child location isn't represented in its parent.", remote.getLocationConfigById(registeredRoot.getId()).getChildList().contains(registeredChild));
-        assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildCount() == 1);
+        assertTrue("The child location isn't represented in its parent.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdList().contains(registeredChild.getId()));
+        assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdCount() == 1);
 
         LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot);
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
@@ -168,52 +169,30 @@ public class LocationRegistryImplTest {
      */
     @Test
     public void testChildConsistency() throws Exception {
-        LocationConfig living = LocationConfig.newBuilder().setLabel("Test2Living").build();
+        String label = "Test2Living";
+        LocationConfig living = LocationConfig.newBuilder().setLabel(label).build();
         LocationConfig registeredLiving = remote.registerLocationConfig(living);
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getRoot());
+        assertEquals("Label has not been set", label, registeredLiving.getLabel());
 
-        LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").addChild(living).build();
+        LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").addChildId(registeredLiving.getId()).build();
         LocationConfig registeredHome = remote.registerLocationConfig(home);
         assertTrue("The new location isn't registered as a root location.", registeredHome.getRoot());
         remote.requestStatus();
         assertFalse("Root hasn't become a child location after setting its parent.", remote.getLocationConfigById(registeredLiving.getId()).getRoot());
     }
-    
-    @Test
-    public void testPositionChanges() throws Exception {
-        LocationConfig root = LocationConfig.newBuilder().setLabel("RootPosition").build();
-        root = remote.registerLocationConfig(root);
-        assertTrue("The new location isn't registered as a root location.", root.getRoot());
-
-        LocationConfig child = LocationConfig.newBuilder().setLabel("ChildPosition").setParentId(root.getId()).build();
-        child = remote.registerLocationConfig(child);
-        assertTrue("The new location isn't registered as a child location.", !child.getRoot());
-        remote.requestStatus(); 
-        
-        Translation translation = Translation.newBuilder().setX(1).setY(2).setZ(3).build();
-        Rotation rotation = Rotation.newBuilder().setQw(1).setQx(2).setQy(3).setQz(4).build();
-        Pose position = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        root = root.toBuilder().setPosition(position).build();
-        root = remote.updateLocationConfig(root);
-        assertEquals("The position for the root location has not been updated", position, root.getPosition());
-        
-        child = child.toBuilder().setPosition(position).build();
-        root = root.toBuilder().setChild(0, child).build();
-        root = remote.updateLocationConfig(root);
-        assertEquals("The position for the child location has not been updated", position, root.getChild(0).getPosition());
-    }
 
     @Test
     public void testGetUnitConfigs() throws Exception {
         try {
-            remote.getUnitConfigs(UnitTemplateType.UnitTemplate.UnitType.UNKNOWN, locationConfig.getId());
+            remote.getUnitConfigs(UnitTypeHolderType.UnitTypeHolder.UnitType.UNKNOWN, locationConfig.getId());
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
         }
-        
+
         try {
-            remote.getUnitConfigs(UnitTemplateType.UnitTemplate.UnitType.AMBIENT_LIGHT, "Quark");
+            remote.getUnitConfigs(UnitTypeHolderType.UnitTypeHolder.UnitType.AMBIENT_LIGHT, "Quark");
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!

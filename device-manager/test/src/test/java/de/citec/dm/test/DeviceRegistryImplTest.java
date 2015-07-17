@@ -53,6 +53,7 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType;
@@ -135,13 +136,13 @@ public class DeviceRegistryImplTest {
         deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
         deviceConfig.setLabel("TestDeviceConfigLabel");
         deviceConfig.setSerialNumber("0001-0004-2245");
-        deviceConfig.setDeviceClass(deviceClass.clone().setId("TestDeviceClassLabel"));
+        deviceConfig.setDeviceClassId("TestDeviceClassLabel");
 
         deviceClassRemoteMessage = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClassRemoteMessage.setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
         deviceConfigRemoteMessage = DeviceConfig.getDefaultInstance().newBuilderForType();
         deviceConfigRemoteMessage.setLabel("RemoteTestDeviceConfig").setSerialNumber("1123-5813-2134");
-        deviceConfigRemoteMessage.setDeviceClass(deviceClassRemoteMessage.clone().setId("RemoteTestDeviceClass"));
+        deviceConfigRemoteMessage.setDeviceClassId("RemoteTestDeviceClass");
 
         remote = new DeviceRegistryRemote();
         remote.init();
@@ -209,12 +210,12 @@ public class DeviceRegistryImplTest {
         String deviceScope = "/" + LOCATION_LABEL + "/" + deviceLabel.toLowerCase() + "/";
 
         String unitLabel = "Battery";
-        String unitScope = "/" + LOCATION_LABEL + "/" + UnitTemplate.UnitType.BATTERY.name().toLowerCase() + "/" + unitLabel.toLowerCase() + "/";
+        String unitScope = "/" + LOCATION_LABEL + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + unitLabel.toLowerCase() + "/";
         String unitID = unitScope;
 
         ArrayList<UnitConfig> units = new ArrayList<>();
         DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company));
-        units.add(getUnitConfig(UnitTemplate.UnitType.BATTERY, unitLabel));
+        units.add(getUnitConfig(UnitType.BATTERY, unitLabel));
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, units);
 
         motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig);
@@ -275,7 +276,7 @@ public class DeviceRegistryImplTest {
      */
     @Test
     public void testServiceConsistencyHandling() throws Exception {
-        UnitConfig unitConfig = getUnitConfig(UnitTemplate.UnitType.LIGHT, "ServiceTest");
+        UnitConfig unitConfig = getUnitConfig(UnitType.LIGHT, "ServiceTest");
         BindingServiceConfig bindingConfig = BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
         ServiceConfig serviceConfig = ServiceConfig.newBuilder().setType(ServiceType.POWER_PROVIDER).setBindingServiceConfig(bindingConfig).build();
         unitConfig = unitConfig.toBuilder().addServiceConfig(serviceConfig).build();
@@ -289,9 +290,9 @@ public class DeviceRegistryImplTest {
 //        assertTrue("Unit id is not set.", !deviceConfig.getUnitConfig(0).getId().equals(""));
 //        assertTrue("Unit id in service config is not set.", !deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(""));
 //        assertTrue("Unit id in service config does not match id in unit config.", deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(deviceConfig.getUnitConfig(0).getId()));
-        String itemId = OpenhabServiceConfigItemIdConsistenyHandler.generateItemName(deviceConfig, unitConfig, serviceConfig, LOCATION);
+        String itemId = OpenhabServiceConfigItemIdConsistenyHandler.generateItemName(deviceConfig, clazz.getLabel(), unitConfig, serviceConfig, LOCATION);
 
-//        assertTrue("OpenHAB item id is not set.", itemId.equals(deviceConfig.getUnitConfig(0).getServiceConfig(0).getBindingServiceConfig().getOpenhabBindingServiceConfig().getItemId()));
+//        assertTrue("OpenHAB item id is not set.", itemId.equals(deviceConfig.getUnitConfig(0).getServiceConfig(0).getBindingServiceConfig().getMetaConfig().getEntry(0).getValue()));
     }
 
     private PlacementConfigType.PlacementConfig getDefaultPlacement() {
@@ -302,12 +303,12 @@ public class DeviceRegistryImplTest {
         return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION_LABEL).build();
     }
 
-    private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) {
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(UnitTemplate.newBuilder().setType(type).build()).setLabel(label).build();
+    private UnitConfig getUnitConfig(UnitType type, String label) {
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
-        return DeviceConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setSerialNumber(serialNumber).setDeviceClass(clazz).addAllUnitConfig(units).build();
+        return DeviceConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setSerialNumber(serialNumber).setDeviceClassId(clazz.getId()).addAllUnitConfig(units).build();
     }
 
     private DeviceClass getDeviceClass(String label, String productNumber, String company) {

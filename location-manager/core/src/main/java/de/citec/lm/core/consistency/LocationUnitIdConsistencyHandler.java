@@ -13,11 +13,11 @@ import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
+import java.rmi.server.ObjID;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType;
@@ -43,7 +43,7 @@ public class LocationUnitIdConsistencyHandler implements ProtoBufRegistryConsist
         Collection<String> lookupUnitIds;
 
         try {
-            lookupUnitIds = lookupUnitIds(locationConfig);
+            lookupUnitIds = lookupUnitIds(locationConfig, registry);
         } catch (NotAvailableException ex) {
             lookupUnitIds = new ArrayList<>();
         }
@@ -55,7 +55,7 @@ public class LocationUnitIdConsistencyHandler implements ProtoBufRegistryConsist
         }
     }
 
-    private Collection<String> lookupUnitIds(final LocationConfig locationConfig) throws CouldNotPerformException {
+    private Collection<String> lookupUnitIds(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException {
         try {
 
             if (!locationConfig.hasId() || locationConfig.getId().isEmpty()) {
@@ -87,8 +87,8 @@ public class LocationUnitIdConsistencyHandler implements ProtoBufRegistryConsist
                     }
 
                     // add child units
-                    for (LocationConfig childLocationConfig : locationConfig.getChildList()) {
-                        unitIdList.addAll(childLocationConfig.getUnitIdList());
+                    for (String childId : locationConfig.getChildIdList()) {
+                        unitIdList.addAll(registry.get(childId).getMessage().getUnitIdList());
                     }
                 }
             } catch (NotAvailableException ex) {

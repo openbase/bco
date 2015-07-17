@@ -28,7 +28,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder.UnitType;
 
 /**
  *
@@ -60,7 +60,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         super.activate();
         try {
             notifyUpdated(requestStatus());
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
         }
     }

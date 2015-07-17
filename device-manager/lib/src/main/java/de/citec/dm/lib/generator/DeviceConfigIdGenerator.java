@@ -15,20 +15,16 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  *
  * @author mpohling
  */
-public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig>{
+public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig> {
 
     @Override
     public String generateId(DeviceConfig message) throws CouldNotPerformException {
         try {
-            if (!message.hasDeviceClass()) {
-                throw new InvalidStateException("Field [DeviceClass] is missing!");
+            if (!message.hasDeviceClassId()) {
+                throw new InvalidStateException("Field [DeviceClassId] is missing!");
             }
 
-            if (!message.getDeviceClass().hasId()) {
-                throw new InvalidStateException("Field [DeviceClass.id] is missing!");
-            }
-
-            if (message.getDeviceClass().getId().isEmpty()) {
+            if (message.getDeviceClassId().isEmpty()) {
                 throw new InvalidStateException("Field [DeviceClass.id] is empty!");
             }
 
@@ -42,7 +38,7 @@ public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig
 
             String id;
 
-            id = message.getDeviceClass().getId();
+            id = message.getDeviceClassId();
             id += "_";
             id += message.getSerialNumber();
             return StringProcessor.transformToIdString(id);
@@ -51,5 +47,5 @@ public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig
             throw new CouldNotPerformException("Could not generate id!", ex);
         }
     }
-    
+
 }

@@ -31,7 +31,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder.UnitType;
 
 /**
  *
@@ -66,7 +66,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         super.activate();
         try {
             notifyUpdated(requestStatus());
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
         }
     }
@@ -195,7 +195,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
-                if(unitConfig.getTemplate().getType() == type) {
+                if (unitConfig.getType() == type) {
                     unitConfigs.add(unitConfig);
                 }
             }
@@ -211,13 +211,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         }
         return serviceConfigs;
     }
-    
+
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
         getData();
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
-            for(ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if(serviceConfig.getType() == serviceType) {
+            for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                if (serviceConfig.getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }
