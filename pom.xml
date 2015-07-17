@@ -66,6 +66,7 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <global.version.jul>0.2-SNAPSHOT</global.version.jul>
         <global.version.registry-manager>0.4-SNAPSHOT</global.version.registry-manager>
+        <global.version.rst.sandbox>0.12-dr-rebuild</global.version.rst.sandbox>
     </properties>
     
     <dependencies>
@@ -88,7 +89,7 @@
         <dependency>
             <groupId>rsb</groupId>
             <artifactId>rst-sandbox-csra</artifactId>
-            <version>[0.12.33,0.13-SNAPSHOT)</version>
+            <version>${global.version.rst.sandbox}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
