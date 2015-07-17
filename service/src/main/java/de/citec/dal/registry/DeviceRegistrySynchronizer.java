@@ -84,9 +84,9 @@ public class DeviceRegistrySynchronizer {
         try {
 
             deviceConfigDiff.diff(remoteRegistry.getDeviceConfigs());
-            
-            //TDOD... 
-            ajisj
+//            
+//            //TDOD... 
+//            ajisj
 
             for (DeviceConfig config : remoteRegistry.getDeviceConfigs()) {
 

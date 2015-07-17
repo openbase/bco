@@ -52,7 +52,7 @@ public class AmbientLightRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.AMBIENT_LIGHT_LABEL;

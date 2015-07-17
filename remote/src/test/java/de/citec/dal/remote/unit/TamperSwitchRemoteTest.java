@@ -49,7 +49,7 @@ public class TamperSwitchRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.TAMPER_SWITCH_LABEL;

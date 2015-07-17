@@ -49,7 +49,7 @@ public class PowerConsumptionSensorRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_CONSUMPTION_LABEL;

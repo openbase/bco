@@ -50,7 +50,7 @@ public class PowerPlugRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_PLUG_LABEL;

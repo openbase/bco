@@ -58,7 +58,7 @@ public class DALServiceTest {
      * Test of deactivate method, of class DALService.
      */
     @Test
-    public void testDeactivate() throws InitializationException, InstantiationException, CouldNotPerformException, Exception {
+    public void testShutdown() throws InitializationException, InstantiationException, CouldNotPerformException, Exception {
         System.out.println("deactivate");
         DALService instance = new DALService();
         try {
@@ -66,8 +66,7 @@ public class DALServiceTest {
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
-        instance.activate();
-        instance.deactivate();
+        instance.shutdown();
     }
     
     @Test

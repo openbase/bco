@@ -48,7 +48,7 @@ public class DimmerRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
 

@@ -50,7 +50,7 @@ public class SmokeDetectorRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.SMOKE_DETECTOR_LABEL;

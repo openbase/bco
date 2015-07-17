@@ -51,7 +51,7 @@ public class ReedSwitchRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.REED_SWITCH_LABEL;

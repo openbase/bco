@@ -49,7 +49,7 @@ public class ButtonRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.BUTTON_LABEL;

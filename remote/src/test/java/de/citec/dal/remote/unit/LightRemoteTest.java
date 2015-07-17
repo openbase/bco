@@ -50,7 +50,7 @@ public class LightRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.LIGHT_LABEL;

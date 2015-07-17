@@ -49,7 +49,7 @@ public class MotionSensorRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.MOTION_SENSOR_LABEL;

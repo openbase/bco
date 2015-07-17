@@ -48,7 +48,7 @@ public class BrightnessSensorRemoteTest {
 
         dalService = new DALService();
         dalService.init();
-        dalService.activate();
+        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
