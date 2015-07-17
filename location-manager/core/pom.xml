@@ -56,6 +56,7 @@
 	
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <global.version.rst.sandbox>0.12-dr-rebuild</global.version.rst.sandbox>
     </properties>
 
     <dependencies>
@@ -94,7 +95,7 @@
         <dependency>
             <groupId>rsb</groupId>
             <artifactId>rst-sandbox-csra</artifactId>
-            <version>[0.12.33,0.13-SNAPSHOT)</version>
+            <version>${global.version.rst.sandbox}</version>
         </dependency>
         <dependency>
             <groupId>rct</groupId>
