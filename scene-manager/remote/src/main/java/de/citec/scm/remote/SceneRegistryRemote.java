@@ -13,22 +13,15 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
-import java.util.ArrayList;
 import java.util.List;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceTypeHolderType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder.UnitType;
 
 /**
  *

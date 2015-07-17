@@ -27,7 +27,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
-import rst.homeautomation.unit.UnitTypeHolderType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
@@ -172,7 +172,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTypeHolderType.UnitTypeHolder.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             UnitConfigType.UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);

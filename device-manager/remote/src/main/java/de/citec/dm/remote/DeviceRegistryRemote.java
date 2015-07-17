@@ -31,7 +31,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTypeHolderType.UnitTypeHolder.UnitType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

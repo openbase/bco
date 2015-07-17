@@ -33,11 +33,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.geometry.PoseType.Pose;
-import rst.geometry.RotationType.Rotation;
-import rst.geometry.TranslationType.Translation;
-import rst.homeautomation.unit.UnitTemplateType;
-import rst.homeautomation.unit.UnitTypeHolderType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -185,14 +181,14 @@ public class LocationRegistryImplTest {
     @Test
     public void testGetUnitConfigs() throws Exception {
         try {
-            remote.getUnitConfigs(UnitTypeHolderType.UnitTypeHolder.UnitType.UNKNOWN, locationConfig.getId());
+            remote.getUnitConfigs(UnitTemplate.UnitType.UNKNOWN, locationConfig.getId());
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
         }
 
         try {
-            remote.getUnitConfigs(UnitTypeHolderType.UnitTypeHolder.UnitType.AMBIENT_LIGHT, "Quark");
+            remote.getUnitConfigs(UnitTemplate.UnitType.AMBIENT_LIGHT, "Quark");
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
