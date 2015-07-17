@@ -15,7 +15,6 @@ import de.citec.jul.extension.protobuf.ProtobufListDiff;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.schedule.RecurrenceEventFilter;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
@@ -84,6 +83,10 @@ public class DeviceRegistrySynchronizer {
         try {
 
             deviceConfigDiff.diff(remoteRegistry.getDeviceConfigs());
+            
+            for (DeviceConfig config : deviceConfigDiff.getUpdatedMessageMap().getValueSet()) {
+                
+            }
 //            
 //            //TDOD... 
 //            ajisj
