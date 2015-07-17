@@ -371,6 +371,7 @@ public class ItemEntry {
         throw new AssertionError("Fatal error during variable resolving.");
     }
 
+    // mpohling: should be moved to jul rst
     public class MetaConfigPool {
 
         private Collection<VariableProvider> variableProviderPool;
@@ -396,7 +397,9 @@ public class ItemEntry {
         }
     }
 
-    public class MetaConfigVariableProvider implements VariableProvider {
+    
+    // mpohling: should be moved to jul rst
+    public static class MetaConfigVariableProvider implements VariableProvider {
 
         private final String name;
         private final MetaConfig metaConfig;

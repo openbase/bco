@@ -22,7 +22,6 @@ import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.BindingServiceConfigType;
-import rst.homeautomation.service.OpenHABBindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
