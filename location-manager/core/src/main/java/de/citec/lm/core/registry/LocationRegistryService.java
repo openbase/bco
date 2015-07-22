@@ -23,7 +23,7 @@ import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.rsb.util.RPCHelper;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
