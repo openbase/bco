@@ -44,7 +44,7 @@ public class ProtobufVariableProviderTest {
     /**
      * Test of getName method, of class ProtobufVariableProvider.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetName() {
 
         UnitConfigType.UnitConfig config = UnitConfig.getDefaultInstance();
@@ -58,7 +58,7 @@ public class ProtobufVariableProviderTest {
     /**
      * Test of getValue method, of class ProtobufVariableProvider.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetValue() throws Exception {
         UnitConfigType.UnitConfig config = UnitConfig.getDefaultInstance();
         config = config.toBuilder().setLabel("TestLabel").build();

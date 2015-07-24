@@ -90,7 +90,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetColor_Color() throws Exception {
         System.out.println("setColor");
         Color color = Color.MAGENTA;
@@ -104,7 +104,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetColor_HSVColorTypeHSVColor() throws Exception {
         System.out.println("setColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(50).setSaturation(50).setValue(50).build();
@@ -118,7 +118,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetColor() throws Exception {
         System.out.println("getColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(66).setSaturation(63).setValue(33).build();
@@ -132,7 +132,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState.State state = PowerState.State.ON;
@@ -146,7 +146,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState.State state = PowerState.State.OFF;
@@ -160,7 +160,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 75d;
@@ -174,7 +174,7 @@ public class AmbientLightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         Double brightness = 25d;

@@ -92,7 +92,7 @@ public class BatteryRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         double level = 34.0;

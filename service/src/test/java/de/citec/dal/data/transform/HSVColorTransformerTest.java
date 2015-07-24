@@ -44,7 +44,7 @@ public class HSVColorTransformerTest {
     /**
      * Test of transform method, of class HSVColorTransformer.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testTransform_HSBType() throws Exception {
         System.out.println("transform");
         HSB color = HSB.newBuilder().setHue(345).setSaturation(30).setBrightness(50).build();
@@ -56,7 +56,7 @@ public class HSVColorTransformerTest {
     /**
      * Test of transform method, of class HSVColorTransformer.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testTransform_HSVColorTypeHSVColor() throws Exception {
         System.out.println("transform");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(111).setSaturation(56).setValue(57).build();

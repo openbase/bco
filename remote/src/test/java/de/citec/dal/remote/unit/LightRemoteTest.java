@@ -86,7 +86,7 @@ public class LightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState.State state = PowerState.State.ON;
@@ -100,7 +100,7 @@ public class LightRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState.State state = PowerState.State.OFF;

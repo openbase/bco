@@ -94,7 +94,7 @@ public class ReedSwitchRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         ReedSwitchState.State state = ReedSwitchState.State.CLOSED;

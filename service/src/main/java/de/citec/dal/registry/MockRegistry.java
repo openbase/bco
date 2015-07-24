@@ -143,7 +143,7 @@ public class MockRegistry {
                     try {
                         deviceManager = new DeviceManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                        ExceptionPrinter.printHistory(logger, ex);
                     }
                 }
             });
@@ -155,7 +155,7 @@ public class MockRegistry {
                     try {
                         locationManager = new LocationManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                        ExceptionPrinter.printHistory(logger, ex);
                     }
                 }
             });

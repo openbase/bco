@@ -92,7 +92,7 @@ public class ButtonRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
