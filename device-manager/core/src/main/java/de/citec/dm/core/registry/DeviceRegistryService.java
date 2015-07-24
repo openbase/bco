@@ -52,6 +52,7 @@ import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.storage.registry.plugin.GitRegistryPlugin;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
