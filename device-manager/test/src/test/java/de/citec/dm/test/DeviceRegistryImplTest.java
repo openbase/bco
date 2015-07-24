@@ -29,7 +29,6 @@ import de.citec.lm.core.registry.LocationRegistryService;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
