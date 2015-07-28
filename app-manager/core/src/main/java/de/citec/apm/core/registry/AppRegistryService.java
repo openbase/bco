@@ -49,7 +49,7 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
     public AppRegistryService() throws InstantiationException, InterruptedException {
-        super(JPService.getProperty(JPAppRegistryScope.class).getValue(), AppRegistry.newBuilder());
+        super(AppRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getFieldDescriptor(AppRegistry.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -79,9 +79,8 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
         }
     }
 
-    @Override
     public void init() throws InitializationException {
-        super.init();
+        super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
         locationRegistryRemote.init();
     }
 

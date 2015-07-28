@@ -22,7 +22,6 @@ import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
@@ -95,7 +94,6 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         }
     }
 
-    @Override
     public void init() throws InitializationException {
         super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
         deviceRegistryRemote.init();

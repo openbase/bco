@@ -49,7 +49,7 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
     public SceneRegistryService() throws InstantiationException, InterruptedException {
-        super(JPService.getProperty(JPSceneRegistryScope.class).getValue(), SceneRegistry.newBuilder());
+        super(SceneRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfig.class, getBuilderSetup(), getFieldDescriptor(SceneRegistry.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -92,9 +92,8 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
         }
     }
 
-    @Override
     public void init() throws InitializationException {
-        super.init();
+        super.init(JPService.getProperty(JPSceneRegistryScope.class).getValue());
         locationRegistryRemote.init();
     }
 
