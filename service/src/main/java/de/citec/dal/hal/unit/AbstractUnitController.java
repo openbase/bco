@@ -45,7 +45,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final List<Service> serviceList;
 
     public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final Device device, final MB builder) throws CouldNotPerformException {
-        super(ScopeTransformer.transform(config.getScope()), builder);
+        super(builder);
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
@@ -83,7 +83,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
             DALService.getRegistryProvider().getUnitRegistry().register(this);
 
-            init();
+            init(ScopeTransformer.transform(config.getScope()));
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
