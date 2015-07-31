@@ -50,8 +50,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.util.RPCHelper;
-import de.citec.jul.storage.registry.plugin.GitRegistryPlugin;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
@@ -74,7 +73,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
     public DeviceRegistryService() throws InstantiationException, InterruptedException {
-        super(JPService.getProperty(JPDeviceRegistryScope.class).getValue(), DeviceRegistry.newBuilder());
+        super(DeviceRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -127,9 +126,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
     }
 
-    @Override
     public void init() throws InitializationException {
-        super.init();
+        super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
         locationRegistryRemote.init();
     }
 
