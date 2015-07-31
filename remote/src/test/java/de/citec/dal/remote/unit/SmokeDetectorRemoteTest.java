@@ -91,7 +91,7 @@ public class SmokeDetectorRemoteTest {
     /**
      * Test of getSmokeAlarmState method, of class SmokeDetectorRemote.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
@@ -103,7 +103,7 @@ public class SmokeDetectorRemoteTest {
     /**
      * Test of getSmokeState method, of class SmokeDetectorRemote.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();

@@ -74,7 +74,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
             };
             openhabRemoteService.init(SCOPE_OPENHAB);
 
-            dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(SCOPE_DAL, DALBinding.newBuilder()) {
+            dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(DALBinding.newBuilder()) {
 
                 @Override
                 public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
@@ -82,7 +82,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
                 }
             };
 
-            dalCommunicationService.init();
+            dalCommunicationService.init(SCOPE_DAL);
 
             if (!JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
                 // Init Openhab connection

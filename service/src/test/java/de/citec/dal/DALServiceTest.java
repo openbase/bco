@@ -92,8 +92,5 @@ public class DALServiceTest {
         Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
         Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.UNKNOWN);
         Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.UNKNOWN);
-        
-        
     }
-
 }

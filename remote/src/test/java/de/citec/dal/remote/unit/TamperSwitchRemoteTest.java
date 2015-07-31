@@ -92,7 +92,7 @@ public class TamperSwitchRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();

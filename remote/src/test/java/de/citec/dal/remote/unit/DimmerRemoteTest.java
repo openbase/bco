@@ -90,7 +90,7 @@ public class DimmerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState.State state = PowerState.State.ON;
@@ -102,7 +102,7 @@ public class DimmerRemoteTest {
     /**
      * Test of getPower method, of class DimmerRemote.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerState.State state = PowerState.State.OFF;
@@ -114,7 +114,7 @@ public class DimmerRemoteTest {
     /**
      * Test of setDimm method, of class DimmerRemote.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testSetDim() throws Exception {
         System.out.println("setDim");
         Double dim = 66d;
@@ -126,7 +126,7 @@ public class DimmerRemoteTest {
     /**
      * Test of getDimm method, of class DimmerRemote.
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetDimm() throws Exception {
         System.out.println("getDimm");
         Double dimm = 70.0d;
