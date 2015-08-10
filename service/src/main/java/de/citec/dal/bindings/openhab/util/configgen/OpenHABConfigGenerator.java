@@ -5,6 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen;
 
+import static de.citec.dal.DALService.APP_NAME;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABConfiguration;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABDistribution;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
@@ -42,14 +43,11 @@ public class OpenHABConfigGenerator {
     private final LocationRegistryRemote locationRegistryRemote;
     private final RecurrenceEventFilter recurrenceGenerationFilter;
 
-    private boolean updateDetected;
-
     public OpenHABConfigGenerator() throws InstantiationException {
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote);
-            this.updateDetected = false;
             this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
                 @Override
@@ -94,11 +92,10 @@ public class OpenHABConfigGenerator {
 
     private synchronized void internalGenerate() throws CouldNotPerformException {
         try {
-            logger.info("generate");
-            updateDetected = false;
+            logger.info("generate ItemConfig["+JPService.getProperty(JPOpenHABItemConfig.class).getValue()+"] ...");
             itemConfigGenerator.generate();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate ex.", ex);
+            throw new CouldNotPerformException("Could not generate ItemConfig["+JPService.getProperty(JPOpenHABItemConfig.class).getValue()+"].", ex);
         }
     }
 
@@ -156,5 +153,6 @@ public class OpenHABConfigGenerator {
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
         }
+        logger.info(JPService.getApplicationName() + " successfully started.");
     }
 }

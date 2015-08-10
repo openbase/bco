@@ -23,7 +23,7 @@ public class JPOpenHABItemConfig extends AbstractJPFile {
     
     @Override
     protected File getPropertyDefaultValue() {
-        return new File(JPService.getProperty(JPOpenHABConfiguration.class).getValue(), "dal-generated.items");
+        return new File(new File(JPService.getProperty(JPOpenHABConfiguration.class).getValue(), "items"), "dal-generated.items");
     }
 
     @Override

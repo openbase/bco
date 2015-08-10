@@ -68,7 +68,7 @@ public class ItemEntry {
     private String label;
     private String icon;
     private final List<String> groups;
-    private String bindingConfig;
+    private String itemHardwareConfig;
     private final MetaConfigPool configPool;
 
     private static int maxCommandTypeSize = 0;
@@ -107,13 +107,13 @@ public class ItemEntry {
             try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
             } catch (NotAvailableException ex) {
-                this.commandType = getCommand(serviceConfig.getType());
+                this.commandType = getDefaultCommand(serviceConfig.getType());
             }
 
             try {
                 this.icon = configPool.getValue(SERVICE_TEMPLATE_BINDING_ICON);
             } catch (NotAvailableException ex) {
-                this.icon = "sun";
+                this.icon = "";
             }
 
             // TODO: maybe think of another strategy to name groups
@@ -126,13 +126,13 @@ public class ItemEntry {
             this.groups.add(unitConfig.getPlacementConfig().getLocationId());
 
             try {
-                bindingConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
+                itemHardwareConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(logger, ex);
-                bindingConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+                itemHardwareConfig = openHABBindingServiceConfig.getItemHardwareConfig();
             }
 
-            if (bindingConfig.isEmpty()) {
+            if (itemHardwareConfig.isEmpty()) {
                 throw new NotAvailableException("bindingConfig");
             }
 
@@ -152,7 +152,7 @@ public class ItemEntry {
             config += "\"";
             return config;
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not generate binding config!", ex);
+            throw new CouldNotPerformException("Could not generate item hardware config of Unit["+unitConfig.getId()+"] !", ex);
         }
     }
 
@@ -224,8 +224,8 @@ public class ItemEntry {
         return Collections.unmodifiableList(groups);
     }
 
-    public String getBindingConfig() {
-        return bindingConfig;
+    public String getItemHardwareConfig() {
+        return itemHardwareConfig;
     }
 
     public String getCommandTypeStringRep() {
@@ -269,7 +269,7 @@ public class ItemEntry {
     }
 
     public String getBindingConfigStringRep() {
-        return "{ " + bindingConfig + " }";
+        return "{ " + itemHardwareConfig + " }";
     }
 
     public String buildStringRep() {
@@ -297,7 +297,7 @@ public class ItemEntry {
         return stringRep;
     }
 
-    private String getCommand(ServiceTypeHolderType.ServiceTypeHolder.ServiceType type) {
+    private String getDefaultCommand(ServiceTypeHolderType.ServiceTypeHolder.ServiceType type) {
         switch (type) {
             case COLOR_SERVICE:
                 return "Color";
@@ -313,7 +313,7 @@ public class ItemEntry {
             case TEMPERATURE_ALARM_STATE_PROVIDER:
                 return "Number";
             case SHUTTER_PROVIDER:
-            case SHUTTER_SERVICE:
+           case SHUTTER_SERVICE:
                 return "Rollershutter";
             case POWER_SERVICE:
             case POWER_PROVIDER:
@@ -363,7 +363,7 @@ public class ItemEntry {
             try {
                 return provider.getValue(variable);
             } catch (NotAvailableException ex) {
-                exceptionStack = MultiException.push(logger, ex, exceptionStack);
+                exceptionStack = MultiException.push(ItemEntry.class, ex, exceptionStack);
                 continue;
             }
         }
