@@ -6,9 +6,7 @@
 package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.dal.bindings.openhab.util.configgen.ItemEntry;
-import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.Service;
-import de.citec.dal.hal.unit.Unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 
@@ -18,11 +16,9 @@ import de.citec.jul.exception.NotAvailableException;
  */
 public class ItemTransformer {
 
-    public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
-    public static final String ITEM_SEGMENT_DELIMITER = "__";
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
 
-    public static String generateItemName(final Device device, final Unit unit, final Service service) throws CouldNotPerformException {
+    public static String getItemName(final Service service) throws CouldNotPerformException {
         try {
             if (!service.getServiceConfig().hasBindingServiceConfig()) {
                 throw new NotAvailableException("binding service config");

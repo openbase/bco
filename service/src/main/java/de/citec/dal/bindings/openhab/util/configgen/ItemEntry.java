@@ -22,8 +22,8 @@ import java.util.List;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTypeHolderType;
@@ -47,7 +47,8 @@ import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder
 import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TAMPER_PROVIDER;
 import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TEMPERATURE_PROVIDER;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -62,6 +63,7 @@ public class ItemEntry {
     public static final String SERVICE_TEMPLATE_BINDING_COMMAND = "OPENHAB_BINDING_COMMAND";
     public static final String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
     public static final String SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR = "OPENHAB_SERVICE_LABEL_DESCRIPTOR";
+    public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
 
     private String commandType;
     private final String itemId;
@@ -78,24 +80,29 @@ public class ItemEntry {
     private static int maxGroupSize = 0;
     private static int maxBindingConfigSize = 0;
 
-    public ItemEntry(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final OpenHABBindingServiceConfig openHABBindingServiceConfig) throws InstantiationException {
+    public ItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws InstantiationException {
         try {
-            this.itemId = openHABBindingServiceConfig.getItemId();
             this.groups = new ArrayList<>();
 
             configPool = new MetaConfigPool();
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
-            configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceConfig.getDeviceClass().getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
             configPool.register(new ProtobufVariableProvider(deviceConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
-
+            
             try {
-                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(unitConfig, serviceConfig).getMetaConfig()));
+                configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+            }
+
+            try {
+                this.itemId = configPool.getValue(OPENHAB_BINDING_ITEM_ID);
+            } catch (NotAvailableException ex) {
+                throw new NotAvailableException("itemId");
             }
 
             try {
@@ -118,9 +125,9 @@ public class ItemEntry {
 
             // TODO: maybe think of another strategy to name groups
             // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
-            String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
+            String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
             if (!(templateName.equals("Dimmer") || templateName.equals("Rollershutter"))) {
-                this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name()));
+                this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
             }
             this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
             this.groups.add(unitConfig.getPlacementConfig().getLocationId());
@@ -129,7 +136,7 @@ public class ItemEntry {
                 itemHardwareConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(logger, ex);
-                itemHardwareConfig = openHABBindingServiceConfig.getItemHardwareConfig();
+                itemHardwareConfig = "";
             }
 
             if (itemHardwareConfig.isEmpty()) {
@@ -152,38 +159,51 @@ public class ItemEntry {
             config += "\"";
             return config;
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not generate item hardware config of Unit["+unitConfig.getId()+"] !", ex);
+            throw new CouldNotPerformException("Could not generate item hardware config of Unit[" + unitConfig.getId() + "] !", ex);
         }
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit
-     * config.
+     * Lookups the service template of the given ServiceType out of the unit config.
      *
      * @param unitConfig to lookup service template.
      * @param serviceConfig the service config providing the service type.
      * @return the related service template for the given service config.
      */
-    private ServiceTemplate lookupServiceTemplate(final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
-        return lookupServiceTemplate(unitConfig.getTemplate(), serviceConfig.getType());
+    private ServiceTemplate lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
+        return lookupServiceTemplate(lookupUnitTemplateConfig(deviceClass, unitConfig), serviceConfig.getType());
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit
-     * template.
+     * Lookups the service template of the given ServiceType out of the unit template.
      *
      * @param unitTemplate to lookup the service template.
      * @param serviceType the service type to resolve the template.
      * @return the related service template for the given service type.
      * @throws NotAvailableException
      */
-    private ServiceTemplate lookupServiceTemplate(final UnitTemplateType.UnitTemplate unitTemplate, final ServiceType serviceType) throws NotAvailableException {
-        for (ServiceTemplate template : unitTemplate.getServiceTemplateList()) {
+    private ServiceTemplate lookupServiceTemplate(final UnitTemplateConfig unitTemplateConfig, final ServiceType serviceType) throws NotAvailableException {
+        
+        for (ServiceTemplate template : unitTemplateConfig.getServiceTemplateList()) {
             if (template.getServiceType() == serviceType) {
                 return template;
             }
         }
         throw new NotAvailableException("service template for ServiceType[" + serviceType.name() + "]");
+    }
+
+    private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {
+        return lookupUnitTemplateConfig(deviceClass, unitConfig.getType());
+    }
+    
+    private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitType unitType) throws NotAvailableException {
+
+        for (UnitTemplateConfig template : deviceClass.getUnitTemplateConfigList()) {
+            if (template.getType() == unitType) {
+                return template;
+            }
+        }
+        throw new NotAvailableException("unit template config for UnitType[" + unitType.name() + "]");
     }
 
     private void calculateGaps() {
@@ -313,7 +333,7 @@ public class ItemEntry {
             case TEMPERATURE_ALARM_STATE_PROVIDER:
                 return "Number";
             case SHUTTER_PROVIDER:
-           case SHUTTER_SERVICE:
+            case SHUTTER_SERVICE:
                 return "Rollershutter";
             case POWER_SERVICE:
             case POWER_PROVIDER:
@@ -397,7 +417,6 @@ public class ItemEntry {
         }
     }
 
-    
     // mpohling: should be moved to jul rst
     public static class MetaConfigVariableProvider implements VariableProvider {
 
@@ -419,5 +438,4 @@ public class ItemEntry {
             return getMetaConfig(metaConfig, variable);
         }
     }
-
 }

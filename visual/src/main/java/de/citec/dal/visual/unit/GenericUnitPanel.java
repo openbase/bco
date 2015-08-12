@@ -22,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -61,18 +62,18 @@ public class GenericUnitPanel extends RSBRemoteView {
         List<JComponent> componentList = new ArrayList<>();
         JPanel servicePanel;
 
-        for (ServiceType serviceType : unitConfig.getTemplate().getServiceTypeList()) {
+        for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
             try {
                 servicePanel = new JPanel();
-                servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceType.name())));
-                servicePanel.add(instantiatServicePanel(loadServicePanelClass(serviceType), getRemoteService()));
+                servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name())));
+                servicePanel.add(instantiatServicePanel(loadServicePanelClass(serviceConfig.getType()), getRemoteService()));
                 componentList.add(servicePanel);
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceType.name() + "]",ex ));
+                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getType().name() + "]",ex ));
             }
         }
         
-        String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name())
+        String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
                     + "[" + unitConfig.getLabel() + "]"
                     + " @ " + unitConfig.getPlacementConfig().getLocationId();
         

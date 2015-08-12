@@ -282,7 +282,7 @@ public class MockRegistry {
 
     private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
         UnitTemplate template = MockUnitTemplate.getTemplate(type);
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setTemplate(template).addAllServiceConfig(getServiceConfig(template)).setLabel(label).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
@@ -290,7 +290,7 @@ public class MockRegistry {
                 .setPlacementConfig(getDefaultPlacement())
                 .setLabel(label)
                 .setSerialNumber(serialNumber)
-                .setDeviceClass(clazz)
+                .setDeviceClassId(clazz.getId())
                 .addAllUnitConfig(units)
                 .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.INSTALLED))
                 .build();

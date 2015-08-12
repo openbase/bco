@@ -167,8 +167,8 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         try (ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
             MB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
-            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
-            String repeatedUnitFieldName = "unit_" + unitConfig.getTemplate().getType().name().toLowerCase();
+            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
+            String repeatedUnitFieldName = "unit_" + unitConfig.getType().name().toLowerCase();
             Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
 
             if (repeatedUnitFieldDescriptor == null) {
@@ -203,7 +203,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     private GeneratedMessage.Builder loadUnitBuilder(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
         GeneratedMessage.Builder builder = null;
         try {
-            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getTemplate().getType().name());
+            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
             String unitMessageClassName = "rst.homeautomation.unit." + unitTypeName + "Type$" + unitTypeName;
             Class messageClass;
             try {

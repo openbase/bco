@@ -15,10 +15,10 @@ import de.citec.jul.extension.protobuf.ProtobufListDiff;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.schedule.RecurrenceEventFilter;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.state.InventoryStateType;
@@ -39,7 +39,7 @@ public class DeviceRegistrySynchronizer {
 
     public DeviceRegistrySynchronizer(final DeviceRegistry registry, final DeviceRegistryRemote remoteRegistry) throws InstantiationException {
         try {
-            this.factory = new DeviceFactory();
+            this.factory = new DeviceFactory(remoteRegistry);
             this.registry = registry;
             this.remoteRegistry = remoteRegistry;
             this.deviceConfigDiff = new ProtobufListDiff<>();
@@ -123,15 +123,28 @@ public class DeviceRegistrySynchronizer {
         }
     }
 
-    private boolean verifyDeviceConfig(final DeviceConfig config) {
-        if (!config.getDeviceClass().getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
-            return false;
-        }
+    private boolean verifyDeviceConfig(final DeviceConfig config) throws CouldNotPerformException {
+        try {
 
-        if (config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-            logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
-            return false;
+            // load device class
+            DeviceClass deviceClass;
+            try {
+                deviceClass = remoteRegistry.getDeviceClassById(config.getDeviceClassId());
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not load device class of Device[" + config.getId() + "] !", ex);
+            }
+
+            if (!deviceClass.getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
+                return false;
+            }
+
+            if (config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
+                return false;
+            }
+            return true;
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not verify device config!", ex);
         }
-        return true;
     }
 }

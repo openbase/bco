@@ -546,7 +546,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 try {
                     scopeTextField.setForeground(Color.BLACK);
                     Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
-                    UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setTemplate(UnitTemplateType.UnitTemplate.newBuilder().setType(detectUnitTypeOutOfScope(scope)));
+                    UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setType(detectUnitTypeOutOfScope(scope));
                     unitConfigObservable.notifyObservers(unitConfig.build());
                     scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
                 } catch (CouldNotPerformException ex) {
@@ -736,7 +736,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "All";
             }
-            return StringProcessor.transformUpperCaseToCamelCase(config.getTemplate().getType().name())
+            return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
                     + "[" + config.getLabel() + "]"
                     + " @ " + config.getPlacementConfig().getLocationId();
         }

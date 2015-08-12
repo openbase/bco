@@ -46,7 +46,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 			this.unit = unit;
 			this.serviceType = detectServiceType();
             this.config = loadServiceConfig();
-			this.itemName = ItemTransformer.generateItemName(device, unit, this);
+			this.itemName = ItemTransformer.getItemName(this);
 			this.openhabBinding = DALService.getRegistryProvider().getBindingRegistry().getBinding(OpenHABBinding.class);
 		} catch (CouldNotPerformException ex) {
 			throw new InstantiationException(this, ex);

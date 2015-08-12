@@ -26,7 +26,7 @@ import java.util.List;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
@@ -100,8 +100,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public UnitTemplateType.UnitTemplate.UnitType getType() {
-        return config.getTemplate().getType();
+    public UnitTemplate.UnitType getType() {
+        return config.getType();
     }
 
     @Override
@@ -167,7 +167,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + config.getTemplate().getType() + "[" + config.getLabel() + "]]";
+        return getClass().getSimpleName() + "[" + config.getType() + "[" + config.getLabel() + "]]";
     }
 
     // TODO mpohing: please check if unit need to be a service!

@@ -87,7 +87,7 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
     public void setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
-            Class<? extends DALRemoteService> remoteClass = loadUnitRemoteClass(unitConfig.getTemplate().getType());
+            Class<? extends DALRemoteService> remoteClass = loadUnitRemoteClass(unitConfig.getType());
             DALRemoteService unitRemote = instantiatUnitRemote(remoteClass);
             initUnitRemote(unitRemote, unitConfig);
             unitRemote.activate();

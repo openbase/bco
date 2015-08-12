@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.BindingServiceConfigType;
@@ -91,8 +92,11 @@ public class OpenHABItemConfigGenerator {
 
             for (DeviceConfig deviceConfig : deviceConfigList) {
 
+                // load device class
+                DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId());
+                
                 // ignore non openhab items
-                if (deviceConfig.getDeviceClass().getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
+                if (deviceClass.getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
                     continue;
                 }
 
@@ -105,9 +109,7 @@ public class OpenHABItemConfigGenerator {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
                             BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
-
-                            OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig openhabBindingServiceConfig = bindingServiceConfig.getOpenhabBindingServiceConfig();
-                            itemEntryList.add(new ItemEntry(deviceConfig, unitConfig, serviceConfig, openhabBindingServiceConfig));
+                            itemEntryList.add(new ItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig));
                         } catch (Exception ex) {
                             ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
                         }

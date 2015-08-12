@@ -5,8 +5,6 @@
  */
 package de.citec.dal.bindings.openhab;
 
-import static de.citec.dal.bindings.openhab.transform.ItemTransformer.ITEM_SEGMENT_DELIMITER;
-import static de.citec.dal.bindings.openhab.transform.ItemTransformer.ITEM_SUBSEGMENT_DELIMITER;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.dal.hal.unit.Unit;
@@ -28,6 +26,9 @@ import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder;
  * @author Divine Threepwood
  */
 public class OpenHABCommandExecutor {
+    
+    public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
+    public static final String ITEM_SEGMENT_DELIMITER = "__";
     
     private static final Logger logger = LoggerFactory.getLogger(OpenHABCommandExecutor.class);
     

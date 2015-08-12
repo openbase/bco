@@ -62,11 +62,11 @@ public class UnitRemoteFactory implements UnitRemoteFactoryInterface {
     }
 
     private static Class<? extends DALRemoteService> loadUnitRemoteClass(final UnitConfigType.UnitConfig config) throws CouldNotPerformException {
-        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(config.getTemplate().getType().name()) + "Remote";
+        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(config.getType().name()) + "Remote";
         try {
             return (Class<? extends DALRemoteService>) UnitRemoteFactory.class.getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not detect unit remote class for UnitType[" + config.getTemplate().getType().name() + "]!", ex);
+            throw new CouldNotPerformException("Could not detect unit remote class for UnitType[" + config.getType().name() + "]!", ex);
         }
     }
 

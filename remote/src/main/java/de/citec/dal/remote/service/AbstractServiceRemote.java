@@ -20,8 +20,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -44,10 +44,9 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         this.serviceMap = new HashMap<>();
     }
 
-    public void init(UnitConfigType.UnitConfig config) throws CouldNotPerformException {
-
+    public void init(final UnitConfig config) throws CouldNotPerformException {
         try {
-            if (!config.getTemplate().getServiceTypeList().contains(serviceType)) {
+            if (!verifyServiceCompatibility(config, serviceType)) {
                 throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config, this);
             }
 
@@ -65,7 +64,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         }
     }
 
-    public void init(Collection<UnitConfig> configs) throws CouldNotPerformException {
+    public void init(final Collection<UnitConfig> configs) throws CouldNotPerformException {
         MultiException.ExceptionStack exceptionStack = null;
         for (UnitConfig config : configs) {
             try {
@@ -75,6 +74,15 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
             }
         }
         MultiException.checkAndThrow("Could not activate all service units!", exceptionStack);
+    }
+    
+    private static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
+        for(ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            if(serviceConfig.getType() == serviceType) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
