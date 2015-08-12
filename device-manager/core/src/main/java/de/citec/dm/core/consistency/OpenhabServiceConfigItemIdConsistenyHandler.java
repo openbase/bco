@@ -62,7 +62,14 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
                     String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId()).getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistryRemote.getLocationConfigById(entry.getMessage().getPlacementConfig().getLocationId()));
 
                     boolean itemEntryFound = false;
-                    MetaConfig metaConfig = serviceConfig.getBindingServiceConfig().getMetaConfig();
+                    
+                    MetaConfig metaConfig;
+                    if(!serviceConfig.getBindingServiceConfig().hasMetaConfig()) {
+                        metaConfig = MetaConfig.getDefaultInstance();
+                    } else {
+                        metaConfig = serviceConfig.getBindingServiceConfig().getMetaConfig();
+                    }
+                    
                     for (int i = 0; i < metaConfig.getEntryCount(); i++) {
                         if (metaConfig.getEntry(i).getKey().equals(OPENHAB_BINDING_ITEM_ID)) {
                             itemEntryFound = true;
