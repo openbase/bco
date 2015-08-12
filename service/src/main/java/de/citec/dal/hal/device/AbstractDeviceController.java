@@ -49,7 +49,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     private final Map<String, AbstractUnitController> unitMap;
 
     public AbstractDeviceController(final DeviceConfig config, final MB builder) throws InstantiationException, CouldNotTransformException {
-        super(config.getScope(), builder);
+        super(builder);
         try {
             this.id = config.getId();
             this.name = generateName(builder.getClass().getDeclaringClass());
@@ -60,7 +60,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             setField(DEVICE_TYPE_FILED_CONFIG, config);
 
             try {
-                init();
+                init(config.getScope());
             } catch (InitializationException ex) {
                 throw new InstantiationException("Could not init RSBCommunicationService!", ex);
             }

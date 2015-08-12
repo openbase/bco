@@ -15,6 +15,8 @@ import de.citec.jul.exception.InitializationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -112,8 +114,23 @@ public class OpenHABItemConfigGenerator {
                     }
                 }
             }
+
+            // sort items by command type and label
+            Collections.sort(itemEntryList, new Comparator<ItemEntry>() {
+
+                @Override
+                public int compare(ItemEntry o1, ItemEntry o2) {
+                    int typeComparation = o1.getCommandType().compareTo(o2.getCommandType());
+                    if (typeComparation != 0) {
+                        return typeComparation;
+                    } else {
+                        return o1.getLabel().compareTo(o2.getLabel());
+                    }
+                }
+            });
+
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not generate group entries.", ex);
+            throw new CouldNotPerformException("Could not generate item entries.", ex);
         }
     }
 
@@ -126,20 +143,24 @@ public class OpenHABItemConfigGenerator {
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += "/* === DAL AUTO GENERATED GROUP ENTRIES ============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
+            configAsString += System.lineSeparator();
             for (GroupEntry entry : groupEntryList) {
                 configAsString += entry.buildStringRep() + System.lineSeparator();
             }
             configAsString += System.lineSeparator();
-
+            configAsString += System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += "/* === DAL AUTO GENERATED ITEM ENTRIES =============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
+            configAsString += System.lineSeparator();
             for (ItemEntry entry : itemEntryList) {
                 configAsString += entry.buildStringRep() + System.lineSeparator();
             }
             configAsString += System.lineSeparator();
 
             FileUtils.writeStringToFile(configFile, configAsString, false);
+
+            logger.info("ItemConfig["+configFile.getAbsolutePath()+"] successfully generated.");
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not serialize itemconfig to file!", ex);
         }

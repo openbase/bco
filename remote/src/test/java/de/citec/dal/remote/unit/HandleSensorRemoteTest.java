@@ -90,7 +90,7 @@ public class HandleSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         HandleState.State state = HandleState.State.TILTED;

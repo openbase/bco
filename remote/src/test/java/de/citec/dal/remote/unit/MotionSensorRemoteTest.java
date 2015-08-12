@@ -92,7 +92,7 @@ public class MotionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();

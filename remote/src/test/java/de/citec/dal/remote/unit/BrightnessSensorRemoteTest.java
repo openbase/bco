@@ -91,7 +91,7 @@ public class BrightnessSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 60000)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         double brightness = 0.5;

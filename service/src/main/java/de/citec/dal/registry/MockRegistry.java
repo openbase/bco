@@ -143,7 +143,7 @@ public class MockRegistry {
                     try {
                         deviceManager = new DeviceManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                        ExceptionPrinter.printHistory(logger, ex);
                     }
                 }
             });
@@ -155,7 +155,7 @@ public class MockRegistry {
                     try {
                         locationManager = new LocationManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                        ExceptionPrinter.printHistory(logger, ex);
                     }
                 }
             });
@@ -233,32 +233,32 @@ public class MockRegistry {
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units));
 
         units.clear();
-        // light 
+        // light
         DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro"));
         units.add(getUnitConfig(UnitTemplate.UnitType.LIGHT, LIGHT_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units));
 
         units.clear();
-        // powerConsumptionSensor, powerPlug 
+        // powerConsumptionSensor, powerPlug
         DeviceClass powerPlugClass = deviceRemote.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise"));
         units.add(getUnitConfig(UnitTemplate.UnitType.POWER_PLUG, POWER_PLUG_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units));
 
         units.clear();
-        // reedSwitch 
+        // reedSwitch
         DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic"));
         units.add(getUnitConfig(UnitTemplate.UnitType.REED_SWITCH, REED_SWITCH_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units));
 
         units.clear();
-        // rollershutter 
+        // rollershutter
         DeviceClass rollershutterClass = deviceRemote.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager"));
         units.add(getUnitConfig(UnitTemplate.UnitType.ROLLERSHUTTER, ROLLERSHUTTER_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units));
 
         units.clear();
-        // smoke detector 
+        // smoke detector
         DeviceClass smokeDetector = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro"));
         units.add(getUnitConfig(UnitTemplate.UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units));
