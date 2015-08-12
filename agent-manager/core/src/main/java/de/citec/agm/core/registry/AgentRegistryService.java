@@ -25,7 +25,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.util.RPCHelper;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
@@ -49,7 +49,7 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
     public AgentRegistryService() throws InstantiationException, InterruptedException {
-        super(JPService.getProperty(JPAgentRegistryScope.class).getValue(), AgentRegistry.newBuilder());
+        super(AgentRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfig.class, getBuilderSetup(), getFieldDescriptor(AgentRegistry.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -93,9 +93,8 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
         }
     }
 
-    @Override
     public void init() throws InitializationException {
-        super.init();
+        super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
         locationRegistryRemote.init();
     }
 

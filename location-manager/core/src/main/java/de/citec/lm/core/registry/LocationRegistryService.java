@@ -23,7 +23,7 @@ import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.rsb.util.RPCHelper;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
@@ -59,9 +59,9 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
 
     public LocationRegistryService() throws InstantiationException, InterruptedException {
-        super(JPService.getProperty(JPLocationRegistryScope.class).getValue(), LocationRegistry.newBuilder());
+        super(LocationRegistry.newBuilder());
         try {
-            locationConfigRegistry = new ProtoBufFileSynchronizedRegistry(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+            locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
 
             deviceRegistryUpdateObserver = new Observer<DeviceRegistry>() {
 
@@ -94,9 +94,8 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         }
     }
 
-    @Override
     public void init() throws InitializationException {
-        super.init();
+        super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
         deviceRegistryRemote.init();
     }
 
@@ -125,7 +124,6 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
 
     @Override
     public void shutdown() {
-        
 
         if (deviceRegistryRemote != null) {
             deviceRegistryRemote.shutdown();
@@ -138,7 +136,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(logger, ex);
         }
     }
 
