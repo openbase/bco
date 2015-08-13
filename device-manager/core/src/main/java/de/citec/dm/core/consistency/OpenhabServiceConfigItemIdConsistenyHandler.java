@@ -9,7 +9,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.extension.rst.processing.MetaConfigProcessor;
 import de.citec.jul.processing.StringProcessor;
+import de.citec.jul.processing.VariableProcessor;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
@@ -64,25 +66,25 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
                     boolean itemEntryFound = false;
                     
                     MetaConfig metaConfig;
+                    
+                    // check if meta config already exist, otherwise create one.
                     if(!serviceConfig.getBindingServiceConfig().hasMetaConfig()) {
-                        metaConfig = MetaConfig.getDefaultInstance();
-                    } else {
-                        metaConfig = serviceConfig.getBindingServiceConfig().getMetaConfig();
+                        serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(MetaConfig.getDefaultInstance()));
+                        modification = true;
                     }
                     
-                    for (int i = 0; i < metaConfig.getEntryCount(); i++) {
-                        if (metaConfig.getEntry(i).getKey().equals(OPENHAB_BINDING_ITEM_ID)) {
-                            itemEntryFound = true;
-                            if (!metaConfig.getEntry(i).getValue().equals(itemId)) {
-                                metaConfig.toBuilder().setEntry(i, metaConfig.getEntry(i).toBuilder().setValue(itemId).build());
-                            }
-                        }
+                    metaConfig = serviceConfig.getBindingServiceConfig().getMetaConfig();
+                    
+                    String configuredItemId = "";
+                    try {
+                        configuredItemId = MetaConfigProcessor.getValue(metaConfig, OPENHAB_BINDING_ITEM_ID);
+                    } catch(NotAvailableException ex) {}
+                    
+                    if(!configuredItemId.equals(itemId)) {
+                        metaConfig = MetaConfigProcessor.setValue(metaConfig, OPENHAB_BINDING_ITEM_ID, itemId);
+                        serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(metaConfig));
+                        modification = true;
                     }
-                    if (!itemEntryFound) {
-                        metaConfig.toBuilder().addEntry(Entry.newBuilder().setKey(OPENHAB_BINDING_ITEM_ID).setValue(itemId).build());
-                    }
-
-                    serviceConfig = serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(metaConfig));
                 }
                 unitConfig.addServiceConfig(serviceConfig);
             }
