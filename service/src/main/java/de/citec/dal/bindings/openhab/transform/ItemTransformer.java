@@ -5,10 +5,10 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.dal.bindings.openhab.util.configgen.ItemEntry;
 import de.citec.dal.hal.service.Service;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 
 /**
  *
@@ -28,7 +28,7 @@ public class ItemTransformer {
                 throw new NotAvailableException("binding service config meta config");
             }
 
-            ItemEntry.MetaConfigVariableProvider metaConfigVariableProvider = new ItemEntry.MetaConfigVariableProvider("BindingServiceConfig", service.getServiceConfig().getBindingServiceConfig().getMetaConfig());
+            MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider("BindingServiceConfig", service.getServiceConfig().getBindingServiceConfig().getMetaConfig());
             
             
             return metaConfigVariableProvider.getValue(OPENHAB_BINDING_ITEM_ID);

@@ -5,23 +5,19 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen;
 
+import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ProtobufVariableProvider;
+import de.citec.jul.extension.rst.processing.MetaConfigPool;
 import de.citec.jul.processing.StringProcessor;
-import de.citec.jul.processing.VariableProcessor;
-import de.citec.jul.processing.VariableProvider;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.LoggerFactory;
-import rst.configuration.EntryType.Entry;
-import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -92,7 +88,7 @@ public class ItemEntry {
             configPool.register(new ProtobufVariableProvider(deviceConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
-            
+
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (NotAvailableException ex) {
@@ -183,7 +179,7 @@ public class ItemEntry {
      * @throws NotAvailableException
      */
     private ServiceTemplate lookupServiceTemplate(final UnitTemplateConfig unitTemplateConfig, final ServiceType serviceType) throws NotAvailableException {
-        
+
         for (ServiceTemplate template : unitTemplateConfig.getServiceTemplateList()) {
             if (template.getServiceType() == serviceType) {
                 return template;
@@ -195,7 +191,7 @@ public class ItemEntry {
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {
         return lookupUnitTemplateConfig(deviceClass, unitConfig.getType());
     }
-    
+
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitType unitType) throws NotAvailableException {
 
         for (UnitTemplateConfig template : deviceClass.getUnitTemplateConfigList()) {
@@ -350,92 +346,6 @@ public class ItemEntry {
             default:
                 logger.warn("Unkown Service Type: " + type);
                 return "";
-        }
-    }
-
-    /**
-     * Resolves the key to the value entry of the given meta config.
-     *
-     * @param metaConfig key value set
-     * @param key the key to resolve
-     * @return the related value of the given key.
-     */
-    public static String getMetaConfig(final MetaConfig metaConfig, final String key) throws NotAvailableException {
-        for (Entry entry : metaConfig.getEntryList()) {
-            if (entry.getKey().equals(key)) {
-                if (!entry.getValue().isEmpty()) {
-                    return entry.getValue();
-                }
-            }
-        }
-        throw new NotAvailableException("value for Key[" + key + "]");
-    }
-
-    public static String resolveVariable(final String variable, final Collection<VariableProvider> providers) throws MultiException {
-        VariableProvider[] providerArray = new VariableProvider[providers.size()];
-        return resolveVariable(variable, providers.toArray(providerArray));
-    }
-
-    public static String resolveVariable(final String variable, final VariableProvider... providers) throws MultiException {
-        MultiException.ExceptionStack exceptionStack = null;
-        for (VariableProvider provider : providers) {
-
-            try {
-                return provider.getValue(variable);
-            } catch (NotAvailableException ex) {
-                exceptionStack = MultiException.push(ItemEntry.class, ex, exceptionStack);
-                continue;
-            }
-        }
-        MultiException.checkAndThrow("Could not resolve Variable[" + variable + "]!", exceptionStack);
-        throw new AssertionError("Fatal error during variable resolving.");
-    }
-
-    // mpohling: should be moved to jul rst
-    public class MetaConfigPool {
-
-        private Collection<VariableProvider> variableProviderPool;
-
-        public MetaConfigPool(Collection<VariableProvider> variableProviderPool) {
-            this.variableProviderPool = new ArrayList<>(variableProviderPool);
-        }
-
-        public MetaConfigPool() {
-            this.variableProviderPool = new ArrayList<>();
-        }
-
-        public void register(VariableProvider provider) {
-            variableProviderPool.add(provider);
-        }
-
-        public String getValue(String variable) throws NotAvailableException {
-            try {
-                return VariableProcessor.resolveVariables(resolveVariable(variable, variableProviderPool), true, variableProviderPool);
-            } catch (MultiException ex) {
-                throw new NotAvailableException("Variable[" + variable + "]", ex);
-            }
-        }
-    }
-
-    // mpohling: should be moved to jul rst
-    public static class MetaConfigVariableProvider implements VariableProvider {
-
-        private final String name;
-        private final MetaConfig metaConfig;
-
-        public MetaConfigVariableProvider(final String name, final MetaConfig metaConfig) {
-            this.name = name;
-            this.metaConfig = metaConfig;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getValue(String variable) throws NotAvailableException {
-            return getMetaConfig(metaConfig, variable);
         }
     }
 }

@@ -119,5 +119,12 @@
             <version>${global.version.jul}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <!-- for openhab binding -->
+            <groupId>de.citec</groupId>
+            <artifactId>jul.extension.rst.processing</artifactId>
+            <version>${global.version.jul}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

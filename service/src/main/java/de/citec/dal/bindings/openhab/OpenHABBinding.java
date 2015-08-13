@@ -176,7 +176,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
         return getClass().getSimpleName() + "[version=" + getClass().getPackage().getImplementationVersion() + "]";
     }
     /**
-     * TODO mpohling: add the following code to the openhabbinding pom.
+     * TODO mpohling: add the following code to the dal openhabbinding pom.
      *
      * <plugin>
      * <groupId>org.apache.maven.plugins</groupId>
