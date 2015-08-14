@@ -21,6 +21,7 @@ import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitScopeConsistencyHandler;
 import de.citec.dm.core.consistency.UnitTemplateValidationConsistencyHandler;
+import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
@@ -109,9 +110,19 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
-
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
+            
+            
+            unitTemplateRegistry.addPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+            
+            unitTemplateRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>>() {
 
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) throws Exception {
+                    notifyChange();
+                }
+            });
+            
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
                 @Override
@@ -119,6 +130,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
                     notifyChange();
                 }
             });
+            
             deviceConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>>() {
 
                 @Override

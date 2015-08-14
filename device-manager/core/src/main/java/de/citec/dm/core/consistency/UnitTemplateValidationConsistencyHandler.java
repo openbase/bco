@@ -12,7 +12,6 @@ import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -28,21 +27,6 @@ public class UnitTemplateValidationConsistencyHandler implements ProtoBufRegistr
         if(!unitTemplate.getId().equals(registry.getIdGenerator().generateId(unitTemplate.build()))) {
             registry.remove(entry);
             throw new EntryModification(entry, this);
-        }
-        
-        String templateId;
-        UnitTemplate template;
-        
-        // create missing unit template
-        if(registry.size() != UnitTemplate.UnitType.values().length) {
-            for(UnitType unitType : UnitType.values()) {
-                template = UnitTemplate.newBuilder().setType(unitType).build();
-                templateId = registry.getIdGenerator().generateId(template);
-                if(!registry.contains(templateId)) {
-                    registry.register(template);
-                    throw new EntryModification(template, this); 
-                }
-            }
         }
     }
 
