@@ -5,24 +5,19 @@
  */
 package de.citec.dal.remote.control;
 
-import de.citec.dal.hal.service.ServiceType;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import rst.homeautomation.service.ServiceTypeHolderType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.vision.HSVColorType;
-import rst.vision.HSVColorType.HSVColor;
 
 /**
  *

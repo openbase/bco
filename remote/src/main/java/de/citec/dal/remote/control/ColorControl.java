@@ -5,11 +5,9 @@
  */
 package de.citec.dal.remote.control;
 
-import de.citec.dal.bindings.openhab.transform.HSVColorTransformer;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.awt.Color;

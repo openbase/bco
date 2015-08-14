@@ -37,8 +37,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTypeHolderType;
-import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -100,7 +99,7 @@ public class MockRegistry {
 
         private final UnitTemplate template;
 
-        MockUnitTemplate(UnitTemplate.UnitType type, ServiceTypeHolderType.ServiceTypeHolder.ServiceType... serviceTypes) {
+        MockUnitTemplate(UnitTemplate.UnitType type, ServiceType... serviceTypes) {
             UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
             for (ServiceType serviceType : serviceTypes) {

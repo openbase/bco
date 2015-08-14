@@ -10,7 +10,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.NotSupportedException;
 import rst.homeautomation.openhab.OpenhabCommandType;
-import rst.homeautomation.service.ServiceTypeHolderType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -18,7 +18,7 @@ import rst.homeautomation.service.ServiceTypeHolderType;
  */
 public final class OpenhabCommandTransformer {
 
-    public static Object getServiceData(OpenhabCommandType.OpenhabCommand command, ServiceTypeHolderType.ServiceTypeHolder.ServiceType serviceType) throws CouldNotPerformException {
+    public static Object getServiceData(OpenhabCommandType.OpenhabCommand command, ServiceType serviceType) throws CouldNotPerformException {
 
         // Transform service data.
         switch (command.getType()) {

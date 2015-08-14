@@ -23,7 +23,7 @@ import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**

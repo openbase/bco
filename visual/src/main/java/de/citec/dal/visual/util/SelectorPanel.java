@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;

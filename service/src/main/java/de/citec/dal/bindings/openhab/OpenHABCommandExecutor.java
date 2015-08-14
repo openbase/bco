@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.homeautomation.openhab.OpenhabCommandType;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *
@@ -41,7 +41,7 @@ public class OpenHABCommandExecutor {
     private class OpenhabCommandMetaData {
         
         private final OpenhabCommandType.OpenhabCommand command;
-        private final ServiceTypeHolder.ServiceType serviceType;
+        private final ServiceTemplate.ServiceType serviceType;
         private final String unitId;
         private final String locationId;
         
@@ -61,7 +61,7 @@ public class OpenHABCommandExecutor {
                     throw new CouldNotPerformException("Could not extract unit id out of item name!");
                 }
                 try {
-                    serviceType = ServiceTypeHolder.ServiceType.valueOf(StringProcessor.transformToUpperCase(nameSegment[4]));
+                    serviceType = ServiceTemplate.ServiceType.valueOf(StringProcessor.transformToUpperCase(nameSegment[4]));
                 } catch (Exception ex) {
                     throw new CouldNotPerformException("Could not extract service type out of item name!", ex);
                 }
@@ -78,7 +78,7 @@ public class OpenHABCommandExecutor {
             return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
         }
         
-        public ServiceTypeHolder.ServiceType getServiceType() {
+        public ServiceTemplate.ServiceType getServiceType() {
             return serviceType;
         }
         

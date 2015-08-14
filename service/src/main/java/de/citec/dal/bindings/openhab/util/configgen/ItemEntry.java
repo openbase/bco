@@ -22,26 +22,25 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.service.ServiceTypeHolderType;
-import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BATTERY_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BRIGHTNESS_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BRIGHTNESS_SERVICE;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BUTTON_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.COLOR_SERVICE;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_SERVICE;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.HANDLE_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.MOTION_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.OPENING_RATIO_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_CONSUMPTION_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_SERVICE;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.REED_SWITCH_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SHUTTER_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SHUTTER_SERVICE;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TAMPER_PROVIDER;
-import static rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TEMPERATURE_PROVIDER;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.DIM_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.DIM_SERVICE;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_SERVICE;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.REED_SWITCH_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_PROVIDER;
+import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_PROVIDER;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -313,7 +312,7 @@ public class ItemEntry {
         return stringRep;
     }
 
-    private String getDefaultCommand(ServiceTypeHolderType.ServiceTypeHolder.ServiceType type) {
+    private String getDefaultCommand(ServiceType type) {
         switch (type) {
             case COLOR_SERVICE:
                 return "Color";

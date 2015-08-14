@@ -26,7 +26,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.patterns.Callback;
-import rst.homeautomation.service.ServiceTypeHolderType;
+import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
@@ -34,23 +34,23 @@ import rst.homeautomation.service.ServiceTypeHolderType;
  */
 public enum ServiceType {
 
-    MULTI(MultiService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.UNKNOWN),
-    BATTERY(BatteryProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BATTERY_PROVIDER),
-    BRIGHTNESS(BrightnessService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BRIGHTNESS_SERVICE),
-    BUTTON(ButtonProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.BUTTON_PROVIDER),
-    COLOR(ColorService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.COLOR_SERVICE),
-    HANDLE(HandleProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.HANDLE_PROVIDER),
-    TAMPER(TamperProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TAMPER_PROVIDER),
-    TEMPERATURE(TemperatureProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TEMPERATURE_PROVIDER),
-    POWER(PowerService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_SERVICE),
-    SHUTTER(ShutterService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SHUTTER_SERVICE),
-    OPENING_RATIO(OpeningRatioService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.OPENING_RATIO_PROVIDER),
-    MOTION(MotionProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.MOTION_PROVIDER),
-    DIM(DimService.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.DIM_SERVICE),
-    REED_SWITCH(ReedSwitchProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.REED_SWITCH_PROVIDER),
-    SMOKE_ALARM_STATE(SmokeAlarmStateProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
-    TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
-    SMOKE_STATE(SmokeStateProvider.class, ServiceTypeHolderType.ServiceTypeHolder.ServiceType.SMOKE_STATE_PROVIDER);
+    MULTI(MultiService.class, ServiceTemplateType.ServiceTemplate.ServiceType.UNKNOWN),
+    BATTERY(BatteryProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_PROVIDER),
+    BRIGHTNESS(BrightnessService.class, ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE),
+    BUTTON(ButtonProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_PROVIDER),
+    COLOR(ColorService.class, ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE),
+    HANDLE(HandleProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_PROVIDER),
+    TAMPER(TamperProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_PROVIDER),
+    TEMPERATURE(TemperatureProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_PROVIDER),
+    POWER(PowerService.class, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_SERVICE),
+    SHUTTER(ShutterService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE),
+    OPENING_RATIO(OpeningRatioService.class, ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER),
+    MOTION(MotionProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_PROVIDER),
+    DIM(DimService.class, ServiceTemplateType.ServiceTemplate.ServiceType.DIM_SERVICE),
+    REED_SWITCH(ReedSwitchProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.REED_SWITCH_PROVIDER),
+    SMOKE_ALARM_STATE(SmokeAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
+    TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
+    SMOKE_STATE(SmokeStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_PROVIDER);
 
     public static final String SET = "set";
     public static final String UPDATE = "update";
@@ -61,15 +61,15 @@ public enum ServiceType {
 
     private final Class<? extends Service> serviceClass;
     private final Method[] methodDeclarations;
-    private final ServiceTypeHolderType.ServiceTypeHolder.ServiceType rstType;
+    private final ServiceTemplateType.ServiceTemplate.ServiceType rstType;
 
-    private ServiceType(final Class<? extends Service> serviceClass, ServiceTypeHolderType.ServiceTypeHolder.ServiceType rstType) {
+    private ServiceType(final Class<? extends Service> serviceClass, ServiceTemplateType.ServiceTemplate.ServiceType rstType) {
         this.serviceClass = serviceClass;
         this.methodDeclarations = serviceClass.getDeclaredMethods();
         this.rstType = rstType;
     }
 
-    public ServiceTypeHolderType.ServiceTypeHolder.ServiceType getRSTType() {
+    public ServiceTemplateType.ServiceTemplate.ServiceType getRSTType() {
         return rstType;
     }
 

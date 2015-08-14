@@ -15,8 +15,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceTypeHolderType.ServiceTypeHolder.ServiceType;
-import rst.homeautomation.state.PowerStateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
