@@ -52,6 +52,7 @@ import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
