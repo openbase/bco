@@ -21,6 +21,7 @@ import de.citec.dm.core.consistency.UnitIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitScopeConsistencyHandler;
+import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
@@ -38,9 +39,7 @@ import java.util.List;
 import java.util.Map;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
@@ -52,6 +51,7 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -62,10 +62,12 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
     }
 
+    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
 
@@ -76,6 +78,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         super(DeviceRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+            unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
@@ -89,8 +92,10 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
+            
 
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
@@ -188,6 +193,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
+    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+        return unitTemplateRegistry.get(unitTemplateId).getMessage();
+    }
+    
+    @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.get(deviceClassId).getMessage();
     }
@@ -208,10 +218,15 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         throw new NotAvailableException(unitConfigId);
     }
-
+    
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfigId);
+    }
+
+    @Override
+    public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+        return unitTemplateRegistry.contains(unitTemplateId);
     }
 
     @Override
@@ -219,6 +234,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         return deviceConfigRegistry.contains(deviceConfig);
     }
 
+    @Override
+    public UnitTemplate updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+        return unitTemplateRegistry.update(unitTemplate);
+    }
+    
     @Override
     public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.update(deviceConfig);
@@ -254,6 +274,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         return deviceClassRegistry.remove(deviceClass);
     }
 
+    @Override
+    public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
+        return unitTemplateRegistry.getMessages();
+    }
+    
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
         return deviceClassRegistry.getMessages();

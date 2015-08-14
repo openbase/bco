@@ -13,7 +13,7 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class DeviceClassIdGenerator implements IdGenerator<String, DeviceClass>{
     
