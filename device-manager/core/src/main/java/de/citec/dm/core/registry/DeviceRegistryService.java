@@ -95,7 +95,6 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
-            
 
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
@@ -196,7 +195,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         return unitTemplateRegistry.get(unitTemplateId).getMessage();
     }
-    
+
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.get(deviceClassId).getMessage();
@@ -218,7 +217,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         throw new NotAvailableException(unitConfigId);
     }
-    
+
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfigId);
@@ -230,6 +229,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
+    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+        return unitTemplateRegistry.contains(unitTemplate);
+    }
+
+    @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfig);
     }
@@ -238,7 +242,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     public UnitTemplate updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
         return unitTemplateRegistry.update(unitTemplate);
     }
-    
+
     @Override
     public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.update(deviceConfig);
@@ -278,7 +282,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
         return unitTemplateRegistry.getMessages();
     }
-    
+
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
         return deviceClassRegistry.getMessages();
