@@ -12,6 +12,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -62,6 +63,8 @@ public interface DeviceRegistryInterface {
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
     
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
+    
+    public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
     
     public void shutdown();
 }

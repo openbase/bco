@@ -274,4 +274,14 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         getData();
         return deviceConfigRemoteRegistry.getMessages();
     }
+    
+    @Override
+    public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
+        for(UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
+            if(unitTemplate.getType() == type) {
+                return unitTemplate;
+            }
+        }
+        throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
+    }
 }
