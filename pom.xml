@@ -61,11 +61,14 @@
     </build>
     
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>false</skipTests>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <global.jul.version>[0.2,0.3-SNAPSHOT)</global.jul.version>
         <global.rm.version>[0.4,0.5-SNAPSHOT)</global.rm.version>
+        <global.rst.artifact>rst-sandbox-csra</global.rst.artifact>
+        <global.rst.version>[0.12.33,0.12.62]</global.rst.version>
     </properties>
     
     <dependencies>
@@ -83,12 +86,12 @@
          <dependency>
             <groupId>rsb</groupId>
             <artifactId>rst-csra</artifactId>
-            <version>[0.12.33,0.13-SNAPSHOT)</version>
+            <version>${global.rst.version}</version>
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
-            <artifactId>rst-sandbox-csra</artifactId>
-            <version>[0.12.33,0.13-SNAPSHOT)</version>
+            <artifactId>${global.rst.artifact}</artifactId>
+            <version>${global.rst.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
