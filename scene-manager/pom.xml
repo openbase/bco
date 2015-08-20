@@ -4,7 +4,6 @@
     
     <groupId>de.citec</groupId>
     <artifactId>scm</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <name>SceneManager</name>
     <description>SceneManager</description>
     

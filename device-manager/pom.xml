@@ -4,7 +4,6 @@
     
     <groupId>de.citec</groupId>
     <artifactId>dm</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <name>DeviceManager</name>
     <description>DeviceManager</description>
     

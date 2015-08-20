@@ -5,7 +5,6 @@
     
     <groupId>de.citec</groupId>
     <artifactId>lm</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <name>LocationManager</name>
     <description>LocationManager</description>
     

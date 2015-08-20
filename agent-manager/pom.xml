@@ -4,7 +4,6 @@
     
     <groupId>de.citec</groupId>
     <artifactId>agm</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <name>AgentManager</name>
     <description>AgentManager</description>
     

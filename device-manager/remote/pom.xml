@@ -3,7 +3,6 @@
 
     <groupId>de.citec</groupId>
     <artifactId>dm.remote</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DeviceManager Remote</name>
@@ -29,20 +28,16 @@
         </plugins>
     </build>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dm.lib</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>

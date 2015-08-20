@@ -4,7 +4,6 @@
     
     <groupId>de.citec</groupId>
     <artifactId>apm</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <name>AppManager</name>
     <description>AppManager</description>
     
