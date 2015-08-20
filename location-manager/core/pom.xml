@@ -3,7 +3,6 @@
 
     <groupId>de.citec</groupId>
     <artifactId>lm.core</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>LocationManager Core</name>
@@ -11,7 +10,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>lm</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.5.0-SNAPSHOT</version>
     </parent>
     
     <url>http://maven.apache.org</url>
@@ -54,16 +53,11 @@
         </plugins>
     </build>    
 	
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <global.version.rst.sandbox>0.12-dr-rebuild-SNAPSHOT</global.version.rst.sandbox>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.lib</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -80,32 +74,32 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.processing</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
-            <artifactId>rst-sandbox-csra</artifactId>
-            <version>${global.version.rst.sandbox}</version>
+            <artifactId>${global.rst.artifact}</artifactId>
+            <version>${global.rst.version}</version>
         </dependency>
         <dependency>
             <groupId>rct</groupId>
             <artifactId>rct</artifactId>
-            <version>[1.0,1.1-SNAPSHOT)</version>
+            <version>${global.rct.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dm.remote</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
