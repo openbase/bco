@@ -27,9 +27,9 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <global.jul.version>[0.2,0.3-SNAPSHOT)</global.jul.version>
-        <global.rst.artifact>rst-sandbox-csra</global.rst.artifact>
-        <global.rst.version>0.12-SNAPSHOT</global.rst.version>
+        <global.jul.version>0.3-SNAPSHOT</global.jul.version>
+        <global.rst.sandbox.artifact>rst-sandbox-csra</global.rst.sandbox.artifact>
+        <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
         <global.rct.version>[1.0,1.1-SNAPSHOT)</global.rct.version>
     </properties>
     

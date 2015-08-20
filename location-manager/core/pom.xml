@@ -88,8 +88,8 @@
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
-            <artifactId>${global.rst.artifact}</artifactId>
-            <version>${global.rst.version}</version>
+            <artifactId>${global.rst.sandbox.artifact}</artifactId>
+            <version>${global.rst.sandbox.version}</version>
         </dependency>
         <dependency>
             <groupId>rct</groupId>
