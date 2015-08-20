@@ -3,7 +3,6 @@
 
     <groupId>de.citec</groupId>
     <artifactId>dal.visual</artifactId>
-    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DeviceVisualisation</name>
@@ -87,23 +86,17 @@
             <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <global.version.jul>0.2-SNAPSHOT</global.version.jul>
-        <global.version.registry-manager>0.4-SNAPSHOT</global.version.registry-manager>
-    </properties>
     
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dal.remote</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.visual</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>

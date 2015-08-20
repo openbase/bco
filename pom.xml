@@ -64,8 +64,8 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <global.version.jul>0.2-SNAPSHOT</global.version.jul>
-        <global.version.registry-manager>0.4-SNAPSHOT</global.version.registry-manager>
+        <global.jul.version>[0.2,0.3-SNAPSHOT)</global.jul.version>
+        <global.rm.version>[0.4,0.5-SNAPSHOT)</global.rm.version>
     </properties>
     
     <dependencies>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
         </dependency>
          <dependency>
             <groupId>rsb</groupId>
