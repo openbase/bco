@@ -69,8 +69,8 @@
         <global.rm.version>[0.4,0.5-SNAPSHOT)</global.rm.version>
         <global.rst-sandbox.artifact>rst-sandbox-csra</global.rst-sandbox.artifact>
         <global.rst-stable.artifact>rst-csra</global.rst-stable.artifact>
-        <global.rst-stable.version>[0.12.33,0.12.62]</global.rst.version>
-        <global.rst-sandbox.version>0.12-dr-rebuild-SNAPSHOT</global.rst.version>
+        <global.rst-stable.version>[0.12.33,0.12.62]</global.rst-stable.version>
+        <global.rst-sandbox.version>0.12-SNAPSHOT</global.rst.version>
     </properties>
     
     <dependencies>
