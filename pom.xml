@@ -8,7 +8,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>dal</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2.0</version>
     <name>DAL</name>
     <description>Device Abstraction Layer</description>
     
