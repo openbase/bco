@@ -8,7 +8,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>dal</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
     <name>DAL</name>
     <description>Device Abstraction Layer</description>
     
@@ -61,12 +61,16 @@
     </build>
     
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>false</skipTests>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <global.version.jul>0.2-SNAPSHOT</global.version.jul>
-        <global.version.registry-manager>0.4-SNAPSHOT</global.version.registry-manager>
-        <global.version.rst.sandbox>0.12-dr-rebuild-SNAPSHOT</global.version.rst.sandbox>
+        <global.jul.version>[0.2,0.3-SNAPSHOT)</global.jul.version>
+        <global.rm.version>[0.4,0.5-SNAPSHOT)</global.rm.version>
+        <global.rst-sandbox.artifact>rst-sandbox-csra</global.rst-sandbox.artifact>
+        <global.rst-stable.artifact>rst-csra</global.rst-stable.artifact>
+        <global.rst-stable.version>[0.12.33,0.12.62]</global.rst.version>
+        <global.rst-sandbox.version>0.12-dr-rebuild-SNAPSHOT</global.rst.version>
     </properties>
     
     <dependencies>
@@ -79,17 +83,17 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
         </dependency>
          <dependency>
             <groupId>rsb</groupId>
-            <artifactId>rst-csra</artifactId>
-            <version>[0.12.33,0.13-SNAPSHOT)</version>
+            <artifactId>${global.rst-stable.artifact}</artifactId>
+            <version>${global.rst.version}</version>
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
-            <artifactId>rst-sandbox-csra</artifactId>
-            <version>${global.version.rst.sandbox}</version>
+            <artifactId>${global.rst-sandbox.artifact}</artifactId>
+            <version>${global.rst-sandbox.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

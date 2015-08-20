@@ -3,7 +3,6 @@
 
     <groupId>de.citec</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DeviceRemoteControl</name>
@@ -11,7 +10,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>dal</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
@@ -59,33 +58,27 @@
             </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <global.version.jul>0.2-SNAPSHOT</global.version.jul>
-        <global.version.registry-manager>0.4-SNAPSHOT</global.version.registry-manager>
-    </properties>
     
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dal.service</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>scm.remote</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${global.rm.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>agm.remote</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${global.rm.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>apm.remote</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>${global.rm.version}</version>
         </dependency>
     </dependencies>
 </project>

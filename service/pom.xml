@@ -3,7 +3,6 @@
 
     <groupId>de.citec</groupId>
     <artifactId>dal.service</artifactId>
-    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>DeviceService</name>
@@ -11,7 +10,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>dal</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
@@ -59,64 +58,58 @@
             </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <global.version.jul>0.2-SNAPSHOT</global.version.jul>
-        <global.version.registry-manager>0.4-SNAPSHOT</global.version.registry-manager>
-    </properties>
     
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.com</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dm.core</artifactId>
-            <version>${global.version.registry-manager}</version>
+            <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.core</artifactId>
-            <version>${global.version.registry-manager}</version>
+            <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>dm.remote</artifactId>
-            <version>${global.version.registry-manager}</version>
+            <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.remote</artifactId>
-            <version>${global.version.registry-manager}</version>
+            <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.processing</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.interface</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.protobuf</artifactId>
-            <version>${global.version.jul}</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
