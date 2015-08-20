@@ -65,12 +65,12 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <global.jul.version>[0.2,0.3-SNAPSHOT)</global.jul.version>
-        <global.rm.version>[0.4,0.5-SNAPSHOT)</global.rm.version>
-        <global.rst-sandbox.artifact>rst-sandbox-csra</global.rst-sandbox.artifact>
-        <global.rst-stable.artifact>rst-csra</global.rst-stable.artifact>
-        <global.rst-stable.version>[0.12.33,0.12.62]</global.rst-stable.version>
-        <global.rst-sandbox.version>0.12-SNAPSHOT</global.rst.version>
+        <global.jul.version>0.3-SNAPSHOT</global.jul.version>
+        <global.rm.version>0.5-SNAPSHOT</global.rm.version>
+        <global.rst.sandbox.artifact>rst-sandbox-csra</global.rst.sandbox.artifact>
+        <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
+        <global.rst.stable.artifact>rst-csra</global.rst.stable.artifact>
+        <global.rst.stable.version>[0.12,0.13-SNAPSHOT)</global.rst.stable.version>
     </properties>
     
     <dependencies>
@@ -87,13 +87,13 @@
         </dependency>
          <dependency>
             <groupId>rsb</groupId>
-            <artifactId>${global.rst-stable.artifact}</artifactId>
-            <version>${global.rst.version}</version>
+            <artifactId>${global.rst.stable.artifact}</artifactId>
+            <version>${global.rst.stable.version}</version>
         </dependency>
         <dependency>
             <groupId>rsb</groupId>
-            <artifactId>${global.rst-sandbox.artifact}</artifactId>
-            <version>${global.rst-sandbox.version}</version>
+            <artifactId>${global.rst.sandbox.artifact}</artifactId>
+            <version>${global.rst.sandbox.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
