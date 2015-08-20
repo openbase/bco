@@ -8,7 +8,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>rm</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4.0</version>
     <name>RegistryManager</name>
     <description>Registry Manager Collection</description>
     
@@ -21,9 +21,16 @@
         <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
         <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
     </scm>
-
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipTests>false</skipTests>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <global.jul.version>[0.2,0.3-SNAPSHOT)</global.jul.version>
+        <global.rst.artifact>rst-sandbox-csra</global.rst.artifact>
+        <global.rst.version>[0.12.33,0.12.62]</global.rst.version>
+        <global.rct.version>[1.0,1.1-SNAPSHOT)</global.rct.version>
     </properties>
     
     <packaging>pom</packaging>
@@ -71,12 +78,12 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.exception</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rsb.com</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
         </dependency>
     </dependencies>
 </project>

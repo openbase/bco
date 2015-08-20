@@ -3,7 +3,6 @@
 
     <groupId>de.citec</groupId>
     <artifactId>apm.lib</artifactId>
-    <version>0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>AppManager Library</name>
@@ -11,7 +10,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>apm</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4.0</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
@@ -29,15 +28,11 @@
         </plugins>
     </build>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.storage</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
