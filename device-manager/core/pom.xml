@@ -104,7 +104,7 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>jul.extension.rst.processing</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
