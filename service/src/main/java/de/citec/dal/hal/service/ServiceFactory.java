@@ -28,4 +28,6 @@ public interface ServiceFactory {
     
     public abstract StandbyService newStandbyService(Device device, StandbyService unit) throws InstantiationException;
     
+    public abstract TargetTemperatureService newTargetTemperatureService(Device device, TargetTemperatureService unit) throws InstantiationException;
+    
 }

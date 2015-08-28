@@ -5,6 +5,7 @@
  */
 package de.citec.dal.hal.provider;
 
+import de.citec.dal.hal.provider.Provider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
@@ -12,29 +13,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
+import rst.homeautomation.state.StandbyStateType;
 
 /**
  *
- * @author thuxohl
+ * @author mpohling
  */
-public interface TemperatureProvider extends Provider {
+public interface StandbyProvider extends Provider {
 
-    public Double getTemperature() throws CouldNotPerformException;
+    public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException;
+    
+    public class GetStandbyCallback extends EventCallback {
 
-    public class GetTemperatureCallback extends EventCallback {
+        private static final Logger logger = LoggerFactory.getLogger(GetStandbyCallback.class);
 
-        private static final Logger logger = LoggerFactory.getLogger(GetTemperatureCallback.class);
+        private final StandbyProvider provider;
 
-        private final TemperatureProvider provider;
-
-        public GetTemperatureCallback(final TemperatureProvider provider) {
+        public GetStandbyCallback(final StandbyProvider provider) {
             this.provider = provider;
         }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                return new Event(Double.class, provider.getTemperature());
+                return new Event(StandbyStateType.StandbyState.class, provider.getStandby());
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
             }

@@ -29,7 +29,7 @@ import rst.vision.HSVColorType;
  */
 public class OpenHABCommandFactory {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(OpenHABCommandFactory.class);
 
     public static OpenhabCommandType.OpenhabCommand.Builder getCommandBuilder() {
         return OpenhabCommandType.OpenhabCommand.newBuilder();
@@ -73,5 +73,9 @@ public class OpenHABCommandFactory {
 
     public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final UpDownHolderType.UpDownHolder state) {
         return getCommandBuilder().setType(CommandType.UPDOWN).setUpDown(state);
+    }
+    
+    public static OpenhabCommandType.OpenhabCommand.Builder newDecimalCommand(final Double value) {
+        return getCommandBuilder().setType(CommandType.DECIMAL).setDecimal(value);
     }
 }

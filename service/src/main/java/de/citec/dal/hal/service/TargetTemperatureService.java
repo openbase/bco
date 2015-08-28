@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.hal.provider.StandbyProvider;
+import de.citec.dal.hal.provider.TargetTemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
@@ -13,35 +13,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.patterns.EventCallback;
-import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
  * @author mpohling
  */
-public interface StandbyService extends Service, StandbyProvider {
+public interface TargetTemperatureService extends Service, TargetTemperatureProvider {
 
-    public void setStandby(final StandbyState.State state) throws CouldNotPerformException;
+    public void setTargetTemperature(final Double value) throws CouldNotPerformException;
 
-    public class SetStandbyCallback extends EventCallback {
+    public class SetTargetTemperatureCallback extends EventCallback {
 
-        private static final Logger logger = LoggerFactory.getLogger(SetStandbyCallback.class);
+        private static final Logger logger = LoggerFactory.getLogger(SetTargetTemperatureCallback.class);
 
-        private final StandbyService service;
+        private final TargetTemperatureService service;
 
-        public SetStandbyCallback(final StandbyService service) {
+        public SetTargetTemperatureCallback(final TargetTemperatureService service) {
             this.service = service;
         }
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setStandby(((StandbyState) request.getData()).getValue());
+                service.setTargetTemperature(((Double) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
             }
         }
     }
-
 }

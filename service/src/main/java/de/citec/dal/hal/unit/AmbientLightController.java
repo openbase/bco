@@ -57,7 +57,6 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
         }
-        notifyChange();
     }
 
     @Override

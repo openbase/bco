@@ -5,6 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
+import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
@@ -14,6 +15,7 @@ import de.citec.dal.hal.service.DimService;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.dal.hal.service.StandbyService;
+import de.citec.dal.hal.service.TargetTemperatureService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotSupportedException;
@@ -57,5 +59,10 @@ public class OpenhabServiceFactory implements ServiceFactory {
     @Override
     public StandbyService newStandbyService(Device device, StandbyService unit) throws InstantiationException {
         throw new InstantiationException(this, new NotSupportedException("newStandbyService", this));
+    }
+
+    @Override
+    public TargetTemperatureService newTargetTemperatureService(Device device, TargetTemperatureService unit) throws InstantiationException {
+        return new TargetTemperatureServiceImpl(device, unit);
     }
 }
