@@ -63,6 +63,10 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         appConfigRemoteRegistry.notifyRegistryUpdated(data.getAppConfigList());
     }
 
+    public RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRemoteRegistry() {
+        return appConfigRemoteRegistry;
+    }
+
     @Override
     public AppConfigType.AppConfig registerAppConfig(final AppConfigType.AppConfig appConfig) throws CouldNotPerformException {
         try {
@@ -71,7 +75,6 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
             throw new CouldNotPerformException("Could not register app config!", ex);
         }
     }
-
 
     @Override
     public AppConfig getAppConfigById(String appConfigId) throws CouldNotPerformException, NotAvailableException {

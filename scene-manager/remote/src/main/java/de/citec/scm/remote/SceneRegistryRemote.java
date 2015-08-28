@@ -63,6 +63,10 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         sceneConfigRemoteRegistry.notifyRegistryUpdated(data.getSceneConfigList());
     }
 
+    public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRemoteRegistry() {
+        return sceneConfigRemoteRegistry;
+    }
+    
     @Override
     public SceneConfigType.SceneConfig registerSceneConfig(final SceneConfigType.SceneConfig sceneConfig) throws CouldNotPerformException {
         try {

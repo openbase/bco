@@ -83,6 +83,18 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         unitTemplateRemoteRegistry.notifyRegistryUpdated(data.getUnitTemplateList());
     }
 
+    public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRemoteRegistry() {
+        return unitTemplateRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> getDeviceClassRemoteRegistry() {
+        return deviceClassRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> getDeviceConfigRemoteRegistry() {
+        return deviceConfigRemoteRegistry;
+    }
+
     @Override
     public DeviceConfigType.DeviceConfig registerDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {

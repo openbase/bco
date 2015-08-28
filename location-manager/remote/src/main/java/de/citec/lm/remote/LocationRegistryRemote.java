@@ -92,6 +92,10 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         locationRemoteRegistry.notifyRegistryUpdated(data.getLocationConfigList());
     }
 
+    public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationRemoteRegistry() {
+        return locationRemoteRegistry;
+    }
+
     @Override
     public LocationConfigType.LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {

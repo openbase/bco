@@ -63,6 +63,12 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
         agentConfigRemoteRegistry.notifyRegistryUpdated(data.getAgentConfigList());
     }
 
+    public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRemoteRegistry() {
+        return agentConfigRemoteRegistry;
+    }
+    
+    
+
     @Override
     public AgentConfigType.AgentConfig registerAgentConfig(final AgentConfigType.AgentConfig agentConfig) throws CouldNotPerformException {
         try {
