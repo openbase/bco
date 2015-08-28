@@ -32,6 +32,6 @@ public class BatteryRemote extends DALRemoteService<Battery> implements BatteryI
 
     @Override
     public BatteryState getBattery() throws CouldNotPerformException {
-        return this.getData().getBatteryState();
+        return getData().getBatteryState();
     }
 }

@@ -7,6 +7,10 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.DimmerInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -29,25 +33,37 @@ public class DimmerRemote extends DALRemoteService<Dimmer> implements DimmerInte
     @Override
     public void notifyUpdated(Dimmer data) {
     }
-
+    
     @Override
-    public void setPower(PowerState.State state) throws CouldNotPerformException {
-        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
+    public void setPower(PowerState.State value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(PowerState.newBuilder().setValue(value).build(), this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState();
+        return getData().getPowerState();
     }
 
     @Override
-    public void setDim(Double dimm) throws CouldNotPerformException {
-        callMethod("setDim", dimm);
+    public void setDim(Double value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(value, this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DimmerRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(DimmerRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public Double getDim() throws CouldNotPerformException {
-        return this.getData().getValue();
+        return getData().getValue();
     }
 
 }

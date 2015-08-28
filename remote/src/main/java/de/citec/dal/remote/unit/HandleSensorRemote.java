@@ -32,7 +32,7 @@ public class HandleSensorRemote extends DALRemoteService<HandleSensor> implement
 
     @Override
     public HandleState getHandle() throws CouldNotPerformException {
-        return this.getData().getHandleState();
+        return getData().getHandleState();
     }
 
 }

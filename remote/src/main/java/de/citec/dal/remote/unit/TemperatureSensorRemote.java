@@ -32,12 +32,12 @@ public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensor>
 
     @Override
     public Double getTemperature() throws CouldNotPerformException {
-        return this.getData().getTemperature();
+        return getData().getTemperature();
     }
 
     @Override
     public AlarmState getTemperatureAlarmState() throws CouldNotPerformException {
-        return this.getData().getTemperatureAlarmState();
+        return getData().getTemperatureAlarmState();
     }
 
 }

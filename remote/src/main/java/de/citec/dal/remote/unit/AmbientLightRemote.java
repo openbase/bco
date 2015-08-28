@@ -8,6 +8,10 @@ package de.citec.dal.remote.unit;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.unit.AmbientLightInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -42,8 +46,14 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public void setColor(final HSVColor color) throws CouldNotPerformException {
-        callMethod("setColor", color);
+    public void setColor(final HSVColor value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(value, this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -51,8 +61,14 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
-        callMethod("setBrightness", brightness);
+    public void setBrightness(Double value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(value, this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -61,8 +77,14 @@ public class AmbientLightRemote extends DALRemoteService<AmbientLightType.Ambien
     }
 
     @Override
-    public void setPower(PowerState.State state) throws CouldNotPerformException {
-        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
+    public void setPower(PowerState.State value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(PowerState.newBuilder().setValue(value).build(), this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override

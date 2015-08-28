@@ -32,6 +32,6 @@ public class ButtonRemote extends DALRemoteService<Button> implements ButtonInte
 
     @Override
     public ButtonState getButton() throws CouldNotPerformException {
-        return this.getData().getButtonState();
+        return getData().getButtonState();
     }
 }

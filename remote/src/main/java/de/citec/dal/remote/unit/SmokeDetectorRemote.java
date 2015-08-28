@@ -32,11 +32,11 @@ public class SmokeDetectorRemote extends DALRemoteService<SmokeDetector> impleme
 
     @Override
     public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        return this.getData().getSmokeAlarmState();
+        return getData().getSmokeAlarmState();
     }
 
     @Override
     public SmokeState getSmokeState() throws CouldNotPerformException {
-        return this.getData().getSmokeState();
+        return getData().getSmokeState();
     }
 }

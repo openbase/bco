@@ -7,6 +7,10 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.RollershutterInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
@@ -31,23 +35,35 @@ public class RollershutterRemote extends DALRemoteService<Rollershutter> impleme
     }
 
     @Override
-    public void setShutter(ShutterState.State state) throws CouldNotPerformException {
-        callMethod("setShutter", ShutterState.newBuilder().setValue(state).build());
+    public void setShutter(ShutterState.State value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(ShutterState.newBuilder().setValue(value).build(), this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public ShutterState getShutter() throws CouldNotPerformException {
-        return this.getData().getShutterState();
+        return getData().getShutterState();
     }
 
     @Override
-    public void setOpeningRatio(final Double openingRatio) throws CouldNotPerformException {
-        callMethod("setOpeningRatio", openingRatio);
+    public void setOpeningRatio(final Double value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(value, this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public Double getOpeningRatio() throws CouldNotPerformException {
-        return this.getData().getOpeningRatio();
+        return getData().getOpeningRatio();
     }
 
 }

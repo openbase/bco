@@ -32,6 +32,6 @@ public class PowerConsumptionSensorRemote extends DALRemoteService<PowerConsumpt
 
     @Override
     public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
-        return this.getData().getPowerConsumptionState();
+        return getData().getPowerConsumptionState();
     }
 }

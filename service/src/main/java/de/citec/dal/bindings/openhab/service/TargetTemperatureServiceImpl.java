@@ -24,7 +24,7 @@ public class TargetTemperatureServiceImpl<ST extends TargetTemperatureService & 
     }
     
     @Override
-    public void setTargetTemperature(Double value) throws CouldNotPerformException {
+    public void setTargetTemperature(final Double value) throws CouldNotPerformException {
         executeCommand(OpenHABCommandFactory.newDecimalCommand(value));
     }
 

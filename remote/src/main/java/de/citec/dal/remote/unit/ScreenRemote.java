@@ -7,6 +7,10 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.ScreenInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -38,21 +42,33 @@ public class ScreenRemote extends DALRemoteService<ScreenType.Screen> implements
 
     @Override
     public PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState();
+        return getData().getPowerState();
     }
 
     @Override
     public void setPower(PowerState.State state) throws CouldNotPerformException {
-        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
+        try {
+            RPCHelper.callRemoteMethod(PowerState.newBuilder().setValue(state).build(), this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ScreenRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(ScreenRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
-        return this.getData().getStandbyState();
+        return getData().getStandbyState();
     }
 
     @Override
-    public void setStandby(StandbyStateType.StandbyState.State state) throws CouldNotPerformException {
-        callMethod("setStandby", StandbyState.newBuilder().setValue(state).build());
+    public void setStandby(StandbyStateType.StandbyState.State value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(StandbyState.newBuilder().setValue(value).build(), this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ScreenRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(ScreenRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

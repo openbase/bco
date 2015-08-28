@@ -32,7 +32,7 @@ public class MotionSensorRemote extends DALRemoteService<MotionSensor> implement
 
     @Override
     public MotionState getMotion() throws CouldNotPerformException {
-        return this.getData().getMotionState();
+        return getData().getMotionState();
     }
 
 }

@@ -32,7 +32,7 @@ public class ReedSwitchRemote extends DALRemoteService<ReedSwitch> implements Re
 
     @Override
     public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        return this.getData().getReedSwitchState();
+        return getData().getReedSwitchState();
     }
      
 }

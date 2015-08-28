@@ -7,6 +7,10 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.LightInterface;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -31,8 +35,14 @@ public class LightRemote extends DALRemoteService<Light> implements LightInterfa
     }
 
     @Override
-    public void setPower(PowerState.State state) throws CouldNotPerformException {
-        callMethod("setPower", PowerState.newBuilder().setValue(state).build());
+    public void setPower(PowerState.State value) throws CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(PowerState.newBuilder().setValue(value).build(), this).get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(LightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(LightRemote.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
