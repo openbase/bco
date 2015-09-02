@@ -364,4 +364,15 @@ public class DeviceRegistryImplTest {
         }
         assertTrue(remote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build()));
     }
+
+    /**
+     * Test of registering a DeviceConfig per remote.
+     */
+    @Test
+    public void testGetReadOnlyFlag() throws Exception {
+        System.out.println("registerDeviceConfigPerRemote");
+        assertTrue(remote.isDeviceClassRegistryReadOnly().get());
+        assertTrue(remote.isDeviceConfigRegistryReadOnly().get());
+        assertTrue(remote.isUnitTemplateRegistryReadOnly().get());
+    }
 }
