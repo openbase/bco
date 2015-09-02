@@ -27,6 +27,8 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
@@ -172,5 +174,10 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
     @Override
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException {
         return sceneConfigRegistry.getMessages();
+    }
+
+    @Override
+    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(sceneConfigRegistry.isReadOnly());
     }
 }

@@ -67,11 +67,11 @@ public interface DeviceRegistryInterface {
     
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
     
-    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException, InterruptedException;;
+    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException;
     
-    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException;;
+    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException;
     
-    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
+    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException;
     
     public void shutdown();
 }

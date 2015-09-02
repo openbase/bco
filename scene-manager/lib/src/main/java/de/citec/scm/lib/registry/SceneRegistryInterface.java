@@ -7,6 +7,7 @@ package de.citec.scm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
+import java.util.concurrent.Future;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
 /**
@@ -28,6 +29,8 @@ public interface SceneRegistryInterface {
     public SceneConfig getSceneConfigById(final String sceneConfigId) throws CouldNotPerformException;
 
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException;
+
+    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
 
     public void shutdown();
 }

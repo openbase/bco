@@ -33,6 +33,8 @@ import de.citec.lm.core.consistency.TransformationConsistencyHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
@@ -198,5 +200,10 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             serviceConfigList.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigList;
+    }
+
+    @Override
+    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(locationConfigRegistry.isReadOnly());
     }
 }

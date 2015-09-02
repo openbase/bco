@@ -9,6 +9,7 @@ import de.citec.agm.lib.generator.AgentConfigIdGenerator;
 import de.citec.agm.lib.registry.AgentRegistryInterface;
 import de.citec.jp.JPAgentRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
@@ -22,6 +23,9 @@ import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -119,5 +123,17 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
         getData();
         List<AgentConfig> messages = agentConfigRemoteRegistry.getMessages();
         return messages;
+    }
+
+    @Override
+    public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the agent config registry!!", ex);
+        }
     }
 }

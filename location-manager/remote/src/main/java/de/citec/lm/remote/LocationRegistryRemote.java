@@ -11,6 +11,7 @@ import de.citec.lm.lib.registry.LocationRegistryInterface;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
@@ -25,7 +26,10 @@ import rst.homeautomation.unit.UnitConfigType;
 import rst.spatial.LocationConfigType;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -261,5 +265,17 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
             }
         }
         return rootLocationConfigs;
+    }
+
+    @Override
+    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the location config registry!!", ex);
+        }
     }
 }

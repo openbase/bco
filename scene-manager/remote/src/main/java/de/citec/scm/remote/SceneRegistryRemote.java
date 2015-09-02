@@ -9,14 +9,18 @@ import de.citec.scm.lib.generator.SceneConfigIdGenerator;
 import de.citec.scm.lib.registry.SceneRegistryInterface;
 import de.citec.jp.JPSceneRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType;
@@ -66,7 +70,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRemoteRegistry() {
         return sceneConfigRemoteRegistry;
     }
-    
+
     @Override
     public SceneConfigType.SceneConfig registerSceneConfig(final SceneConfigType.SceneConfig sceneConfig) throws CouldNotPerformException {
         try {
@@ -117,5 +121,17 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         getData();
         List<SceneConfig> messages = sceneConfigRemoteRegistry.getMessages();
         return messages;
+    }
+
+    @Override
+    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the scene config registry!!", ex);
+        }
     }
 }
