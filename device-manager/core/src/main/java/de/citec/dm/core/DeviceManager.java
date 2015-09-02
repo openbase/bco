@@ -10,7 +10,7 @@ import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.preset.JPReadOnly;
@@ -18,6 +18,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,7 @@ public class DeviceManager {
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
         
         JPService.parseAndExitOnError(args);
 

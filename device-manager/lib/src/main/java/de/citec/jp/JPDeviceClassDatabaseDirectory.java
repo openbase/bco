@@ -6,9 +6,9 @@
 
 package de.citec.jp;
 
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
-import de.citec.jps.exception.ValidationException;
+import de.citec.jps.exception.JPValidationException;
 import de.citec.jps.preset.AbstractJPDirectory;
 import de.citec.jps.tools.FileHandler;
 import java.io.File;
@@ -36,7 +36,7 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDirectory {
     }
 
     @Override
-    public void validate() throws ValidationException {
+    public void validate() throws JPValidationException {
         if(JPService.getProperty(JPInitializeDB.class).getValue()) {
             setAutoCreateMode(FileHandler.AutoMode.On);
             setExistenceHandling(FileHandler.ExistenceHandling.Must);

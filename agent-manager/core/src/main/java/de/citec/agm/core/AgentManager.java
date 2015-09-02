@@ -10,7 +10,7 @@ import de.citec.jp.JPAgentDatabaseDirectory;
 import de.citec.jp.JPAgentClassDatabaseDirectory;
 import de.citec.jp.JPAgentConfigDatabaseDirectory;
 import de.citec.jp.JPAgentRegistryScope;
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.preset.JPReadOnly;
@@ -18,6 +18,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,7 @@ public class AgentManager {
         JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
         JPService.registerProperty(JPAgentClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.parseAndExitOnError(args);
 

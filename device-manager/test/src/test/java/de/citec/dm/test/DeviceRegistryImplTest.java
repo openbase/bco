@@ -24,7 +24,7 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.registry.LocationRegistryService;
 import java.io.File;
 import java.io.IOException;
