@@ -7,6 +7,7 @@ package de.citec.dm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
+import java.util.concurrent.Future;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -65,6 +66,12 @@ public interface DeviceRegistryInterface {
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
     
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
+    
+    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException, InterruptedException;;
+    
+    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException;;
+    
+    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
     
     public void shutdown();
 }

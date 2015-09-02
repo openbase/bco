@@ -53,6 +53,8 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -192,7 +194,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(logger, ex);
         }
     }
 
@@ -334,5 +336,20 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             }
         }
         throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
+    }
+
+    @Override
+    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(unitTemplateRegistry.isReadOnly());
+    }
+
+    @Override
+    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(deviceClassRegistry.isReadOnly());
+    }
+
+    @Override
+    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(deviceConfigRegistry.isReadOnly());
     }
 }

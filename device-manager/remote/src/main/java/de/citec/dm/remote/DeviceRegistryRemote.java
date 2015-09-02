@@ -11,16 +11,21 @@ import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType;
@@ -109,7 +114,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         getData();
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
-    
+
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException, NotAvailableException {
         getData();
@@ -140,13 +145,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         getData();
         return unitTemplateRemoteRegistry.contains(unitTemplate);
     }
-    
+
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         getData();
         return unitTemplateRemoteRegistry.contains(unitTemplateId);
     }
-    
+
     @Override
     public Boolean containsDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
         getData();
@@ -167,7 +172,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             throw new CouldNotPerformException("Could not update device config!", ex);
         }
     }
-    
+
     @Override
     public UnitTemplate updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
         try {
@@ -275,7 +280,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         getData();
         return unitTemplateRemoteRegistry.getMessages();
     }
-    
+
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
         getData();
@@ -287,14 +292,50 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         getData();
         return deviceConfigRemoteRegistry.getMessages();
     }
-    
+
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
-        for(UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
-            if(unitTemplate.getType() == type) {
+        for (UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
+            if (unitTemplate.getType() == type) {
                 return unitTemplate;
             }
         }
         throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
+    }
+
+    @Override
+    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the unit template registry!!", ex);
+        }
+    }
+
+    @Override
+    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the device class registry!!", ex);
+        }
+    }
+
+    @Override
+    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the device config registry!", ex);
+        }
     }
 }
