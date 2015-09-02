@@ -130,7 +130,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
             return CompletableFuture.completedFuture(true);
         }
         try {
-            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+            return RPCHelper.callRemoteMethod(Boolean.class, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the app config registry!!", ex);
         }

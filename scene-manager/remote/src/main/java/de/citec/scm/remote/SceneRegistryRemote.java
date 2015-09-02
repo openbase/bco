@@ -129,7 +129,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
             return CompletableFuture.completedFuture(true);
         }
         try {
-            return RPCHelper.callRemoteMethod(logger, Boolean.class, this);
+            return RPCHelper.callRemoteMethod(Boolean.class, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the scene config registry!!", ex);
         }
