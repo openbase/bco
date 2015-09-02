@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -192,6 +193,31 @@ public class LocationRegistryImplTest {
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
+        }
+    }
+
+    /**
+     * Test if a a loop in the location configuration is detected by the
+     * consistency handler.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLoopConsistency() throws Exception {
+        String rootLabel = "Root";
+        String firstChildLabel = "FirstChild";
+        String SecondChildLabel = "SecondChild";
+        LocationConfig root = LocationConfig.newBuilder().setLabel(rootLabel).build();
+        root = remote.registerLocationConfig(root);
+
+        LocationConfig firstChild = LocationConfig.newBuilder().setLabel(firstChildLabel).setParentId(root.getId()).build();
+        remote.registerLocationConfig(firstChild);
+
+        try {
+            LocationConfig secondChild = LocationConfig.newBuilder().setLabel(SecondChildLabel).setParentId(root.getId()).addChildId(root.getId()).build();
+            secondChild = remote.registerLocationConfig(secondChild);
+            Assert.fail("No exception when registering locatio whith a loop [" + secondChild + "]");
+        } catch (Exception ex) {
         }
     }
 }
