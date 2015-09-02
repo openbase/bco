@@ -19,7 +19,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;

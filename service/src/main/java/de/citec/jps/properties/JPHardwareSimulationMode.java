@@ -6,7 +6,7 @@
 package de.citec.jps.properties;
 
 import de.citec.jps.core.AbstractJavaProperty;
-import de.citec.jps.exception.ValidationException;
+import de.citec.jps.exception.JPValidationException;
 import de.citec.jps.preset.AbstractJPBoolean;
 
 /**
@@ -27,7 +27,7 @@ public class JPHardwareSimulationMode extends AbstractJPBoolean {
     }
 
     @Override
-    public void validate() throws ValidationException {
+    public void validate() throws JPValidationException {
         super.validate();
         if (!getValueType().equals((AbstractJavaProperty.ValueType.PropertyDefault))) {
             logger.warn("Started in hardware simulation mode!!");
