@@ -309,7 +309,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             return CompletableFuture.completedFuture(true);
         }
         try {
-            return RPCHelper.callRemoteMethod(Boolean.class, this);
+            return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the unit template registry!!", ex);
         }
@@ -321,7 +321,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             return CompletableFuture.completedFuture(true);
         }
         try {
-            return RPCHelper.callRemoteMethod(Boolean.class, this);
+            return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the device class registry!!", ex);
         }
@@ -333,7 +333,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             return CompletableFuture.completedFuture(true);
         }
         try {
-            return RPCHelper.callRemoteMethod(Boolean.class, this);
+            return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the device config registry!", ex);
         }

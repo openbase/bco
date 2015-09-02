@@ -273,7 +273,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
             return CompletableFuture.completedFuture(true);
         }
         try {
-            return RPCHelper.callRemoteMethod(Boolean.class, this);
+            return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the location config registry!!", ex);
         }
