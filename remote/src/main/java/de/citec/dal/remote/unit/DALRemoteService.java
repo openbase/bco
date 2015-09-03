@@ -45,7 +45,8 @@ public abstract class DALRemoteService<M extends GeneratedMessage> extends RSBRe
     @Override
     @Deprecated
     public ServiceConfigType.ServiceConfig getServiceConfig() {
+        // TODO mpohling: redesign!
         throw new UnsupportedOperationException("Not supported yet."); 
-        //TODO implementaion needed!
+        
     }
 }

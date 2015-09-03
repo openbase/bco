@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.service;
 
-import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 
 /**
  *
@@ -13,5 +13,5 @@ import rst.homeautomation.service.ServiceConfigType;
  */
 public interface Service {
 	public ServiceType getServiceType();
-    public ServiceConfigType.ServiceConfig getServiceConfig();
+    public ServiceConfig getServiceConfig();
 }

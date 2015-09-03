@@ -14,6 +14,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -93,6 +94,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     @Override
     public HSVColor getColor() throws NotAvailableException {
         try {
+            logger.info("===================== getcolor request");
             return getData().getColor();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("color", ex);
@@ -122,5 +124,10 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("brightness", ex);
         }
+    }
+
+    @Override
+    public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
+        super.registerMethods(server); //To change body of generated methods, choose Tools | Templates.
     }
 }

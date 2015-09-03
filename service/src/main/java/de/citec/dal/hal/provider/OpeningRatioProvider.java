@@ -26,7 +26,6 @@ public interface OpeningRatioProvider extends Provider {
         private static final Logger logger = LoggerFactory.getLogger(GetOpeningRatioCallback.class);
 
         private final OpeningRatioProvider provider;
-
         public GetOpeningRatioCallback(final OpeningRatioProvider provider) {
             this.provider = provider;
         }

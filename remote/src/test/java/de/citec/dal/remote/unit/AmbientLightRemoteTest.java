@@ -18,6 +18,7 @@ import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import java.awt.Color;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -27,6 +28,7 @@ import static org.junit.Assert.*;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.vision.HSVColorType;
+import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
@@ -119,12 +121,27 @@ public class AmbientLightRemoteTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 60000)
-    public void testGetColor() throws Exception {
+    public void testRemoteGetColor() throws Exception {
         System.out.println("getColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(66).setSaturation(63).setValue(33).build();
         ambientLightRemote.setColor(color);
         ambientLightRemote.requestStatus();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, ambientLightRemote.getColor());
+    }
+    
+    /**
+     * Test of getColor method, of class AmbientLightRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testRemoteCallGetColor() throws Exception {
+        System.out.println("getColor");
+        HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(61).setSaturation(23).setValue(37).build();
+        ambientLightRemote.setColor(color);
+        ambientLightRemote.requestStatus();
+        HSVColor colorResult = (HSVColor) ambientLightRemote.callMethod("getColor");
+        assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult);
     }
 
     /**

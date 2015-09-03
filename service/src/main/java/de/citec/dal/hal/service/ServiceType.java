@@ -17,11 +17,13 @@ import de.citec.dal.hal.provider.TamperProvider;
 import de.citec.dal.hal.provider.TemperatureAlarmStateProvider;
 import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +67,21 @@ public enum ServiceType {
 
     private ServiceType(final Class<? extends Service> serviceClass, ServiceTemplateType.ServiceTemplate.ServiceType rstType) {
         this.serviceClass = serviceClass;
-        this.methodDeclarations = serviceClass.getDeclaredMethods();
+        this.methodDeclarations = detectServiceMethods(serviceClass);
         this.rstType = rstType;
+    }
+    
+    private Method[] detectServiceMethods(final Class<? extends Service> serviceClass) {
+        List<Method> methods = new ArrayList<>();
+        
+        // add service methods
+        methods.addAll(Arrays.asList(serviceClass.getMethods()));
+        
+        // remove internal service methods
+        methods.removeAll(Arrays.asList(Service.class.getMethods()));
+        
+        serviceClass.getMethods();
+        return methods.toArray(new Method[methods.size()]);
     }
 
     public ServiceTemplateType.ServiceTemplate.ServiceType getRSTType() {
@@ -120,7 +135,7 @@ public enum ServiceType {
                 try {
                     server.addMethod(method.getName(), getCallback(method, service, serviceType));
                 } catch (CouldNotPerformException ex) {
-                    logger.warn("Could not register callback for service methode " + method.toGenericString(), ex);
+                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex));
                 }
             }
         }
@@ -137,7 +152,7 @@ public enum ServiceType {
         } catch (Exception ex) {
             throw new NotAvailableException(callbackName);
         }
-        throw new NotSupportedException(callbackName, service);
+        throw new NotSupportedException(service.getServiceType().name(), service);
     }
 
     public static ServiceType valueOfByServiceName(String serviceName) throws NotSupportedException {
