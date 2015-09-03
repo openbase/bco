@@ -368,11 +368,11 @@ public class DeviceRegistryImplTest {
     /**
      * Test of registering a DeviceConfig per remote.
      */
-    @Test
+    @Test(timeout = 3000)
     public void testGetReadOnlyFlag() throws Exception {
         System.out.println("registerDeviceConfigPerRemote");
-        assertTrue(remote.isDeviceClassRegistryReadOnly().get());
-        assertTrue(remote.isDeviceConfigRegistryReadOnly().get());
-        assertTrue(remote.isUnitTemplateRegistryReadOnly().get());
+        assertEquals(Boolean.FALSE,remote.isDeviceClassRegistryReadOnly().get());
+        assertEquals(Boolean.FALSE,remote.isDeviceConfigRegistryReadOnly().get());
+        assertEquals(Boolean.FALSE,remote.isUnitTemplateRegistryReadOnly().get());
     }
 }
