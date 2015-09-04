@@ -70,16 +70,16 @@ public enum ServiceType {
         this.methodDeclarations = detectServiceMethods(serviceClass);
         this.rstType = rstType;
     }
-    
+
     private Method[] detectServiceMethods(final Class<? extends Service> serviceClass) {
         List<Method> methods = new ArrayList<>();
-        
+
         // add service methods
         methods.addAll(Arrays.asList(serviceClass.getMethods()));
-        
+
         // remove internal service methods
         methods.removeAll(Arrays.asList(Service.class.getMethods()));
-        
+
         serviceClass.getMethods();
         return methods.toArray(new Method[methods.size()]);
     }
@@ -133,6 +133,9 @@ public enum ServiceType {
         for (ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
             for (Method method : serviceType.getDeclaredMethods()) {
                 try {
+                    if (method.getName().equals("getColor")) {
+                        System.out.println("getColor");
+                    }
                     server.addMethod(method.getName(), getCallback(method, service, serviceType));
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex));
@@ -144,10 +147,18 @@ public enum ServiceType {
     private static Callback getCallback(final Method method, final Service service, final ServiceType serviceType) throws CouldNotPerformException {
         String callbackName = method.getName().concat(Callback.class.getSimpleName());
         try {
-            for (Class callbackClass : serviceType.getServiceClass().getDeclaredClasses()) {
-                if (callbackClass.getSimpleName().equalsIgnoreCase(callbackName)) {
-                    return (Callback) callbackClass.getConstructor(serviceType.getServiceClass()).newInstance(service);
+            Class serviceClass = serviceType.getServiceClass();
+            List<Class> interfaces = new ArrayList<>(Arrays.asList(serviceClass.getInterfaces()));
+            while (serviceClass != null) {
+                for (Class callbackClass : serviceClass.getDeclaredClasses()) {
+                    if (callbackClass.getSimpleName().equalsIgnoreCase(callbackName)) {
+                        return (Callback) callbackClass.getConstructor(serviceClass).newInstance(service);
+                    }
                 }
+                if(interfaces.isEmpty()) {
+                    break;
+                }
+                serviceClass = interfaces.remove(0);
             }
         } catch (Exception ex) {
             throw new NotAvailableException(callbackName);
