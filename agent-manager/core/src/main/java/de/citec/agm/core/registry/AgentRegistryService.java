@@ -11,7 +11,7 @@ import de.citec.jp.JPAgentConfigDatabaseDirectory;
 import de.citec.jp.JPAgentRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;

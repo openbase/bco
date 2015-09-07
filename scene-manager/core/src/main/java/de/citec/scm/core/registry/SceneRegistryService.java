@@ -11,7 +11,7 @@ import de.citec.jp.JPSceneConfigDatabaseDirectory;
 import de.citec.jp.JPSceneRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
