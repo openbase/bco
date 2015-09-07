@@ -8,7 +8,7 @@ package de.citec.dal.visual;
 import de.citec.dal.visual.util.StatusPanel;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.citec.jul.exception.InstantiationException;

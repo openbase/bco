@@ -6,7 +6,7 @@
 package de.citec.dal.hal.provider;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -7,7 +7,7 @@ package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.BatteryProvider;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
 
 /**

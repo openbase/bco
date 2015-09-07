@@ -8,7 +8,7 @@ package de.citec.dal.visual.service;
 import de.citec.dal.hal.provider.PowerConsumptionProvider;
 import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import java.text.DecimalFormat;
 
 /**

@@ -8,7 +8,7 @@ package de.citec.dal.visual.service;
 import de.citec.dal.hal.provider.PowerConsumptionProvider;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.text.DecimalFormat;

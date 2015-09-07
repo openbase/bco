@@ -9,7 +9,7 @@ package de.citec.dal.registry;
 import de.citec.dal.hal.device.Device;
 import de.citec.dal.util.ConnectionManager;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.storage.registry.Registry;
 import java.util.HashMap;

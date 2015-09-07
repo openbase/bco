@@ -2,7 +2,7 @@ package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.OpeningRatioProvider;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import org.slf4j.Logger;

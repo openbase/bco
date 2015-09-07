@@ -17,7 +17,7 @@ import de.citec.dal.hal.provider.TamperProvider;
 import de.citec.dal.hal.provider.TemperatureAlarmStateProvider;
 import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.NotSupportedException;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;

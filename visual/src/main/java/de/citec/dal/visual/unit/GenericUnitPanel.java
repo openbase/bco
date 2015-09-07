@@ -10,7 +10,7 @@ import de.citec.dal.remote.unit.DALRemoteService;
 import de.citec.dal.visual.service.AbstractServicePanel;
 import de.citec.dal.visual.util.RSBRemoteView;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.processing.StringProcessor;

@@ -9,7 +9,7 @@ import de.citec.dal.hal.service.Service;
 import de.citec.dal.visual.DalVisualRemote;
 import de.citec.dal.visual.util.StatusPanel;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;

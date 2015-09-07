@@ -8,7 +8,7 @@ package de.citec.dal.registry;
 import de.citec.dal.hal.device.DeviceFactory;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.extension.protobuf.ProtobufListDiff;

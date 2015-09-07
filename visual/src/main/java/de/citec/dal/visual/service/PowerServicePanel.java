@@ -7,7 +7,7 @@ package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.service.PowerService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.processing.StringProcessor;
 import java.awt.Color;

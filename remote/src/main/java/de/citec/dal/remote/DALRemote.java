@@ -6,7 +6,7 @@ import de.citec.dal.remote.jp.JPRemoteService;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.extension.rsb.scope.jp.JPScope;

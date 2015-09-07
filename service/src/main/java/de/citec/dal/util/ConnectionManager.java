@@ -6,7 +6,7 @@
 package de.citec.dal.util;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.iface.Activatable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

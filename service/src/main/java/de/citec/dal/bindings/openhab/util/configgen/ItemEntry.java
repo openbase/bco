@@ -8,7 +8,7 @@ package de.citec.dal.bindings.openhab.util.configgen;
 import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.ProtobufVariableProvider;

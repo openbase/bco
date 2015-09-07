@@ -7,7 +7,7 @@ package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.service.TargetTemperatureService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InvalidStateException;
 import java.text.DecimalFormat;
 import java.util.concurrent.Callable;
