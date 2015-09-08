@@ -7,6 +7,7 @@ package de.citec.lm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
+import java.util.concurrent.Future;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.spatial.LocationConfigType;
@@ -35,6 +36,8 @@ public interface LocationRegistryInterface {
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final String locationConfigId) throws CouldNotPerformException;
 
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationConfigId) throws CouldNotPerformException;
+    
+    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
     
     public void shutdown();
 

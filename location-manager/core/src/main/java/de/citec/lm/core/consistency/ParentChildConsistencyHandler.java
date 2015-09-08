@@ -43,52 +43,40 @@ public class ParentChildConsistencyHandler implements ProtoBufRegistryConsistenc
             // check if parents knows given child.
             IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfig.Builder> parent = registry.get(locationConfig.getParentId());
             if (parent != null && !parentHasChild(parent.getMessage(), locationConfig)) {
-                parent.setMessage(parent.getMessage().toBuilder().addChild(locationConfig).build());
+                parent.setMessage(parent.getMessage().toBuilder().addChildId(locationConfig.getId()).build());
                 throw new EntryModification(entry, this);
             }
         }
+        // check if children know their parent.
+        for (String childLocationId : new ArrayList<>(locationConfig.getChildIdList())) {
+            LocationConfig childLocationConfig;
 
-        try {
-            // check if children know their parent.
-            for (LocationConfig childLocationConfig : locationConfig.getChildList()) {
-
-                // check if given child is registered otherwise register.
-                if (!registry.contains(childLocationConfig)) {
-                    logger.warn("registered child[" + childLocationConfig + "] for parent[" + locationConfig + "] does not exists.");
-                    throw new EntryModification(registry.register(childLocationConfig), this);
-                }
-
-                IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig, registry.getIdGenerator());
-                // check if parent id is registered
-                if (!childLocationConfig.hasParentId()) {
-                    throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
-                }
-
-                // check if parent id is valid.
-                if (!childLocationConfig.getParentId().equals(locationConfig.getId())) {
-                    throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
-                }
-
-                // check if the position of a child has been changed in the parent location
-                // TODO:critical because every time the value in the parent is set for the child. What is if the child is updated?
-                if (!childLocationConfig.getPosition().equals(child.getMessage().getPosition())) {
-                    throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPosition(childLocationConfig.getPosition())), this);
-                }
+            // check if given child is registered otherwise register.
+            if (!registry.contains(childLocationId)) {
+                logger.warn("registered child[" + childLocationId + "] for parent[" + locationConfig + "] does not exists.");
+                List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
+                childIds.remove(childLocationId);
+                throw new EntryModification(entry.setMessage(locationConfig.toBuilder().clearChildId().addAllChildId(childIds).build()), this);
+            } else {
+                childLocationConfig = registry.getMessage(childLocationId);
             }
-        } finally { //sync children with registry
-            if (!locationConfig.getChildList().isEmpty()) {
-                List<LocationConfig> updatedChildrenList = new ArrayList<>();
-                for (LocationConfig childLocationConfig : locationConfig.getChildList()) {
-                    updatedChildrenList.add(entryMap.get(childLocationConfig, registry.getIdGenerator()).getMessage());
-                }
-                entry.setMessage(locationConfig.toBuilder().clearChild().addAllChild(updatedChildrenList).build());
+
+            IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig, registry.getIdGenerator());
+            // check if parent id is registered
+            if (!childLocationConfig.hasParentId()) {
+                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
+            }
+
+            // check if parent id is valid.
+            if (!childLocationConfig.getParentId().equals(locationConfig.getId())) {
+                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
             }
         }
     }
 
     private boolean parentHasChild(LocationConfig parent, LocationConfig child) {
-        for (LocationConfig children : parent.getChildList()) {
-            if (children.hasId() && children.getId().equals(child.getId())) {
+        for (String children : parent.getChildIdList()) {
+            if (children.equals(child.getId())) {
                 return true;
             }
         }

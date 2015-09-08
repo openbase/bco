@@ -7,6 +7,7 @@ package de.citec.apm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
+import java.util.concurrent.Future;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 
 /**
@@ -28,6 +29,8 @@ public interface AppRegistryInterface {
     public AppConfig getAppConfigById(final String appConfigId) throws CouldNotPerformException;
     
     public List<AppConfig> getAppConfigs() throws CouldNotPerformException;
+    
+     public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException;
     
     public void shutdown();
 }

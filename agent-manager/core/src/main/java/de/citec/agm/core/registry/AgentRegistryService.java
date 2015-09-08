@@ -11,7 +11,7 @@ import de.citec.jp.JPAgentConfigDatabaseDirectory;
 import de.citec.jp.JPAgentRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -27,6 +27,8 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
@@ -172,5 +174,10 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
     @Override
     public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException {
         return agentConfigRegistry.getMessages();
+    }
+
+    @Override
+    public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(agentConfigRegistry.isReadOnly());
     }
 }

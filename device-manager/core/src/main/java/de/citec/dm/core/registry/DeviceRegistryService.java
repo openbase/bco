@@ -5,7 +5,7 @@
  */
 package de.citec.dm.core.registry;
 
-import de.citec.dm.core.consistency.DeviceConfigDeviceClassConsistencyHandler;
+import de.citec.dm.core.consistency.DeviceConfigDeviceClassIdConsistencyHandler;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.dm.core.consistency.DeviceIdConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceLabelConsistencyHandler;
@@ -16,18 +16,20 @@ import de.citec.dm.core.consistency.DeviceScopeConsistencyHandler;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
 import de.citec.dm.core.consistency.ServiceConfigUnitIdConsistencyHandler;
-import de.citec.dm.core.consistency.TransformationConsistencyHandler;
 import de.citec.dm.core.consistency.UnitIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitScopeConsistencyHandler;
-import de.citec.dm.core.consistency.UnitTemplateConsistencyHandler;
+import de.citec.dm.core.consistency.UnitTemplateValidationConsistencyHandler;
+import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
+import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jp.JPUnitTemplateDatabaseDirectory;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.pattern.Observable;
@@ -39,9 +41,7 @@ import java.util.List;
 import java.util.Map;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
@@ -53,6 +53,10 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -63,10 +67,12 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
     }
 
+    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
 
@@ -77,6 +83,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         super(DeviceRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+            unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
@@ -90,24 +97,35 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassConsistencyHandler(deviceClassRegistry));
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new UnitTemplateConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler());
-            deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote));
-            deviceConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler(deviceClassRegistry));
+            deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
+            unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
+            
+            
+            unitTemplateRegistry.addPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+            
+            unitTemplateRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>>() {
 
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) throws Exception {
+                    notifyChange();
+                }
+            });
+            
             deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
                 @Override
@@ -115,6 +133,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
                     notifyChange();
                 }
             });
+            
             deviceConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>>() {
 
                 @Override
@@ -175,7 +194,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(logger, ex);
         }
     }
 
@@ -187,6 +206,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     @Override
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.register(deviceConfig);
+    }
+
+    @Override
+    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+        return unitTemplateRegistry.get(unitTemplateId).getMessage();
     }
 
     @Override
@@ -217,8 +241,23 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
+    public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+        return unitTemplateRegistry.contains(unitTemplateId);
+    }
+
+    @Override
+    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+        return unitTemplateRegistry.contains(unitTemplate);
+    }
+
+    @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfig);
+    }
+
+    @Override
+    public UnitTemplate updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+        return unitTemplateRegistry.update(unitTemplate);
     }
 
     @Override
@@ -257,6 +296,11 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
+    public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
+        return unitTemplateRegistry.getMessages();
+    }
+
+    @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
         return deviceClassRegistry.getMessages();
     }
@@ -282,5 +326,30 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigs;
+    }
+
+    @Override
+    public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
+        for(UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
+            if(unitTemplate.getType() == type) {
+                return unitTemplate;
+            }
+        }
+        throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
+    }
+
+    @Override
+    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(unitTemplateRegistry.isReadOnly());
+    }
+
+    @Override
+    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(deviceClassRegistry.isReadOnly());
+    }
+
+    @Override
+    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(deviceConfigRegistry.isReadOnly());
     }
 }

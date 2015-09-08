@@ -10,7 +10,7 @@
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>apm</artifactId>
-        <version>0.4.0</version>
+        <version>0.5.0</version>
     </parent>
     
     <url>http://maven.apache.org</url>
@@ -92,9 +92,10 @@
             <version>${global.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>${global.rst.artifact}</artifactId>
-            <version>${global.rst.version}</version>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.extension.rst</artifactId>
+            <version>${global.jul.version}</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>rct</groupId>

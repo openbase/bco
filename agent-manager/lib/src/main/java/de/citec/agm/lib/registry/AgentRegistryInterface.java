@@ -7,6 +7,7 @@ package de.citec.agm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
+import java.util.concurrent.Future;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
@@ -28,6 +29,8 @@ public interface AgentRegistryInterface {
     public AgentConfig getAgentConfigById(final String agentConfigId) throws CouldNotPerformException;
     
     public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException;
+    
+     public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
 
     public void shutdown();
 }

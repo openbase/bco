@@ -15,7 +15,7 @@ import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.pattern.Observable;
@@ -26,12 +26,15 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.lm.core.consistency.LocationLoopConsistencyHandler;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
 import de.citec.lm.core.consistency.TransformationConsistencyHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
@@ -81,6 +84,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>>() {
 
                 @Override
@@ -196,5 +200,10 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             serviceConfigList.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigList;
+    }
+
+    @Override
+    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(locationConfigRegistry.isReadOnly());
     }
 }

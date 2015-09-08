@@ -10,14 +10,15 @@ import de.citec.jp.JPSceneDatabaseDirectory;
 import de.citec.jp.JPSceneClassDatabaseDirectory;
 import de.citec.jp.JPSceneConfigDatabaseDirectory;
 import de.citec.jp.JPSceneRegistryScope;
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,7 @@ public class SceneManager {
         JPService.registerProperty(JPSceneConfigDatabaseDirectory.class);
         JPService.registerProperty(JPSceneClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.parseAndExitOnError(args);
 

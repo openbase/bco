@@ -9,14 +9,18 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.extension.rst.processing.MetaConfigProcessor;
 import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.storage.registry.EntryModification;
+import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import de.citec.lm.remote.LocationRegistryRemote;
+import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.binding.BindingTypeHolderType.BindingTypeHolder.BindingType;
+import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.OpenHABBindingServiceConfigType.OpenHABBindingServiceConfig;
+import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -29,11 +33,14 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
 
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
+    public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
 
     private final LocationRegistryRemote locationRegistryRemote;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
 
-    public OpenhabServiceConfigItemIdConsistenyHandler(final LocationRegistryRemote locationRegistryRemote) {
+    public OpenhabServiceConfigItemIdConsistenyHandler(final LocationRegistryRemote locationRegistryRemote, ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
         this.locationRegistryRemote = locationRegistryRemote;
+        this.deviceClassRegistry = deviceClassRegistry;
     }
 
     @Override
@@ -52,19 +59,30 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
                 }
 
                 if (serviceConfig.getBindingServiceConfig().getType().equals(BindingType.OPENHAB)) {
+                    String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId()).getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistryRemote.getLocationConfigById(entry.getMessage().getPlacementConfig().getLocationId()));
 
-                    OpenHABBindingServiceConfig.Builder openHABServiceConfig;
-                    if (!serviceConfig.getBindingServiceConfig().hasOpenhabBindingServiceConfig()) {
-                        openHABServiceConfig = OpenHABBindingServiceConfig.newBuilder();
-                    } else {
-                        openHABServiceConfig = serviceConfig.getBindingServiceConfig().getOpenhabBindingServiceConfig().toBuilder();
-                    }
-
-                    if (!openHABServiceConfig.hasItemId() || openHABServiceConfig.getItemId().isEmpty() || !openHABServiceConfig.getItemId().equals(generateItemName(entry.getMessage(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistryRemote.getLocationConfigById(entry.getMessage().getPlacementConfig().getLocationId())))) {
-                        openHABServiceConfig.setItemId(generateItemName(entry.getMessage(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistryRemote.getLocationConfigById(entry.getMessage().getPlacementConfig().getLocationId())));
+                    boolean itemEntryFound = false;
+                    
+                    MetaConfig metaConfig;
+                    
+                    // check if meta config already exist, otherwise create one.
+                    if(!serviceConfig.getBindingServiceConfig().hasMetaConfig()) {
+                        serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(MetaConfig.getDefaultInstance()));
                         modification = true;
                     }
-                    serviceConfig = serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setOpenhabBindingServiceConfig(openHABServiceConfig));
+                    
+                    metaConfig = serviceConfig.getBindingServiceConfig().getMetaConfig();
+                    
+                    String configuredItemId = "";
+                    try {
+                        configuredItemId = MetaConfigProcessor.getValue(metaConfig, OPENHAB_BINDING_ITEM_ID);
+                    } catch(NotAvailableException ex) {}
+                    
+                    if(!configuredItemId.equals(itemId)) {
+                        metaConfig = MetaConfigProcessor.setValue(metaConfig, OPENHAB_BINDING_ITEM_ID, itemId);
+                        serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(metaConfig));
+                        modification = true;
+                    }
                 }
                 unitConfig.addServiceConfig(serviceConfig);
             }
@@ -76,7 +94,7 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
         }
     }
 
-    public static String generateItemName(final DeviceConfig device, final UnitConfig unit, final ServiceConfig service, final LocationConfig location) throws CouldNotPerformException {
+    public static String generateItemName(final DeviceConfig device, final String deviceClassLabel, final UnitConfig unit, final ServiceConfig service, final LocationConfig location) throws CouldNotPerformException {
         if (device == null) {
             throw new NotAvailableException("deviceconfig");
         }
@@ -89,11 +107,11 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
             throw new NotAvailableException("serviceconfig");
         }
 
-        return StringProcessor.transformToIdString(device.getDeviceClass().getLabel())
+        return StringProcessor.transformToIdString(deviceClassLabel)
                 + ITEM_SEGMENT_DELIMITER
                 + generateLocationId(location)
                 + ITEM_SEGMENT_DELIMITER
-                + StringProcessor.transformUpperCaseToCamelCase(unit.getTemplate().getType().toString())
+                + StringProcessor.transformUpperCaseToCamelCase(unit.getType().toString())
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformToIdString(unit.getLabel())
                 + ITEM_SEGMENT_DELIMITER

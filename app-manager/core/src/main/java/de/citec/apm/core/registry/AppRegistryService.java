@@ -11,7 +11,7 @@ import de.citec.jp.JPAppConfigDatabaseDirectory;
 import de.citec.jp.JPAppRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -27,6 +27,8 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
@@ -158,5 +160,10 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
     @Override
     public List<AppConfig> getAppConfigs() throws CouldNotPerformException {
         return appConfigRegistry.getMessages();
+    }
+
+    @Override
+    public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(appConfigRegistry.isReadOnly());
     }
 }

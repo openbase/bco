@@ -10,13 +10,14 @@ import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPLocationDatabaseDirectory;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jul.storage.jp.JPInitializeDB;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,8 @@ public class LocationManager {
         JPService.registerProperty(JPLocationDatabaseDirectory.class);
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
-
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+        
         JPService.parseAndExitOnError(args);
 
         try {

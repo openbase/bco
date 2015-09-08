@@ -9,26 +9,23 @@ import de.citec.scm.lib.generator.SceneConfigIdGenerator;
 import de.citec.scm.lib.registry.SceneRegistryInterface;
 import de.citec.jp.JPSceneRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceTypeHolderType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -60,7 +57,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         super.activate();
         try {
             notifyUpdated(requestStatus());
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
         }
     }
@@ -68,6 +65,10 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     @Override
     public void notifyUpdated(final SceneRegistry data) throws CouldNotPerformException {
         sceneConfigRemoteRegistry.notifyRegistryUpdated(data.getSceneConfigList());
+    }
+
+    public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRemoteRegistry() {
+        return sceneConfigRemoteRegistry;
     }
 
     @Override
@@ -120,5 +121,17 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         getData();
         List<SceneConfig> messages = sceneConfigRemoteRegistry.getMessages();
         return messages;
+    }
+
+    @Override
+    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(Boolean.class, this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the scene config registry!!", ex);
+        }
     }
 }

@@ -17,22 +17,22 @@ import java.io.File;
  *
  * @author mpohling
  */
-public class JPSceneClassDatabaseDirectory extends AbstractJPDirectory {
+public class JPUnitTemplateDatabaseDirectory extends AbstractJPDirectory {
 
-	public final static String[] COMMAND_IDENTIFIERS = {"--scene-class-db"};
+	public final static String[] COMMAND_IDENTIFIERS = {"--unit-template-db"};
 	
-	public JPSceneClassDatabaseDirectory() {
+	public JPUnitTemplateDatabaseDirectory() {
 		super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
 	}
 
     @Override
     public File getParentDirectory() {
-        return JPService.getProperty(JPSceneDatabaseDirectory.class).getValue();
+        return JPService.getProperty(JPDeviceDatabaseDirectory.class).getValue();
     }
     
 	@Override
 	protected File getPropertyDefaultValue() {
-		return new File("scene-class-db");
+		return new File("unit-template-db");
     }
 
     @Override
@@ -46,6 +46,6 @@ public class JPSceneClassDatabaseDirectory extends AbstractJPDirectory {
 
 	@Override
 	public String getDescription() {
-		return "Specifies the scene class database directory. Use  "+JPInitializeDB.COMMAND_IDENTIFIERS[0]+ " to auto create database directories.";
+		return "Specifies the unit template database directory. Use  "+JPInitializeDB.COMMAND_IDENTIFIERS[0]+ " to auto create database directories.";
 	}
 }
