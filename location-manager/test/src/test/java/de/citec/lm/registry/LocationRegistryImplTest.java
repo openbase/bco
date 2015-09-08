@@ -135,8 +135,7 @@ public class LocationRegistryImplTest {
     }
 
     /**
-     * Test if a root location is removed that the children become root
-     * locations.
+     * Test if a root location is removed that the children become root locations.
      *
      * @throws Exception
      */
@@ -144,6 +143,7 @@ public class LocationRegistryImplTest {
     public void testRootConsistency() throws Exception {
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
         LocationConfig registeredRoot = remote.registerLocationConfig(root);
+        remote.requestStatus();
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getRoot());
 
         LocationConfig child = LocationConfig.newBuilder().setLabel("TestChildLocation").setParentId(registeredRoot.getId()).build();
@@ -154,13 +154,13 @@ public class LocationRegistryImplTest {
         assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdCount() == 1);
 
         LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot);
+        remote.requestStatus();
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", remote.getLocationConfigById(registeredChild.getId()).getRoot());
     }
 
     /**
-     * Test if a root location becomes a child after it is set as a child of
-     * root locations.
+     * Test if a root location becomes a child after it is set as a child of root locations.
      *
      * @throws Exception
      */
@@ -169,13 +169,14 @@ public class LocationRegistryImplTest {
         String label = "Test2Living";
         LocationConfig living = LocationConfig.newBuilder().setLabel(label).build();
         LocationConfig registeredLiving = remote.registerLocationConfig(living);
+        remote.requestStatus();
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getRoot());
         assertEquals("Label has not been set", label, registeredLiving.getLabel());
 
         LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").addChildId(registeredLiving.getId()).build();
         LocationConfig registeredHome = remote.registerLocationConfig(home);
-        assertTrue("The new location isn't registered as a root location.", registeredHome.getRoot());
         remote.requestStatus();
+        assertTrue("The new location isn't registered as a root location.", registeredHome.getRoot());
         assertFalse("Root hasn't become a child location after setting its parent.", remote.getLocationConfigById(registeredLiving.getId()).getRoot());
     }
 
@@ -197,8 +198,7 @@ public class LocationRegistryImplTest {
     }
 
     /**
-     * Test if a a loop in the location configuration is detected by the
-     * consistency handler.
+     * Test if a a loop in the location configuration is detected by the consistency handler.
      *
      * @throws Exception
      */
@@ -216,7 +216,7 @@ public class LocationRegistryImplTest {
         try {
             LocationConfig secondChild = LocationConfig.newBuilder().setLabel(SecondChildLabel).setParentId(root.getId()).addChildId(root.getId()).build();
             secondChild = remote.registerLocationConfig(secondChild);
-            Assert.fail("No exception when registering locatio whith a loop [" + secondChild + "]");
+            Assert.fail("No exception when registering location with a loop [" + secondChild + "]");
         } catch (Exception ex) {
         }
     }
