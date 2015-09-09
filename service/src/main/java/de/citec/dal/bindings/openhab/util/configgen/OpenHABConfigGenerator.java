@@ -5,7 +5,6 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen;
 
-import static de.citec.dal.DALService.APP_NAME;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABConfiguration;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABDistribution;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;

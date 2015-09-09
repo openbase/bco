@@ -11,6 +11,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.ProtobufVariableProvider;
 import de.citec.jul.extension.rst.processing.MetaConfigPool;
 import de.citec.jul.processing.StringProcessor;
@@ -80,6 +81,7 @@ public class ItemEntry {
             this.groups = new ArrayList<>();
 
             configPool = new MetaConfigPool();
+            configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingServiceConfig().getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
@@ -88,17 +90,18 @@ public class ItemEntry {
             configPool.register(new ProtobufVariableProvider(deviceConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
+            
 
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
             }
 
             try {
                 this.itemId = configPool.getValue(OPENHAB_BINDING_ITEM_ID);
             } catch (NotAvailableException ex) {
-                throw new NotAvailableException("itemId");
+                throw new NotAvailableException("itemId", ex);
             }
 
             try {
