@@ -90,7 +90,6 @@ public class ItemEntry {
             configPool.register(new ProtobufVariableProvider(deviceConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
-            
 
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
@@ -163,7 +162,8 @@ public class ItemEntry {
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit config.
+     * Lookups the service template of the given ServiceType out of the unit
+     * config.
      *
      * @param unitConfig to lookup service template.
      * @param serviceConfig the service config providing the service type.
@@ -174,7 +174,8 @@ public class ItemEntry {
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit template.
+     * Lookups the service template of the given ServiceType out of the unit
+     * template.
      *
      * @param unitTemplate to lookup the service template.
      * @param serviceType the service type to resolve the template.
@@ -330,6 +331,8 @@ public class ItemEntry {
             case SMOKE_ALARM_STATE_PROVIDER:
             case SMOKE_STATE_PROVIDER:
             case TEMPERATURE_ALARM_STATE_PROVIDER:
+            case TARGET_TEMPERATURE_PROVIDER:
+            case TARGET_TEMPERATURE_SERVICE:
                 return "Number";
             case SHUTTER_PROVIDER:
             case SHUTTER_SERVICE:
