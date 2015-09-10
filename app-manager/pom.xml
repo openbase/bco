@@ -4,7 +4,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>apm</artifactId>
-    <name>AppManager</name>
+    <name>REM AppManager</name>
     <description>AppManager</description>
     
     <packaging>pom</packaging>

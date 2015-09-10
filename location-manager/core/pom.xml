@@ -5,7 +5,7 @@
     <artifactId>lm.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>LocationManager Core</name>
+    <name>REM LocationManager Core</name>
     
     <parent>
         <groupId>de.citec</groupId>

@@ -4,7 +4,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>agm</artifactId>
-    <name>AgentManager</name>
+    <name>REM AgentManager</name>
     <description>AgentManager</description>
     
     <packaging>pom</packaging>

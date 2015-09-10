@@ -48,6 +48,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
@@ -87,12 +88,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
-            locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
-
-                @Override
-                public void update(Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
-                    deviceConfigRegistry.checkConsistency();
-                }
+            locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
+                deviceConfigRegistry.checkConsistency();
             };
 
             locationRegistryRemote = new LocationRegistryRemote();
@@ -114,32 +111,19 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
-            
-            
+
             unitTemplateRegistry.addPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
-            
-            unitTemplateRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>>() {
 
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) throws Exception {
-                    notifyChange();
-                }
+            unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
+                notifyChange();
             });
-            
-            deviceClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>>() {
 
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) throws Exception {
-                    notifyChange();
-                }
+            deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
+                notifyChange();
             });
-            
-            deviceConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>>() {
 
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
+            deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) -> {
+                notifyChange();
             });
 
         } catch (CouldNotPerformException ex) {
@@ -161,17 +145,23 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
+        
+        try {
+            unitTemplateRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+        }
 
         try {
             deviceClassRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
 
         try {
             deviceConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
     }
 
@@ -191,10 +181,14 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.shutdown();
         }
 
+        if (unitTemplateRegistry != null) {
+            unitTemplateRegistry.shutdown();
+        }
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
     }
 
@@ -330,8 +324,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
-        for(UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
-            if(unitTemplate.getType() == type) {
+        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
+            if (unitTemplate.getType() == type) {
                 return unitTemplate;
             }
         }

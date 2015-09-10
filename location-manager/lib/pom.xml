@@ -5,7 +5,7 @@
     <artifactId>lm.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>LocationManager Library</name>
+    <name>REM LocationManager Library</name>
     
     <parent>
         <groupId>de.citec</groupId>

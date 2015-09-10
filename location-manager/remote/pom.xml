@@ -5,7 +5,7 @@
     <artifactId>lm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>LocationManager Remote</name>
+    <name>REM LocationManager Remote</name>
     
     <parent>
         <groupId>de.citec</groupId>

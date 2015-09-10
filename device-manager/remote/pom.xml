@@ -5,7 +5,7 @@
     <artifactId>dm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceManager Remote</name>
+    <name>REM DeviceManager Remote</name>
     
     <parent>
         <groupId>de.citec</groupId>

@@ -5,7 +5,7 @@
     <artifactId>agm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>AgentManager Remote</name>
+    <name>REM AgentManager Remote</name>
     
     <parent>
         <groupId>de.citec</groupId>

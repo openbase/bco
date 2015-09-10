@@ -5,7 +5,7 @@
     <artifactId>dm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceManager Test</name>
+    <name>REM DeviceManager Test</name>
     
     <parent>
         <groupId>de.citec</groupId>

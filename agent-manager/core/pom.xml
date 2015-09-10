@@ -5,7 +5,7 @@
     <artifactId>agm.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>AgentManager Core</name>
+    <name>REM AgentManager Core</name>
     
     <parent>
         <groupId>de.citec</groupId>

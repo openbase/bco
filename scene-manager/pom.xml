@@ -4,7 +4,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>scm</artifactId>
-    <name>SceneManager</name>
+    <name>REM SceneManager</name>
     <description>SceneManager</description>
     
     <packaging>pom</packaging>

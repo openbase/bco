@@ -5,7 +5,7 @@
     <artifactId>dm.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceManager Library</name>
+    <name>REM DeviceManager Library</name>
     
     <parent>
         <groupId>de.citec</groupId>

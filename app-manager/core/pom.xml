@@ -5,7 +5,7 @@
     <artifactId>apm.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>AppManager Core</name>
+    <name>REM AppManager Core</name>
     
     <parent>
         <groupId>de.citec</groupId>

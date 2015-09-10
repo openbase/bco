@@ -5,7 +5,7 @@
     <artifactId>dm.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceManager Core</name>
+    <name>REM DeviceManager Core</name>
     
     <parent>
         <groupId>de.citec</groupId>

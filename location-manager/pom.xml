@@ -5,7 +5,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>lm</artifactId>
-    <name>LocationManager</name>
+    <name>REM LocationManager</name>
     <description>LocationManager</description>
     
     <packaging>pom</packaging>

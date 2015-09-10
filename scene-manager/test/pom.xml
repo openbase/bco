@@ -5,7 +5,7 @@
     <artifactId>scm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>SceneManager Test</name>
+    <name>REM SceneManager Test</name>
     
     <parent>
         <groupId>de.citec</groupId>

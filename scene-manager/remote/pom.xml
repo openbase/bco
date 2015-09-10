@@ -5,7 +5,7 @@
     <artifactId>scm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>SceneManager Remote</name>
+    <name>REM SceneManager Remote</name>
     
     <parent>
         <groupId>de.citec</groupId>

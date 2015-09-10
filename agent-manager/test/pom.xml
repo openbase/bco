@@ -5,7 +5,7 @@
     <artifactId>agm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>AgentManager Test</name>
+    <name>REM AgentManager Test</name>
     
     <parent>
         <groupId>de.citec</groupId>

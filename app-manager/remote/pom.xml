@@ -5,7 +5,7 @@
     <artifactId>apm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>AppManager Remote</name>
+    <name>REM AppManager Remote</name>
     
     <parent>
         <groupId>de.citec</groupId>

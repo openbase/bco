@@ -5,7 +5,7 @@
     <artifactId>apm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>AppManager Test</name>
+    <name>REM AppManager Test</name>
     
     <parent>
         <groupId>de.citec</groupId>

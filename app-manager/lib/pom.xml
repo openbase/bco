@@ -5,7 +5,7 @@
     <artifactId>apm.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>AppManager Library</name>
+    <name>REM AppManager Library</name>
     
     <parent>
         <groupId>de.citec</groupId>

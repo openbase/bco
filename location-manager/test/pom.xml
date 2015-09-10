@@ -5,7 +5,7 @@
     <artifactId>lm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>LocationManager Test</name>
+    <name>REM LocationManager Test</name>
     
     <parent>
         <groupId>de.citec</groupId>
