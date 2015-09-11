@@ -87,10 +87,9 @@
             <version>${global.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
-            <artifactId>jul.extension.rst</artifactId>
-            <version>${global.jul.version}</version>
-            <type>pom</type>
+            <groupId>rsb</groupId>
+            <artifactId>${global.rst.sandbox.artifact}</artifactId>
+            <version>${global.rst.sandbox.version}</version>
         </dependency>
         <dependency>
             <groupId>rct</groupId>
