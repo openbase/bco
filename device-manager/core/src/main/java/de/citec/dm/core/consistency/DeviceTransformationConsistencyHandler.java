@@ -71,17 +71,18 @@ public class DeviceTransformationConsistencyHandler implements ProtoBufRegistryC
             throw new NotAvailableException("unitconfig.placement.locationid");
         }
 
-        
-        // publish device transformation
-        logger.info("Publish "+deviceConfig.getPlacementConfig().getLocationId()+" to "+deviceConfig.getId());
-        Transform transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationId(), deviceConfig.getId());
+        Transform transformation;
 
-        
-        try {
-            
-            transformPublisher.sendTransform(transformation, TransformType.STATIC);
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+        // publish device transformation
+        if (isTransformationPresent(deviceConfig.getPlacementConfig().getPosition())) {
+            logger.info("Publish " + deviceConfig.getPlacementConfig().getLocationId() + " to " + deviceConfig.getId());
+            transformation = transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationId(), deviceConfig.getId());
+
+            try {
+                transformPublisher.sendTransform(transformation, TransformType.STATIC);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+            }
         }
 
         // publish unit transformation
@@ -99,12 +100,14 @@ public class DeviceTransformationConsistencyHandler implements ProtoBufRegistryC
                 throw new NotAvailableException("unitconfig.placement.locationid");
             }
 
-            transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationId(), unitConfig.getId());
+            if (isTransformationPresent(unitConfig.getPlacementConfig().getPosition())) {
+                transformation = transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationId(), unitConfig.getId());
 
-            try {
-                transformPublisher.sendTransform(transformation, TransformType.STATIC);
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+                try {
+                    transformPublisher.sendTransform(transformation, TransformType.STATIC);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex));
+                }
             }
         }
     }
@@ -118,6 +121,25 @@ public class DeviceTransformationConsistencyHandler implements ProtoBufRegistryC
         Transform3D transform3D = new Transform3D(jRotation, jTranslation, 1.0);
         Transform transform = new Transform(transform3D, frameParent, frameChild, System.currentTimeMillis());
         return transform;
+    }
+
+    /**
+     * Check if given pose is neutral.
+     * @param position
+     * @return 
+     */
+    private boolean isTransformationPresent(final PoseType.Pose position) {
+        if (!position.hasRotation() && !position.hasTranslation()) {
+            return false;
+        }
+
+        return !(position.getTranslation().getX() == 0.0
+                && position.getTranslation().getY() == 0.0
+                && position.getTranslation().getZ() == 0.0
+                && position.getRotation().getQw() == 1.0
+                && position.getRotation().getQx() == 0.0
+                && position.getRotation().getQy() == 0.0
+                && position.getRotation().getQx() == 0.0);
     }
 
     @Override
