@@ -7,10 +7,13 @@ package de.citec.dal.registry;
 
 import de.citec.dal.hal.device.DeviceFactory;
 import de.citec.dm.remote.DeviceRegistryRemote;
+import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPTestMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.ProtobufListDiff;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -63,12 +66,15 @@ public class DeviceRegistrySynchronizer {
         }
     }
 
-    public void init() {
+    public void init() throws CouldNotPerformException {
         this.remoteRegistry.addObserver(remoteChangeObserver);
         try {
             this.internalSync();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Initial sync failed!", ex));
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial sync failed!", ex), logger, LogLevel.ERROR);
+            if (JPService.getProperty(JPTestMode.class).getValue()) {
+                throw ex;
+            }
         }
     }
 
