@@ -69,8 +69,14 @@ public final class OpenhabCommandTransformer {
             case STOPMOVE:
                 return StopMoveStateTransformer.transform(command.getStopMove().getState());
             case STRING:
-                // native string type
-                return command.getText();
+                switch (serviceType) {
+                    case HANDLE_PROVIDER:
+                        return HandleStateTransformer.transform(command.getText());
+                    default:
+                        // native string type
+                        return command.getText();
+                }
+
             case UPDOWN:
                 return UpDownStateTransformer.transform(command.getUpDown().getState());
             default:
