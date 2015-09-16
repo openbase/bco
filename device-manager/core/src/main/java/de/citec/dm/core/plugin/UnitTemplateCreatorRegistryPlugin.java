@@ -32,8 +32,11 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
             UnitTemplate template;
 
             // create missing unit template
-            if (registry.size() != UnitTemplate.UnitType.values().length) {
+            if (registry.size() <= UnitTemplate.UnitType.values().length -1) {
                 for (UnitType unitType : UnitType.values()) {
+                    if(unitType == UnitType.UNKNOWN) {
+                        continue;
+                    }
                     template = UnitTemplate.newBuilder().setType(unitType).build();
                     templateId = registry.getIdGenerator().generateId(template);
                     if (!registry.contains(templateId)) {

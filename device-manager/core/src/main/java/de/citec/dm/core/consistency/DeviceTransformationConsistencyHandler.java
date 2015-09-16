@@ -35,14 +35,14 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class TransformationConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfigType.DeviceConfig, DeviceConfig.Builder> {
+public class DeviceTransformationConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfigType.DeviceConfig, DeviceConfig.Builder> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    public TransformationConsistencyHandler() throws InstantiationException {
+    public DeviceTransformationConsistencyHandler() throws InstantiationException {
         try {
             this.transformerFactory = TransformerFactory.getInstance();
             this.transformPublisher = transformerFactory.createTransformPublisher(DeviceManager.APP_NAME);

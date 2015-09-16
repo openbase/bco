@@ -13,9 +13,11 @@ import de.citec.dm.core.consistency.DeviceLocationIdConsistencyHandler;
 import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
 import de.citec.dm.lib.generator.DeviceClassIdGenerator;
 import de.citec.dm.core.consistency.DeviceScopeConsistencyHandler;
+import de.citec.dm.core.consistency.DeviceTransformationConsistencyHandler;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
 import de.citec.dm.core.consistency.ServiceConfigUnitIdConsistencyHandler;
+import de.citec.dm.core.consistency.UnitBoundsToDeviceConsistencyHandler;
 import de.citec.dm.core.consistency.UnitIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
@@ -104,12 +106,15 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
+            deviceConfigRegistry.registerConsistencyHandler(new UnitBoundsToDeviceConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceTransformationConsistencyHandler());
+            
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
 
             unitTemplateRegistry.addPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
