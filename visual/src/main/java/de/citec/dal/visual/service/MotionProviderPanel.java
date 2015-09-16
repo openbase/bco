@@ -12,12 +12,17 @@ import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.processing.StringProcessor;
 import java.awt.Color;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
  * @author mpohling
  */
 public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
+
+    private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM);
 
     /**
      * Creates new form BrightnessService
@@ -37,6 +42,8 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
 
         motionStatePanel = new javax.swing.JPanel();
         motionStatusLabel = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        lastMovementValueLabel = new javax.swing.JLabel();
 
         motionStatePanel.setBackground(new java.awt.Color(204, 204, 204));
         motionStatePanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 5, true));
@@ -59,13 +66,22 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
             .addComponent(motionStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
         );
 
+        jLabel1.setText("Last Movement:");
+
+        lastMovementValueLabel.setText("N/A");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(motionStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(motionStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lastMovementValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -73,12 +89,18 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(motionStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(lastMovementValueLabel))
+                .addContainerGap(169, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel lastMovementValueLabel;
     private javax.swing.JPanel motionStatePanel;
     private javax.swing.JLabel motionStatusLabel;
     // End of variables declaration//GEN-END:variables
@@ -102,7 +124,13 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
                 default:
                     throw new InvalidStateException("State[" + getService().getMotion().getValue() + "] is unknown.");
             }
-            motionStatusLabel.setText("Current MotionState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getMotion().getValue().name()) + " last movement: "+getService().getMotion().getLastMovement());
+            motionStatusLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getService().getMotion().getValue().name()));
+            try {
+                lastMovementValueLabel.setText(dateFormat.format(new Date(getService().getMotion().getLastMovement().getTime())));
+            } catch (Exception ex) {
+                lastMovementValueLabel.setText("N/A");
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: ["+getService().getMotion().getLastMovement()+"]!",ex), logger, LogLevel.ERROR);
+            }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
