@@ -63,7 +63,7 @@ public class LocationRegistryImplTest {
         JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry"));
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
-        JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/db/"));
+        JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class, new File("location-config"));
         JPService.registerProperty(JPVerbose.class, true);
         JPService.setupJUnitTestMode();

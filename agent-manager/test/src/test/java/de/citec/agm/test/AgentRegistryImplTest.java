@@ -35,7 +35,7 @@ public class AgentRegistryImplTest {
 //        JPService.registerProperty(JPInitializeDB.class, true);
 //        JPService.registerProperty(JPAgentRegistryScope.class, new Scope("/test/agentmanager/registry/"));
 //        JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
-//        JPService.registerProperty(JPAgentDatabaseDirectory.class, new File("/tmp/db/"));
+//        JPService.registerProperty(JPAgentDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
 //        JPService.registerProperty(JPAgentConfigDatabaseDirectory.class, new File("agent-config"));
 //        JPService.registerProperty(JPAgentClassDatabaseDirectory.class, new File("agent-classes"));
 //        JPService.setupJUnitTestMode();

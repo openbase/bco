@@ -86,7 +86,7 @@ public class DeviceRegistryImplTest {
         JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
         JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/db/"));
+        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
@@ -191,11 +191,9 @@ public class DeviceRegistryImplTest {
     }
 
     /**
-     * Test of registerDeviceConfigWithUnits method, of class
-     * DeviceRegistryImpl.
+     * Test of registerDeviceConfigWithUnits method, of class DeviceRegistryImpl.
      *
-     * Test if the scope and the id of a device configuration and its units is
-     * set when registered.
+     * Test if the scope and the id of a device configuration and its units is set when registered.
      */
     @Test
     public void testRegisterDeviceConfigWithUnits() throws Exception {
@@ -228,8 +226,7 @@ public class DeviceRegistryImplTest {
     }
 
     /**
-     * Test of testRegiseredDeviceConfigWithoutLabel method, of class
-     * DeviceRegistryImpl.
+     * Test of testRegiseredDeviceConfigWithoutLabel method, of class DeviceRegistryImpl.
      */
     @Test
     public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
@@ -247,8 +244,7 @@ public class DeviceRegistryImplTest {
     }
 
     /**
-     * Test of testRegisterTwoDevicesWithSameLabel method, of class
-     * DeviceRegistryImpl.
+     * Test of testRegisterTwoDevicesWithSameLabel method, of class DeviceRegistryImpl.
      */
     @Test
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
@@ -302,7 +298,7 @@ public class DeviceRegistryImplTest {
     }
 
     private UnitConfig getUnitConfig(UnitType type, String label) {
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).setBoundToDevice(false).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
@@ -371,8 +367,8 @@ public class DeviceRegistryImplTest {
     @Test(timeout = 3000)
     public void testGetReadOnlyFlag() throws Exception {
         System.out.println("registerDeviceConfigPerRemote");
-        assertEquals(Boolean.FALSE,remote.isDeviceClassRegistryReadOnly().get());
-        assertEquals(Boolean.FALSE,remote.isDeviceConfigRegistryReadOnly().get());
-        assertEquals(Boolean.FALSE,remote.isUnitTemplateRegistryReadOnly().get());
+        assertEquals(Boolean.FALSE, remote.isDeviceClassRegistryReadOnly().get());
+        assertEquals(Boolean.FALSE, remote.isDeviceConfigRegistryReadOnly().get());
+        assertEquals(Boolean.FALSE, remote.isUnitTemplateRegistryReadOnly().get());
     }
 }

@@ -35,7 +35,7 @@ public class AppRegistryImplTest {
 //        JPService.registerProperty(JPInitializeDB.class, true);
 //        JPService.registerProperty(JPAppRegistryScope.class, new Scope("/test/appmanager/registry/"));
 //        JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
-//        JPService.registerProperty(JPAppDatabaseDirectory.class, new File("/tmp/db/"));
+//        JPService.registerProperty(JPAppDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
 //        JPService.registerProperty(JPAppConfigDatabaseDirectory.class, new File("app-config"));
 //        JPService.registerProperty(JPAppClassDatabaseDirectory.class, new File("app-classes"));
 //        JPService.setupJUnitTestMode();

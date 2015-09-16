@@ -36,7 +36,7 @@ public class SceneRegistryImplTest {
 //        JPService.registerProperty(JPInitializeDB.class, true);
 //        JPService.registerProperty(JPSceneRegistryScope.class, new Scope("/test/scenemanager/registry/"));
 //        JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
-//        JPService.registerProperty(JPSceneDatabaseDirectory.class, new File("/tmp/db/"));
+//        JPService.registerProperty(JPSceneDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
 //        JPService.registerProperty(JPSceneConfigDatabaseDirectory.class, new File("scene-config"));
 //        JPService.registerProperty(JPSceneClassDatabaseDirectory.class, new File("scene-classes"));
 //        JPService.setupJUnitTestMode();
