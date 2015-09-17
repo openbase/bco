@@ -17,6 +17,7 @@ import java.util.List;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
@@ -33,6 +34,9 @@ public class UnitBoundsToDeviceConsistencyHandler implements ProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
+        
+        boolean hasDuplicatedUnitType = checkDuplicatedUnitType(deviceConfig.build());
+        
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
@@ -52,9 +56,8 @@ public class UnitBoundsToDeviceConsistencyHandler implements ProtoBufRegistryCon
                     modification = true;
                 }
                 
-                
                 // copy labels
-                if (!unitConfig.getLabel().equals(deviceConfig.getLabel()) && !checkDuplicatedUnitType(deviceConfig.build())) {
+                if (!unitConfig.getLabel().equals(deviceConfig.getLabel()) && !hasDuplicatedUnitType) {
                     unitConfig.setLabel(deviceConfig.getLabel());
                     modification = true;
                 }
@@ -73,9 +76,9 @@ public class UnitBoundsToDeviceConsistencyHandler implements ProtoBufRegistryCon
      * @param deviceConfig
      * @return true if a duplicated unit type is detected.
      */
-    private boolean checkDuplicatedUnitType(final DeviceConfig deviceConfig) {
+    public static boolean checkDuplicatedUnitType(final DeviceConfig deviceConfig) {
         
-        List unitTypeList = new ArrayList();
+        List<UnitTemplateType.UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
         for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
             if(unitTypeList.contains(unitConfig.getType())) {
                 return true;
