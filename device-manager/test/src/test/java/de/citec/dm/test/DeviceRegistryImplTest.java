@@ -40,9 +40,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import rst.configuration.EntryType;
+import rst.configuration.MetaConfigType;
 import rst.geometry.PoseType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
+import rst.homeautomation.binding.BindingConfigType;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -51,6 +54,7 @@ import rst.homeautomation.service.BindingServiceConfigType.BindingServiceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -191,9 +195,11 @@ public class DeviceRegistryImplTest {
     }
 
     /**
-     * Test of registerDeviceConfigWithUnits method, of class DeviceRegistryImpl.
+     * Test of registerDeviceConfigWithUnits method, of class
+     * DeviceRegistryImpl.
      *
-     * Test if the scope and the id of a device configuration and its units is set when registered.
+     * Test if the scope and the id of a device configuration and its units is
+     * set when registered.
      */
     @Test
     public void testRegisterDeviceConfigWithUnits() throws Exception {
@@ -226,7 +232,8 @@ public class DeviceRegistryImplTest {
     }
 
     /**
-     * Test of testRegiseredDeviceConfigWithoutLabel method, of class DeviceRegistryImpl.
+     * Test of testRegiseredDeviceConfigWithoutLabel method, of class
+     * DeviceRegistryImpl.
      */
     @Test
     public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
@@ -244,7 +251,8 @@ public class DeviceRegistryImplTest {
     }
 
     /**
-     * Test of testRegisterTwoDevicesWithSameLabel method, of class DeviceRegistryImpl.
+     * Test of testRegisterTwoDevicesWithSameLabel method, of class
+     * DeviceRegistryImpl.
      */
     @Test
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
@@ -262,6 +270,38 @@ public class DeviceRegistryImplTest {
             fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
         } catch (Exception ex) {
             assertTrue(true);
+        }
+    }
+
+    @Test
+    public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
+        UnitTemplate unitTemplate = deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.AMBIENT_LIGHT).addServiceType(ServiceType.BATTERY_PROVIDER).addServiceType(ServiceType.COLOR_SERVICE).build());
+        assertTrue(unitTemplate.getServiceTypeList().contains(ServiceType.BATTERY_PROVIDER));
+        assertTrue(unitTemplate.getServiceTypeList().contains(ServiceType.COLOR_SERVICE));
+        assertTrue(unitTemplate.getType() == UnitType.AMBIENT_LIGHT);
+
+        String serialNumber1 = "5073";
+        String deviceLabel = "thisIsARandomLabel12512";
+        BindingConfigType.BindingConfig bindingConfig = BindingConfigType.BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("unitTest", "423112358", "company").toBuilder().setBindingConfig(bindingConfig).build());
+
+        MetaConfigType.MetaConfig metaConfig = MetaConfigType.MetaConfig.newBuilder().addEntry(EntryType.Entry.newBuilder().setKey("testKey")).build();
+        ServiceConfig serviceConfig1 = getServiceConfig(ServiceType.UNKNOWN);
+        ServiceConfig serviceConfig2 = getServiceConfig(ServiceType.BATTERY_PROVIDER).toBuilder().setMetaConfig(metaConfig).build();
+        ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
+        unitConfigs.add(getUnitConfig(UnitType.AMBIENT_LIGHT, "alsdkhuehlfai").toBuilder().addServiceConfig(serviceConfig1).addServiceConfig(serviceConfig2).build());
+        DeviceConfig localDeviceConfig = getDeviceConfig(deviceLabel, serialNumber1, clazz, unitConfigs);
+
+        localDeviceConfig = deviceRegistry.registerDeviceConfig(localDeviceConfig);
+        assertTrue(localDeviceConfig.getUnitConfigCount() == 1);
+        assertTrue(localDeviceConfig.getUnitConfig(0).getServiceConfigCount() == 2);
+        UnitConfig unit = localDeviceConfig.getUnitConfig(0);
+        assertTrue(unit.getServiceConfig(0).getType() == ServiceType.BATTERY_PROVIDER || unit.getServiceConfig(0).getType() == ServiceType.COLOR_SERVICE);
+        assertTrue(unit.getServiceConfig(1).getType() == ServiceType.BATTERY_PROVIDER || unit.getServiceConfig(1).getType() == ServiceType.COLOR_SERVICE);
+        if (unit.getServiceConfig(0).getType() == ServiceType.BATTERY_PROVIDER) {
+            assertEquals(metaConfig, unit.getServiceConfig(0).getMetaConfig());
+        } else if (unit.getServiceConfig(1).getType() == ServiceType.BATTERY_PROVIDER) {
+            assertEquals(metaConfig, unit.getServiceConfig(1).getMetaConfig());
         }
     }
 
@@ -307,6 +347,10 @@ public class DeviceRegistryImplTest {
 
     private DeviceClass getDeviceClass(String label, String productNumber, String company) {
         return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).build();
+    }
+
+    private ServiceConfig getServiceConfig(ServiceType type) {
+        return ServiceConfig.newBuilder().setType(type).setBindingServiceConfig(BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.SINACT).build()).build();
     }
 
     /**
