@@ -12,6 +12,8 @@ import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
+import java.util.ArrayList;
+import java.util.List;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.BindingServiceConfigType;
@@ -25,17 +27,19 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public class UnitConfigUnitTemplateConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
-    
+
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
-    
+
+    List<String> idList = new ArrayList();
+
     public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
-    
+
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
-        
+
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : deviceConfig.getUnitConfigBuilderList()) {
             UnitTemplate unitTemplate = unitTemplateRegistry.get(unitConfig.getType().toString()).getMessage();
@@ -45,7 +49,7 @@ public class UnitConfigUnitTemplateConsistencyHandler implements ProtoBufRegistr
                     modification = true;
                 }
             }
-            
+
             for (int i = 0; i < unitConfig.getServiceConfigCount(); i++) {
                 if (!unitTemplate.getServiceTypeList().contains(unitConfig.getServiceConfig(i).getType())) {
                     unitConfig.removeServiceConfig(i);
@@ -54,16 +58,16 @@ public class UnitConfigUnitTemplateConsistencyHandler implements ProtoBufRegistr
                 }
             }
         }
-        
+
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
         }
     }
-    
+
     @Override
     public void reset() {
     }
-    
+
     private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceType serviceType) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
             if (serviceConfig.getType() == serviceType) {
