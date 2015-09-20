@@ -58,7 +58,17 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTargetTemperature(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply target temperature Update[" + value + "] for " + this + "!", ex);
+        }
+    }
+    
+    public void updateTemperature(final Double value) throws CouldNotPerformException {
+        logger.debug("Apply actual temperature Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setActualTemperature(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply actual temperature Update[" + value + "] for " + this + "!", ex);
         }
     }
 
