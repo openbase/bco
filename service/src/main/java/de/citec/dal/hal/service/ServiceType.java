@@ -44,6 +44,7 @@ public enum ServiceType {
     HANDLE(HandleProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_PROVIDER),
     TAMPER(TamperProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_PROVIDER),
     TEMPERATURE(TemperatureProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_PROVIDER),
+    TARGET_TEMPERATURE(TargetTemperatureService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE),
     POWER(PowerService.class, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_SERVICE),
     SHUTTER(ShutterService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE),
     OPENING_RATIO(OpeningRatioService.class, ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER),
@@ -53,6 +54,7 @@ public enum ServiceType {
     SMOKE_ALARM_STATE(SmokeAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
     TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
     SMOKE_STATE(SmokeStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_PROVIDER);
+    
 
     public static final String SET = "set";
     public static final String UPDATE = "update";

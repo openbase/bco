@@ -5,10 +5,10 @@
  */
 package de.citec.dal.visual.service;
 
-import de.citec.dal.hal.provider.PowerConsumptionProvider;
 import de.citec.dal.hal.provider.TemperatureProvider;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
 import java.text.DecimalFormat;
 
 /**
@@ -37,12 +37,12 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperaturePr
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        temperatureValueLabe = new javax.swing.JLabel();
+        temperatureValueLabel = new javax.swing.JLabel();
 
         jLabel1.setText("Temperatur");
 
-        temperatureValueLabe.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        temperatureValueLabe.setText("0.0");
+        temperatureValueLabel.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        temperatureValueLabel.setText("0.0");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -52,7 +52,7 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperaturePr
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(temperatureValueLabe, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                .addComponent(temperatureValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -61,7 +61,7 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperaturePr
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(temperatureValueLabe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(temperatureValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -69,15 +69,15 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperaturePr
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel temperatureValueLabe;
+    private javax.swing.JLabel temperatureValueLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
         try {
-            temperatureValueLabe.setText(numberFormat.format(getService().getTemperature()) + " °C");
+            temperatureValueLabel.setText(numberFormat.format(getService().getTemperature()) + " °C");
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
     }
 }

@@ -8,10 +8,9 @@ package de.citec.dal.visual.service;
 import de.citec.dal.hal.service.TargetTemperatureService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.printer.LogLevel;
 import java.text.DecimalFormat;
 import java.util.concurrent.Callable;
-import rst.homeautomation.state.StandbyStateType;
 
 /**
  *
@@ -38,18 +37,32 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        temperatureValueTextField = new javax.swing.JTextField();
+        setTargetTemperatureValueTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        setTargetTemperatureLabel = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        currentTargetTemperatureValueTextField = new javax.swing.JTextField();
 
-        jLabel1.setText("TargetTemperatur:");
+        jLabel1.setText("Current TargetTemperatur:");
 
-        temperatureValueTextField.addActionListener(new java.awt.event.ActionListener() {
+        setTargetTemperatureValueTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                temperatureValueTextFieldActionPerformed(evt);
+                setTargetTemperatureValueTextFieldActionPerformed(evt);
             }
         });
 
         jLabel2.setText("°C");
+
+        setTargetTemperatureLabel.setText("Set TargetTemperatur:");
+
+        jLabel4.setText("°C");
+
+        currentTargetTemperatureValueTextField.setEditable(false);
+        currentTargetTemperatureValueTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                currentTargetTemperatureValueTextFieldActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -57,54 +70,77 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(temperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(4, 4, 4)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(currentTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(setTargetTemperatureLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(setTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(temperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addContainerGap(46, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(currentTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel4))
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(setTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
+                    .addComponent(setTargetTemperatureLabel))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void temperatureValueTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_temperatureValueTextFieldActionPerformed
+    private void setTargetTemperatureValueTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setTargetTemperatureValueTextFieldActionPerformed
         execute(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
                 try {
-                    double value = Double.parseDouble(TOOL_TIP_TEXT_KEY);
+                    double value = Double.parseDouble(setTargetTemperatureValueTextField.getText());
                     getService().setTargetTemperature(value);
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set standby state!", ex));
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger, LogLevel.ERROR);
                 }
                 return null;
             }
         });
-    }//GEN-LAST:event_temperatureValueTextFieldActionPerformed
+    }//GEN-LAST:event_setTargetTemperatureValueTextFieldActionPerformed
+
+    private void currentTargetTemperatureValueTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_currentTargetTemperatureValueTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_currentTargetTemperatureValueTextFieldActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField currentTargetTemperatureValueTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JTextField temperatureValueTextField;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel setTargetTemperatureLabel;
+    private javax.swing.JTextField setTargetTemperatureValueTextField;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
         try {
-            temperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperature()));
+//            setTargetTemperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperature()));
+            currentTargetTemperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperature()));
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
     }
 }
