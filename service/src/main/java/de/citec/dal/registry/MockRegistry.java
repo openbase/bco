@@ -177,6 +177,9 @@ public class MockRegistry {
             deviceRemote.requestStatus();
             locationRemote.requestStatus();
 
+            for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                deviceRemote.updateUnitTemplate(template.getTemplate());
+            }
             registerLocations();
             registerDevices();
         } catch (Exception ex) {
