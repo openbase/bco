@@ -66,12 +66,8 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
 
-            deviceRegistryUpdateObserver = new Observer<DeviceRegistry>() {
-
-                @Override
-                public void update(Observable<DeviceRegistry> source, DeviceRegistry data) throws Exception {
-                    locationConfigRegistry.checkConsistency();
-                }
+            deviceRegistryUpdateObserver = (Observable<DeviceRegistry> source, DeviceRegistry data) -> {
+                locationConfigRegistry.checkConsistency();
             };
 
             deviceRegistryRemote = new DeviceRegistryRemote();
@@ -85,12 +81,8 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
-            locationConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
+            locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
+                notifyChange();
             });
 
         } catch (CouldNotPerformException ex) {

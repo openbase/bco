@@ -24,7 +24,6 @@ import de.citec.jul.storage.registry.RemoteRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -138,6 +137,24 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             }
         }
         throw new NotAvailableException(unitConfigId);
+    }
+
+    @Override
+    public UnitConfig[] getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
+        ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
+        getData();
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
+                if (unitConfig.getLabel().equals(unitConfigLabel)) {
+                    unitConfigs.add(unitConfig);
+                }
+            }
+        }
+        if (unitConfigs.isEmpty()) {
+            throw new NotAvailableException(unitConfigLabel);
+        }
+
+        return unitConfigs.toArray(new UnitConfig[unitConfigs.size()]);
     }
 
     @Override

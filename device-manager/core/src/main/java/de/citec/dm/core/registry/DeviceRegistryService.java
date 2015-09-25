@@ -235,6 +235,22 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         throw new NotAvailableException(unitConfigId);
     }
+    
+    @Override
+    public UnitConfig[] getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
+        ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
+        getData();
+        deviceConfigRegistry.getEntries().stream().forEach((deviceConfig) -> {
+            deviceConfig.getMessage().getUnitConfigList().stream().filter((unitConfig) -> (unitConfig.getLabel().equals(unitConfigLabel))).forEach((unitConfig) -> {
+                unitConfigs.add(unitConfig);
+            });
+        });
+        if (unitConfigs.isEmpty()) {
+            throw new NotAvailableException(unitConfigLabel);
+        }
+
+        return unitConfigs.toArray(new UnitConfig[unitConfigs.size()]);
+    }
 
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {

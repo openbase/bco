@@ -6,6 +6,7 @@
 package de.citec.dm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
 import java.util.List;
 import java.util.concurrent.Future;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -54,6 +55,8 @@ public interface DeviceRegistryInterface {
     public DeviceConfig getDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException;
     
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
+    
+    public UnitConfig[] getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException, NotAvailableException;
     
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
     
