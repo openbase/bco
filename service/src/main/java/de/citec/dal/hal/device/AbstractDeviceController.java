@@ -159,7 +159,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
             }
             registerUnit(unit);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could register Unit[" + unitConfig + "]!", ex);
+            throw new CouldNotPerformException("Could not register Unit[" + unitConfig + "]!", ex);
         }
     }
 
