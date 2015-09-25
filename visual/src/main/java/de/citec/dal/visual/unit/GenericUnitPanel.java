@@ -31,32 +31,28 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class GenericUnitPanel extends RSBRemoteView {
+public class GenericUnitPanel<RS extends DALRemoteService> extends RSBRemoteView<RS> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Observer<UnitConfig> uniConfigObserver;
+    private final Observer<UnitConfig> unitConfigObserver;
 
     /**
      * Creates new form AmbientLightView
      */
     public GenericUnitPanel() {
         super();
-        this.uniConfigObserver = new Observer<UnitConfig>() {
-
-            @Override
-            public void update(Observable<UnitConfig> source, UnitConfig data) throws Exception {
-                updateUnitConfig(data);
-            }
+        this.unitConfigObserver = (Observable<UnitConfig> source, UnitConfig data) -> {
+            updateUnitConfig(data);
         };
         initComponents();
     }
 
     public Observer<UnitConfig> getUnitConfigObserver() {
-        return uniConfigObserver;
+        return unitConfigObserver;
     }
 
-    private void updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+    public void updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         setUnitRemote(unitConfig);
 
         contextPanel.removeAll();
@@ -83,6 +79,10 @@ public class GenericUnitPanel extends RSBRemoteView {
         setBorder(BorderFactory.createTitledBorder("Remote Control - " + remoteLabel));
 
         LayoutGenerator.designList(contextPanel, componentList);
+        contextPanel.validate();
+        contextPanel.revalidate();
+        contextScrollPane.validate();
+        contextScrollPane.revalidate();
         validate();
         revalidate();
     }
@@ -101,7 +101,7 @@ public class GenericUnitPanel extends RSBRemoteView {
             AbstractServicePanel instance = servicePanelClass.newInstance();
             instance.initService(remoteService, remoteService);
             return instance;
-        } catch (Exception ex) {
+        } catch (NullPointerException | InstantiationException | IllegalAccessException ex) {
             throw new de.citec.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);
         }
     }
@@ -121,42 +121,42 @@ public class GenericUnitPanel extends RSBRemoteView {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        contextScrollPane = new javax.swing.JScrollPane();
         contextPanel = new javax.swing.JPanel();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder("Remote Control"));
 
-        jScrollPane1.setBorder(null);
+        contextScrollPane.setBorder(null);
 
         javax.swing.GroupLayout contextPanelLayout = new javax.swing.GroupLayout(contextPanel);
         contextPanel.setLayout(contextPanelLayout);
         contextPanelLayout.setHorizontalGroup(
             contextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 473, Short.MAX_VALUE)
+            .addGap(0, 490, Short.MAX_VALUE)
         );
         contextPanelLayout.setVerticalGroup(
             contextPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 389, Short.MAX_VALUE)
+            .addGap(0, 469, Short.MAX_VALUE)
         );
 
-        jScrollPane1.setViewportView(contextPanel);
+        contextScrollPane.setViewportView(contextPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+            .addComponent(contextScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
+            .addComponent(contextScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel contextPanel;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane contextScrollPane;
     // End of variables declaration//GEN-END:variables
 
 }

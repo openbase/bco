@@ -43,6 +43,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
     public DalVisualRemote() throws InstantiationException, InterruptedException {
         try {
             instance = this;
+            
             initComponents();
             loadImage();
             

@@ -46,6 +46,13 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>de.citec.dal.visual.DalKNXActuatorCheck</mainClass>
+                            <id>dal-knx-actuator-check</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>
