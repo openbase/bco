@@ -5,7 +5,7 @@
     <artifactId>dal.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceRemoteControl</name>
+    <name>DAL DeviceRemoteControl</name>
     
     <parent>
         <groupId>de.citec</groupId>

@@ -27,6 +27,7 @@
         <module>remote</module>
         <module>service</module>
         <module>visual</module>
+        <module>example</module>
     </modules>
     
     <build>

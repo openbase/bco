@@ -2,10 +2,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.citec</groupId>
-    <artifactId>dal.visual</artifactId>
+    <artifactId>dal.example</artifactId>
     <packaging>jar</packaging>
 
-    <name>DAL DeviceVisualisation</name>
+    <name>DAL Example</name>
     
     <parent>
         <groupId>de.citec</groupId>
@@ -25,7 +25,7 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-            <plugin>
+            <!--plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.8.1</version>
@@ -74,7 +74,6 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <!--<onejarVersion>0.97</onejarVersion>-->
                             <attachToBuild>false</attachToBuild>
                             <classifier>onejar</classifier>
                         </configuration>
@@ -83,7 +82,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin-->
         </plugins>
     </build>
 
@@ -99,12 +98,6 @@
             <groupId>de.citec</groupId>
             <artifactId>dal.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.citec</groupId>
-            <artifactId>jul.visual</artifactId>
-            <version>${global.jul.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

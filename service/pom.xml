@@ -5,7 +5,7 @@
     <artifactId>dal.service</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceService</name>
+    <name>DAL DeviceService</name>
     
     <parent>
         <groupId>de.citec</groupId>
