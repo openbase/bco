@@ -10,7 +10,9 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.storage.registry.RegistryInterface;
 import de.citec.jul.storage.registry.plugin.RegistryPlugin;
+import de.citec.jul.storage.registry.plugin.RegistryPluginAdapter;
 import de.citec.lm.core.LocationManager;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Quat4d;
@@ -30,7 +32,7 @@ import rst.spatial.LocationConfigType;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class RCTRegistryPlugin implements RegistryPlugin<IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>> {
+public class RCTRegistryPlugin extends RegistryPluginAdapter<String, IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -85,13 +87,7 @@ public class RCTRegistryPlugin implements RegistryPlugin<IdentifiableMessage<Str
     }
 
     @Override
-    public void init() throws CouldNotPerformException {
-
-    }
-
-    @Override
-    public void shutdown() {
-
+    public void init(RegistryInterface<String, IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>, ?> registry) throws CouldNotPerformException {
     }
 
     @Override
@@ -106,4 +102,6 @@ public class RCTRegistryPlugin implements RegistryPlugin<IdentifiableMessage<Str
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
     }
+
+
 }

@@ -7,6 +7,7 @@ package de.citec.dm.core.plugin;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.jul.storage.registry.RegistryInterface;
 import de.citec.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.unit.UnitTemplateType;
@@ -26,7 +27,7 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
     }
 
     @Override
-    public void init() throws CouldNotPerformException {
+    public void init(RegistryInterface reg) throws CouldNotPerformException {
         try {
             String templateId;
             UnitTemplate template;
