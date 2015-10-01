@@ -29,7 +29,7 @@ import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.lm.core.consistency.LocationLoopConsistencyHandler;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
-import de.citec.lm.core.consistency.TransformationConsistencyHandler;
+import de.citec.lm.core.plugin.PublishLocationTransformationRegistryPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +79,9 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
-            locationConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
+            locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
+            
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
                 notifyChange();
             });

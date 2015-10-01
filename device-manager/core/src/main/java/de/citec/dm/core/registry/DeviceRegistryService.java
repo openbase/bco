@@ -13,7 +13,6 @@ import de.citec.dm.core.consistency.DeviceLocationIdConsistencyHandler;
 import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
 import de.citec.dm.lib.generator.DeviceClassIdGenerator;
 import de.citec.dm.core.consistency.DeviceScopeConsistencyHandler;
-import de.citec.dm.core.consistency.DeviceTransformationConsistencyHandler;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
 import de.citec.dm.core.consistency.ServiceConfigUnitIdConsistencyHandler;
@@ -24,6 +23,7 @@ import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitScopeConsistencyHandler;
 import de.citec.dm.core.consistency.UnitTemplateValidationConsistencyHandler;
+import de.citec.dm.core.plugin.PublishDeviceTransformationRegistryPlugin;
 import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
@@ -114,12 +114,12 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
-            deviceConfigRegistry.registerConsistencyHandler(new DeviceTransformationConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry));
+            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin());
+
             
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
-
-            unitTemplateRegistry.addPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+            unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
 
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 notifyChange();

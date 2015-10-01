@@ -97,9 +97,9 @@
             <version>${global.rst.sandbox.version}</version>
         </dependency>
         <dependency>
-            <groupId>rct</groupId>
-            <artifactId>rct</artifactId>
-            <version>${global.rct.version}</version>
+            <groupId>de.citec</groupId>
+            <artifactId>jul.extension.rct</artifactId>
+            <version>${global.jul.version}</version>
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>

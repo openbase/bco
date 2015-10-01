@@ -96,10 +96,5 @@
             <artifactId>${global.rst.sandbox.artifact}</artifactId>
             <version>${global.rst.sandbox.version}</version>
         </dependency>
-        <dependency>
-            <groupId>rct</groupId>
-            <artifactId>rct</artifactId>
-            <version>${global.rct.version}</version>
-        </dependency>
     </dependencies>
 </project>

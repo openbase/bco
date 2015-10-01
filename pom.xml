@@ -30,7 +30,6 @@
         <global.jul.version>0.3-SNAPSHOT</global.jul.version>
         <global.rst.sandbox.artifact>rst-sandbox-csra</global.rst.sandbox.artifact>
         <global.rst.sandbox.version>[0.12.81,0.13-SNAPSHOT)</global.rst.sandbox.version>
-        <global.rct.version>[1.0,1.1-SNAPSHOT)</global.rct.version>
     </properties>
     
     <packaging>pom</packaging>
