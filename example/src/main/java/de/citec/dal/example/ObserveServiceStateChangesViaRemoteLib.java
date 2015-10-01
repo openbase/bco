@@ -18,11 +18,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class CollectionServiceDataViaRemoteLib {
+public class ObserveServiceStateChangesViaRemoteLib {
 
     public static final String APP_NAME = "CollectionServiceDataViaRemoteLib";
 
-    private static final Logger logger = LoggerFactory.getLogger(CollectionServiceDataViaRemoteLib.class);
+    private static final Logger logger = LoggerFactory.getLogger(ObserveServiceStateChangesViaRemoteLib.class);
 
     /**
      * @param args the command line arguments
