@@ -19,6 +19,7 @@ public class TamperStateTransformer {
         switch ((int) state) {
             case 0:
                 return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
+            case 255:
             case 1:
                 return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
             default:
