@@ -11,10 +11,11 @@ import de.citec.jp.JPAppRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
@@ -58,7 +59,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         try {
             notifyUpdated(requestStatus());
         } catch(CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
     }
 
