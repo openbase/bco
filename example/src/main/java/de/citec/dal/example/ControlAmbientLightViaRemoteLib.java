@@ -23,7 +23,7 @@ public class ControlAmbientLightViaRemoteLib {
     public void notifyAlarm() throws CouldNotPerformException, InterruptedException {
         try {
             AmbientLightRemote testLight = new AmbientLightRemote();
-            testLight.init(new Scope("/home/amilab/ambientlight/testlight/"));
+            testLight.init(new Scope("/home/control/ambientlight/testunit_0/"));
             testLight.activate();
 
             int delay = 500;
