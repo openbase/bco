@@ -45,7 +45,7 @@ public class DeviceLocationIdConsistencyHandler implements ProtoBufRegistryConsi
         if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
             List<LocationConfigType.LocationConfig> rootLocationConfigs = locationRegistryRemote.getRootLocationConfigs();
             deviceConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(deviceConfig.getPlacementConfig()).setLocationId(rootLocationConfigs.get(0).getId()));
-            throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
+            throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
 
         // verify if configured location exists.

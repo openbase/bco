@@ -90,7 +90,7 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
+            throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
 

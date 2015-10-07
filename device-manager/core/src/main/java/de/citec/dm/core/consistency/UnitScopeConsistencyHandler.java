@@ -59,7 +59,7 @@ public class UnitScopeConsistencyHandler implements ProtoBufRegistryConsistencyH
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
+            throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
 

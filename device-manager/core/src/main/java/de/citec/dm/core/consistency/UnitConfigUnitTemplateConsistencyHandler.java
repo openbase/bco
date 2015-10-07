@@ -60,7 +60,7 @@ public class UnitConfigUnitTemplateConsistencyHandler implements ProtoBufRegistr
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig).getMessage(), this);
+            throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
 
