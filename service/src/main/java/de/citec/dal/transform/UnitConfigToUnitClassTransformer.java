@@ -20,7 +20,6 @@ public class UnitConfigToUnitClassTransformer {
 
         String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(config.getType().name()) + "Controller";
         try {
-
             return (Class< ? extends AbstractUnitController>) Class.forName(className);
         } catch (ClassNotFoundException ex) {
             throw new CouldNotTransformException(config, AbstractUnitController.class, ex);
