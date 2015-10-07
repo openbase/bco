@@ -97,10 +97,13 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            deviceConfigRegistry.activateVersionControl(de.citec.dm.core.registry.dbconvert.DeviceConfig_0_To_1_DBConverter.class.getPackage());
+
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
 
+            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
@@ -115,7 +118,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry));
-            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin());
+            
 
             
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
