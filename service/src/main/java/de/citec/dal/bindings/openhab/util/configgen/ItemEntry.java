@@ -91,6 +91,10 @@ public class ItemEntry {
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
 
+            if (unitConfig.getLabel().endsWith("Lichtschalter Flur")) {
+                System.out.println("..");
+            }
+
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (NotAvailableException ex) {
@@ -157,17 +161,6 @@ public class ItemEntry {
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit config.
-     *
-     * @param unitConfig to lookup service template.
-     * @param serviceConfig the service config providing the service type.
-     * @return the related service template for the given service config.
-     */
-    private ServiceTemplate lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
-        return lookupServiceTemplate(lookupUnitTemplateConfig(deviceClass, unitConfig), serviceConfig.getType());
-    }
-
-    /**
      * Lookups the service template of the given ServiceType out of the unit template.
      *
      * @param unitTemplate to lookup the service template.
@@ -175,14 +168,19 @@ public class ItemEntry {
      * @return the related service template for the given service type.
      * @throws NotAvailableException
      */
-    private ServiceTemplate lookupServiceTemplate(final UnitTemplateConfig unitTemplateConfig, final ServiceType serviceType) throws NotAvailableException {
-
-        for (ServiceTemplate template : unitTemplateConfig.getServiceTemplateList()) {
-            if (template.getServiceType() == serviceType) {
-                return template;
+    private ServiceTemplate lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
+        List<UnitTemplateConfig> unitTemplateConfigList = deviceClass.getUnitTemplateConfigList();
+        for (UnitTemplateConfig unitTemplateConfig : unitTemplateConfigList) {
+            if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
+                List<ServiceTemplate> serviceTemplateList = unitTemplateConfig.getServiceTemplateList();
+                for (ServiceTemplate serviceTemplate : serviceTemplateList) {
+                    if (serviceTemplate.getServiceType().equals(serviceConfig.getType())) {
+                        return serviceTemplate;
+                    }
+                }
             }
         }
-        throw new NotAvailableException("service template for ServiceType[" + serviceType.name() + "]");
+        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getType().name() + "]");
     }
 
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {
