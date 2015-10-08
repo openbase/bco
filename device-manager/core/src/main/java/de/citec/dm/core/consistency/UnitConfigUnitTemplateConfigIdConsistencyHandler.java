@@ -5,9 +5,7 @@
  */
 package de.citec.dm.core.consistency;
 
-import de.citec.dm.lib.generator.UnitConfigIdGenerator;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
