@@ -91,10 +91,6 @@ public class ItemEntry {
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
 
-            if (unitConfig.getLabel().endsWith("Lichtschalter Flur")) {
-                System.out.println("..");
-            }
-
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (NotAvailableException ex) {
