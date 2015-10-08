@@ -5,9 +5,6 @@
  */
 package de.citec.dm.core.consistency;
 
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
-import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
