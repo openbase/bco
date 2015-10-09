@@ -5,7 +5,7 @@
     <artifactId>dal.visual</artifactId>
     <packaging>jar</packaging>
 
-    <name>DeviceVisualisation</name>
+    <name>DAL DeviceVisualisation</name>
     
     <parent>
         <groupId>de.citec</groupId>
@@ -42,6 +42,13 @@
                         <program>
                             <mainClass>de.citec.dal.visual.DalVisualRemote</mainClass>
                             <id>dal-visual-remote</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>de.citec.dal.visual.DalKNXActuatorCheck</mainClass>
+                            <id>dal-knx-actuator-check</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

@@ -7,10 +7,13 @@ package de.citec.dal.registry;
 
 import de.citec.dal.hal.device.DeviceFactory;
 import de.citec.dm.remote.DeviceRegistryRemote;
+import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPTestMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.ProtobufListDiff;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
@@ -63,12 +66,15 @@ public class DeviceRegistrySynchronizer {
         }
     }
 
-    public void init() {
+    public void init() throws CouldNotPerformException {
         this.remoteRegistry.addObserver(remoteChangeObserver);
         try {
             this.internalSync();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Initial sync failed!", ex));
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial sync failed!", ex), logger, LogLevel.ERROR);
+            if (JPService.getProperty(JPTestMode.class).getValue()) {
+                throw ex;
+            }
         }
     }
 
@@ -82,40 +88,60 @@ public class DeviceRegistrySynchronizer {
     }
 
     private synchronized void internalSync() throws CouldNotPerformException {
-        logger.info("Trigger registry sync...");
-
-        MultiException.ExceptionStack exceptionStack = null;
+        logger.info("Perform registry sync...");
 
         try {
             deviceConfigDiff.diff(remoteRegistry.getDeviceConfigs());
 
+            MultiException.ExceptionStack removeExceptionStack = null;
             for (DeviceConfig config : deviceConfigDiff.getRemovedMessageMap().getMessages()) {
                 try {
                     registry.remove(config.getId());
                 } catch (Exception ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    removeExceptionStack = MultiException.push(this, ex, removeExceptionStack);
                 }
             }
 
+            MultiException.ExceptionStack updateExceptionStack = null;
             for (DeviceConfig config : deviceConfigDiff.getUpdatedMessageMap().getMessages()) {
                 try {
                     registry.update(factory.newDevice(config));
                 } catch (Exception ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    updateExceptionStack = MultiException.push(this, ex, updateExceptionStack);
                 }
             }
 
+            MultiException.ExceptionStack registerExceptionStack = null;
             for (DeviceConfig config : deviceConfigDiff.getNewMessageMap().getMessages()) {
                 try {
                     if (verifyDeviceConfig(config)) {
                         registry.register(factory.newDevice(config));
                     }
                 } catch (Exception ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    registerExceptionStack = MultiException.push(this, ex, registerExceptionStack);
                 }
             }
+            
+            int errorCounter = MultiException.size(removeExceptionStack) + MultiException.size(updateExceptionStack) + MultiException.size(registerExceptionStack);
+            logger.info(deviceConfigDiff.getChangeCounter()+ " registry changes applied. " + errorCounter + " are skipped.");
 
-            logger.info(registry.size() + " devices successfully loaded. " + MultiException.size(exceptionStack) + " skipped.");
+            // build exception cause chain.
+            MultiException.ExceptionStack exceptionStack = null;
+            try {
+                MultiException.checkAndThrow("Could not remove all devices!", removeExceptionStack);
+            } catch (CouldNotPerformException ex) {
+                exceptionStack = MultiException.push(this, ex, exceptionStack);
+            }
+            try {
+                MultiException.checkAndThrow("Could not update all devices!", updateExceptionStack);
+            } catch (CouldNotPerformException ex) {
+                exceptionStack = MultiException.push(this, ex, exceptionStack);
+            }
+            try {
+                MultiException.checkAndThrow("Could not register all devices!", registerExceptionStack);
+            } catch (CouldNotPerformException ex) {
+                exceptionStack = MultiException.push(this, ex, exceptionStack);
+            }
             MultiException.checkAndThrow("Could not sync all devices!", exceptionStack);
 
         } catch (CouldNotPerformException ex) {
@@ -135,6 +161,7 @@ public class DeviceRegistrySynchronizer {
             }
 
             if (!deviceClass.getBindingConfig().getType().equals(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB)) {
+                // TODO mpohling: check all dal supported binding types.
                 return false;
             }
 

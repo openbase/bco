@@ -2,15 +2,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.citec</groupId>
-    <artifactId>dal.remote</artifactId>
+    <artifactId>dal.example</artifactId>
     <packaging>jar</packaging>
 
-    <name>DAL DeviceRemoteControl</name>
+    <name>DAL Example</name>
     
     <parent>
         <groupId>de.citec</groupId>
         <artifactId>dal</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
@@ -25,7 +25,7 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-            <plugin>
+            <!--plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.8.1</version>
@@ -40,15 +40,15 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.dal.remote.DALRemote</mainClass>
-                            <id>dal-remote</id>
+                            <mainClass>de.citec.dal.visual.DalVisualRemote</mainClass>
+                            <id>dal-visual-remote</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>de.citec.dal.remote.control.AgentTest</mainClass>
-                            <id>dal-agend-test</id>
+                            <mainClass>de.citec.dal.visual.DalKNXActuatorCheck</mainClass>
+                            <id>dal-knx-actuator-check</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -56,29 +56,48 @@
                     </programs>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>de.citec.dal.visual.DalVisualRemote</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.dstovall</groupId>
+                <artifactId>onejar-maven-plugin</artifactId>
+                <version>1.4.4</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <attachToBuild>false</attachToBuild>
+                            <classifier>onejar</classifier>
+                        </configuration>
+                        <goals>
+                            <goal>one-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin-->
         </plugins>
     </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>onejar-maven-plugin.googlecode.com</id>
+            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+        </pluginRepository>
+    </pluginRepositories>
     
     <dependencies>
         <dependency>
             <groupId>de.citec</groupId>
-            <artifactId>dal.service</artifactId>
+            <artifactId>dal.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.citec</groupId>
-            <artifactId>scm.remote</artifactId>
-            <version>${global.rm.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.citec</groupId>
-            <artifactId>agm.remote</artifactId>
-            <version>${global.rm.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.citec</groupId>
-            <artifactId>apm.remote</artifactId>
-            <version>${global.rm.version}</version>
         </dependency>
     </dependencies>
 </project>

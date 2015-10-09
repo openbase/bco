@@ -8,7 +8,6 @@ package de.citec.dal.hal.device;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.processing.StringProcessor;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
@@ -53,18 +52,9 @@ public class DeviceFactory extends AbstractDeviceFactory {
                 throw new NotAvailableException("deviceConfig.placement.locationId");
             }
 
-            Class deviceControllerClass = getClass().getClassLoader().loadClass(getDeviceControllerClass(deviceClass));
-            return (Device) deviceControllerClass.getConstructor(DeviceConfig.class).newInstance(deviceConfig);
+            return new GenericDeviceController(deviceConfig);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not instantiate Device[" + deviceConfig.getId() + "]!", ex);
         }
-    }
-
-    private String getDeviceControllerClass(final DeviceClass deviceClass) {
-        return AbstractDeviceController.class.getPackage().getName() + "."
-                + deviceClass.getCompany().toLowerCase() + "."
-                + deviceClass.getCompany() + "_"
-                + StringProcessor.replaceHyphenWithUnderscore(deviceClass.getProductNumber())
-                + "Controller";
     }
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.device.fibaro;
+package de.citec.dal.hal.device;
 
 import de.citec.dal.bindings.openhab.AbstractOpenHABDeviceController;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -11,21 +11,21 @@ import de.citec.jul.exception.CouldNotTransformException;
 import de.citec.jul.exception.InstantiationException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.fibaro.Fibaro_FGSS_001Type.Fibaro_FGSS_001;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class Fibaro_FGSS_001Controller extends AbstractOpenHABDeviceController<Fibaro_FGSS_001, Fibaro_FGSS_001.Builder> {
+public class GenericDeviceController extends AbstractOpenHABDeviceController<GenericDevice, GenericDevice.Builder> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Fibaro_FGSS_001.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GenericDevice.getDefaultInstance()));
     }
 
-    public Fibaro_FGSS_001Controller(final DeviceConfigType.DeviceConfig config) throws InstantiationException, CouldNotTransformException {
-        super(config, Fibaro_FGSS_001.newBuilder());
+    public GenericDeviceController(DeviceConfig config) throws InstantiationException, CouldNotTransformException {
+        super(config, GenericDevice.newBuilder());
         try {
             registerUnits(config.getUnitConfigList());
         } catch (CouldNotPerformException ex) {

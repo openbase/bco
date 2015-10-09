@@ -5,6 +5,7 @@
  */
 package de.citec.dal.visual.util;
 
+import de.citec.jul.exception.NotAvailableException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +24,7 @@ public class StatusPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(StatusPanel.class);
 
+    public static StatusPanel instance;
     private final Timer timer;
 
     public enum StatusType {
@@ -43,6 +45,18 @@ public class StatusPanel extends javax.swing.JPanel {
             }
         });
         timer.setRepeats(false);
+        instance = this;
+    }
+    /**
+     * Returns the last created instance of the StatusPanel.
+     * @return
+     * @throws NotAvailableException If no instance was constructed until know
+     */
+    public static StatusPanel getInstance() throws NotAvailableException {
+        if(instance == null) {
+            throw new NotAvailableException("statuspanel", "Instance is not constructed yet!");
+        }
+        return instance;
     }
 
     public void reset() {

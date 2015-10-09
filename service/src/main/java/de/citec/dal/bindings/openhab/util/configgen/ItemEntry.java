@@ -131,14 +131,9 @@ public class ItemEntry {
             this.groups.add(unitConfig.getPlacementConfig().getLocationId());
 
             try {
-                itemHardwareConfig = generateBindingConfig(deviceConfig, unitConfig, serviceConfig);
+                itemHardwareConfig = generateItemHardwareConfig(deviceConfig, unitConfig, serviceConfig);
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(logger, ex);
-                itemHardwareConfig = "";
-            }
-
-            if (itemHardwareConfig.isEmpty()) {
-                throw new NotAvailableException("bindingConfig");
+                throw new NotAvailableException("itemHardwareConfig", ex);
             }
 
             this.calculateGaps();
@@ -147,7 +142,7 @@ public class ItemEntry {
         }
     }
 
-    private String generateBindingConfig(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
+    private String generateItemHardwareConfig(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
             String config = "";
 
@@ -162,34 +157,26 @@ public class ItemEntry {
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit
-     * config.
-     *
-     * @param unitConfig to lookup service template.
-     * @param serviceConfig the service config providing the service type.
-     * @return the related service template for the given service config.
-     */
-    private ServiceTemplate lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
-        return lookupServiceTemplate(lookupUnitTemplateConfig(deviceClass, unitConfig), serviceConfig.getType());
-    }
-
-    /**
-     * Lookups the service template of the given ServiceType out of the unit
-     * template.
+     * Lookups the service template of the given ServiceType out of the unit template.
      *
      * @param unitTemplate to lookup the service template.
      * @param serviceType the service type to resolve the template.
      * @return the related service template for the given service type.
      * @throws NotAvailableException
      */
-    private ServiceTemplate lookupServiceTemplate(final UnitTemplateConfig unitTemplateConfig, final ServiceType serviceType) throws NotAvailableException {
-
-        for (ServiceTemplate template : unitTemplateConfig.getServiceTemplateList()) {
-            if (template.getServiceType() == serviceType) {
-                return template;
+    private ServiceTemplate lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
+        List<UnitTemplateConfig> unitTemplateConfigList = deviceClass.getUnitTemplateConfigList();
+        for (UnitTemplateConfig unitTemplateConfig : unitTemplateConfigList) {
+            if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
+                List<ServiceTemplate> serviceTemplateList = unitTemplateConfig.getServiceTemplateList();
+                for (ServiceTemplate serviceTemplate : serviceTemplateList) {
+                    if (serviceTemplate.getServiceType().equals(serviceConfig.getType())) {
+                        return serviceTemplate;
+                    }
+                }
             }
         }
-        throw new NotAvailableException("service template for ServiceType[" + serviceType.name() + "]");
+        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getType().name() + "]");
     }
 
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {
@@ -319,39 +306,39 @@ public class ItemEntry {
 
     private String getDefaultCommand(ServiceType type) {
         switch (type) {
-            case COLOR_SERVICE:
-                return "Color";
-            case OPENING_RATIO_PROVIDER:
-            case POWER_CONSUMPTION_PROVIDER:
-            case TEMPERATURE_PROVIDER:
-            case MOTION_PROVIDER:
-            case TAMPER_PROVIDER:
-            case BRIGHTNESS_PROVIDER:
-            case BATTERY_PROVIDER:
-            case SMOKE_ALARM_STATE_PROVIDER:
-            case SMOKE_STATE_PROVIDER:
-            case TEMPERATURE_ALARM_STATE_PROVIDER:
-            case TARGET_TEMPERATURE_PROVIDER:
-            case TARGET_TEMPERATURE_SERVICE:
-                return "Number";
-            case SHUTTER_PROVIDER:
-            case SHUTTER_SERVICE:
-                return "Rollershutter";
-            case POWER_SERVICE:
-            case POWER_PROVIDER:
-            case BUTTON_PROVIDER:
-                return "Switch";
-            case BRIGHTNESS_SERVICE:
-            case DIM_PROVIDER:
-            case DIM_SERVICE:
-                return "Dimmer";
-            case REED_SWITCH_PROVIDER:
-                return "Contact";
-            case HANDLE_PROVIDER:
-                return "String";
-            default:
-                logger.warn("Unkown Service Type: " + type);
-                return "";
+        case COLOR_SERVICE:
+            return "Color";
+        case OPENING_RATIO_PROVIDER:
+        case POWER_CONSUMPTION_PROVIDER:
+        case TEMPERATURE_PROVIDER:
+        case MOTION_PROVIDER:
+        case TAMPER_PROVIDER:
+        case BRIGHTNESS_PROVIDER:
+        case BATTERY_PROVIDER:
+        case SMOKE_ALARM_STATE_PROVIDER:
+        case SMOKE_STATE_PROVIDER:
+        case TEMPERATURE_ALARM_STATE_PROVIDER:
+        case TARGET_TEMPERATURE_PROVIDER:
+        case TARGET_TEMPERATURE_SERVICE:
+            return "Number";
+        case SHUTTER_PROVIDER:
+        case SHUTTER_SERVICE:
+            return "Rollershutter";
+        case POWER_SERVICE:
+        case POWER_PROVIDER:
+        case BUTTON_PROVIDER:
+            return "Switch";
+        case BRIGHTNESS_SERVICE:
+        case DIM_PROVIDER:
+        case DIM_SERVICE:
+            return "Dimmer";
+        case REED_SWITCH_PROVIDER:
+            return "Contact";
+        case HANDLE_PROVIDER:
+            return "String";
+        default:
+            logger.warn("Unkown Service Type: " + type);
+            return "";
         }
     }
 }

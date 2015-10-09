@@ -25,12 +25,12 @@ import rst.rsb.ScopeType.Scope;
  *
  * @author mpohling
  */
-public abstract class RSBRemoteView extends javax.swing.JPanel implements Observer<GeneratedMessage> {
+public abstract class RSBRemoteView<RS extends DALRemoteService> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
 //public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private DALRemoteService remoteService;
+    private RS remoteService;
 
     /**
      * Creates new form RSBViewService
@@ -39,7 +39,7 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
         this.initComponents();
     }
 
-    private synchronized void setRemoteService(final DALRemoteService remoteService) {
+    private synchronized void setRemoteService(final RS remoteService) {
 
         if (this.remoteService != null) {
             this.remoteService.shutdown();
@@ -62,7 +62,7 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
         updateDynamicComponents(data);
     }
 
-    public DALRemoteService getRemoteService() throws NotAvailableException {
+    public RS getRemoteService() throws NotAvailableException {
         if (remoteService == null) {
             throw new NotAvailableException("remoteService");
         }
@@ -74,8 +74,8 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
     public void setUnitRemote(final UnitTemplateType.UnitTemplate.UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitType + ".");
         try {
-            Class<? extends DALRemoteService> remoteClass = loadUnitRemoteClass(unitType);
-            DALRemoteService unitRemote = instantiatUnitRemote(remoteClass);
+            Class<? extends RS> remoteClass = loadUnitRemoteClass(unitType);
+            RS unitRemote = instantiatUnitRemote(remoteClass);
             initUnitRemote(unitRemote, scope);
             unitRemote.activate();
             setRemoteService(unitRemote);
@@ -87,8 +87,8 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
     public void setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
-            Class<? extends DALRemoteService> remoteClass = loadUnitRemoteClass(unitConfig.getType());
-            DALRemoteService unitRemote = instantiatUnitRemote(remoteClass);
+            Class<? extends RS> remoteClass = loadUnitRemoteClass(unitConfig.getType());
+            RS unitRemote = instantiatUnitRemote(remoteClass);
             initUnitRemote(unitRemote, unitConfig);
             unitRemote.activate();
             setRemoteService(unitRemote);
@@ -97,16 +97,16 @@ public abstract class RSBRemoteView extends javax.swing.JPanel implements Observ
         }
     }
 
-    private Class<? extends DALRemoteService> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+    private Class<? extends RS> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
-            return (Class<? extends DALRemoteService>) getClass().getClassLoader().loadClass(remoteClassName);
+            return (Class<? extends RS>) getClass().getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not detect remote class for UnitType[" + unitType.name() + "]", ex);
         }
     }
 
-    private DALRemoteService instantiatUnitRemote(Class<? extends DALRemoteService> remoteClass) throws InstantiationException {
+    private RS instantiatUnitRemote(Class<? extends RS> remoteClass) throws InstantiationException {
         try {
             return remoteClass.newInstance();
         } catch (Exception ex) {

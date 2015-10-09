@@ -18,7 +18,7 @@ import de.citec.jul.exception.InstantiationException;
  * @param <ST> Related service type.
  */
 public class TargetTemperatureServiceImpl<ST extends TargetTemperatureService & Unit> extends OpenHABService<ST> implements TargetTemperatureService {
-
+    
     public TargetTemperatureServiceImpl(Device device, ST unit) throws InstantiationException {
         super(device, unit);
     }

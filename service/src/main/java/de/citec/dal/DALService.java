@@ -134,12 +134,7 @@ public class DALService implements RegistryProvider {
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPLocationDatabaseDirectory.class);
-        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class);
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
 
         JPService.parseAndExitOnError(args);
