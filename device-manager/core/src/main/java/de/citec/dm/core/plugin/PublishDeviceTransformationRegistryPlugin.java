@@ -39,6 +39,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     public PublishDeviceTransformationRegistryPlugin() throws de.citec.jul.exception.InstantiationException {
         try {
             this.transformerFactory = TransformerFactory.getInstance();
+            //TODO:mpholing check if there is a way to use a configuration for interprocess communication for unit tests
             this.transformPublisher = transformerFactory.createTransformPublisher(DeviceManager.APP_NAME);
         } catch (Exception ex) {
             throw new de.citec.jul.exception.InstantiationException(this, ex);
