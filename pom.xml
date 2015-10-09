@@ -8,7 +8,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>dal</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.5-SNAPSHOT</version>
     <name>DAL</name>
     <description>Device Abstraction Layer</description>
     
@@ -66,10 +66,10 @@
         <skipTests>true</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <global.jul.version>0.3-SNAPSHOT</global.jul.version>
-        <global.rm.version>0.5-SNAPSHOT</global.rm.version>
+        <global.jul.version>0.4-SNAPSHOT</global.jul.version>
+        <global.rm.version>0.6-SNAPSHOT</global.rm.version>
         <global.rst.sandbox.artifact>rst-sandbox-csra</global.rst.sandbox.artifact>
-        <global.rst.sandbox.version>[0.12.81,0.13-SNAPSHOT)</global.rst.sandbox.version>
+        <global.rst.sandbox.version>[0.12.99,0.13-SNAPSHOT)</global.rst.sandbox.version>
         <global.rst.stable.artifact>rst-csra</global.rst.stable.artifact>
         <global.rst.stable.version>[0.12,0.13-SNAPSHOT)</global.rst.stable.version>
     </properties>
