@@ -53,6 +53,13 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>de.citec.dal.bindings.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
+                            <id>dal-openhabmin-zwave-config-updater</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>
@@ -118,6 +125,12 @@
             <artifactId>jul.extension.rst.processing</artifactId>
             <version>${global.jul.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <!-- for openhab binding habmin zwave config gen -->
+            <groupId>com.io7m.xom</groupId>
+            <artifactId>xom</artifactId>
+            <version>1.2.10</version>
         </dependency>
     </dependencies>
 </project>

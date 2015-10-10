@@ -60,6 +60,7 @@ public class ItemEntry {
     public static final String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
     public static final String SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR = "OPENHAB_SERVICE_LABEL_DESCRIPTOR";
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
+    public static final String OPENHAB_BINDING_DEVICE_ID = "OPENHAB_BINDING_DEVICE_ID";
 
     private String commandType;
     private final String itemId;
