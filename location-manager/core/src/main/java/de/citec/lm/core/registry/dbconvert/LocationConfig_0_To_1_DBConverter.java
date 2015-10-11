@@ -16,8 +16,15 @@ public class LocationConfig_0_To_1_DBConverter implements DBVersionConverter {
     @Override
     public JsonObject upgrade(JsonObject locationConfig) {
 
+
+        // check if child element exists otherwise we are finish
+        JsonElement childElement = locationConfig.get("child");
+        if(childElement == null) {
+            return locationConfig;
+        }
+
         // recover child ids
-        JsonArray childConfigs = locationConfig.get("child").getAsJsonArray();
+        JsonArray childConfigs = childElement.getAsJsonArray();
         List<String> childList = new ArrayList<>();
         for (JsonElement childConfigElement : childConfigs) {
             childList.add(childConfigElement.getAsJsonObject().get("id").getAsString());
