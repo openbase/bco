@@ -27,6 +27,7 @@ import de.citec.dm.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitTemplateValidationConsistencyHandler;
 import de.citec.dm.core.plugin.PublishDeviceTransformationRegistryPlugin;
 import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
+import de.citec.dm.core.registry.dbconvert.DeviceConfig_0_To_1_DBConverter;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
@@ -92,14 +93,14 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            
+
+            deviceConfigRegistry.activateVersionControl(DeviceConfig_0_To_1_DBConverter.class.getPackage());
+
             locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
             
             locationRegistryRemote = new LocationRegistryRemote();
-            
-            deviceConfigRegistry.activateVersionControl(de.citec.dm.core.registry.dbconvert.DeviceConfig_0_To_1_DBConverter.class.getPackage());
             
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();

@@ -30,6 +30,7 @@ import de.citec.lm.core.consistency.LocationLoopConsistencyHandler;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
 import de.citec.lm.core.plugin.PublishLocationTransformationRegistryPlugin;
+import de.citec.lm.core.registry.dbconvert.LocationConfig_0_To_1_DBConverter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,8 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         super(LocationRegistry.newBuilder());
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+
+            locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
 
             deviceRegistryUpdateObserver = (Observable<DeviceRegistry> source, DeviceRegistry data) -> {
                 locationConfigRegistry.checkConsistency();
