@@ -80,6 +80,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColor(value);
+            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply color Update[" + value + "] for " + this + "!", ex);
         }
@@ -106,6 +107,11 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColor(dataBuilder.getInternalBuilder().getColor().toBuilder().setValue(value).build());
+            if(value == 0) {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
+            } else {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+            }
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness Update[" + value + "] for " + this + "!", ex);
         }

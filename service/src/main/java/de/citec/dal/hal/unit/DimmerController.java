@@ -72,6 +72,11 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setValue(value);
+            if(value == 0) {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
+            } else {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+            }
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply dim Update[" + value + "] for " + this + "!", ex);
         }
