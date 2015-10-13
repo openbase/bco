@@ -5,6 +5,7 @@
  */
 package de.citec.dm.core.consistency;
 
+import de.citec.dm.lib.util.DeviceConfigUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -19,9 +20,9 @@ import rst.homeautomation.unit.UnitTemplateType;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class UnitBoundsToDeviceConsistencyHandlerTest {
+public class DeviceConfigUtilsTest {
     
-    public UnitBoundsToDeviceConsistencyHandlerTest() {
+    public DeviceConfigUtilsTest() {
     }
     
     @BeforeClass
@@ -51,10 +52,10 @@ public class UnitBoundsToDeviceConsistencyHandlerTest {
         
         expResult = false;
         deviceConfig.addUnitConfig(UnitConfigType.UnitConfig.newBuilder().setType(UnitTemplateType.UnitTemplate.UnitType.LIGHT));
-        assertEquals(expResult, UnitBoundsToDeviceConsistencyHandler.checkDuplicatedUnitType(deviceConfig.build()));
+        assertEquals(expResult, DeviceConfigUtils.checkDuplicatedUnitType(deviceConfig.build()));
         
         expResult = true;
         deviceConfig.addUnitConfig(UnitConfigType.UnitConfig.newBuilder().setType(UnitTemplateType.UnitTemplate.UnitType.LIGHT));
-        assertEquals(expResult, UnitBoundsToDeviceConsistencyHandler.checkDuplicatedUnitType(deviceConfig.build()));
+        assertEquals(expResult, DeviceConfigUtils.checkDuplicatedUnitType(deviceConfig.build()));
     }
 }
