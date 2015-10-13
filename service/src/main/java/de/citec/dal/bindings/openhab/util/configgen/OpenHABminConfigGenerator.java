@@ -165,7 +165,7 @@ public class OpenHABminConfigGenerator {
         JPService.setApplicationName("dal-openhabmin-zwave-config-updater");
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPOpenHABminZwaveConfig.class);
-        JPService.registerProperty(JPOpenHABDistribution.class, new File("/home/divine/data/dc_test_env/share/openhab/distribution"));
+        JPService.registerProperty(JPOpenHABDistribution.class);
         JPService.parseAndExitOnError(args);
 
         try {
