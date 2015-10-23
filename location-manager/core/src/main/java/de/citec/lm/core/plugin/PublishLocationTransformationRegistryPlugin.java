@@ -63,7 +63,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
                     throw new NotAvailableException("locationconfig.parentid");
                 }
 
-                logger.info("Publish " + locationConfig.getParentId() + " to " + locationConfig.getId());
+                logger.debug("Publish " + locationConfig.getParentId() + " to " + locationConfig.getId());
 
                 // Create the rct transform object with source and target frames
                 Transform transformation = PoseTransformer.transform(locationConfig.getPosition(), locationConfig.getParentId(), locationConfig.getId());

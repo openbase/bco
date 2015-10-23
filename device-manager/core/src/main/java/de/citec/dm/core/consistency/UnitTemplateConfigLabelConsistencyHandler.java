@@ -11,21 +11,16 @@ import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
-import java.util.Map;
-import java.util.TreeMap;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Marian Pohling</a>
  */
-public class UnitTemplateConfigIdConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
+public class UnitTemplateConfigLabelConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
 
-    private final Map<String, UnitTemplateConfig> unitTemplateMap;
-
-    public UnitTemplateConfigIdConsistencyHandler() {
-        this.unitTemplateMap = new TreeMap<>();
+    public UnitTemplateConfigLabelConsistencyHandler() {
     }
 
     @Override
@@ -35,11 +30,10 @@ public class UnitTemplateConfigIdConsistencyHandler implements ProtoBufRegistryC
         deviceClass.clearUnitTemplateConfig();
         boolean modification = false;
         for (UnitTemplateConfig.Builder unitTemplateConfig : entry.getMessage().toBuilder().getUnitTemplateConfigBuilderList()) {
-            if (!unitTemplateConfig.hasId() || unitTemplateConfig.getId().isEmpty()) {
-                unitTemplateConfig.setId(generateUnitTemplateConfigId(deviceClass.getId(), unitTemplateConfig));
+            if (!unitTemplateConfig.hasLabel() || unitTemplateConfig.getLabel().isEmpty()) {
+                unitTemplateConfig.setLabel(unitTemplateConfig.getId());
                 modification = true;
             }
-            unitTemplateMap.put(unitTemplateConfig.getId(), unitTemplateConfig.build());
             deviceClass.addUnitTemplateConfig(unitTemplateConfig);
         }
 
@@ -48,18 +42,7 @@ public class UnitTemplateConfigIdConsistencyHandler implements ProtoBufRegistryC
         }
     }
 
-    private String generateUnitTemplateConfigId(String deviceClassId, UnitTemplateConfig.Builder unitTemplateConfig) {
-        int number = 0;
-        String unitConfigTemplateTypeId = deviceClassId + "_" + unitTemplateConfig.getType().name() + "_" + number;
-        while (unitTemplateMap.containsKey(unitConfigTemplateTypeId)) {
-            number++;
-            unitConfigTemplateTypeId = deviceClassId + "_" + unitTemplateConfig.getType().name() + "_" + number;
-        }
-        return unitConfigTemplateTypeId;
-    }
-
     @Override
     public void reset() {
-        unitTemplateMap.clear();
     }
 }

@@ -24,6 +24,7 @@ import de.citec.dm.core.consistency.UnitLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitLocationIdConsistencyHandler;
 import de.citec.dm.core.consistency.UnitScopeConsistencyHandler;
 import de.citec.dm.core.consistency.UnitTemplateConfigIdConsistencyHandler;
+import de.citec.dm.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
 import de.citec.dm.core.consistency.UnitTemplateValidationConsistencyHandler;
 import de.citec.dm.core.plugin.PublishDeviceTransformationRegistryPlugin;
 import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
@@ -107,6 +108,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.loadRegistry();
             
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
+            deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
             
             deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
