@@ -6,6 +6,7 @@
 package de.citec.dal.bindings.openhab.util.configgen;
 
 import static de.citec.dal.bindings.openhab.util.configgen.ItemEntry.OPENHAB_BINDING_DEVICE_ID;
+import static de.citec.dal.bindings.openhab.util.configgen.ItemEntry.SERVICE_TEMPLATE_BINDING_TYPE;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABDistribution;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABminZwaveConfig;
@@ -69,6 +70,7 @@ public class OpenHABminConfigGenerator {
             VariableProvider variableProvider;
             File zwaveDb = JPService.getProperty(JPOpenHABminZwaveConfig.class).getValue();
             String zwaveNodeID;
+            String openhabBindingType;
             File zwaveNodeConfigFile;
 
             logger.info("update zwave entries of HABmin zwave DB[" + zwaveDb + "] ...");
@@ -84,9 +86,11 @@ public class OpenHABminConfigGenerator {
                     }
 
                     // check if zwave
-//                    if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-//                        continue;
-//                    }
+                    variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getMetaConfig());
+                    openhabBindingType = variableProvider.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
+                    if (!"zwave".equals(openhabBindingType)) {
+                        continue;
+                    }
 
                     // check if installed
                     if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
