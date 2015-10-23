@@ -60,6 +60,7 @@ public class ItemEntry {
     public static final String SERVICE_TEMPLATE_BINDING_CONFIG = "OPENHAB_BINDING_CONFIG";
     public static final String SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR = "OPENHAB_SERVICE_LABEL_DESCRIPTOR";
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
+    public static final String UNIT_VISIBLE_IN_GUI = "UNIT_VISIBLE_IN_GUI";
     public static final String OPENHAB_BINDING_DEVICE_ID = "OPENHAB_BINDING_DEVICE_ID";
 
     private String commandType;
@@ -129,7 +130,15 @@ public class ItemEntry {
                 this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
             }
             this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
-            this.groups.add(unitConfig.getPlacementConfig().getLocationId());
+
+            try {
+                // just add location group if unit is visible.
+                if (Boolean.parseBoolean(configPool.getValue(UNIT_VISIBLE_IN_GUI))) {
+                    this.groups.add(unitConfig.getPlacementConfig().getLocationId());
+                }
+            } catch (Exception ex) {
+                this.groups.add(unitConfig.getPlacementConfig().getLocationId());
+            }
 
             try {
                 itemHardwareConfig = generateItemHardwareConfig(deviceConfig, unitConfig, serviceConfig);
@@ -307,39 +316,39 @@ public class ItemEntry {
 
     private String getDefaultCommand(ServiceType type) {
         switch (type) {
-        case COLOR_SERVICE:
-            return "Color";
-        case OPENING_RATIO_PROVIDER:
-        case POWER_CONSUMPTION_PROVIDER:
-        case TEMPERATURE_PROVIDER:
-        case MOTION_PROVIDER:
-        case TAMPER_PROVIDER:
-        case BRIGHTNESS_PROVIDER:
-        case BATTERY_PROVIDER:
-        case SMOKE_ALARM_STATE_PROVIDER:
-        case SMOKE_STATE_PROVIDER:
-        case TEMPERATURE_ALARM_STATE_PROVIDER:
-        case TARGET_TEMPERATURE_PROVIDER:
-        case TARGET_TEMPERATURE_SERVICE:
-            return "Number";
-        case SHUTTER_PROVIDER:
-        case SHUTTER_SERVICE:
-            return "Rollershutter";
-        case POWER_SERVICE:
-        case POWER_PROVIDER:
-        case BUTTON_PROVIDER:
-            return "Switch";
-        case BRIGHTNESS_SERVICE:
-        case DIM_PROVIDER:
-        case DIM_SERVICE:
-            return "Dimmer";
-        case REED_SWITCH_PROVIDER:
-            return "Contact";
-        case HANDLE_PROVIDER:
-            return "String";
-        default:
-            logger.warn("Unkown Service Type: " + type);
-            return "";
+            case COLOR_SERVICE:
+                return "Color";
+            case OPENING_RATIO_PROVIDER:
+            case POWER_CONSUMPTION_PROVIDER:
+            case TEMPERATURE_PROVIDER:
+            case MOTION_PROVIDER:
+            case TAMPER_PROVIDER:
+            case BRIGHTNESS_PROVIDER:
+            case BATTERY_PROVIDER:
+            case SMOKE_ALARM_STATE_PROVIDER:
+            case SMOKE_STATE_PROVIDER:
+            case TEMPERATURE_ALARM_STATE_PROVIDER:
+            case TARGET_TEMPERATURE_PROVIDER:
+            case TARGET_TEMPERATURE_SERVICE:
+                return "Number";
+            case SHUTTER_PROVIDER:
+            case SHUTTER_SERVICE:
+                return "Rollershutter";
+            case POWER_SERVICE:
+            case POWER_PROVIDER:
+            case BUTTON_PROVIDER:
+                return "Switch";
+            case BRIGHTNESS_SERVICE:
+            case DIM_PROVIDER:
+            case DIM_SERVICE:
+                return "Dimmer";
+            case REED_SWITCH_PROVIDER:
+                return "Contact";
+            case HANDLE_PROVIDER:
+                return "String";
+            default:
+                logger.warn("Unkown Service Type: " + type);
+                return "";
         }
     }
 }
