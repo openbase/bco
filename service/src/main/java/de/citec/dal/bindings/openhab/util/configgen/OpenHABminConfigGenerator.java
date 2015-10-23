@@ -83,6 +83,11 @@ public class OpenHABminConfigGenerator {
                         continue;
                     }
 
+                    // check if zwave
+//                    if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+//                        continue;
+//                    }
+
                     // check if installed
                     if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                         continue;
