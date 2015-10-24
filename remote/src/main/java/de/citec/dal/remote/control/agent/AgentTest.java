@@ -31,7 +31,7 @@ public class AgentTest {
         colorList.add(HSVColor.newBuilder().setHue(300).setSaturation(100).setValue(100).build());
         colorList.add(HSVColor.newBuilder().setHue(73).setSaturation(100).setValue(100).build());
 
-        PowerControl powerControl = new PowerControl("Home", PowerStateType.PowerState.State.ON);
+        PowerControl powerControl = new PowerControl("Chillerstrasse", PowerStateType.PowerState.State.ON);
         powerControl.activate();
 //        ColorControl colorControl = new ColorControl("Home");
 //
@@ -45,15 +45,15 @@ public class AgentTest {
 //            Thread.sleep(30000);
 //        }
 
-        ColorLoopControl colorControlX = new ColorLoopControl("Home", colorList, 1000);
+        ColorLoopControl colorControlX = new ColorLoopControl("Chillerstrasse", colorList, 1000);
         colorControlX.activate();
-        ColorLoopControl colorControlXX = new ColorLoopControl("Kitchen", colorList, 1000);
+        ColorLoopControl colorControlXX = new ColorLoopControl("Kueche", colorList, 1000);
         colorControlXX.activate();
-        ColorLoopControl colorControl2 = new ColorLoopControl("Kitchen", colorList, 1000);
+        ColorLoopControl colorControl2 = new ColorLoopControl("Kueche", colorList, 1000);
         colorControl2.activate();
-        ColorLoopControl colorControl3 = new ColorLoopControl("Living", colorList, 1000);
+        ColorLoopControl colorControl3 = new ColorLoopControl("Wohnzimmer", colorList, 1000);
         colorControl3.activate();
-        ColorLoopControl colorControl4 = new ColorLoopControl("Bath", colorList, 1000);
+        ColorLoopControl colorControl4 = new ColorLoopControl("Bad", colorList, 1000);
         colorControl4.activate();
 //        ColorLoopControl colorControlC = new ColorLoopControl("Control", colorList);
 //        colorControlC.activate();
