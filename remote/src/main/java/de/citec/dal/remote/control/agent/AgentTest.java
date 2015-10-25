@@ -27,9 +27,9 @@ public class AgentTest {
     public static void main(String[] args) throws InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
 
         List<HSVColor> colorList = new ArrayList<>();
-        colorList.add(HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(100).build());
-        colorList.add(HSVColor.newBuilder().setHue(300).setSaturation(100).setValue(100).build());
-        colorList.add(HSVColor.newBuilder().setHue(73).setSaturation(100).setValue(100).build());
+        colorList.add(HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(20).build());
+        colorList.add(HSVColor.newBuilder().setHue(300).setSaturation(100).setValue(20).build());
+        colorList.add(HSVColor.newBuilder().setHue(256).setSaturation(100).setValue(20).build());
 
         PowerControl powerControl = new PowerControl("Chillerstrasse", PowerStateType.PowerState.State.ON);
         powerControl.activate();
