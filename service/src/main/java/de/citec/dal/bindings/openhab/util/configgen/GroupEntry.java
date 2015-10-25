@@ -5,8 +5,12 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen;
 
+import static de.citec.dal.bindings.openhab.util.configgen.ItemEntry.SERVICE_TEMPLATE_BINDING_ICON;
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import de.citec.jul.processing.StringProcessor;
+import de.citec.jul.processing.VariableProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,15 +33,34 @@ public class GroupEntry {
     private static int maxIconSize = 0;
     private static int maxParentLocationsSize = 0;
 
-    public GroupEntry(LocationConfig locationConfig) {
-        this.groupId = locationConfig.getId();
-        this.label = locationConfig.getLabel();
-        this.icon = "sun";
-        this.parentLocations = new ArrayList<>();
+    public GroupEntry(final LocationConfig locationConfig) {
+        this(locationConfig.getId(), locationConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationConfig.getMetaConfig())), new ArrayList<>());
         if (!locationConfig.getRoot()) {
             this.parentLocations.add(locationConfig.getParentId());
         }
         calculateGaps();
+    }
+
+    public GroupEntry(final String groupId, final String label, final String icon, final GroupEntry parent) {
+        this(groupId, label, icon, new ArrayList<>());
+        this.parentLocations.add(parent.getGroupId());
+        calculateGaps();
+    }
+
+    public GroupEntry(final String groupId, final String label, final String icon, final List<String> parentLocations) {
+        this.groupId = groupId;
+        this.label = label;
+        this.icon = icon;
+        this.parentLocations = parentLocations;
+        calculateGaps();
+    }
+
+    public static String detectIcon(final VariableProvider variableProvider) {
+        try {
+            return variableProvider.getValue(SERVICE_TEMPLATE_BINDING_ICON);
+        } catch (NotAvailableException ex) {
+            return "corridor";
+        }
     }
 
     private void calculateGaps() {
@@ -68,21 +91,21 @@ public class GroupEntry {
     }
 
     public String getLabelStringRep() {
-        if(label.isEmpty()) {
+        if (label.isEmpty()) {
             return "";
         }
         return "\"" + label + "\"";
     }
 
     public String getIconStringRep() {
-        if(icon.isEmpty()) {
+        if (icon.isEmpty()) {
             return "";
         }
         return "<" + icon + ">";
     }
 
     public String getParentLocationsStringRep() {
-        if(parentLocations.isEmpty()) {
+        if (parentLocations.isEmpty()) {
             return "";
         }
         String stringRep = "(";
@@ -100,7 +123,7 @@ public class GroupEntry {
     }
 
     public String buildStringRep() {
-        
+
         String stringRep = "Group" + StringProcessor.fillWithSpaces("", TAB_SIZE);
 
         // group id

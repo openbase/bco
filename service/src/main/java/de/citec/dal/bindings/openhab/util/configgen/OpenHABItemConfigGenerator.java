@@ -12,6 +12,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
@@ -24,10 +25,11 @@ import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -77,12 +79,33 @@ public class OpenHABItemConfigGenerator {
 
     private void generateGroupEntries() throws CouldNotPerformException {
         try {
+            // generate location groups
+            GroupEntry groupEntry;
             List<LocationConfigType.LocationConfig> locationConfigList = locationRegistryRemote.getData().getLocationConfigList();
             for (LocationConfig locationConfig : locationConfigList) {
+                groupEntry = new GroupEntry(locationConfig);
                 groupEntryList.add(new GroupEntry(locationConfig));
+
+                if (locationConfig.getRoot()) {
+                    generateOverviewGroupEntries(groupEntry);
+                }
             }
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not generate group entries.", ex);
+        }
+    }
+
+    private void generateOverviewGroupEntries(final GroupEntry rootGroupEntry) throws CouldNotPerformException {
+        // generate overview menu
+        GroupEntry overviewGroupEntry = new GroupEntry("overview", "Übersicht", "settings", rootGroupEntry);
+        groupEntryList.add(overviewGroupEntry);
+
+        for (UnitType unitType : UnitType.values()) {
+            groupEntryList.add(new GroupEntry(unitType.name(), unitType.name(), "", rootGroupEntry));
+        }
+
+        for (ServiceType serviceType : ServiceType.values()) {
+            groupEntryList.add(new GroupEntry(serviceType.name(), serviceType.name(), "", rootGroupEntry));
         }
     }
 
@@ -94,7 +117,7 @@ public class OpenHABItemConfigGenerator {
 
                 // load device class
                 DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId());
-                
+
                 // ignore non openhab items
                 if (deviceClass.getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
                     continue;
@@ -108,10 +131,9 @@ public class OpenHABItemConfigGenerator {
                 for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
-                            BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
                             itemEntryList.add(new ItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig));
                         } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex));
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
                 }
@@ -162,7 +184,7 @@ public class OpenHABItemConfigGenerator {
 
             FileUtils.writeStringToFile(configFile, configAsString, false);
 
-            logger.info("ItemConfig["+configFile.getAbsolutePath()+"] successfully generated.");
+            logger.info("ItemConfig[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not serialize itemconfig to file!", ex);
         }

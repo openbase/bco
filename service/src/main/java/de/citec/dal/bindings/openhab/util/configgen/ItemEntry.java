@@ -95,13 +95,13 @@ public class ItemEntry {
 
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
-            } catch (NotAvailableException ex) {
+            } catch (final NotAvailableException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
             }
 
             try {
                 this.itemId = configPool.getValue(OPENHAB_BINDING_ITEM_ID);
-            } catch (NotAvailableException ex) {
+            } catch (final NotAvailableException ex) {
                 throw new NotAvailableException("itemId", ex);
             }
 
