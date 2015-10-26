@@ -125,11 +125,11 @@ public class ItemEntry {
 
             // TODO: maybe think of another strategy to name groups
             // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
-            String templateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
-            if (!(templateName.equals("Dimmer") || templateName.equals("Rollershutter"))) {
-                this.groups.add(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
-            }
-            this.groups.add(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
+//            String unittemplateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
+//            if (!(unittemplateName.equals("Dimmer") || unittemplateName.equals("RolleStringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())rshutter"))) {
+                this.groups.add(StringProcessor.transformUpperCaseToCamelCase("Unit"+unitConfig.getType().name()));
+//            }
+            this.groups.add(StringProcessor.transformUpperCaseToCamelCase("Service"+serviceConfig.getType().name()));
 
             try {
                 // just add location group if unit is visible.

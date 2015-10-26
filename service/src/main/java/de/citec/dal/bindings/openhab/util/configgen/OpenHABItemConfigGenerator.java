@@ -109,7 +109,7 @@ public class OpenHABItemConfigGenerator {
                 continue;
             }
             String unitLabel = StringProcessor.transformUpperCaseToCamelCase(unitType.name());
-            groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
+            groupEntryList.add(new GroupEntry("Unit"+unitLabel, unitLabel, unitLabel, overviewGroupEntry));
         }
 
 //        for (ServiceType serviceType : ServiceType.values()) {
