@@ -13,9 +13,11 @@ import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.printer.LogLevel;
+import de.citec.jul.processing.StringProcessor;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -80,16 +82,18 @@ public class OpenHABItemConfigGenerator {
     private void generateGroupEntries() throws CouldNotPerformException {
         try {
             // generate location groups
-            GroupEntry groupEntry;
+            GroupEntry groupEntry, rootEntry = null;
             List<LocationConfigType.LocationConfig> locationConfigList = locationRegistryRemote.getData().getLocationConfigList();
             for (LocationConfig locationConfig : locationConfigList) {
                 groupEntry = new GroupEntry(locationConfig);
                 groupEntryList.add(new GroupEntry(locationConfig));
 
                 if (locationConfig.getRoot()) {
-                    generateOverviewGroupEntries(groupEntry);
+                    rootEntry = groupEntry;
                 }
             }
+            Collections.sort(groupEntryList, (GroupEntry o1, GroupEntry o2) -> o1.getLabel().compareTo(o2.getLabel()));
+            generateOverviewGroupEntries(rootEntry);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not generate group entries.", ex);
         }
@@ -101,7 +105,11 @@ public class OpenHABItemConfigGenerator {
         groupEntryList.add(overviewGroupEntry);
 
         for (UnitType unitType : UnitType.values()) {
-            groupEntryList.add(new GroupEntry(unitType.name(), unitType.name(), "", overviewGroupEntry));
+            if(unitType.equals(UnitType.UNKNOWN)) {
+                continue;
+            }
+            String unitLabel = StringProcessor.transformUpperCaseToCamelCase(unitType.name());
+            groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
         }
 
 //        for (ServiceType serviceType : ServiceType.values()) {
