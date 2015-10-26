@@ -101,12 +101,12 @@ public class OpenHABItemConfigGenerator {
         groupEntryList.add(overviewGroupEntry);
 
         for (UnitType unitType : UnitType.values()) {
-            groupEntryList.add(new GroupEntry(unitType.name(), unitType.name(), "", rootGroupEntry));
+            groupEntryList.add(new GroupEntry(unitType.name(), unitType.name(), "", overviewGroupEntry));
         }
 
-        for (ServiceType serviceType : ServiceType.values()) {
-            groupEntryList.add(new GroupEntry(serviceType.name(), serviceType.name(), "", rootGroupEntry));
-        }
+//        for (ServiceType serviceType : ServiceType.values()) {
+//            groupEntryList.add(new GroupEntry(serviceType.name(), serviceType.name(), "", rootGroupEntry));
+//        }
     }
 
     private void generateItemEntries() throws CouldNotPerformException {
