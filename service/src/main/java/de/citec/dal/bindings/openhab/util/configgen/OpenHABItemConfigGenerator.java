@@ -101,15 +101,15 @@ public class OpenHABItemConfigGenerator {
 
     private void generateOverviewGroupEntries(final GroupEntry rootGroupEntry) throws CouldNotPerformException {
         // generate overview menu
-        GroupEntry overviewGroupEntry = new GroupEntry("overview", "Übersicht", "settings", rootGroupEntry);
+        GroupEntry overviewGroupEntry = new GroupEntry("Overview", "Übersicht", "settings", rootGroupEntry);
         groupEntryList.add(overviewGroupEntry);
 
         for (UnitType unitType : UnitType.values()) {
             if(unitType.equals(UnitType.UNKNOWN)) {
                 continue;
             }
-            String unitLabel = StringProcessor.transformUpperCaseToCamelCase(unitType.name());
-            groupEntryList.add(new GroupEntry("Unit"+unitLabel, unitLabel, unitLabel, overviewGroupEntry));
+            String unitLabel = "Unit"+StringProcessor.transformUpperCaseToCamelCase(unitType.name());
+            groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
         }
 
 //        for (ServiceType serviceType : ServiceType.values()) {
