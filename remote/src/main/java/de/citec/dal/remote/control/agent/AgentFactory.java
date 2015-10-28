@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.control.agent;
 
-import de.citec.dal.hal.device.AbstractDeviceController;
+import de.citec.dal.remote.control.agent.preset.AbstractAgent;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.processing.StringProcessor;
@@ -35,7 +35,7 @@ public class AgentFactory implements AgentFactoryInterface {
     }
 
     private String getAgentClass(final AgentConfigType.AgentConfig config) {
-        return AbstractDeviceController.class.getPackage().getName() + "."
+        return AbstractAgent.class.getPackage().getName() + "."
                 + StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
                 + "Agent";
     }
