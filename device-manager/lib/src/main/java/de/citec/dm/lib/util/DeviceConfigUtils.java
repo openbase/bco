@@ -16,6 +16,7 @@ import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  * A collection of utils to manipulate or analyse device configs.
+ *
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class DeviceConfigUtils {
@@ -63,27 +64,29 @@ public class DeviceConfigUtils {
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final DeviceConfigOrBuilder deviceConfig, final DeviceClassOrBuilder deviceClass, boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
         try {
-            UnitConfig debugUnitConfig = unitConfig.build();
             if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToDevice()) {
                 if (deviceConfigHasDuplicatedUnitType) {
-                    if(unitConfig.hasLabel() && !unitConfig.getLabel().isEmpty()) {
+                    if (unitConfig.hasLabel() && !unitConfig.getLabel().isEmpty()) {
                         return false;
                     }
 
-                    if(!unitConfig.hasUnitTemplateConfigId()) {
+                    if (!unitConfig.hasUnitTemplateConfigId()) {
                         throw new NotAvailableException("unitconfig.unittemplateconfigid");
                     }
 
                     for (UnitTemplateConfigType.UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                         if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                            unitConfig.setLabel(unitTemplateConfig.getLabel());
+                            if(unitTemplateConfig.getLabel().isEmpty()) {
+                                throw new NotAvailableException("unitTemplateConfig.label");
+                            }
+                            unitConfig.setLabel(deviceConfig.getLabel() + "_" + unitTemplateConfig.getLabel());
                             return true;
                         }
                     }
                     throw new CouldNotPerformException("DeviceClass[" + deviceClass.getId() + "] does not contain UnitTemplateConfig[" + unitConfig.getUnitTemplateConfigId() + "]!");
                 } else {
 
-                    if(!deviceConfig.hasLabel()) {
+                    if (!deviceConfig.hasLabel()) {
                         throw new NotAvailableException("deviceconfig.label");
                     }
 
