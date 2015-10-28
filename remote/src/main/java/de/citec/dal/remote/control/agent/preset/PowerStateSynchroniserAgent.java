@@ -7,7 +7,6 @@ package de.citec.dal.remote.control.agent.preset;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.remote.unit.DALRemoteService;
-import de.citec.dal.remote.unit.PowerPlugRemote;
 import de.citec.dal.remote.unit.UnitRemoteFactory;
 import de.citec.dal.remote.unit.UnitRemoteFactoryInterface;
 import de.citec.dm.remote.DeviceRegistryRemote;
@@ -22,7 +21,6 @@ import java.lang.reflect.Method;
 import rst.configuration.EntryType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -38,7 +36,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     }
 
     private DALRemoteService sourceRemote, targetRemote;
-    private UnitConfig source, target;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private UnitRemoteFactoryInterface factory;
 
@@ -50,18 +47,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         deviceRegistryRemote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
         deviceRegistryRemote.activate();
 
-        sourceRemote = new PowerPlugRemote();
-        targetRemote = new PowerPlugRemote();
-
         for (EntryType.Entry entry : agentConfig.getMetaConfig().getEntryList()) {
             switch (entry.getKey()) {
                 case "SOURCE":
-                    this.source = deviceRegistryRemote.getUnitConfigById(entry.getValue());
-                    sourceRemote = factory.createAndInitUnitRemote(source);
+                    sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(entry.getValue()));
                     break;
                 case "TARGET":
-                    this.target = deviceRegistryRemote.getUnitConfigById(entry.getValue());
-                    targetRemote = factory.createAndInitUnitRemote(target);
+                    targetRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(entry.getValue()));
                     break;
                 case "SOURCE_BEHAVIOUR":
                     this.sourceBehaviour = PowerStateSyncBehaviour.valueOf(entry.getValue());
@@ -70,7 +62,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                     this.targetBehaviour = PowerStateSyncBehaviour.valueOf(entry.getValue());
                     break;
                 default:
-                    logger.warn("Unknown meta config key [" + entry.getKey() + "] witch value [" + entry.getValue() + "]");
+                    logger.debug("Unknown meta config key [" + entry.getKey() + "] with value [" + entry.getValue() + "]");
             }
         }
 
