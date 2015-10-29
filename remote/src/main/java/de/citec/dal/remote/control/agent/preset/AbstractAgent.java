@@ -14,8 +14,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public abstract class AbstractAgent implements AgentInterface {
 
