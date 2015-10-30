@@ -91,6 +91,24 @@
         </dependency>
         <dependency>
             <groupId>de.citec</groupId>
+            <artifactId>agm.core</artifactId>
+            <version>${global.rm.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>apm.core</artifactId>
+            <version>${global.rm.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>scm.core</artifactId>
+            <version>${global.rm.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
             <artifactId>dm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
@@ -98,6 +116,24 @@
         <dependency>
             <groupId>de.citec</groupId>
             <artifactId>lm.remote</artifactId>
+            <version>${global.rm.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>agm.remote</artifactId>
+            <version>${global.rm.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>apm.remote</artifactId>
+            <version>${global.rm.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>scm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
