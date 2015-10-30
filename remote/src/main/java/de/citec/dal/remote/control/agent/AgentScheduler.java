@@ -15,6 +15,8 @@ import de.citec.jul.pattern.Observer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType;
 
@@ -23,20 +25,22 @@ import rst.homeautomation.control.agent.AgentRegistryType;
  * @author mpohling
  */
 public class AgentScheduler {
-
+    
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    
     private final AgentFactory factory;
     private final HashMap<String, AgentInterface> agentMap;
     private final AgentRegistryRemote agentRegistryRemote;
-
-
+    
     public AgentScheduler() throws InstantiationException, InterruptedException {
+        logger.info("Starting agent scheduler");
         try {
             this.factory = new AgentFactory();
             agentMap = new HashMap<>();
-
+            
             agentRegistryRemote = new AgentRegistryRemote();
             agentRegistryRemote.addObserver(new Observer<AgentRegistryType.AgentRegistry>() {
-
+                
                 @Override
                 public void update(Observable<AgentRegistryType.AgentRegistry> source, AgentRegistryType.AgentRegistry data) throws Exception {
                     updateAgents(data);
@@ -44,18 +48,18 @@ public class AgentScheduler {
             });
             agentRegistryRemote.init();
             agentRegistryRemote.activate();
-            System.out.println("waiting for agents...");
-
+            logger.info("waiting for agents...");
+            
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-
+    
     private void updateAgents(final AgentRegistryType.AgentRegistry data) throws InterruptedException {
-
+        logger.info("Updating agents..");
         // add new agents
         for (AgentConfig config : data.getAgentConfigList()) {
-
+            
             if (!agentMap.containsKey(config.getId())) {
                 try {
                     agentMap.put(config.getId(), createAgent(config));
@@ -65,7 +69,7 @@ public class AgentScheduler {
                 }
             }
         }
-
+        
         boolean found;
         // remove outdated agents
         for (AgentInterface agent : new ArrayList<>(agentMap.values())) {
@@ -80,7 +84,7 @@ public class AgentScheduler {
                     continue;
                 }
             }
-
+            
             if (!found) {
                 try {
                     agentMap.remove(agent.getConfig().getId()).deactivate();
@@ -90,10 +94,12 @@ public class AgentScheduler {
             }
         }
     }
-
+    
     public AgentInterface createAgent(final AgentConfig config) throws CouldNotPerformException {
+        logger.info("Creating new agent with config [" + config + "]");
         AgentInterface agent = factory.newAgent(config);
         try {
+            logger.info("Activating new agent");
             agent.activate();
         } catch (InterruptedException ex) {
             ExceptionPrinter.printHistory(null, ex);

@@ -9,6 +9,8 @@ import de.citec.dal.remote.control.agent.preset.AbstractAgent;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.processing.StringProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
@@ -17,6 +19,8 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class AgentFactory implements AgentFactoryInterface {
+    
+    protected final Logger logger = LoggerFactory.getLogger(AgentFactory.class);
 
     @Override
     public AgentInterface newAgent(final AgentConfigType.AgentConfig config) throws CouldNotPerformException {
@@ -27,7 +31,8 @@ public class AgentFactory implements AgentFactoryInterface {
             if (!config.hasType()) {
                 throw new NotAvailableException("agentype");
             }
-            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass (config));
+            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(config));
+            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "]");
             return (AgentInterface) agentClass.getConstructor(AgentConfig.class).newInstance(config);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not instantiate Agent[" + config.getId() + "]!", ex);
