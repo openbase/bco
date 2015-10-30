@@ -5,6 +5,9 @@
  */
 package de.citec.dal.registry;
 
+import de.citec.agm.core.AgentManager;
+import de.citec.agm.remote.AgentRegistryRemote;
+import de.citec.apm.core.AppManager;
 import de.citec.dm.core.DeviceManager;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
@@ -22,16 +25,20 @@ import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
+import de.citec.scm.core.SceneManager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import rst.configuration.EntryType.Entry;
+import rst.configuration.MetaConfigType.MetaConfig;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.binding.BindingTypeHolderType;
+import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.BindingServiceConfigType;
@@ -72,6 +79,9 @@ public class MockRegistry {
 
     private static DeviceManager deviceManager;
     private static LocationManager locationManager;
+    private static AgentManager agentManager;
+    private static AppManager appManager;
+    private static SceneManager sceneManager;
 
     private final DeviceRegistryRemote deviceRemote;
     private final LocationRegistryRemote locationRemote;
@@ -142,7 +152,7 @@ public class MockRegistry {
                     try {
                         deviceManager = new DeviceManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(logger, ex);
+                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });
@@ -154,16 +164,58 @@ public class MockRegistry {
                     try {
                         locationManager = new LocationManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(logger, ex);
+                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                    }
+                }
+            });
+
+            Thread agentRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        agentManager = new AgentManager();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                    }
+                }
+            });
+            
+            Thread appRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        appManager = new AppManager();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                    }
+                }
+            });
+            
+            Thread sceneRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        sceneManager = new SceneManager();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });
 
             deviceRegistryThread.start();
             locationRegistryThread.start();
+            agentRegistryThread.start();
+            appRegistryThread.start();
+            sceneRegistryThread.start();
 
             deviceRegistryThread.join();
             locationRegistryThread.join();
+            agentRegistryThread.join();
+            appRegistryThread.join();
+            sceneRegistryThread.join();
 
             deviceRemote = new DeviceRegistryRemote();
             locationRemote = new LocationRegistryRemote();
@@ -192,6 +244,9 @@ public class MockRegistry {
         locationRemote.shutdown();
         deviceManager.shutdown();
         locationManager.shutdown();
+        agentManager.shutdown();
+        appManager.shutdown();
+        sceneManager.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException {

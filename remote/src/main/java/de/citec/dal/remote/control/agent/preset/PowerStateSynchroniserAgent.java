@@ -10,8 +10,6 @@ import de.citec.dal.remote.unit.DALRemoteService;
 import de.citec.dal.remote.unit.UnitRemoteFactory;
 import de.citec.dal.remote.unit.UnitRemoteFactoryInterface;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.pattern.Observable;
@@ -28,13 +26,19 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  */
 public class PowerStateSynchroniserAgent extends AbstractAgent {
 
-    private enum PowerStateSyncBehaviour {
+    public static final String SOURCE_KEY = "SOURCE";
+    public static final String TARGET_KEY = "TARGET";
+    public static final String SOURCE_BEHAVIOUR_KEY = "SOURCE_BEHAVIOUR";
+    public static final String TARGET_BEHAVIOUR_KEY = "TARGET_BEHAVIOUR";
+
+    public enum PowerStateSyncBehaviour {
 
         ON,
         OFF,
         LAST_STATE;
     }
 
+    private PowerState.State sourceLatestPowerState, targetLatestPowerState;
     private DALRemoteService sourceRemote, targetRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private UnitRemoteFactoryInterface factory;
@@ -44,21 +48,21 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         factory = UnitRemoteFactory.getInstance();
 
         DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
-        deviceRegistryRemote.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
+        deviceRegistryRemote.init();
         deviceRegistryRemote.activate();
 
         for (EntryType.Entry entry : agentConfig.getMetaConfig().getEntryList()) {
             switch (entry.getKey()) {
-                case "SOURCE":
+                case SOURCE_KEY:
                     sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(entry.getValue()));
                     break;
-                case "TARGET":
+                case TARGET_KEY:
                     targetRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(entry.getValue()));
                     break;
-                case "SOURCE_BEHAVIOUR":
+                case SOURCE_BEHAVIOUR_KEY:
                     this.sourceBehaviour = PowerStateSyncBehaviour.valueOf(entry.getValue());
                     break;
-                case "TARGET_BEHAVIOUR":
+                case TARGET_BEHAVIOUR_KEY:
                     this.targetBehaviour = PowerStateSyncBehaviour.valueOf(entry.getValue());
                     break;
                 default:
@@ -76,15 +80,22 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
             @Override
             public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
-                if (invokeGetPowerState(data).getValue() == PowerState.State.OFF) {
-                    invokeSetPower(targetRemote, PowerState.State.OFF);
-                } else if (invokeGetPowerState(data).getValue() == PowerState.State.ON) {
+                sourceLatestPowerState = invokeGetPowerState(data).getValue();
+                if (sourceLatestPowerState == PowerState.State.OFF) {
+                    if (targetLatestPowerState != PowerState.State.OFF) {
+                        invokeSetPower(targetRemote, PowerState.State.OFF);
+                    }
+                } else if (sourceLatestPowerState == PowerState.State.ON) {
                     switch (targetBehaviour) {
                         case OFF:
-                            invokeSetPower(targetRemote, PowerState.State.OFF);
+                            if (targetLatestPowerState != PowerState.State.OFF) {
+                                invokeSetPower(targetRemote, PowerState.State.OFF);
+                            }
                             break;
                         case ON:
-                            invokeSetPower(targetRemote, PowerState.State.ON);
+                            if (targetLatestPowerState != PowerState.State.ON) {
+                                invokeSetPower(targetRemote, PowerState.State.ON);
+                            }
                             break;
                         case LAST_STATE:
                             break;
@@ -97,15 +108,22 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
             @Override
             public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
-                if (invokeGetPowerState(data).getValue() == PowerState.State.ON) {
-                    invokeSetPower(sourceRemote, PowerState.State.ON);
-                } else if (invokeGetPowerState(data).getValue() == PowerState.State.OFF) {
+                targetLatestPowerState = invokeGetPowerState(data).getValue();
+                if (targetLatestPowerState == PowerState.State.ON) {
+                    if (sourceLatestPowerState != PowerState.State.ON) {
+                        invokeSetPower(sourceRemote, PowerState.State.ON);
+                    }
+                } else if (targetLatestPowerState == PowerState.State.OFF) {
                     switch (sourceBehaviour) {
                         case OFF:
-                            invokeSetPower(sourceRemote, PowerState.State.OFF);
+                            if (sourceLatestPowerState != PowerState.State.OFF) {
+                                invokeSetPower(sourceRemote, PowerState.State.OFF);
+                            }
                             break;
                         case ON:
-                            invokeSetPower(sourceRemote, PowerState.State.ON);
+                            if (sourceLatestPowerState != PowerState.State.ON) {
+                                invokeSetPower(sourceRemote, PowerState.State.ON);
+                            }
                             break;
                         case LAST_STATE:
                             break;
@@ -138,7 +156,11 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         sourceRemote.activate();
-        targetRemote.deactivate();
+        targetRemote.activate();
+        sourceRemote.requestStatus();
+        targetRemote.requestStatus();
+        sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
+        targetLatestPowerState = invokeGetPowerState(targetRemote.getData()).getValue();
         super.activate();
     }
 
@@ -149,4 +171,19 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         super.deactivate();
     }
 
+    public DALRemoteService getSourceRemote() {
+        return sourceRemote;
+    }
+
+    public DALRemoteService getTargetRemote() {
+        return targetRemote;
+    }
+
+    public PowerStateSyncBehaviour getSourceBehaviour() {
+        return sourceBehaviour;
+    }
+
+    public PowerStateSyncBehaviour getTargetBehaviour() {
+        return targetBehaviour;
+    }
 }
