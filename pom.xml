@@ -107,7 +107,7 @@
             <version>1.7.12</version>
         </dependency>
         <!--start hue binding-->
-        <dependency>
+<!--        <dependency>
             <groupId>com.syncleus.philipshue</groupId>
             <artifactId>hue-local</artifactId>
             <version>1.8.1.0</version>
@@ -116,7 +116,7 @@
             <groupId>com.syncleus.philipshue</groupId>
             <artifactId>hue-resources</artifactId>
             <version>1.8.1.0</version>
-        </dependency>
+        </dependency>-->
         <!--end hue binding-->
     </dependencies>
 </project>
