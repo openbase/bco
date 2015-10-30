@@ -6,6 +6,7 @@
 package de.citec.dm.core.consistency;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
@@ -16,6 +17,7 @@ import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.rsb.ScopeType;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
@@ -24,25 +26,33 @@ import rst.rsb.ScopeType;
 public class DeviceScopeConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     private final LocationRegistryRemote locationRegistryRemote;
-    
+
     public DeviceScopeConsistencyHandler(final LocationRegistryRemote locationRegistryRemote) {
         this.locationRegistryRemote = locationRegistryRemote;
     }
-    
+
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig deviceConfig = entry.getMessage();
 
-        ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(deviceConfig, locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()));
+        if (!deviceConfig.hasPlacementConfig()) {
+            throw new NotAvailableException("deviceconfig.placementconfig");
+        }
+        if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
+            throw new NotAvailableException("deviceconfig.placementconfig.locationid");
+        }
+        
+        LocationConfig test = locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId());
+        ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(deviceConfig, test);
 
         // verify and update scope
-		if(!ScopeGenerator.generateStringRep(deviceConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeGenerator.generateStringRep(deviceConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
             entry.setMessage(deviceConfig.toBuilder().setScope(newScope));
-			throw new EntryModification(entry, this);
-		}
+            throw new EntryModification(entry, this);
+        }
     }
-    
-       @Override
+
+    @Override
     public void reset() {
     }
 }

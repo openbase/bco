@@ -17,6 +17,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.registry.LocationRegistryService;
 import de.citec.lm.remote.LocationRegistryRemote;
@@ -135,7 +136,8 @@ public class LocationRegistryImplTest {
     }
 
     /**
-     * Test if a root location is removed that the children become root locations.
+     * Test if a root location is removed that the children become root
+     * locations.
      *
      * @throws Exception
      */
@@ -145,6 +147,7 @@ public class LocationRegistryImplTest {
         LocationConfig registeredRoot = remote.registerLocationConfig(root);
         remote.requestStatus();
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getRoot());
+        assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
 
         LocationConfig child = LocationConfig.newBuilder().setLabel("TestChildLocation").setParentId(registeredRoot.getId()).build();
         LocationConfig registeredChild = remote.registerLocationConfig(child);
@@ -160,7 +163,8 @@ public class LocationRegistryImplTest {
     }
 
     /**
-     * Test if a root location becomes a child after it is set as a child of root locations.
+     * Test if a root location becomes a child after it is set as a child of
+     * root locations.
      *
      * @throws Exception
      */
@@ -198,7 +202,8 @@ public class LocationRegistryImplTest {
     }
 
     /**
-     * Test if a a loop in the location configuration is detected by the consistency handler.
+     * Test if a a loop in the location configuration is detected by the
+     * consistency handler.
      *
      * @throws Exception
      */
