@@ -73,7 +73,14 @@
         <global.rst.stable.artifact>rst-csra-ha-paramite</global.rst.stable.artifact>
         <global.rst.stable.version>0.12-SNAPSHOT</global.rst.stable.version>
     </properties>
-    
+
+    <repositories>
+        <repository>
+            <id>bone</id>
+            <url>http://bone.no-ip.biz:53538/nexus/content/repositories/releases/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

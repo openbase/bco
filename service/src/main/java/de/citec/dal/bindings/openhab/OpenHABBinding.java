@@ -161,7 +161,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
                 return null;
             }
             if (!openhabRemoteService.isConnected()) {
-                throw new InvalidStateException("Could not reach server!");
+                throw new InvalidStateException("Dal openhab binding could not reach openhab server! Please check if openhab is still running!");
             }
 
             openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
