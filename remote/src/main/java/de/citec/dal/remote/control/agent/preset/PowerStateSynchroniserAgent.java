@@ -46,6 +46,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     public PowerStateSynchroniserAgent(AgentConfig agentConfig) throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(agentConfig);
         factory = UnitRemoteFactory.getInstance();
+        logger.info("Creating PowerStateSynchroniserAgent");
 
         DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
         deviceRegistryRemote.init();
@@ -72,6 +73,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
         deviceRegistryRemote.shutdown();
 
+        logger.info("Initializing observers");
         initObserver();
     }
 
@@ -81,6 +83,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             @Override
             public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 sourceLatestPowerState = invokeGetPowerState(data).getValue();
+                logger.info("Recieved new value ["+sourceLatestPowerState+"] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
                         invokeSetPower(targetRemote, PowerState.State.OFF);
@@ -109,6 +112,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             @Override
             public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 targetLatestPowerState = invokeGetPowerState(data).getValue();
+                logger.info("Recieved new value ["+targetLatestPowerState+"] for target");
                 if (targetLatestPowerState == PowerState.State.ON) {
                     if (sourceLatestPowerState != PowerState.State.ON) {
                         invokeSetPower(sourceRemote, PowerState.State.ON);
@@ -155,6 +159,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        logger.info("Activating [" + getClass().getSimpleName() + "]");
+        logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
+        logger.info("Source [" + targetRemote.getId() + "], behaviour [" + targetBehaviour + "]");
         sourceRemote.activate();
         targetRemote.activate();
         sourceRemote.requestStatus();
@@ -166,6 +173,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
+        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         sourceRemote.deactivate();
         targetRemote.deactivate();
         super.deactivate();
