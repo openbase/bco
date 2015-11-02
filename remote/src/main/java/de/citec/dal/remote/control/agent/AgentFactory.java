@@ -23,7 +23,7 @@ public class AgentFactory implements AgentFactoryInterface {
     protected final Logger logger = LoggerFactory.getLogger(AgentFactory.class);
 
     @Override
-    public AgentInterface newAgent(final AgentConfigType.AgentConfig config) throws CouldNotPerformException {
+    public Agent newInstance(final AgentConfigType.AgentConfig config) throws CouldNotPerformException {
         try {
             if (config == null) {
                 throw new NotAvailableException("agentconfig");
@@ -33,7 +33,7 @@ public class AgentFactory implements AgentFactoryInterface {
             }
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(config));
             logger.info("Creating agent of type [" + agentClass.getSimpleName() + "]");
-            return (AgentInterface) agentClass.getConstructor(AgentConfig.class).newInstance(config);
+            return (Agent) agentClass.getConstructor(AgentConfig.class).newInstance(config);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not instantiate Agent[" + config.getId() + "]!", ex);
         }

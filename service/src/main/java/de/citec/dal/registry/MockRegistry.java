@@ -6,7 +6,6 @@
 package de.citec.dal.registry;
 
 import de.citec.agm.core.AgentManager;
-import de.citec.agm.remote.AgentRegistryRemote;
 import de.citec.apm.core.AppManager;
 import de.citec.dm.core.DeviceManager;
 import de.citec.dm.remote.DeviceRegistryRemote;
@@ -31,14 +30,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.configuration.EntryType.Entry;
-import rst.configuration.MetaConfigType.MetaConfig;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.binding.BindingTypeHolderType;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.BindingServiceConfigType;

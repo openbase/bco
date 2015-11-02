@@ -12,11 +12,11 @@ import de.citec.dal.remote.unit.UnitRemoteFactoryInterface;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import rst.configuration.EntryType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
@@ -52,25 +52,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         deviceRegistryRemote.init();
         deviceRegistryRemote.activate();
 
-        for (EntryType.Entry entry : agentConfig.getMetaConfig().getEntryList()) {
-            switch (entry.getKey()) {
-                case SOURCE_KEY:
-                    sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(entry.getValue()));
-                    break;
-                case TARGET_KEY:
-                    targetRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(entry.getValue()));
-                    break;
-                case SOURCE_BEHAVIOUR_KEY:
-                    this.sourceBehaviour = PowerStateSyncBehaviour.valueOf(entry.getValue());
-                    break;
-                case TARGET_BEHAVIOUR_KEY:
-                    this.targetBehaviour = PowerStateSyncBehaviour.valueOf(entry.getValue());
-                    break;
-                default:
-                    logger.debug("Unknown meta config key [" + entry.getKey() + "] with value [" + entry.getValue() + "]");
-            }
-        }
-
+        MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", agentConfig.getMetaConfig());
+        
+        sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+        targetRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(TARGET_KEY)));
+        sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
+        targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
+        
         deviceRegistryRemote.shutdown();
 
         logger.info("Initializing observers");
@@ -160,12 +148,10 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getClass().getSimpleName() + "]");
-        logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
-        logger.info("Source [" + targetRemote.getId() + "], behaviour [" + targetBehaviour + "]");
         sourceRemote.activate();
         targetRemote.activate();
-        sourceRemote.requestStatus();
-        targetRemote.requestStatus();
+        logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
+        logger.info("Target [" + targetRemote.getId() + "], behaviour [" + targetBehaviour + "]");
         sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
         targetLatestPowerState = invokeGetPowerState(targetRemote.getData()).getValue();
         super.activate();

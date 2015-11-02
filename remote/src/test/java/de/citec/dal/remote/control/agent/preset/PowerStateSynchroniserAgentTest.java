@@ -102,6 +102,7 @@ public class PowerStateSynchroniserAgentTest {
         DimmerRemote dimmerRemote = (DimmerRemote) agent.getSourceRemote();
         AmbientLightRemote ambientLightRemote = (AmbientLightRemote) agent.getTargetRemote();
 
+        Thread.sleep(5000);
         agent.activate();
 
         dimmerRemote.setPower(PowerState.State.OFF);
@@ -136,10 +137,10 @@ public class PowerStateSynchroniserAgentTest {
     }
 
     private AgentConfig registerAgent() throws CouldNotPerformException {
-        Entry.Builder source = Entry.newBuilder().setKey("SOURCE").setValue("");
-        Entry.Builder target = Entry.newBuilder().setKey("TARGET").setValue("");
-        Entry.Builder sourceBehaviour = Entry.newBuilder().setKey("SOURCE_BEHAVIOUR").setValue("OFF");
-        Entry.Builder targetBehaviour = Entry.newBuilder().setKey("TARGET_BEHAVIOUR").setValue("ON");
+        Entry.Builder source = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_KEY);
+        Entry.Builder target = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY);
+        Entry.Builder sourceBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_BEHAVIOUR_KEY).setValue("OFF");
+        Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 
         for (UnitConfig unit : deviceRemote.getUnitConfigs()) {
             if (unit.getType() == UnitType.DIMMER && source.getValue().isEmpty()) {
@@ -147,9 +148,17 @@ public class PowerStateSynchroniserAgentTest {
             } else if (unit.getType() == UnitType.AMBIENT_LIGHT && target.getValue().isEmpty()) {
                 target.setValue(unit.getId());
             }
+
+            if (source.hasValue() && target.hasValue()) {
+                break;
+            }
         }
 
-        MetaConfig metaConfig = MetaConfig.newBuilder().addEntry(source).addEntry(target).addEntry(sourceBehaviour).addEntry(targetBehaviour).build();
+        MetaConfig metaConfig = MetaConfig.newBuilder()
+                .addEntry(source)
+                .addEntry(target)
+                .addEntry(sourceBehaviour)
+                .addEntry(targetBehaviour).build();
         return agentRemote.registerAgentConfig(AgentConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setMetaConfig(metaConfig).build());
     }
 }

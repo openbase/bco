@@ -22,7 +22,7 @@ public class DeviceFactory extends AbstractDeviceFactory {
     }
 
     @Override
-    public Device newDevice(final DeviceConfig deviceConfig, final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Device newInstance(final DeviceConfig deviceConfig, final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             if (deviceClass == null) {
                 throw new NotAvailableException("deviceClass");

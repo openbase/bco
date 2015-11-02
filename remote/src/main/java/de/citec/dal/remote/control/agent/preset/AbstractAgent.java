@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.control.agent.preset;
 
-import de.citec.dal.remote.control.agent.AgentInterface;
+import de.citec.dal.remote.control.agent.Agent;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
@@ -16,7 +16,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public abstract class AbstractAgent implements AgentInterface {
+public abstract class AbstractAgent implements Agent {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -25,6 +25,7 @@ public abstract class AbstractAgent implements AgentInterface {
 
     public AbstractAgent(AgentConfig agentConfig) {
         this.agentConfig = agentConfig;
+        logger.info("Agent[" + getClass().getSimpleName() + "] state chance to "+agentConfig.getActivationState().getValue());
         switch (agentConfig.getActivationState().getValue()) {
             case ACTIVE:
                 active = true;
