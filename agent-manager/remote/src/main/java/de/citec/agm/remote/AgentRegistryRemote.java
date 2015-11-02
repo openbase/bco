@@ -11,7 +11,6 @@ import de.citec.jp.JPAgentRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
@@ -23,6 +22,8 @@ import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -57,8 +58,8 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
         super.activate();
         try {
             notifyUpdated(requestStatus());
-        } catch(CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
         }
     }
 
@@ -70,8 +71,6 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRemoteRegistry() {
         return agentConfigRemoteRegistry;
     }
-    
-    
 
     @Override
     public AgentConfigType.AgentConfig registerAgentConfig(final AgentConfigType.AgentConfig agentConfig) throws CouldNotPerformException {
