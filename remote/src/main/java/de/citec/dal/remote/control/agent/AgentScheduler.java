@@ -6,15 +6,16 @@
 package de.citec.dal.remote.control.agent;
 
 import de.citec.agm.remote.AgentRegistryRemote;
-import de.citec.dal.registry.RegistrySynchronizer;
+import de.citec.dal.registry.ActivatableEntryRegistySynchronizer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.storage.registry.Registry;
-import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.state.ActivationStateType;
+import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
@@ -22,13 +23,13 @@ import rst.homeautomation.state.ActivationStateType;
  */
 public class AgentScheduler {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(AgentScheduler.class);
 
     private final AgentFactory factory;
     private final Registry<String, Agent> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
 
-    private final RegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
+    private final ActivatableEntryRegistySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
 
     public AgentScheduler() throws InstantiationException, InterruptedException {
         logger.info("Starting agent scheduler");
@@ -38,89 +39,32 @@ public class AgentScheduler {
 
             agentRegistryRemote = new AgentRegistryRemote();
 
-            this.registrySynchronizer = new RegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new ActivatableEntryRegistySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
 
                 @Override
-                public boolean verifyConfig(AgentConfig config) {
-                    return config.getActivationState().getValue() == ActivationStateType.ActivationState.State.ACTIVE;
-                }
-
-                @Override
-                public Agent register(AgentConfig config) throws CouldNotPerformException, InterruptedException {
-                    Agent agent = super.register(config);
-                    agent.activate();
-                    return agent;
-                }
-
-                @Override
-                public Agent remove(AgentConfig config) throws CouldNotPerformException, InterruptedException {
-                    Agent agent = super.remove(config);
-                    agent.deactivate();
-                    return agent;
-                }
+                public boolean activationCondition(final AgentConfig config) {
+                    return config.getActivationState().getValue() == ActivationState.State.ACTIVE;
+                }                
             };
 
             agentRegistryRemote.init();
             agentRegistryRemote.activate();
+            registrySynchronizer.init();
             logger.info("waiting for agents...");
 
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-
-//    private void updateAgents(final AgentRegistryType.AgentRegistry data) throws InterruptedException {
-//        logger.info("Updating agents..");
-//
-//        agentDiffList.diff(data.getAgentConfigList());
-//
-//        // remove outdated
-//        for (AgentConfig agentConfig : agentDiffList.getRemovedMessageMap()) {
-//            if (agentRegistry.containsKey(agentConfig.getId())) {
-//                agentRegistry.remove(agentConfig.getId()).deactivate();
-//            }
-//        }
-//
-//        // update agents
-//        for (AgentConfig config : data.getAgentConfigList()) {
-//
-//            if (!agentRegistry.containsKey(config.getId())) {
-//                try {
-//                    agentRegistry.put(config.getId(), createAgent(config));
-//                } catch (CouldNotPerformException ex) {
-//                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-//                }
-//            }
-//        }
-//
-//        boolean found;
-//        // remove outdated agents
-//        for (Agent agent : new ArrayList<>(agentRegistry.values())) {
-//            found = false;
-//            for (AgentConfig config : data.getAgentConfigList()) {
-//                try {
-//                    if (agent.getConfig().getId().equals(config.getId())) {
-//                        found = true;
-//                        break;
-//                    }
-//                } catch (NotAvailableException ex) {
-//                    continue;
-//                }
-//            }
-//
-//            if (!found) {
-//                try {
-//                    agentRegistry.remove(agent.getConfig().getId()).deactivate();
-//                } catch (CouldNotPerformException ex) {
-//                    ExceptionPrinter.printHistory(null, ex);
-//                }
-//            }
-//        }
-//    }
+    
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws de.citec.jul.exception.InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
-        new AgentScheduler();
+    public static void main(String[] args) throws InterruptedException {
+        try {
+            new AgentScheduler();
+        } catch (CouldNotPerformException | NullPointerException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
     }
 }

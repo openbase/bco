@@ -165,5 +165,14 @@ public abstract class RegistrySynchronizer<KEY, ENTRY extends Identifiable<KEY>,
         return registry.remove(remoteRegistry.getKey(config));
     }
 
-    public abstract boolean verifyConfig(final CONFIG_M config);
+    /**
+     * Method should return true if the given configurations is valid, otherwise false. 
+     * This default implementation accepts all configurations. To implement a custom verification just overwrite this method.
+     *
+     * @param config
+     * @return
+     */
+    public boolean verifyConfig(final CONFIG_M config) {
+        return true;
+    }
 }

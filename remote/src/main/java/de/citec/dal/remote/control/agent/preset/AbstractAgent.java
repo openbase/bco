@@ -23,7 +23,7 @@ public abstract class AbstractAgent implements Agent {
     protected boolean active;
     protected final AgentConfig agentConfig;
 
-    public AbstractAgent(AgentConfig agentConfig) {
+    public AbstractAgent(final AgentConfig agentConfig) {
         this.agentConfig = agentConfig;
         logger.info("Agent[" + getClass().getSimpleName() + "] state chance to "+agentConfig.getActivationState().getValue());
         switch (agentConfig.getActivationState().getValue()) {
@@ -37,6 +37,11 @@ public abstract class AbstractAgent implements Agent {
             default:
                 logger.warn("Agent [" + getClass().getSimpleName() + "] activation state is unknown!");
         }
+    }
+
+    @Override
+    public String getId() throws CouldNotPerformException {
+        return agentConfig.getId();
     }
 
     @Override
