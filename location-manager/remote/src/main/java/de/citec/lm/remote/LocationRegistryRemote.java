@@ -30,7 +30,9 @@ import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -116,6 +118,22 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     @Override
+    public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
+        getData();
+        return locationRemoteRegistry.getMessages().stream()
+                .filter(m -> m.getLabel().equals(locationLabel))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByLabel(final String unitLabel, final String locationId) throws CouldNotPerformException {
+        getData();
+        return deviceRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
+                .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
     public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         getData();
         return locationRemoteRegistry.contains(locationConfig);
@@ -153,8 +171,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive
-     * related to the given location id.
+     * Method returns all unit configurations which are direct or recursive related to the given location id.
      *
      * @param locationConfigId
      * @return
@@ -171,8 +188,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive
-     * related to the given location id and an instance of the given unit type.
+     * Method returns all unit configurations which are direct or recursive related to the given location id and an instance of the given unit type.
      *
      * @param type
      * @param locationConfigId
@@ -192,8 +208,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive
-     * related to the given location id and an implement the given service type.
+     * Method returns all unit configurations which are direct or recursive related to the given location id and an implement the given service type.
      *
      * @param type
      * @param locationConfigId
@@ -215,14 +230,12 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all service configurations which are direct or recursive
-     * related to the given location id.
+     * Method returns all service configurations which are direct or recursive related to the given location id.
      *
      * @param locationConfigId
      * @return the list of service configurations.
      * @throws CouldNotPerformException
-     * @throws NotAvailableException is thrown if the given location config id
-     * is unknown.
+     * @throws NotAvailableException is thrown if the given location config id is unknown.
      */
     @Override
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -246,25 +259,6 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
             }
         }
         throw new NotAvailableException("rootlocation");
-    }
-
-    /**
-     *
-     * @return @throws CouldNotPerformException
-     * @throws NotAvailableException
-     * @deprecated may deprecated in a future release, use
-     * getRootLocationConfig() instead.
-     */
-    @Deprecated
-    public List<LocationConfig> getRootLocationConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
-        List<LocationConfig> rootLocationConfigs = new ArrayList<>();
-        for (LocationConfig locationConfig : locationRemoteRegistry.getMessages()) {
-            if (locationConfig.hasRoot() && locationConfig.getRoot()) {
-                rootLocationConfigs.add(locationConfig);
-            }
-        }
-        return rootLocationConfigs;
     }
 
     @Override

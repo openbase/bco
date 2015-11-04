@@ -56,7 +56,7 @@ public interface DeviceRegistryInterface {
     
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
     
-    public UnitConfig[] getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException, NotAvailableException;
+    public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException, NotAvailableException;
     
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
     

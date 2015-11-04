@@ -10,14 +10,11 @@ import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
-import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import de.citec.lm.remote.LocationRegistryRemote;
-import java.util.List;
 import rst.homeautomation.device.DeviceConfigType;
-import rst.spatial.LocationConfigType;
 import rst.spatial.PlacementConfigType;
 
 /**
@@ -43,8 +40,7 @@ public class DeviceLocationIdConsistencyHandler implements ProtoBufRegistryConsi
 
         // setup base location of device has no location configured.
         if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
-            List<LocationConfigType.LocationConfig> rootLocationConfigs = locationRegistryRemote.getRootLocationConfigs();
-            deviceConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(deviceConfig.getPlacementConfig()).setLocationId(rootLocationConfigs.get(0).getId()));
+            deviceConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(deviceConfig.getPlacementConfig()).setLocationId(locationRegistryRemote.getRootLocationConfig().getId()));
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
 

@@ -8,9 +8,8 @@ package de.citec.lm.lib.registry;
 import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.spatial.LocationConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
@@ -19,23 +18,27 @@ import rst.spatial.LocationConfigType.LocationConfig;
  */
 public interface LocationRegistryInterface {
 
-    public LocationConfigType.LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
     
-    public LocationConfigType.LocationConfig getLocationConfigById(final String locationConfigId) throws CouldNotPerformException;
+    public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
+
+    public List<LocationConfig> getLocationConfigsByLabel(final String locationId) throws CouldNotPerformException;
 
     public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
 
-    public Boolean containsLocationConfigById(final String locationConfigId) throws CouldNotPerformException;
+    public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException;
 
-    public LocationConfigType.LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
 
-    public LocationConfigType.LocationConfig removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public LocationConfig removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
     
-    public List<LocationConfigType.LocationConfig> getLocationConfigs() throws CouldNotPerformException;
+    public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException;
     
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final String locationConfigId) throws CouldNotPerformException;
+    public List<UnitConfig> getUnitConfigs(final String locationId) throws CouldNotPerformException;
 
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationConfigId) throws CouldNotPerformException;
+    public List<UnitConfig> getUnitConfigsByLabel(final String unitLabel, final String locationId) throws CouldNotPerformException;
+
+    public List<ServiceConfig> getServiceConfigs(final String locationId) throws CouldNotPerformException;
     
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
     

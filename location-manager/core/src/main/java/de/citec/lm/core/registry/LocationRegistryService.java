@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
@@ -153,6 +154,22 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     @Override
     public LocationConfig getLocationConfigById(String locationConfigId) throws CouldNotPerformException {
         return locationConfigRegistry.get(locationConfigId).getMessage();
+    }
+
+    @Override
+    public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
+        getData();
+        return locationConfigRegistry.getMessages().stream()
+                .filter(m -> m.getLabel().equals(locationLabel))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByLabel(final String unitLabel, final String locationId) throws CouldNotPerformException {
+        getData();
+        return deviceRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
+                .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

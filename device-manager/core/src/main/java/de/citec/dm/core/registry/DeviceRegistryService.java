@@ -61,6 +61,7 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.lm.remote.LocationRegistryRemote;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -246,19 +247,16 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
     
     @Override
-    public UnitConfig[] getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
-        ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
         getData();
         deviceConfigRegistry.getEntries().stream().forEach((deviceConfig) -> {
             deviceConfig.getMessage().getUnitConfigList().stream().filter((unitConfig) -> (unitConfig.getLabel().equals(unitConfigLabel))).forEach((unitConfig) -> {
                 unitConfigs.add(unitConfig);
             });
         });
-        if (unitConfigs.isEmpty()) {
-            throw new NotAvailableException(unitConfigLabel);
-        }
         
-        return unitConfigs.toArray(new UnitConfig[unitConfigs.size()]);
+        return unitConfigs;
     }
     
     @Override

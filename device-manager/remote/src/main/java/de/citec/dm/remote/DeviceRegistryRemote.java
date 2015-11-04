@@ -33,7 +33,7 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
-import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -141,9 +141,10 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public UnitConfig[] getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
         getData();
+
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getLabel().equals(unitConfigLabel)) {
@@ -151,11 +152,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 }
             }
         }
-        if (unitConfigs.isEmpty()) {
-            throw new NotAvailableException(unitConfigLabel);
-        }
-
-        return unitConfigs.toArray(new UnitConfig[unitConfigs.size()]);
+        return unitConfigs;
     }
 
     @Override
@@ -210,7 +207,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClassType.DeviceClass registerDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClass registerDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (DeviceClassType.DeviceClass) callMethod("registerDeviceClass", deviceClass);
         } catch (CouldNotPerformException ex) {
@@ -231,7 +228,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClassType.DeviceClass updateDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClass updateDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (DeviceClassType.DeviceClass) callMethod("updateDeviceClass", deviceClass);
         } catch (CouldNotPerformException ex) {
@@ -240,7 +237,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClassType.DeviceClass removeDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClass removeDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
         try {
             return (DeviceClassType.DeviceClass) callMethod("removeDeviceClass", deviceClass);
         } catch (CouldNotPerformException ex) {
@@ -249,7 +246,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
@@ -258,7 +255,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         return unitConfigs;
     }
 
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException, NotAvailableException {
         getData();
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
@@ -272,19 +269,19 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException, NotAvailableException {
-        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+    public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException, NotAvailableException {
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigs;
     }
 
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
+    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
         getData();
-        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
-            for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 if (serviceConfig.getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
