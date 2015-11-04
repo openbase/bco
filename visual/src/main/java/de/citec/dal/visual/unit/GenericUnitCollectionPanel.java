@@ -86,7 +86,7 @@ public class GenericUnitCollectionPanel<RS extends DALRemoteService> extends jav
     public Collection<GenericUnitPanel<RS>> add(final String unitLabel) throws CouldNotPerformException {
         try {
             final List<GenericUnitPanel<RS>> unitPanelList = new ArrayList<>();
-            UnitConfig[] unitConfigsByLabel = deviceRegistryRemote.getUnitConfigsByLabel(unitLabel);
+            List<UnitConfig> unitConfigsByLabel = deviceRegistryRemote.getUnitConfigsByLabel(unitLabel);
 
             MultiException.ExceptionStack exceptionStack = null;
 
