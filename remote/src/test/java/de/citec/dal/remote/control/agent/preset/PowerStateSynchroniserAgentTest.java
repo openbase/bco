@@ -100,10 +100,12 @@ public class PowerStateSynchroniserAgentTest {
         agent = new PowerStateSynchroniserAgent(config);
 
         DimmerRemote dimmerRemote = (DimmerRemote) agent.getSourceRemote();
-        AmbientLightRemote ambientLightRemote = (AmbientLightRemote) agent.getTargetRemote();
+        AmbientLightRemote ambientLightRemote = (AmbientLightRemote) agent.getTargetRemotes().get(0);
 
         Thread.sleep(5000);
         agent.activate();
+
+        logger.info("Ambient light id [" + ambientLightRemote.getId() + "]");
 
         dimmerRemote.setPower(PowerState.State.OFF);
         dimmerRemote.requestStatus();
@@ -138,7 +140,7 @@ public class PowerStateSynchroniserAgentTest {
 
     private AgentConfig registerAgent() throws CouldNotPerformException {
         Entry.Builder source = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_KEY);
-        Entry.Builder target = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY);
+        Entry.Builder target = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_1");
         Entry.Builder sourceBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_BEHAVIOUR_KEY).setValue("OFF");
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 

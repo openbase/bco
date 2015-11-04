@@ -12,11 +12,14 @@ import de.citec.dal.remote.unit.UnitRemoteFactoryInterface;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
@@ -39,9 +42,10 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     }
 
     private PowerState.State sourceLatestPowerState, targetLatestPowerState;
-    private DALRemoteService sourceRemote, targetRemote;
-    private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
-    private UnitRemoteFactoryInterface factory;
+    private final List<DALRemoteService> targetRemotes = new ArrayList<>();
+    private final DALRemoteService sourceRemote;
+    private final PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
+    private final UnitRemoteFactoryInterface factory;
 
     public PowerStateSynchroniserAgent(AgentConfig agentConfig) throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(agentConfig);
@@ -53,12 +57,23 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         deviceRegistryRemote.activate();
 
         MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", agentConfig.getMetaConfig());
-        
+
         sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
-        targetRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(TARGET_KEY)));
+        int i = 1;
+        String unitId;
+        try {
+            while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
+                logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                targetRemotes.add(factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(unitId)));
+                i++;
+            }
+        } catch (NotAvailableException ex) {
+            i--;
+            logger.info("Found [" + i + "] target/s");
+        }
         sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
         targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
-        
+
         deviceRegistryRemote.shutdown();
 
         logger.info("Initializing observers");
@@ -71,21 +86,27 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             @Override
             public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 sourceLatestPowerState = invokeGetPowerState(data).getValue();
-                logger.info("Recieved new value ["+sourceLatestPowerState+"] for source");
+                logger.info("Recieved new value [" + sourceLatestPowerState + "] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
-                        invokeSetPower(targetRemote, PowerState.State.OFF);
+                        for (DALRemoteService targetRemote : targetRemotes) {
+                            invokeSetPower(targetRemote, PowerState.State.OFF);
+                        }
                     }
                 } else if (sourceLatestPowerState == PowerState.State.ON) {
                     switch (targetBehaviour) {
                         case OFF:
                             if (targetLatestPowerState != PowerState.State.OFF) {
-                                invokeSetPower(targetRemote, PowerState.State.OFF);
+                                for (DALRemoteService targetRemote : targetRemotes) {
+                                    invokeSetPower(targetRemote, PowerState.State.OFF);
+                                }
                             }
                             break;
                         case ON:
                             if (targetLatestPowerState != PowerState.State.ON) {
-                                invokeSetPower(targetRemote, PowerState.State.ON);
+                                for (DALRemoteService targetRemote : targetRemotes) {
+                                    invokeSetPower(targetRemote, PowerState.State.ON);
+                                }
                             }
                             break;
                         case LAST_STATE:
@@ -95,34 +116,69 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             }
         });
 
-        targetRemote.addObserver(new Observer<GeneratedMessage>() {
+        for (DALRemoteService targetRemote : targetRemotes) {
+            targetRemote.addObserver(new Observer<GeneratedMessage>() {
 
-            @Override
-            public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
-                targetLatestPowerState = invokeGetPowerState(data).getValue();
-                logger.info("Recieved new value ["+targetLatestPowerState+"] for target");
-                if (targetLatestPowerState == PowerState.State.ON) {
-                    if (sourceLatestPowerState != PowerState.State.ON) {
-                        invokeSetPower(sourceRemote, PowerState.State.ON);
+                @Override
+                public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
+                    PowerState.State newPowerState = invokeGetPowerState(data).getValue();
+                    logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + ((DALRemoteService) source).getId() + "]");
+                    if (!updateLatestTargetPowerState(newPowerState)) {
+                        return;
                     }
-                } else if (targetLatestPowerState == PowerState.State.OFF) {
-                    switch (sourceBehaviour) {
-                        case OFF:
-                            if (sourceLatestPowerState != PowerState.State.OFF) {
-                                invokeSetPower(sourceRemote, PowerState.State.OFF);
-                            }
-                            break;
-                        case ON:
-                            if (sourceLatestPowerState != PowerState.State.ON) {
-                                invokeSetPower(sourceRemote, PowerState.State.ON);
-                            }
-                            break;
-                        case LAST_STATE:
-                            break;
+                    if (targetLatestPowerState == PowerState.State.ON) {
+                        if (sourceLatestPowerState != PowerState.State.ON) {
+                            invokeSetPower(sourceRemote, PowerState.State.ON);
+                        }
+                    } else if (targetLatestPowerState == PowerState.State.OFF) {
+                        switch (sourceBehaviour) {
+                            case OFF:
+                                if (sourceLatestPowerState != PowerState.State.OFF) {
+                                    invokeSetPower(sourceRemote, PowerState.State.OFF);
+                                }
+                                break;
+                            case ON:
+                                if (sourceLatestPowerState != PowerState.State.ON) {
+                                    invokeSetPower(sourceRemote, PowerState.State.ON);
+                                }
+                                break;
+                            case LAST_STATE:
+                                break;
+                        }
                     }
                 }
+            });
+        }
+    }
+
+    /**
+     *
+     * @param powerState
+     * @return if the latest target power state has changed
+     * @throws CouldNotPerformException
+     */
+    private boolean updateLatestTargetPowerState(PowerState.State powerState) throws CouldNotPerformException {
+        if (targetLatestPowerState == PowerState.State.UNKNOWN) {
+            targetLatestPowerState = powerState;
+            return true;
+        }
+        if (targetLatestPowerState == PowerState.State.OFF && powerState == PowerState.State.ON) {
+            targetLatestPowerState = PowerState.State.ON;
+            return true;
+        }
+
+        if (targetLatestPowerState == PowerState.State.ON && powerState == PowerState.State.OFF) {
+            targetLatestPowerState = PowerState.State.OFF;
+            for (DALRemoteService targetRemote : targetRemotes) {
+                if (invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
+                    targetLatestPowerState = PowerState.State.ON;
+                    break;
+                }
             }
-        });
+            return targetLatestPowerState == PowerState.State.OFF;
+        }
+
+        return false;
     }
 
     private void invokeSetPower(DALRemoteService remote, PowerState.State powerState) {
@@ -149,11 +205,20 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getClass().getSimpleName() + "]");
         sourceRemote.activate();
-        targetRemote.activate();
+        String targetIds = "";
+        targetLatestPowerState = PowerState.State.UNKNOWN;
+        for (DALRemoteService targetRemote : targetRemotes) {
+            targetRemote.activate();
+            targetIds += "[" + targetRemote.getId() + "]";
+            if ((targetLatestPowerState == PowerState.State.OFF || targetLatestPowerState == PowerState.State.UNKNOWN) && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
+                targetLatestPowerState = PowerState.State.ON;
+            } else if (targetLatestPowerState == PowerState.State.UNKNOWN && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.OFF) {
+                targetLatestPowerState = PowerState.State.OFF;
+            }
+        }
         logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
-        logger.info("Target [" + targetRemote.getId() + "], behaviour [" + targetBehaviour + "]");
+        logger.info("Targets [" + targetIds + "], behaviour [" + targetBehaviour + "]");
         sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
-        targetLatestPowerState = invokeGetPowerState(targetRemote.getData()).getValue();
         super.activate();
     }
 
@@ -161,7 +226,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         sourceRemote.deactivate();
-        targetRemote.deactivate();
+        for (DALRemoteService targetRemote : targetRemotes) {
+            targetRemote.deactivate();
+        }
         super.deactivate();
     }
 
@@ -169,8 +236,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         return sourceRemote;
     }
 
-    public DALRemoteService getTargetRemote() {
-        return targetRemote;
+    public List<DALRemoteService> getTargetRemotes() {
+        return targetRemotes;
     }
 
     public PowerStateSyncBehaviour getSourceBehaviour() {
