@@ -41,7 +41,15 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         LAST_STATE;
     }
 
-    private PowerState.State sourceLatestPowerState, targetLatestPowerState;
+    private PowerState.State sourceLatestPowerState;
+    /**
+     * State that determines what the targets do if the source changes and vice
+     * versa.
+     *
+     * OFF when all targets are off. 
+     * ON when at least one target is one.
+     */
+    private PowerState.State targetLatestPowerState;
     private final List<DALRemoteService> targetRemotes = new ArrayList<>();
     private final DALRemoteService sourceRemote;
     private final PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
