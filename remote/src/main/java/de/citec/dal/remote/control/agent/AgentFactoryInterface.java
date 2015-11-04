@@ -6,14 +6,17 @@
 package de.citec.dal.remote.control.agent;
 
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.pattern.Factory;
 import rst.homeautomation.control.agent.AgentConfigType;
+import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface AgentFactoryInterface {
+public interface AgentFactoryInterface extends Factory<Agent, AgentConfig> {
 
-    AgentInterface newAgent(final AgentConfigType.AgentConfig config) throws CouldNotPerformException;
+    @Override
+    public Agent newInstance(final AgentConfigType.AgentConfig config) throws CouldNotPerformException;
 
 }

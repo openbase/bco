@@ -5,40 +5,15 @@
  */
 package de.citec.dal.remote.control.agent;
 
-import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
-import rst.homeautomation.control.agent.AgentConfigType;
+import de.citec.jul.iface.Activatable;
+import de.citec.jul.iface.Identifiable;
+import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
- * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
+ * @author mpohling
  */
-public class Agent implements AgentInterface  {
-
-    private AgentConfigType.AgentConfig config;
-
-    public Agent(AgentConfigType.AgentConfig config) {
-        this.config = config;
-        System.out.println("create agent:" + config.getLabel());
-    }
-
-    @Override
-    public AgentConfigType.AgentConfig getConfig() throws NotAvailableException {
-        return config;
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        System.out.println("activate agent:" + config.getLabel());
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        System.out.println("deactivate agent:" + config.getLabel());
-    }
-
-    @Override
-    public boolean isActive() {
-        return true;
-    }
+public interface Agent extends Activatable, Identifiable<String> {
+    public AgentConfig getConfig() throws NotAvailableException;
 }

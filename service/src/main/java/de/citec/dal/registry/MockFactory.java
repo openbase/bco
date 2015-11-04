@@ -24,24 +24,24 @@ public class MockFactory {
                 assert mockRegistryCounter == 0;
                 mockRegistry = new MockRegistry();
             }
-//            mockRegistryCounter++;
-//            assert mockRegistry != null;
+            mockRegistryCounter++;
+            assert mockRegistry != null;
             return mockRegistry;
         }
     }
 
     public static void shutdownMockRegistry() {
-//        synchronized (mockRegistrySync) {
-//            if(mockRegistry == null) {
-//                assert mockRegistryCounter == 0;
-//                return;
-//            }
-//            mockRegistryCounter--;
-//            
-//            if(mockRegistryCounter == 0) {
-//                mockRegistry.shutdown();
-//                mockRegistry = null;
-//            }
-//        }
+        synchronized (mockRegistrySync) {
+            if(mockRegistry == null) {
+                assert mockRegistryCounter == 0;
+                return;
+            }
+            mockRegistryCounter--;
+            
+            if(mockRegistryCounter == 0) {
+                mockRegistry.shutdown();
+                mockRegistry = null;
+            }
+        }
     }
 }

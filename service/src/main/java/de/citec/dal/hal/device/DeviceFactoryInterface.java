@@ -7,17 +7,18 @@ package de.citec.dal.hal.device;
 
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.pattern.Factory;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
  * @author mpohling
  */
-public interface DeviceFactoryInterface {
+public interface DeviceFactoryInterface extends Factory<Device, DeviceConfig> {
 
-    public Device newDevice(final DeviceConfigType.DeviceConfig deviceConfig, final DeviceRegistryRemote deviceRegistryRemote) throws CouldNotPerformException;
+    public Device newInstance(final DeviceConfig deviceConfig, final DeviceRegistryRemote deviceRegistryRemote) throws CouldNotPerformException;
     
-    public Device newDevice(final DeviceConfigType.DeviceConfig deviceConfig, final DeviceClass deviceClass) throws CouldNotPerformException;
+    public Device newInstance(final DeviceConfig deviceConfig, final DeviceClass deviceClass) throws CouldNotPerformException;
 
 }

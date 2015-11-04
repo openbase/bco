@@ -21,12 +21,12 @@ public abstract class AbstractDeviceFactory implements DeviceFactoryInterface {
         this.deviceRegistryRemote = deviceRegistryRemote;
     }
 
-    public Device newDevice(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return newDevice(deviceConfig, deviceRegistryRemote);
+    public Device newInstance(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+        return newInstance(deviceConfig, deviceRegistryRemote);
     }
     
     @Override
-    public Device newDevice(DeviceConfigType.DeviceConfig deviceConfig, DeviceRegistryRemote deviceRegistryRemote) throws CouldNotPerformException {
-        return newDevice(deviceConfig, deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()));
+    public Device newInstance(DeviceConfigType.DeviceConfig deviceConfig, DeviceRegistryRemote deviceRegistryRemote) throws CouldNotPerformException {
+        return newInstance(deviceConfig, deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()));
     }
 }

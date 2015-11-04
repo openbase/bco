@@ -105,7 +105,7 @@ public class DeviceRegistrySynchronizer {
             MultiException.ExceptionStack updateExceptionStack = null;
             for (DeviceConfig config : deviceConfigDiff.getUpdatedMessageMap().getMessages()) {
                 try {
-                    registry.update(factory.newDevice(config));
+                    registry.update(factory.newInstance(config));
                 } catch (Exception ex) {
                     updateExceptionStack = MultiException.push(this, ex, updateExceptionStack);
                 }
@@ -115,7 +115,7 @@ public class DeviceRegistrySynchronizer {
             for (DeviceConfig config : deviceConfigDiff.getNewMessageMap().getMessages()) {
                 try {
                     if (verifyDeviceConfig(config)) {
-                        registry.register(factory.newDevice(config));
+                        registry.register(factory.newInstance(config));
                     }
                 } catch (Exception ex) {
                     registerExceptionStack = MultiException.push(this, ex, registerExceptionStack);
