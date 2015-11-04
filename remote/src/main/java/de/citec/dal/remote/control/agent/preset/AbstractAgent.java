@@ -24,6 +24,7 @@ public abstract class AbstractAgent implements AgentInterface {
     protected final AgentConfig agentConfig;
 
     public AbstractAgent(AgentConfig agentConfig) {
+        logger.info("Creating "+getClass().getSimpleName()+"["+agentConfig.getId()+"]");
         this.agentConfig = agentConfig;
         switch (agentConfig.getActivationState().getValue()) {
             case ACTIVE:
