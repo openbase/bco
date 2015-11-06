@@ -6,7 +6,7 @@
 package de.citec.dal.remote.control.agent;
 
 import de.citec.agm.remote.AgentRegistryRemote;
-import de.citec.dal.registry.ActivatableEntryRegistySynchronizer;
+import de.citec.dal.registry.ActivatableEntryRegistrySynchronizer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
@@ -29,7 +29,7 @@ public class AgentScheduler {
     private final Registry<String, Agent> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
 
-    private final ActivatableEntryRegistySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
 
     public AgentScheduler() throws InstantiationException, InterruptedException {
         logger.info("Starting agent scheduler");
@@ -39,7 +39,7 @@ public class AgentScheduler {
 
             agentRegistryRemote = new AgentRegistryRemote();
 
-            this.registrySynchronizer = new ActivatableEntryRegistySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean activationCondition(final AgentConfig config) {

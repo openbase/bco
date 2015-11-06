@@ -22,9 +22,9 @@ import de.citec.jul.storage.registry.RemoteRegistry;
  * @param <CONFIG_M>
  * @param <CONFIG_MB>
  */
-public abstract class ActivatableEntryRegistySynchronizer<KEY, ENTRY extends Identifiable<KEY> & Activatable, CONFIG_M extends GeneratedMessage, CONFIG_MB extends CONFIG_M.Builder<CONFIG_MB>> extends RegistrySynchronizer<KEY, ENTRY, CONFIG_M, CONFIG_MB> {
+public abstract class ActivatableEntryRegistrySynchronizer<KEY, ENTRY extends Identifiable<KEY> & Activatable, CONFIG_M extends GeneratedMessage, CONFIG_MB extends CONFIG_M.Builder<CONFIG_MB>> extends RegistrySynchronizer<KEY, ENTRY, CONFIG_M, CONFIG_MB> {
 
-    public ActivatableEntryRegistySynchronizer(Registry<KEY, ENTRY> registry, RemoteRegistry<KEY, CONFIG_M, CONFIG_MB, ?> remoteRegistry, Factory<ENTRY, CONFIG_M> factory) throws InstantiationException {
+    public ActivatableEntryRegistrySynchronizer(Registry<KEY, ENTRY> registry, RemoteRegistry<KEY, CONFIG_M, CONFIG_MB, ?> remoteRegistry, Factory<ENTRY, CONFIG_M> factory) throws InstantiationException {
         super(registry, remoteRegistry, factory);
     }
 
