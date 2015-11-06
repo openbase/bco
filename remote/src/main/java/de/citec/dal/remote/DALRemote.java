@@ -8,6 +8,7 @@ import de.citec.jps.preset.JPDebugMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.extension.rsb.scope.jp.JPScope;
 import java.lang.reflect.InvocationTargetException;
@@ -91,7 +92,7 @@ public class DALRemote {
         try {
             new DALRemote();
         } catch (InitializationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
         logger.info(APP_NAME + " successfully started.");
     }

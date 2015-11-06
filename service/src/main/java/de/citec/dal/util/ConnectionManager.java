@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * @author mpohling
+ * TODO mpohling: use ActivatableEntryRegistySynchronizer and mark as deprecated.
  */
 public class ConnectionManager {
 

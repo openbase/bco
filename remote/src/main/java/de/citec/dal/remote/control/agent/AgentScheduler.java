@@ -6,7 +6,7 @@
 package de.citec.dal.remote.control.agent;
 
 import de.citec.agm.remote.AgentRegistryRemote;
-import de.citec.dal.registry.ActivatableEntryRegistrySynchronizer;
+import de.citec.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
