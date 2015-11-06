@@ -11,6 +11,7 @@ import de.citec.dal.registry.MockFactory;
 import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.remote.unit.DimmerRemote;
+import de.citec.dal.remote.unit.PowerPlugRemote;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
@@ -101,6 +102,7 @@ public class PowerStateSynchroniserAgentTest {
 
         DimmerRemote dimmerRemote = (DimmerRemote) agent.getSourceRemote();
         AmbientLightRemote ambientLightRemote = (AmbientLightRemote) agent.getTargetRemotes().get(0);
+        PowerPlugRemote powerPlugRemote = (PowerPlugRemote) agent.getTargetRemotes().get(1);
 
         Thread.sleep(5000);
         agent.activate();
@@ -111,28 +113,45 @@ public class PowerStateSynchroniserAgentTest {
         dimmerRemote.requestStatus();
         Thread.sleep(50);
         ambientLightRemote.requestStatus();
+        powerPlugRemote.requestStatus();
         assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPower().getValue());
         assertEquals("AmbientLight[Target] has not been turned off as a reaction", PowerState.State.OFF, ambientLightRemote.getPower().getValue());
+        assertEquals("PowerPlug[Target] has not been turned off as a reaction", PowerState.State.OFF, powerPlugRemote.getPower().getValue());
 
         dimmerRemote.setPower(PowerState.State.ON);
         dimmerRemote.requestStatus();
         Thread.sleep(50);
         ambientLightRemote.requestStatus();
+        powerPlugRemote.requestStatus();
         assertEquals("Dimmer[Source] has not been turned on", PowerState.State.ON, dimmerRemote.getPower().getValue());
         assertEquals("AmbientLight[Target] has not been turned on as a reaction", PowerState.State.ON, ambientLightRemote.getPower().getValue());
+        assertEquals("PowerPlug[Target] has not been turned on as a reaction", PowerState.State.ON, powerPlugRemote.getPower().getValue());
 
         ambientLightRemote.setPower(PowerState.State.OFF);
         ambientLightRemote.requestStatus();
         Thread.sleep(50);
         dimmerRemote.requestStatus();
+        powerPlugRemote.requestStatus();
         assertEquals("AmbientLight[Target] has not been turned off", PowerState.State.OFF, ambientLightRemote.getPower().getValue());
-        assertEquals("Dimmer[Sourve] has not been turned off as a reaction", PowerState.State.OFF, dimmerRemote.getPower().getValue());
+        assertEquals("PowerPlug[Target] should not have turned off as a reaction", PowerState.State.ON, powerPlugRemote.getPower().getValue());
+        assertEquals("Dimmer[Source] should not have been turned off as a reaction. One target was still on.", PowerState.State.ON, dimmerRemote.getPower().getValue());
+
+        powerPlugRemote.setPower(PowerState.State.OFF);
+        powerPlugRemote.requestStatus();
+        Thread.sleep(50);
+        ambientLightRemote.requestStatus();
+        dimmerRemote.requestStatus();
+        assertEquals("PowerPlug[Target] has not been turned off", PowerState.State.OFF, powerPlugRemote.getPower().getValue());
+        assertEquals("AmbientLight[Target] should still be off", PowerState.State.OFF, ambientLightRemote.getPower().getValue());
+        assertEquals("Dimmer[Source] should have been turned off as a reaction.", PowerState.State.OFF, dimmerRemote.getPower().getValue());
 
         ambientLightRemote.setPower(PowerState.State.ON);
         ambientLightRemote.requestStatus();
         Thread.sleep(50);
         dimmerRemote.requestStatus();
+        powerPlugRemote.requestStatus();
         assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, ambientLightRemote.getPower().getValue());
+        assertEquals("PowerPlug[Target] should still be off", PowerState.State.OFF, powerPlugRemote.getPower().getValue());
         assertEquals("Dimmer[Source] has not been turned on as a reaction", PowerState.State.ON, dimmerRemote.getPower().getValue());
 
         agent.deactivate();
@@ -140,25 +159,29 @@ public class PowerStateSynchroniserAgentTest {
 
     private AgentConfig registerAgent() throws CouldNotPerformException {
         Entry.Builder source = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_KEY);
-        Entry.Builder target = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_1");
+        Entry.Builder target1 = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_1");
+        Entry.Builder target2 = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_2");
         Entry.Builder sourceBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_BEHAVIOUR_KEY).setValue("OFF");
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 
         for (UnitConfig unit : deviceRemote.getUnitConfigs()) {
             if (unit.getType() == UnitType.DIMMER && source.getValue().isEmpty()) {
                 source.setValue(unit.getId());
-            } else if (unit.getType() == UnitType.AMBIENT_LIGHT && target.getValue().isEmpty()) {
-                target.setValue(unit.getId());
+            } else if (unit.getType() == UnitType.AMBIENT_LIGHT && target1.getValue().isEmpty()) {
+                target1.setValue(unit.getId());
+            } else if (unit.getType() == UnitType.POWER_PLUG && target2.getValue().isEmpty()) {
+                target2.setValue(unit.getId());
             }
 
-            if (source.hasValue() && target.hasValue()) {
+            if (source.hasValue() && target1.hasValue() && target2.hasValue()) {
                 break;
             }
         }
 
         MetaConfig metaConfig = MetaConfig.newBuilder()
                 .addEntry(source)
-                .addEntry(target)
+                .addEntry(target1)
+                .addEntry(target2)
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
         return agentRemote.registerAgentConfig(AgentConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setMetaConfig(metaConfig).build());
