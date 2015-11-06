@@ -5,21 +5,23 @@
  */
 package de.citec.dal.remote.control.agent.preset;
 
-import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.remote.unit.DALRemoteService;
-import de.citec.dal.remote.unit.UnitRemoteFactory;
-import de.citec.dal.remote.unit.UnitRemoteFactoryInterface;
-import de.citec.dm.remote.DeviceRegistryRemote;
+import de.citec.dal.remote.unit.MotionSensorRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
+import de.citec.jul.schedule.Timeout;
 import de.citec.lm.remote.LocationRegistryRemote;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import rst.configuration.EntryType;
+import java.util.ArrayList;
+import java.util.List;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.MotionStateType;
+import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
+import rst.homeautomation.unit.MotionSensorType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
@@ -29,30 +31,73 @@ public class PersonLightProviderAgent extends AbstractAgent {
 
     public static final double MINIMUM_LIGHT_THRESHOLD = 100;
     public static final String LOCATION_ID = "Küche";
+    public static final long MOTION_TIMEOUT = 900;
 
-    private DALRemoteService sourceRemote, targetRemote;
-    private UnitRemoteFactoryInterface factory;
+    private MotionStateType.MotionState.Builder motionState;
+    private final Timeout motionTimeout;
 
     public PersonLightProviderAgent(AgentConfig agentConfig) throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(agentConfig);
-        factory = UnitRemoteFactory.getInstance();
+        this.motionTimeout = new Timeout(MOTION_TIMEOUT) {
+
+            @Override
+            public void expired() {
+                updateMotionState(MotionState.newBuilder().setValue(MotionState.State.NO_MOVEMENT));
+            }
+        };
 
 //        DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
 //        deviceRegistryRemote.init();
 //        deviceRegistryRemote.activate();
+//        deviceRegistryRemote.shutdown();
+        logger.info("Initializing observers");
+//        initObserver();
 
         LocationRegistryRemote locationRegistryRemote = new LocationRegistryRemote();
         locationRegistryRemote.init();
         locationRegistryRemote.activate();
 
-        locationRegistryRemote.getLocationConfigById(LOCATION_ID);
+        List<MotionSensorRemote> motionSensorList = new ArrayList<>();
+        MotionSensorRemote motionSensorRemote;
 
-
-//        deviceRegistryRemote.shutdown();
-
-        logger.info("Initializing observers");
-//        initObserver();
+        for (UnitConfig unitConfig : locationRegistryRemote.getUnitConfigs(UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR, LOCATION_ID)) {
+            motionSensorRemote = new MotionSensorRemote();
+            motionSensorRemote.init(unitConfig);
+            motionSensorList.add(motionSensorRemote);
+            motionSensorRemote.addObserver((Observable<MotionSensorType.MotionSensor> source, MotionSensorType.MotionSensor data) -> {
+                updateMotionState(data.getMotionState());
+            });
+        }
     }
+
+    private synchronized void updateMotionState(final MotionStateOrBuilder motionState) {
+
+        // Filter rush motion predictions.
+        if (motionState.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT && !motionTimeout.isExpired()) {
+            return;
+        }
+
+        // Update Timestemp and reset timer
+        if (motionState.getValue() == MotionStateType.MotionState.State.MOVEMENT) {
+            motionTimeout.restart();
+            this.motionState.getLastMovementBuilder().setTime(Math.max(this.motionState.getLastMovement().getTime(), motionState.getLastMovement().getTime()));
+        }
+
+        // Filter dublicated state notification
+        if (this.motionState.getValue() == motionState.getValue()) {
+            return;
+        }
+
+        this.motionState.setValue(motionState.getValue());
+        notifyMotionStateChanged(motionState);
+    }
+
+    private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) {
+        if (motionState.getValue() == MotionState.State.MOVEMENT) {
+
+        }
+    }
+
 //
 //    private void initObserver() {
 //        sourceRemote.addObserver(new Observer<GeneratedMessage>() {
@@ -133,7 +178,6 @@ public class PersonLightProviderAgent extends AbstractAgent {
 //            throw new CouldNotPerformException("Could not get powerState from message [" + message + "]", ex);
 //        }
 //    }
-
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
 //        logger.info("Activating [" + getClass().getSimpleName() + "]");
@@ -145,6 +189,7 @@ public class PersonLightProviderAgent extends AbstractAgent {
 //        targetRemote.requestStatus();
 //        sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
 //        targetLatestPowerState = invokeGetPowerState(targetRemote.getData()).getValue();
+
         super.activate();
     }
 
