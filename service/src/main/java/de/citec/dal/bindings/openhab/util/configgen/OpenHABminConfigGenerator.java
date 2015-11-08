@@ -142,8 +142,8 @@ public class OpenHABminConfigGenerator {
             Element locationElement = new Element("location");
 
             // add values
-            nameElement.appendChild(deviceConfig.getLabel());
-            locationElement.appendChild(deviceConfig.getLabel() + " " + locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            nameElement.appendChild(deviceConfig.getLabel() + " " + locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            locationElement.appendChild(locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getLabel());
 
             // store back
             nodeElement.appendChild(nameElement);
