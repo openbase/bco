@@ -1,24 +1,25 @@
 package de.citec.dal.remote.control.agent.preset;
 
-import de.citec.dal.hal.provider.MotionProvider;
+import de.citec.dal.hal.provider.BrightnessProvider;
 import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.remote.unit.MotionSensorRemote;
+import de.citec.dal.remote.unit.BrightnessSensorRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.pattern.Observable;
-import de.citec.jul.schedule.Timeout;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.state.MotionStateType;
-import rst.homeautomation.state.MotionStateType.MotionState;
-import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
-import rst.homeautomation.unit.MotionSensorType;
+import rst.homeautomation.unit.BrightnessSensorType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
@@ -27,46 +28,63 @@ import rst.homeautomation.unit.UnitTemplateType;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class BrightnessStateFutionProvider extends Observable<MotionState> implements MotionProvider {
+public class BrightnessStateFutionProvider extends Observable<Double> implements BrightnessProvider {
+//
+//    /**
+//     * Default 3 minute window of no movement unit the state switches to NO_MOTION.
+//     */
+//    public static final long MOTION_TIMEOUT = 900;
 
     /**
-     * Default 3 minute window of no movement unit the state switches to NO_MOTION.
+     * Measurement time window within the max, min and average updates are performed.
      */
-    public static final long MOTION_TIMEOUT = 900;
+    public static final long DEFAULT_MEASUREMENT_TIME_WINDOW = 900;
+
+    public static final double UNKNOWN_VALUE = -1;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private MotionStateType.MotionState.Builder motionState;
-    private final Timeout motionTimeout;
-    private final List<MotionSensorRemote> motionSensorList;
+    private Double brightnessMinState, brightnessMaxState, brightnessAverageState;
+    /**
+     * Contains pairs of timestamp as key and a brightness value as entry.
+     */
+    private final Map<Long, Double> brightnessLastStates;
+    private final long measurementTimeWindow;
 
-    public BrightnessStateFutionProvider(Collection<UnitConfig> motionUnitConfigs) throws InstantiationException {
-        this(motionUnitConfigs, MOTION_TIMEOUT);
+    private final List<BrightnessSensorRemote> brightnessSensorList;
+
+    public BrightnessStateFutionProvider(Collection<UnitConfig> brightnessUnitConfigs) throws InstantiationException {
+        this(brightnessUnitConfigs, DEFAULT_MEASUREMENT_TIME_WINDOW);
     }
 
-    public BrightnessStateFutionProvider(final Collection<UnitConfig> motionUnitConfigs, final long motionTimeout) throws InstantiationException {
+    public BrightnessStateFutionProvider(final Collection<UnitConfig> brightnessUnitConfigs, final long measurementTimeWindow) throws InstantiationException {
         try {
-            this.motionSensorList = new ArrayList<>();
-            this.motionTimeout = new Timeout(motionTimeout) {
+            this.brightnessSensorList = new ArrayList<>();
+            this.brightnessLastStates = new HashMap<>();
+            this.measurementTimeWindow = measurementTimeWindow;
+            this.brightnessMinState = UNKNOWN_VALUE;
+            this.brightnessMaxState = UNKNOWN_VALUE;
+            this.brightnessAverageState = UNKNOWN_VALUE;
 
-                @Override
-                public void expired() {
-                    updateMotionState(MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOVEMENT));
-                }
-            };
-
-            MotionSensorRemote motionSensorRemote;
-            for (UnitConfigType.UnitConfig unitConfig : motionUnitConfigs) {
+//            this.brightnessTimeout = new Timeout(brightnessTimeout) {
+//
+//                @Override
+//                public void expired() {
+//                    updateBrightnessState(Brightnes.BrightnessState.newBuilder().setValue(BrightnessStateType.BrightnessState.State.NO_MOVEMENT));
+//                }
+//            };
+            BrightnessSensorRemote brightnessSensorRemote;
+            for (UnitConfigType.UnitConfig unitConfig : brightnessUnitConfigs) {
                 if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR) {
                     logger.warn("Skip Unit[" + unitConfig.getId() + "] because its not of Type[" + UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR + "]!");
                     continue;
                 }
 
-                motionSensorRemote = new MotionSensorRemote();
-                motionSensorRemote.init(unitConfig);
-                motionSensorList.add(motionSensorRemote);
-                motionSensorRemote.addObserver((Observable<MotionSensorType.MotionSensor> source, MotionSensorType.MotionSensor data) -> {
-                    updateMotionState(data.getMotionState());
+                brightnessSensorRemote = new BrightnessSensorRemote();
+                brightnessSensorRemote.init(unitConfig);
+                brightnessSensorList.add(brightnessSensorRemote);
+                brightnessSensorRemote.addObserver((Observable<BrightnessSensorType.BrightnessSensor> source, BrightnessSensorType.BrightnessSensor data) -> {
+                    updateBrightnessState(data.getBrightness());
                 });
             }
         } catch (CouldNotPerformException ex) {
@@ -74,40 +92,60 @@ public class BrightnessStateFutionProvider extends Observable<MotionState> imple
         }
     }
 
-    private synchronized void updateMotionState(final MotionStateOrBuilder motionState) {
-
-        // Filter rush motion predictions.
-        if (motionState.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT && !motionTimeout.isExpired()) {
-            return;
-        }
-
-        // Update Timestemp and reset timer
-        if (motionState.getValue() == MotionStateType.MotionState.State.MOVEMENT) {
-            motionTimeout.restart();
-            this.motionState.getLastMovementBuilder().setTime(Math.max(this.motionState.getLastMovement().getTime(), motionState.getLastMovement().getTime()));
-        }
-
-        // Filter dublicated state notification
-        if (this.motionState.getValue() == motionState.getValue()) {
-            return;
-        }
-
-        this.motionState.setValue(motionState.getValue());
-        try {
-            notifyObservers(this, this.motionState.build());
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update MotionState!", ex), logger, LogLevel.ERROR);
-        }
+    private synchronized void updateBrightnessState(final Double brightnessState) {
+//        Long currentTimeMillis = System.currentTimeMillis();
+//
+//        if(brightnessState <= UNKNOWN_VALUE) {
+//            throw new VerificationFailedException("Given brightness Value["+brightnessState+"] is invalid!");
+//        }
+//        // save value
+//        brightnessLastStates.put(currentTimeMillis, brightnessState);
+//
+//
     }
 
     @Override
-    public MotionState getMotion() throws CouldNotPerformException {
-        return this.motionState.build();
+    public Double getBrightness() throws CouldNotPerformException {
+        try {
+            if (brightnessAverageState == UNKNOWN_VALUE) {
+                if (brightnessLastStates.isEmpty()) {
+                    throw new NotAvailableException("brightness");
+                }
+                return brightnessLastStates.values().stream().findFirst().get();
+            }
+            return brightnessAverageState;
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not return brightness!", ex);
+        }
+    }
+
+    public Double getBrightnessMinState() {
+        return brightnessMinState;
+    }
+
+    public Double getBrightnessMaxState() {
+        return brightnessMaxState;
+    }
+
+    public Double getBrightnessAverageState() {
+        return brightnessAverageState;
+    }
+
+    public Map<Long, Double> getBrightnessLastStates() {
+        return brightnessLastStates;
+    }
+
+    public long getMeasurementTimeWindow() {
+        return measurementTimeWindow;
+    }
+
+    public List<BrightnessSensorRemote> getBrightnessSensorList() {
+        return brightnessSensorList;
     }
 
     @Override
     public ServiceType getServiceType() {
-        return ServiceType.MOTION;
+        return ServiceType.BRIGHTNESS;
     }
 
     @Override
