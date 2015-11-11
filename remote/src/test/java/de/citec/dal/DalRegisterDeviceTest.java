@@ -20,6 +20,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.configuration.EntryType;
+import rst.configuration.MetaConfigType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.state.PowerStateType;
@@ -89,6 +91,14 @@ public class DalRegisterDeviceTest {
         Thread.sleep(1000);
         ambientLightRemote.setPower(PowerStateType.PowerState.State.ON);
         assertTrue(ambientLightRemote.isConnected());
+        
+//        unit = unit.toBuilder().setMetaConfig(MetaConfigType.MetaConfig.newBuilder().addEntry(EntryType.Entry.newBuilder().setKey("Key").setValue("Value"))).build();
+//        deviceConfig = deviceConfig.toBuilder().clearUnitConfig().addUnitConfig(unit).build();
+//        deviceConfig = remote.updateDeviceConfig(deviceConfig);
+//        Thread.sleep(1000);
+//        
+//        Thread.sleep(1000);
+//        assertTrue(ambientLightRemote.isConnected());
 
         ambientLightRemote.shutdown();
         remote.shutdown();
