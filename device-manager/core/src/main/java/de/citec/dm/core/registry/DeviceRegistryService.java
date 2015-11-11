@@ -73,21 +73,21 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  * @author mpohling
  */
 public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistryInterface {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
     }
-    
+
     private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
-    
+
     private final LocationRegistryRemote locationRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
-    
+
     public DeviceRegistryService() throws InstantiationException, InterruptedException {
         super(DeviceRegistry.newBuilder());
         try {
@@ -98,19 +98,15 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
             deviceConfigRegistry.activateVersionControl(DeviceConfig_0_To_1_DBConverter.class.getPackage());
 
-            locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
-                deviceConfigRegistry.checkConsistency();
-            };
-            
             locationRegistryRemote = new LocationRegistryRemote();
-            
+
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
-            
+
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
-            
+
             deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
@@ -127,32 +123,47 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote, deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConfigIdConsistencyHandler(deviceClassRegistry));
-            
+
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
             unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
-            
+
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) -> {
                 notifyChange();
             });
-            
+
+            // Check the device configs if the locations are modifiered.
+            locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
+                deviceConfigRegistry.checkConsistency();
+            };
+
+            // Check the device configs if the device classes has changed. 
+            deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
+                deviceConfigRegistry.checkConsistency();
+            });
+
+            // Check the device classes if the unit templates has changed.
+            unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
+                deviceClassRegistry.checkConsistency();
+            });
+
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     public void init() throws InitializationException {
         super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
         locationRegistryRemote.init();
     }
-    
+
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         try {
@@ -162,78 +173,78 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
-        
+
         try {
             unitTemplateRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             deviceClassRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             deviceConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
     }
-    
+
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         locationRegistryRemote.removeObserver(locationRegistryUpdateObserver);
         super.deactivate();
     }
-    
+
     @Override
     public void shutdown() {
         if (deviceClassRegistry != null) {
             deviceClassRegistry.shutdown();
         }
-        
+
         if (deviceConfigRegistry != null) {
             deviceConfigRegistry.shutdown();
         }
-        
+
         if (unitTemplateRegistry != null) {
             unitTemplateRegistry.shutdown();
         }
-        
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
     }
-    
+
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
         RPCHelper.registerInterface(DeviceRegistryInterface.class, this, server);
     }
-    
+
     @Override
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.register(deviceConfig);
     }
-    
+
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         return unitTemplateRegistry.get(unitTemplateId).getMessage();
     }
-    
+
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.get(deviceClassId).getMessage();
     }
-    
+
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.get(deviceConfigId).getMessage();
     }
-    
+
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
@@ -245,7 +256,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         throw new NotAvailableException(unitConfigId);
     }
-    
+
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
@@ -255,85 +266,85 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
                 unitConfigs.add(unitConfig);
             });
         });
-        
+
         return unitConfigs;
     }
-    
+
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfigId);
     }
-    
+
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         return unitTemplateRegistry.contains(unitTemplateId);
     }
-    
+
     @Override
     public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
         return unitTemplateRegistry.contains(unitTemplate);
     }
-    
+
     @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfig);
     }
-    
+
     @Override
     public UnitTemplate updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
         return unitTemplateRegistry.update(unitTemplate);
     }
-    
+
     @Override
     public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.update(deviceConfig);
     }
-    
+
     @Override
     public DeviceConfig removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.remove(deviceConfig);
     }
-    
+
     @Override
     public DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.register(deviceClass);
     }
-    
+
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.contains(deviceClassId);
     }
-    
+
     @Override
     public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.contains(deviceClass);
     }
-    
+
     @Override
     public DeviceClass updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.update(deviceClass);
     }
-    
+
     @Override
     public DeviceClass removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.remove(deviceClass);
     }
-    
+
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
         return unitTemplateRegistry.getMessages();
     }
-    
+
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
         return deviceClassRegistry.getMessages();
     }
-    
+
     @Override
     public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException {
         return deviceConfigRegistry.getMessages();
     }
-    
+
     @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
@@ -342,7 +353,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         return unitConfigs;
     }
-    
+
     @Override
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
@@ -351,7 +362,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         return serviceConfigs;
     }
-    
+
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
         for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
@@ -361,17 +372,17 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
     }
-    
+
     @Override
     public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(unitTemplateRegistry.isReadOnly());
     }
-    
+
     @Override
     public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(deviceClassRegistry.isReadOnly());
     }
-    
+
     @Override
     public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(deviceConfigRegistry.isReadOnly());
