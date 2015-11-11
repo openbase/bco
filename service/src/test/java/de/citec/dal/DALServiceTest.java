@@ -6,6 +6,7 @@
 package de.citec.dal;
 
 import de.citec.dal.registry.MockRegistry;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
@@ -35,7 +36,7 @@ public class DALServiceTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException {
+    public static void setUpClass() throws InstantiationException, JPServiceException {
         registry = new MockRegistry();
     }
 
@@ -68,7 +69,7 @@ public class DALServiceTest {
         }
         instance.shutdown();
     }
-    
+
     @Test
     public void testProtobuf() {
         MotionStateType.MotionState.Builder builder = MotionStateType.MotionState.newBuilder();
@@ -79,9 +80,9 @@ public class DALServiceTest {
         Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.MOVEMENT);
         Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.MOVEMENT);
         builder.build();
-        
+
         MotionStateType.MotionState.Builder clone = builder.clone();
-        
+
         builder.setValue(MotionStateType.MotionState.State.NO_MOVEMENT);
         Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
         Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);

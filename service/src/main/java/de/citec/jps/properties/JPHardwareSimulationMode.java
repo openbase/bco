@@ -6,8 +6,10 @@
 package de.citec.jps.properties;
 
 import de.citec.jps.core.AbstractJavaProperty;
+import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPValidationException;
 import de.citec.jps.preset.AbstractJPBoolean;
+import de.citec.jps.preset.JPTestMode;
 
 /**
  *
@@ -23,7 +25,7 @@ public class JPHardwareSimulationMode extends AbstractJPBoolean {
 
     @Override
     protected Boolean getPropertyDefaultValue() {
-        return false;
+        return JPService.getProperty(JPTestMode.class).getValue();
     }
 
     @Override
@@ -39,4 +41,3 @@ public class JPHardwareSimulationMode extends AbstractJPBoolean {
         return "Simulates the hardware components.";
     }
 }
-
