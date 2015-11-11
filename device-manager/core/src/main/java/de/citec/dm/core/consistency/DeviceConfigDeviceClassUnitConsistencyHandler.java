@@ -43,7 +43,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler implements ProtoBufRe
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        DeviceConfigType.DeviceConfig deviceConfig = entry.getMessage();
+        DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         if (!deviceConfig.hasDeviceClassId()) {
             throw new NotAvailableException("deviceclass");
@@ -56,29 +56,33 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler implements ProtoBufRe
         boolean modification = false;
         DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
         List<UnitConfig> unitConfigs = new ArrayList<>(deviceConfig.getUnitConfigList());
+        deviceConfig.clearUnitConfig();
 
         for (UnitTemplateConfig unitTemplate : deviceClass.getUnitTemplateConfigList()) {
-            if (!unitHasAccordingTemplate(unitConfigs, unitTemplate.getId())) {
+            if (!unitToTemplateExists(unitConfigs, unitTemplate.getId())) {
+                logger.info("No unit with id [" + unitTemplate.getId() + "]");
                 List<ServiceConfig> serviceConfigs = new ArrayList<>();
                 for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
                     serviceConfigs.add(ServiceConfig.newBuilder().setType(serviceTemplate.getServiceType()).build());
                 }
                 unitConfigs.add(UnitConfig.newBuilder().setType(unitTemplate.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplate.getId()).build());
             }
+            modification = true;
         }
+        deviceConfig.addAllUnitConfig(unitConfigs);
 
         for (UnitConfig unitConfig : unitConfigs) {
-            if (!templateHasAccordingUnit(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
+            if (!TemplateToUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
                 logger.warn("Unit Config [" + unitConfig.getId() + "] in device [" + deviceConfig.getId() + "] has no according unit template config in device class [" + deviceClass.getId() + "]");
             }
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig.toBuilder().clearUnitConfig().addAllUnitConfig(unitConfigs).build()), this);
+            throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
 
-    private boolean unitHasAccordingTemplate(List<UnitConfig> units, String id) {
+    private boolean unitToTemplateExists(List<UnitConfig> units, String id) {
         for (UnitConfig unit : units) {
             if (unit.getUnitTemplateConfigId().equals(id)) {
                 return true;
@@ -87,7 +91,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler implements ProtoBufRe
         return false;
     }
 
-    private boolean templateHasAccordingUnit(List<UnitTemplateConfig> units, String id) {
+    private boolean TemplateToUnitExists(List<UnitTemplateConfig> units, String id) {
         for (UnitTemplateConfig unit : units) {
             if (unit.getId().equals(id)) {
                 return true;
