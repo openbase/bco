@@ -82,7 +82,7 @@ public class MockRegistry {
     private final DeviceRegistryRemote deviceRemote;
     private final LocationRegistryRemote locationRemote;
 
-    private LocationConfig paradise;
+    private static LocationConfig paradise;
 
     public enum MockUnitTemplate {
 
@@ -176,7 +176,7 @@ public class MockRegistry {
                     }
                 }
             });
-            
+
             Thread appRegistryThread = new Thread(new Runnable() {
 
                 @Override
@@ -188,7 +188,7 @@ public class MockRegistry {
                     }
                 }
             });
-            
+
             Thread sceneRegistryThread = new Thread(new Runnable() {
 
                 @Override
@@ -317,14 +317,14 @@ public class MockRegistry {
         deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units));
     }
 
-    private PlacementConfig getDefaultPlacement() {
+    public static PlacementConfig getDefaultPlacement() {
         Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
         return PlacementConfig.newBuilder().setPosition(pose).setLocationId(getLocation().getId()).build();
     }
 
-    private Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
+    public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
         for (ServiceType type : template.getServiceTypeList()) {
             BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = BindingServiceConfigType.BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
@@ -333,12 +333,12 @@ public class MockRegistry {
         return serviceConfigList;
     }
 
-    private UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
+    public static UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
         UnitTemplate template = MockUnitTemplate.getTemplate(type);
         return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToDevice(false).build();
     }
 
-    private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
+    public static DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
         return DeviceConfig.newBuilder()
                 .setPlacementConfig(getDefaultPlacement())
                 .setLabel(label)
@@ -349,19 +349,19 @@ public class MockRegistry {
                 .build();
     }
 
-    private DeviceClass getDeviceClass(String label, String productNumber, String company) {
+    public static DeviceClass getDeviceClass(String label, String productNumber, String company) {
 
         return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company).setBindingConfig(getBindingConfig()).build();
 
     }
 
-    private BindingConfig getBindingConfig() {
+    public static BindingConfig getBindingConfig() {
         BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
         bindingConfigBuilder.setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB);
         return bindingConfigBuilder.build();
     }
 
-    public LocationConfig getLocation() {
+    public static LocationConfig getLocation() {
         return paradise;
     }
 }
