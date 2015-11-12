@@ -135,9 +135,6 @@ public enum ServiceType {
         for (ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
             for (Method method : serviceType.getDeclaredMethods()) {
                 try {
-                    if (method.getName().equals("getColor")) {
-                        System.out.println("getColor");
-                    }
                     server.addMethod(method.getName(), getCallback(method, service, serviceType));
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex));

@@ -3,3 +3,4 @@
 build
 */target/
 **/*/nbactions.xml
+/target/
