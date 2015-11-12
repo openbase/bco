@@ -6,7 +6,6 @@
 package de.citec.dm.core.registry;
 
 import de.citec.dm.core.consistency.DeviceConfigDeviceClassIdConsistencyHandler;
-import de.citec.dm.core.consistency.DeviceConfigDeviceClassUnitConsistencyHandler;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.dm.core.consistency.DeviceIdConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceLabelConsistencyHandler;
