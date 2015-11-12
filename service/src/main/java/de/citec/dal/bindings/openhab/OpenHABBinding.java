@@ -18,6 +18,7 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.util.concurrent.Future;
@@ -138,7 +139,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
             try {
                 OpenHABBinding.this.internalReceiveUpdate((OpenhabCommand) request.getData());
             } catch (Throwable cause) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, OpenHABBinding.this, cause));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, OpenHABBinding.this, cause), logger , LogLevel.ERROR);
             }
             return new Event(Void.class);
         }
