@@ -43,7 +43,7 @@ public class ColorServicePanel extends AbstractServicePanel<ColorService> {
                                 try {
                                     getService().setColor(HSVColorToRGBColorTransformer.transform(colorChooser.getColor()));
                                 } catch (CouldNotPerformException ex) {
-                                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set color value!", ex));
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
                                 }
                                 return null;
                             }

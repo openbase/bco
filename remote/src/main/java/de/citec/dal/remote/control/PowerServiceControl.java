@@ -45,7 +45,7 @@ public class PowerServiceControl {
             try {
                 this.powerServiceRemote.init(unitConfigs);
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(logger, ex);
+                ExceptionPrinter.printHistory(ex, logger);
             }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);

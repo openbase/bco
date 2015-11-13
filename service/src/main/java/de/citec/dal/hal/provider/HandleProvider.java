@@ -37,7 +37,7 @@ public interface HandleProvider extends Provider {
             try {
                 return new Event(HandleState.class, provider.getHandle());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, provider, ex), logger);
             }
         }
     }

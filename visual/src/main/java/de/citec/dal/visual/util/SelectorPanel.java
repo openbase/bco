@@ -5,7 +5,6 @@
  */
 package de.citec.dal.visual.util;
 
-import de.citec.dal.visual.DalVisualRemote;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
@@ -13,6 +12,7 @@ import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.extension.rsb.scope.ScopeTransformer;
 import de.citec.jul.pattern.Observable;
@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -35,6 +36,7 @@ import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.LocationRegistryType;
 
 /**
  *
@@ -108,6 +110,15 @@ public class SelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
+        // register change observer
+        deviceRegistryRemote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
+            updateDynamicComponents();
+        });
+        
+        locationRegistryRemote.addObserver((Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) -> {
+            updateDynamicComponents();
+        });
+        
         init = true;
 
         updateDynamicComponents();
@@ -142,14 +153,14 @@ public class SelectorPanel extends javax.swing.JPanel {
             selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
         } catch (Exception ex) {
             selectedLocationConfigHolder = ALL_LOCATION;
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
 
         try {
             selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
         } catch (Exception ex) {
             selectedUnitConfigHolder = null;
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
 
         try {
@@ -169,7 +180,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             locationComboBox.setEnabled(locationConfigHolderList.size() > 0);
         } catch (CouldNotPerformException ex) {
             locationComboBox.setEnabled(false);
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
 
         try {
@@ -216,7 +227,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             unitConfigComboBox.setEnabled(unitConfigHolderList.size() > 0);
         } catch (CouldNotPerformException ex) {
             unitConfigComboBox.setEnabled(false);
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 
@@ -527,7 +538,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
                 } catch (MultiException ex) {
                     unitConfigComboBox.setForeground(Color.RED);
-                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
+                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
                 }
                 updatenButtonStates();
                 return null;
@@ -549,7 +560,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
                 } catch (CouldNotPerformException ex) {
                     scopeTextField.setForeground(Color.RED);
-                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
+                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
                 }
                 return null;
 
@@ -752,22 +763,4 @@ public class SelectorPanel extends javax.swing.JPanel {
             return toString().compareTo(o.toString());
         }
     }
-
-//    private class LocationConfigHolder {
-//
-//        private LocationConfig config;
-//
-//        public LocationConfigHolder(LocationConfig config) {
-//            this.config = config;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return config.getLabel();
-//        }
-//
-//        public LocationConfig getConfig() {
-//            return config;
-//        }
-//    }
 }

@@ -137,7 +137,7 @@ public enum ServiceType {
                 try {
                     server.addMethod(method.getName(), getCallback(method, service, serviceType));
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex));
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex),logger);
                 }
             }
         }

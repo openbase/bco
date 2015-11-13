@@ -138,7 +138,7 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
             double hue = Math.min(180, Math.max(0, 180 - level * 180));
             colorPanel.setBackground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 }

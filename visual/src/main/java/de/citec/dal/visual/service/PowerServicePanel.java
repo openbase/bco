@@ -108,7 +108,7 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
                             throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set power state!", ex));
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set power state!", ex), logger);
                 }
                 return null;
             }
@@ -147,7 +147,7 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
             }
             powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getPower().getValue().name()));
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 }

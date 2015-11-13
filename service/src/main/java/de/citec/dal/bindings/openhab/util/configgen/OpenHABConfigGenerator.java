@@ -144,13 +144,13 @@ public class OpenHABConfigGenerator {
                     try {
                         monitor.stop();
                     } catch (Exception ex) {
-                        ExceptionPrinter.printHistory(logger, ex);
+                        ExceptionPrinter.printHistory(ex, logger);
                     }
                 }
             }));
 
         } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
         logger.info(JPService.getApplicationName() + " successfully started.");
     }

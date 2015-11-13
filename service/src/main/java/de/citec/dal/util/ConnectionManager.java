@@ -43,7 +43,7 @@ public class ConnectionManager {
                     connectionCounter++;
                     return device;
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not activate: " + device, ex));
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not activate: " + device, ex), logger);
                 }
             }
         });
@@ -52,7 +52,7 @@ public class ConnectionManager {
             //TODO mpohling: Check way unit tests failed if activation is not synchronized!
             submit.get();
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
         return submit;
     }
@@ -67,7 +67,7 @@ public class ConnectionManager {
                     connectionCounter--;
                     return device;
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Could not deactivate: " + device, ex));
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not deactivate: " + device, ex), logger);
                 }
             }
         });
@@ -75,7 +75,7 @@ public class ConnectionManager {
             //TODO mpohling: Check way unit tests failed if activation is not synchronized!
             submit.get();
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
         return submit;
     }

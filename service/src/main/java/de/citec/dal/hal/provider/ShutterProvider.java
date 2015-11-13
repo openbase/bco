@@ -37,7 +37,7 @@ public interface ShutterProvider extends Provider {
             try {
                 return new Event(ShutterState.class, provider.getShutter());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, provider, ex), logger);
             }
         }
     }

@@ -109,7 +109,7 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> 
             }
             stateLabel.setText(getService().getBattery().getValue().name());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 }

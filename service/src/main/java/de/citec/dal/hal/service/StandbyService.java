@@ -39,7 +39,7 @@ public interface StandbyService extends Service, StandbyProvider {
                 service.setStandby(((StandbyState) request.getData()).getValue());
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
             }
         }
     }

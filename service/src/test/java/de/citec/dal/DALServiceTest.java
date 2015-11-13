@@ -65,7 +65,7 @@ public class DALServiceTest {
         try {
             instance.init();
         } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
         instance.shutdown();
     }

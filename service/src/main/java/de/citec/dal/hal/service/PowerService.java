@@ -39,7 +39,7 @@ public interface PowerService extends Service, PowerProvider {
                 service.setPower(((PowerState) request.getData()).getValue());
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
             }
         }
     }

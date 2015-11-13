@@ -83,7 +83,7 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
                 try {
                     getService().setBrightness((double) brightnessSlider.getValue());
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set brightness value!", ex));
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set brightness value!", ex), logger);
                 }
                 return null;
             }
@@ -101,7 +101,7 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
         try {
             brightnessBar.setValue(getService().getBrightness().intValue());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 }

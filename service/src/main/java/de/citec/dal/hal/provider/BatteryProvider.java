@@ -37,7 +37,7 @@ public interface BatteryProvider extends Provider {
             try {
                 return new Event(BatteryState.class, provider.getBattery());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, provider, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, provider, ex), logger);
             }
         }
     }

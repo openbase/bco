@@ -38,7 +38,7 @@ public interface TargetTemperatureService extends Service, TargetTemperatureProv
                 service.setTargetTemperature(((Double) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
             }
         }
     }

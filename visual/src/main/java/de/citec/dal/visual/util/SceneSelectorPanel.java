@@ -215,7 +215,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             unitConfigComboBox.setEnabled(unitConfigHolderList.size() > 0);
         } catch (CouldNotPerformException ex) {
             unitConfigComboBox.setEnabled(false);
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 
@@ -546,7 +546,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 //                    scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
 //                } catch (MultiException ex) {
 //                    unitConfigComboBox.setForeground(Color.RED);
-//                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
+//                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
 //                }
 //                updatenButtonStates();
 //                return null;
@@ -568,7 +568,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 //                    scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
 //                } catch (CouldNotPerformException ex) {
 //                    scopeTextField.setForeground(Color.RED);
-//                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex));
+//                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
 //                }
 //                return null;
 //                

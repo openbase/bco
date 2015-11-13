@@ -15,7 +15,6 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 
 /**
@@ -66,7 +65,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         return statusPanel;
     }
 
-    public void init() throws InterruptedException, CouldNotPerformException {
+    public final void init() throws InterruptedException, CouldNotPerformException {
         Executors.newSingleThreadExecutor().execute(new Runnable() {
 
             @Override
@@ -74,7 +73,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
                 try {
                     selectorPanel.init();
                 } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
+                    ExceptionPrinter.printHistory(ex, logger);
                 }
             }
         });
@@ -131,6 +130,8 @@ public class DalVisualRemote extends javax.swing.JFrame {
      * l
      *
      * @param args the command line arguments
+     * @throws java.lang.InterruptedException
+     * @throws java.lang.reflect.InvocationTargetException
      */
     public static void main(String args[]) throws InterruptedException, InvocationTargetException {
         /* Set the Nimbus look and feel */
@@ -156,17 +157,13 @@ public class DalVisualRemote extends javax.swing.JFrame {
 
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeAndWait(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    new DalVisualRemote().setVisible(true);;
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(logger, ex);
-                    System.exit(1);
-                }
+        java.awt.EventQueue.invokeAndWait(() -> {
+            try {
+                new DalVisualRemote().setVisible(true);;
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+                System.exit(1);
             }
-
         });
     }
 

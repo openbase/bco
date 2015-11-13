@@ -39,7 +39,7 @@ public interface ShutterService extends Service, ShutterProvider {
             try {
                 service.setShutter(((ShutterState) request.getData()).getValue());
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, new InvocationFailedException(this, service, ex));
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
             }
             return new Event(Void.class);
         }

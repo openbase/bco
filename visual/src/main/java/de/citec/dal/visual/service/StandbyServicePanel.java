@@ -109,7 +109,7 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
                             throw new InvalidStateException("State[" + getService().getStandby().getValue().name() + "] is unknown.");
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Could not set standby state!", ex));
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger);
                 }
                 return null;
             }
@@ -150,7 +150,7 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
             }
             standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getStandby().getValue().name()));
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 }

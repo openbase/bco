@@ -15,6 +15,8 @@ import de.citec.scm.remote.SceneRegistryRemote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType;
 
@@ -23,6 +25,8 @@ import rst.homeautomation.control.scene.SceneRegistryType;
  * @author mpohling
  */
 public class SceneLoader {
+    
+    private static final Logger logger = LoggerFactory.getLogger(SceneLoader.class);
 
     private final HashMap<String, SceneInterface> agentMap;
     private final SceneRegistryRemote agentRegistryRemote;
@@ -59,7 +63,7 @@ public class SceneLoader {
                     agentMap.put(config.getId(), createScene(config));
                     
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(null, ex);
+                    ExceptionPrinter.printHistory(ex, logger);
                 }
             }
         }
@@ -83,7 +87,7 @@ public class SceneLoader {
                 try {
                     agentMap.remove(scene.getConfig().getId()).deactivate();
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(null, ex);
+                    ExceptionPrinter.printHistory(ex, logger);
                 }
             }
         }
@@ -94,7 +98,7 @@ public class SceneLoader {
         try {
             scene.activate();
         } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(null, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
         return scene;
     }

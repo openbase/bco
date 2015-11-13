@@ -143,7 +143,7 @@ public class DALService implements RegistryProvider {
             DALService dalService = new DALService();
             dalService.init();
         } catch (de.citec.jul.exception.InstantiationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         logger.info(APP_NAME + " successfully started.");
