@@ -54,7 +54,7 @@ public class SceneRegistryImplTest {
 //                try {
 //                    sceneRegistry.activate();
 //                } catch (CouldNotPerformException | InterruptedException ex) {
-//                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+//                    ExceptionPrinter.printHistory(ex, logger);
 //                }
 //            }
 //        });
@@ -66,7 +66,7 @@ public class SceneRegistryImplTest {
 //                try {
 //                    locationRegistry.activate();
 //                } catch (CouldNotPerformException | InterruptedException ex) {
-//                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+//                    ExceptionPrinter.printHistory(ex, logger);
 //                }
 //            }
 //        });

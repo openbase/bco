@@ -132,7 +132,7 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 

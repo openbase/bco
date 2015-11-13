@@ -71,7 +71,7 @@ public class DeviceManager {
         try {
             new DeviceManager();
         } catch (InitializationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
         logger.info(APP_NAME + " successfully started.");
     }

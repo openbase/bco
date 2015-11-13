@@ -16,11 +16,11 @@ import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
@@ -108,7 +108,7 @@ public class DeviceRegistryImplTest {
                 try {
                     deviceRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                    ExceptionPrinter.printHistory(ex, logger);
                 }
             }
         });
@@ -120,7 +120,7 @@ public class DeviceRegistryImplTest {
                 try {
                     locationRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+                    ExceptionPrinter.printHistory(ex, logger);
                 }
             }
         });

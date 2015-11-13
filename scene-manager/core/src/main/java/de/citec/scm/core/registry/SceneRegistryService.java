@@ -132,7 +132,7 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 

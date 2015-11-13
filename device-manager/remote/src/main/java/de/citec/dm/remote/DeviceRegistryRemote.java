@@ -77,7 +77,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         try {
             notifyUpdated(requestStatus());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
     }
 

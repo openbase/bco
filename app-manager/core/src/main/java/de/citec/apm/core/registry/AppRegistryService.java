@@ -118,7 +118,7 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 

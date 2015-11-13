@@ -53,7 +53,7 @@ public class AgentRegistryImplTest {
 //                try {
 //                    agentRegistry.activate();
 //                } catch (CouldNotPerformException | InterruptedException ex) {
-//                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+//                    ExceptionPrinter.printHistory(ex, logger);
 //                }
 //            }
 //        });
@@ -65,7 +65,7 @@ public class AgentRegistryImplTest {
 //                try {
 //                    locationRegistry.activate();
 //                } catch (CouldNotPerformException | InterruptedException ex) {
-//                    ExceptionPrinter.printHistoryAndReturnThrowable(logger, ex);
+//                    ExceptionPrinter.printHistory(ex, logger);
 //                }
 //            }
 //        });
