@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.swing.DefaultComboBoxModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,8 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private boolean init = false;
 
-    private ExecutorService serviceExecuterService;
+    private ExecutorService executorService;
+    private Future currentTask;
 
     /**
      * Creates new form SelectorPanel
@@ -69,7 +72,7 @@ public class SelectorPanel extends javax.swing.JPanel {
      */
     public SelectorPanel() throws InstantiationException {
         try {
-            this.serviceExecuterService = Executors.newSingleThreadExecutor();
+            this.executorService = Executors.newSingleThreadExecutor();
             this.unitConfigObservable = new Observable<>();
             this.initComponents();
             this.setEnable(false);
@@ -141,7 +144,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
     }
 
-    private void updateDynamicComponents() {
+    private synchronized void updateDynamicComponents() {
 
         if (!init) {
             return;
@@ -149,15 +152,15 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         try {
             selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
-            if(selectedLocationConfigHolder == null) {
+            if (selectedLocationConfigHolder == null) {
                 selectedLocationConfigHolder = ALL_LOCATION;
             }
         } catch (Exception ex) {
             selectedLocationConfigHolder = ALL_LOCATION;
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
-        
-        logger.info("=== selected location "+ selectedLocationConfigHolder.toString());
+
+        logger.info("=== selected location " + selectedLocationConfigHolder.toString());
 
         try {
             selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
@@ -177,7 +180,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
             int selectedLocationIndex = Collections.binarySearch(locationConfigHolderList, selectedLocationConfigHolder);
             if (selectedLocationIndex >= 0) {
-                logger.info("=== reselect location "+ locationConfigHolderList.get(selectedLocationIndex).toString());
+                logger.info("=== reselect location " + locationConfigHolderList.get(selectedLocationIndex).toString());
                 locationComboBox.setSelectedItem(locationConfigHolderList.get(selectedLocationIndex));
             }
 
@@ -192,14 +195,14 @@ public class SelectorPanel extends javax.swing.JPanel {
             UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
             if (selectedUnitType == UnitType.UNKNOWN) {
                 if (unitConfigComboBox.isEnabled() && selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    logger.info("=== 1");
+                    logger.info("=== (" + selectedLocationConfigHolder.getConfig().getId() + ") 1");
                     for (UnitConfig config : locationRegistryRemote.getUnitConfigs(selectedLocationConfigHolder.getConfig().getId())) {
                         unitConfigHolderList.add(new UnitConfigHolder(config));
                     }
                 } else {
-                    logger.info("=== 2");
+                    logger.info("=== (all) 2");
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
-                        
+
                         // ignore non installed units
                         if (deviceRegistryRemote.getDeviceConfigById(config.getDeviceId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
@@ -208,13 +211,14 @@ public class SelectorPanel extends javax.swing.JPanel {
                     }
                 }
             } else {
-                logger.info("=== 3");
                 if (unitConfigComboBox.isEnabled() && selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
+                logger.info("=== (" + selectedLocationConfigHolder.getConfig().getId() + ")  3");
                     for (UnitConfig config : locationRegistryRemote.getUnitConfigs(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                        logger.info("Got " + config.getLabel() + " from: " + selectedLocationConfigHolder.getConfig().getId());
                         unitConfigHolderList.add(new UnitConfigHolder(config));
                     }
                 } else {
-                    logger.info("=== 4");
+                    logger.info("=== (all) 4");
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                         // ignore non installed units
                         if (deviceRegistryRemote.getDeviceConfigById(config.getDeviceId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
@@ -257,43 +261,55 @@ public class SelectorPanel extends javax.swing.JPanel {
     public void removeObserver(Observer<UnitConfig> observer) {
         unitConfigObservable.removeObserver(observer);
     }
-    
+
     private UnitConfig loadedUnitConfig;
 
     private synchronized void updateRemotePanel() {
-        final UnitConfigHolder unitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
-        
-        if(unitConfigHolder == null) {
-            // no config available.
-            return;
-        }
-        
-        final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
-        
-        if(loadedUnitConfig == selectedUnitConfig) {
-            // selection has not been changed.
-            return;
-        }
+        try {
+            final UnitConfigHolder unitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
 
-        statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, serviceExecuterService.submit(new Callable<Void>() {
-
-            @Override
-            public Void call() throws Exception {
-                try {
-                    unitConfigComboBox.setForeground(Color.BLACK);
-
-                    unitConfigObservable.notifyObservers(selectedUnitConfig);
-                    scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
-                } catch (MultiException ex) {
-                    unitConfigComboBox.setForeground(Color.RED);
-                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
-                }
-                updatenButtonStates();
-                return null;
+            if (unitConfigHolder == null) {
+                // no config available.
+                return;
             }
-        }));
-        
-        loadedUnitConfig = selectedUnitConfig;
+
+            final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
+
+            if (loadedUnitConfig == selectedUnitConfig) {
+                // selection has not been changed.
+                return;
+            }
+            statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        unitConfigComboBox.setForeground(Color.BLACK);
+
+                        unitConfigObservable.notifyObservers(selectedUnitConfig);
+                        scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
+                    } catch (MultiException ex) {
+                        unitConfigComboBox.setForeground(Color.RED);
+                        statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
+                    }
+                    updatenButtonStates();
+                    return null;
+                }
+            }));
+
+            loadedUnitConfig = selectedUnitConfig;
+        } catch (Exception ex) {
+            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not update remote panel!", ex), logger));
+        }
+    }
+
+    private Future executeSingleTask(final Callable task) throws CouldNotPerformException, InterruptedException {
+        if(currentTask != null) {
+            currentTask.cancel(true);
+        }
+       
+        currentTask = executorService.submit(task);
+        return currentTask;
     }
 
     /**
@@ -578,25 +594,30 @@ public class SelectorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_unitConfigComboBoxActionPerformed
 
     private void scopeApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeApplyButtonActionPerformed
-        statusPanel.setStatus("Load new remote control " + scopeTextField.getText().toLowerCase() + "...", StatusPanel.StatusType.INFO, serviceExecuterService.submit(new Callable<Void>() {
+        try {
+            
+            statusPanel.setStatus("Load new remote control " + scopeTextField.getText().toLowerCase() + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
 
-            @Override
-            public Void call() throws Exception {
-                try {
-                    scopeTextField.setForeground(Color.BLACK);
-                    Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
-                    UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setType(detectUnitTypeOutOfScope(scope));
-                    unitConfigObservable.notifyObservers(unitConfig.build());
-                    scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
-                } catch (CouldNotPerformException ex) {
-                    scopeTextField.setForeground(Color.RED);
-                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        scopeTextField.setForeground(Color.BLACK);
+                        Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
+                        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setType(detectUnitTypeOutOfScope(scope));
+                        unitConfigObservable.notifyObservers(unitConfig.build());
+                        scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
+                    } catch (CouldNotPerformException ex) {
+                        scopeTextField.setForeground(Color.RED);
+                        statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
+                    }
+                    return null;
+
                 }
-                return null;
-
-            }
-        }));
-        updatenButtonStates();
+            }));
+            updatenButtonStates();
+        } catch (Exception ex) {
+            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not load new remote!", ex), logger));
+        }
     }//GEN-LAST:event_scopeApplyButtonActionPerformed
 
     private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
@@ -616,7 +637,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_scopeTextFieldFocusLost
 
     private void unitConfigComboBoxPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_unitConfigComboBoxPropertyChange
-        if(evt.getPropertyName().equals("model")) {
+        if (evt.getPropertyName().equals("model")) {
             updateRemotePanel();
         }
     }//GEN-LAST:event_unitConfigComboBoxPropertyChange
@@ -708,7 +729,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         @Override
         public int compareTo(LocationConfigHolder o) {
-            if(o == null) {
+            if (o == null) {
                 return -1;
             }
             return toString().compareTo(o.toString());
@@ -741,7 +762,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         @Override
         public int compareTo(UnitTypeHolder o) {
-            if(o == null) {
+            if (o == null) {
                 return -1;
             }
             return toString().compareTo(o.toString());
@@ -774,7 +795,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         @Override
         public int compareTo(ServiceTypeHolder o) {
-            if(o == null) {
+            if (o == null) {
                 return -1;
             }
             return toString().compareTo(o.toString());
@@ -809,7 +830,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         @Override
         public int compareTo(UnitConfigHolder o) {
-            if(o == null) {
+            if (o == null) {
                 return -1;
             }
             return toString().compareTo(o.toString());
