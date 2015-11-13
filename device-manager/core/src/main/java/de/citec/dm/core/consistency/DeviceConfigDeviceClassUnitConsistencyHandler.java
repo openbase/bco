@@ -22,6 +22,7 @@ import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -60,14 +61,13 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler implements ProtoBufRe
 
         for (UnitTemplateConfig unitTemplate : deviceClass.getUnitTemplateConfigList()) {
             if (!unitToTemplateExists(unitConfigs, unitTemplate.getId())) {
-                logger.info("No unit with id [" + unitTemplate.getId() + "]");
                 List<ServiceConfig> serviceConfigs = new ArrayList<>();
                 for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
-                    serviceConfigs.add(ServiceConfig.newBuilder().setType(serviceTemplate.getServiceType()).build());
+                    serviceConfigs.add(ServiceConfig.newBuilder().setType(serviceTemplate.getServiceType()).setBindingServiceConfig(BindingServiceConfigType.BindingServiceConfig.newBuilder().setType(deviceClass.getBindingConfig().getType())).build());
                 }
                 unitConfigs.add(UnitConfig.newBuilder().setType(unitTemplate.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplate.getId()).build());
+                modification = true;
             }
-            modification = true;
         }
         deviceConfig.addAllUnitConfig(unitConfigs);
 
