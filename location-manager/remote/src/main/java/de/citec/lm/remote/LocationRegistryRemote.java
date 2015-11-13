@@ -13,7 +13,6 @@ import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.extension.rsb.scope.ScopeProvider;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import rst.homeautomation.unit.UnitConfigType;
 import rst.spatial.LocationConfigType;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import java.util.concurrent.CompletableFuture;
@@ -83,7 +83,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         try {
             notifyUpdated(requestStatus());
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(logger, new CouldNotPerformException("Initial registry sync failed!", ex));
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
     }
 
