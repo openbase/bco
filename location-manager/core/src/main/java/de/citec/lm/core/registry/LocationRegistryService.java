@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.app.AppRegistryType;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
@@ -139,6 +140,13 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
+    }
+    
+    @Override
+    public final void notifyChange() throws CouldNotPerformException {
+        // sync read only flags
+        setField(LocationRegistry.LOCATION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, locationConfigRegistry.isReadOnly());
+        super.notifyChange();
     }
 
     @Override

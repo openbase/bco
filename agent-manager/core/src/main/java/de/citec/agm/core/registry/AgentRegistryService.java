@@ -32,6 +32,7 @@ import java.util.concurrent.Future;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
+import rst.homeautomation.device.DeviceRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -135,6 +136,14 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
             ExceptionPrinter.printHistory(ex, logger);
         }
     }
+    
+    @Override
+    public final void notifyChange() throws CouldNotPerformException {
+        // sync read only flags
+        setField(AgentRegistry.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
+        super.notifyChange();
+    }
+
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {

@@ -13,6 +13,7 @@ import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
+import de.citec.jps.preset.JPForce;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
@@ -58,6 +59,7 @@ public class DeviceManager {
 
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPDeviceDatabaseDirectory.class);

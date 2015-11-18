@@ -32,6 +32,7 @@ import java.util.concurrent.Future;
 import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
+import rst.homeautomation.device.DeviceRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -120,6 +121,13 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
+    }
+    
+    @Override
+    public final void notifyChange() throws CouldNotPerformException {
+        // sync read only flags
+        setField(AppRegistry.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
+        super.notifyChange();
     }
 
     @Override
