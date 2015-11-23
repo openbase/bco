@@ -66,8 +66,8 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <global.jul.version>0.4-SNAPSHOT</global.jul.version>
-        <global.rm.version>0.6-SNAPSHOT</global.rm.version>
+        <global.jul.version>0.5-SNAPSHOT</global.jul.version>
+        <global.rm.version>0.7-SNAPSHOT</global.rm.version>
         <global.rst.sandbox.artifact>rst-sandbox-csra-ha-paramite</global.rst.sandbox.artifact>
         <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
         <global.rst.stable.artifact>rst-csra-ha-paramite</global.rst.stable.artifact>
