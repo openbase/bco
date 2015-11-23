@@ -255,7 +255,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         return unitConfigs;
     }
 
-    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException, NotAvailableException {
+    @Override
+    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
         getData();
         List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
@@ -277,7 +278,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         return serviceConfigs;
     }
 
-    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
+    @Override
+    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
         getData();
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {

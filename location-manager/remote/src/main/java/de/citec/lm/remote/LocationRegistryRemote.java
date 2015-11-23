@@ -60,22 +60,46 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         }
     }
 
+    /**
+     *
+     * @param label
+     * @param location
+     * @throws InitializationException {@inheritDoc}
+     * @deprecated this method makes no sense in this context and should be removed within next release. TODO mpohling: remove within next release for registry remotes.
+     */
     @Override
-    public void init(String label, ScopeProvider location) throws InitializationException {
+    public void init(final String label, final ScopeProvider location) throws InitializationException {
         deviceRegistryRemote.init();
         super.init(label, location);
     }
 
+    /**
+     * Method initializes the remote with the given scope for the server registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     */
     @Override
-    public synchronized void init(Scope scope) throws InitializationException {
+    public synchronized void init(final Scope scope) throws InitializationException {
         deviceRegistryRemote.init();
         super.init(scope);
     }
 
+    /**
+     * Method initializes the remote with the default registry connection scope.
+     *
+     * @throws InitializationException {@inheritDoc}
+     */
     public void init() throws InitializationException {
         this.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws java.lang.InterruptedException {@inheritDoc}
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         deviceRegistryRemote.activate();
@@ -87,12 +111,21 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void shutdown() {
         deviceRegistryRemote.shutdown();
         super.shutdown();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param data
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public void notifyUpdated(final LocationRegistry data) throws CouldNotPerformException {
         locationRemoteRegistry.notifyRegistryUpdated(data.getLocationConfigList());
@@ -102,8 +135,13 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         return locationRemoteRegistry;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public LocationConfigType.LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
+    public LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {
             return (LocationConfigType.LocationConfig) callMethod("registerLocationConfig", locationConfig);
         } catch (CouldNotPerformException ex) {
@@ -111,12 +149,22 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public LocationConfig getLocationConfigById(final String locationConfigId) throws CouldNotPerformException {
+    public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException {
         getData();
-        return locationRemoteRegistry.getMessage(locationConfigId);
+        return locationRemoteRegistry.getMessage(locationId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
         getData();
@@ -125,6 +173,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(final String unitLabel, final String locationId) throws CouldNotPerformException {
         getData();
@@ -133,18 +186,33 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         getData();
         return locationRemoteRegistry.contains(locationConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Boolean containsLocationConfigById(final String locationConfigId) throws CouldNotPerformException {
+    public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException {
         getData();
-        return locationRemoteRegistry.contains(locationConfigId);
+        return locationRemoteRegistry.contains(locationId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {
@@ -154,6 +222,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public LocationConfig removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {
@@ -163,6 +236,12 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     */
     @Override
     public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
@@ -171,31 +250,26 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive related to the given location id.
+     * {@inheritDoc}
      *
-     * @param locationConfigId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigs(final String locationId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
-        for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
+        for (String unitConfigId : getLocationConfigById(locationId).getUnitIdList()) {
             unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive related to the given location id and an instance of the given unit type.
+     * {@inheritDoc}
      *
-     * @param type
-     * @param locationConfigId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
+    @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfigType.UnitConfig unitConfig;
@@ -214,18 +288,16 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all unit configurations which are direct or recursive related to the given location id and an implement the given service type.
+     * {@inheritDoc}
      *
-     * @param type
-     * @param locationConfigId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
+    @Override
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -242,27 +314,27 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
-     * Method returns all service configurations which are direct or recursive related to the given location id.
+     * {@inheritDoc}
      *
-     * @param locationConfigId
-     * @return the list of service configurations.
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException is thrown if the given location config id is unknown.
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationId) throws CouldNotPerformException, NotAvailableException {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs(locationConfigId)) {
+        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs(locationId)) {
             serviceConfigList.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigList;
     }
 
     /**
+     * {@inheritDoc}
      *
-     * @return @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
+    @Override
     public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
         getData();
         for (LocationConfig locationConfig : locationRemoteRegistry.getMessages()) {
@@ -273,6 +345,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         throw new NotAvailableException("rootlocation");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
         if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {

@@ -65,6 +65,7 @@ import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -397,5 +398,33 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     @Override
     public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(deviceConfigRegistry.isReadOnly());
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
+        getData();
+        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
+            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
+                if (unitConfig.getType() == type) {
+                    unitConfigs.add(unitConfig);
+                }
+            }
+        }
+        return unitConfigs;
+    }
+
+    @Override
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+        getData();
+        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
+            for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                if (serviceConfig.getType() == serviceType) {
+                    serviceConfigs.add(serviceConfig);
+                }
+            }
+        }
+        return serviceConfigs;
     }
 }

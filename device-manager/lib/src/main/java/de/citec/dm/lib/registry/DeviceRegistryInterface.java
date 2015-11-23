@@ -6,20 +6,21 @@
 package de.citec.dm.lib.registry;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
 import java.util.List;
 import java.util.concurrent.Future;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
+ * 
  * @author mpohling
  */
+// TODO mpohling: write java doc
 public interface DeviceRegistryInterface {
 
     public DeviceConfig registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
@@ -56,7 +57,7 @@ public interface DeviceRegistryInterface {
     
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
     
-    public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException, NotAvailableException;
+    public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
     
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
     
@@ -66,7 +67,11 @@ public interface DeviceRegistryInterface {
 
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
     
+    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
+    
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
+    
+    public List<ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
     
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
     
