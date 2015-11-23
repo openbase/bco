@@ -198,10 +198,16 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfigType.UnitConfig unitConfig;
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
-            UnitConfigType.UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
-            if (unitConfig.getType().equals(type)) {
-                unitConfigList.add(unitConfig);
+            try {
+                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type)) {
+                    unitConfigList.add(unitConfig);
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
             }
         }
         return unitConfigList;
@@ -218,12 +224,18 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
+        
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
-            UnitConfigType.UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
-            for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getType().equals(type)) {
-                    unitConfigList.add(unitConfig);
+            try {
+                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+                for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getType().equals(type)) {
+                        unitConfigList.add(unitConfig);
+                    }
                 }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
             }
         }
         return unitConfigList;
