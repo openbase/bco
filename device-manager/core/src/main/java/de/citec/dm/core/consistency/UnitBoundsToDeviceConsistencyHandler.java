@@ -38,8 +38,6 @@ public class UnitBoundsToDeviceConsistencyHandler implements ProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
-        boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceConfig);
-
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
@@ -58,10 +56,6 @@ public class UnitBoundsToDeviceConsistencyHandler implements ProtoBufRegistryCon
                     unitConfig.setPlacementConfig(deviceConfig.getPlacementConfig());
                     modification = true;
                 }
-
-                // setup label
-                modification = DeviceConfigUtils.setupUnitLabelByDeviceConfig(unitConfig, deviceConfig, deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId()), hasDuplicatedUnitType);
-                
             }
             deviceConfig.addUnitConfig(unitConfig);
         }

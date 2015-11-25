@@ -60,7 +60,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.PlacementConfigType;
+import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -359,6 +359,35 @@ public class DeviceRegistryImplTest {
         deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).build());
     }
 
+    @Test
+    public void testBoundToDeviceConsistencyHandler() throws Exception {
+        ServiceTemplate serviceTemplate1 = ServiceTemplate.newBuilder().setServiceType(ServiceType.POWER_SERVICE).build();
+        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(serviceTemplate1).build();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceType(serviceTemplate1.getServiceType()).build());
+
+        BindingConfigType.BindingConfig bindingConfig = BindingConfigType.BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("BoundToDeviceTest", "boundToDevicePNR", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).setBindingConfig(bindingConfig).build());
+
+        DeviceConfig config = deviceRegistry.registerDeviceConfig(getDeviceConfig("BoundToDeviceTestDevice", "boundToDeviceSNR", clazz, null));
+        assertTrue("Unit config has not been added to device config", config.getUnitConfigCount() == 1);
+        assertTrue("Unit config has not been set as bound to device", config.getUnitConfig(0).getBoundToDevice());
+        assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
+
+        LocationConfig testLocation = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel("BoundToDeviceTestLocation").build());
+        PlacementConfig placement = config.getUnitConfig(0).getPlacementConfig().toBuilder().setLocationId(testLocation.getId()).build();
+        UnitConfig unit = config.getUnitConfig(0).toBuilder().setPlacementConfig(placement).build();
+        config = config.toBuilder().clearUnitConfig().addUnitConfig(unit).build();
+        assertTrue("Units placement config has not been modified correctly", config.getUnitConfig(0).getPlacementConfig().getLocationId().equals(testLocation.getId()));
+
+        config = deviceRegistry.updateDeviceConfig(config);
+        assertTrue("Unit is not bound to device anymore", config.getUnitConfig(0).getBoundToDevice());
+        assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
+        assertEquals("Location id in placement config of unit does not equals that in device", config.getPlacementConfig().getLocationId(), config.getUnitConfig(0).getPlacementConfig().getLocationId());
+
+        locationRegistry.removeLocationConfig(testLocation);
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).build());
+    }
+
     /**
      * Test if the unit id of is set in the device service.
      */
@@ -423,12 +452,12 @@ public class DeviceRegistryImplTest {
         assertEquals("DeviceConfig has been although the sandbox has rejected an update", original, deviceRegistry.getDeviceConfigById(deviceConfig.getId()));
     }
 
-    private PlacementConfigType.PlacementConfig getDefaultPlacement() {
+    private PlacementConfig getDefaultPlacement() {
         RotationType.Rotation rotation = RotationType.Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
         ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION_LABEL);
-        return PlacementConfigType.PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION_LABEL).build();
+        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION_LABEL).build();
     }
 
     private UnitConfig getUnitConfig(UnitType type, String label) {
