@@ -7,7 +7,6 @@ package de.citec.lm.core.registry.dbconvert;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import de.citec.jul.storage.registry.version.DBVersionConverter;
 
 /**
@@ -22,30 +21,14 @@ public class LocationConfig_1_To_2_DBConverter implements DBVersionConverter {
         // check if child element exists otherwise we are finish
         JsonElement placement = locationConfig.get("placement_config");
         if (placement == null) {
-            locationConfig.add("placement_config", getDefaultPlacement());
+            locationConfig.add("placement_config", copyPlacement(locationConfig));
         }
-
         return locationConfig;
     }
 
-    private JsonObject getDefaultPlacement() {
-        JsonObject translation = new JsonObject();
-        translation.add("x", new JsonPrimitive(0));
-        translation.add("y", new JsonPrimitive(0));
-        translation.add("z", new JsonPrimitive(0));
-
-        JsonObject rotation = new JsonObject();
-        rotation.add("qw", new JsonPrimitive(1));
-        rotation.add("qx", new JsonPrimitive(0));
-        rotation.add("qy", new JsonPrimitive(0));
-        rotation.add("qz", new JsonPrimitive(0));
-
-        JsonObject position = new JsonObject();
-        position.add("translation", translation);
-        position.add("rotation", rotation);
-
-        JsonObject placement = new JsonObject();
-        placement.add("position", position);
+    private JsonObject copyPlacement(JsonObject locationConfig) {
+        final JsonObject placement = new JsonObject();
+        placement.add("position", locationConfig.get("position"));
         return placement;
     }
 }
