@@ -26,6 +26,7 @@ public class ParentChildConsistencyHandler implements ProtoBufRegistryConsistenc
 
     private static final Logger logger = LoggerFactory.getLogger(ParentChildConsistencyHandler.class);
 
+    @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
 
         LocationConfig locationConfig = entry.getMessage();

@@ -225,4 +225,28 @@ public class LocationRegistryImplTest {
         } catch (Exception ex) {
         }
     }
+
+    /**
+     * Test if a location with two children with the same label can be
+     * registered.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testChildWithSameLabelConsistency() throws Exception {
+        String rootLabel = "RootWithChildrenWithSameLabel";
+        String childLabel = "childWithSameLabel";
+        LocationConfig root = LocationConfig.newBuilder().setLabel(rootLabel).build();
+        root = remote.registerLocationConfig(root);
+
+        LocationConfig firstChild = LocationConfig.newBuilder().setLabel(childLabel).setParentId(root.getId()).build();
+        firstChild = remote.registerLocationConfig(firstChild);
+
+        try {
+            LocationConfig secondChild = LocationConfig.newBuilder().setLabel(childLabel).setParentId(root.getId()).build();
+            secondChild = remote.registerLocationConfig(secondChild);
+            Assert.fail("No exception thrown when registering a second child with the same label");
+        } catch (Exception ex) {
+        }
+    }
 }

@@ -6,32 +6,18 @@
 package de.citec.lm.lib.generator;
 
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.extension.protobuf.IdGenerator;
-import de.citec.jul.processing.StringProcessor;
+import java.util.UUID;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
  * @author mpohling
  */
-public class LocationIDGenerator implements IdGenerator<String, LocationConfig>{
+public class LocationIDGenerator implements IdGenerator<String, LocationConfig> {
 
     @Override
     public String generateId(LocationConfig message) throws CouldNotPerformException {
-        try {
-            if (!message.hasLabel()) {
-                throw new InvalidStateException("Field [locationConfig.label] is missing!");
-            }
-
-            if (message.getLabel().isEmpty()) {
-                throw new InvalidStateException("Field [Label] is empty!");
-            }
-            
-            return StringProcessor.transformToIdString(message.getLabel());
-
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
+        return UUID.randomUUID().toString();
     }
 }

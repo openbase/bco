@@ -29,10 +29,10 @@ public class ScopeConsistencyHandler implements ProtoBufRegistryConsistencyHandl
         ScopeType.Scope newScope = ScopeGenerator.generateLocationScope(locationConfig, entryMap);
 
         // verify and update scope
-		if(!ScopeGenerator.generateStringRep(locationConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeGenerator.generateStringRep(locationConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
             entry.setMessage(locationConfig.toBuilder().setScope(newScope));
-			throw new EntryModification(entry, this);
-		}
+            throw new EntryModification(entry, this);
+        }
     }
 
     @Override

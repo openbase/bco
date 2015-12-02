@@ -27,6 +27,7 @@ import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.lm.core.consistency.ChildWithSameLabelConsistencyHandler;
 import de.citec.lm.core.consistency.LocationLoopConsistencyHandler;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
@@ -56,48 +57,49 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  * @author mpohling
  */
 public class LocationRegistryService extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements LocationRegistryInterface {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfigType.LocationConfig.getDefaultInstance()));
     }
-
+    
     private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryType.LocationRegistry.Builder> locationConfigRegistry;
     private final DeviceRegistryRemote deviceRegistryRemote;
     private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
-
+    
     public LocationRegistryService() throws InstantiationException, InterruptedException {
         super(LocationRegistry.newBuilder());
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-
+            
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
-
+            
             deviceRegistryUpdateObserver = (Observable<DeviceRegistry> source, DeviceRegistry data) -> {
                 locationConfigRegistry.checkConsistency();
             };
-
+            
             deviceRegistryRemote = new DeviceRegistryRemote();
-
+            
             locationConfigRegistry.loadRegistry();
-
+            
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
-
+            
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
                 notifyChange();
             });
-
+            
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-
+    
     public void init() throws InitializationException {
         super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
         deviceRegistryRemote.init();
@@ -118,7 +120,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
-
+        
         try {
             locationConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
@@ -128,6 +130,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
 
     /**
      * {@inheritDoc}
+     *
      * @throws java.lang.InterruptedException {@inheritDoc}
      * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
      */
@@ -142,15 +145,15 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      */
     @Override
     public void shutdown() {
-
+        
         if (deviceRegistryRemote != null) {
             deviceRegistryRemote.shutdown();
         }
-
+        
         if (locationConfigRegistry != null) {
             locationConfigRegistry.shutdown();
         }
-
+        
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -314,7 +317,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTemplateType.UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfigType.UnitConfig unitConfig;
-
+        
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -338,7 +341,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     public List<UnitConfigType.UnitConfig> getUnitConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-
+        
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
