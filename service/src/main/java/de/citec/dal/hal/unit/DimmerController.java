@@ -33,7 +33,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     private final DimService dimmService;
 
     public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getDefaultServiceFactory());
+        this(config, device, builder, device.getServiceFactory());
     }
 
     public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder, final ServiceFactory serviceFactory) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {

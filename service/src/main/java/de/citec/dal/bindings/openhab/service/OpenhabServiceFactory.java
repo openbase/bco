@@ -5,7 +5,6 @@
  */
 package de.citec.dal.bindings.openhab.service;
 
-import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
@@ -16,7 +15,6 @@ import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.dal.hal.service.StandbyService;
 import de.citec.dal.hal.service.TargetTemperatureService;
-import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotSupportedException;
 
@@ -25,6 +23,12 @@ import de.citec.jul.exception.NotSupportedException;
  * @author mpohling
  */
 public class OpenhabServiceFactory implements ServiceFactory {
+
+    private final static ServiceFactory instance = new OpenhabServiceFactory();
+
+    public static ServiceFactory getInstance() {
+        return instance;
+    }
 
     @Override
     public BrightnessService newBrightnessService(Device device, BrightnessService unit) throws InstantiationException {

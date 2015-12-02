@@ -40,7 +40,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     private final PowerService powerService;
 
     public AmbientLightController(final UnitConfigType.UnitConfig config, final Device device, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getDefaultServiceFactory());
+        this(config, device, builder, device.getServiceFactory());
     }
 
     public AmbientLightController(final UnitConfigType.UnitConfig config, final Device device, final AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {

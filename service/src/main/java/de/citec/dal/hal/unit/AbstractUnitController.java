@@ -95,7 +95,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public final String getLabel() {
+    public String getLabel() {
         return config.getLabel();
     }
 

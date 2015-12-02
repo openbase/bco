@@ -2,7 +2,7 @@
 APP_NAME='dal'
 clear &&
 echo "=== clean ${APP_NAME} ===" &&
-mvn clean &&
+mvn clean $@ &&
 clear &&
 echo "=== install and deploy ${APP_NAME} ===" &&
 mvn install -DassembleDirectory=${prefix} $@ &&

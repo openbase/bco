@@ -6,7 +6,7 @@
 package de.citec.dal.registry;
 
 import de.citec.dal.hal.device.Device;
-import de.citec.dal.hal.device.DeviceFactory;
+import de.citec.dal.hal.device.DeviceFactoryImpl;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
@@ -30,7 +30,7 @@ public class DeviceRegistrySynchronizer extends RegistrySynchronizer<String, Dev
 private final DeviceRegistryRemote remoteRegistry;
 
     public DeviceRegistrySynchronizer(final DeviceRegistry registry, final DeviceRegistryRemote remoteRegistry) throws InstantiationException {
-        super(registry, remoteRegistry.getDeviceConfigRemoteRegistry(), new DeviceFactory(remoteRegistry));
+        super(registry, remoteRegistry.getDeviceConfigRemoteRegistry(), new DeviceFactoryImpl(remoteRegistry));
         try {
             this.remoteRegistry = remoteRegistry;
         } catch (Exception ex) {

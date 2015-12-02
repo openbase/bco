@@ -7,6 +7,7 @@ package de.citec.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.remote.unit.DALRemoteService;
+import de.citec.dal.remote.unit.UnitRemoteFactory;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
@@ -106,7 +107,7 @@ public abstract class RSBRemoteView<RS extends DALRemoteService> extends javax.s
         }
     }
 
-    private RS instantiatUnitRemote(Class<? extends RS> remoteClass) throws InstantiationException {
+    public RS instantiatUnitRemote(Class<? extends RS> remoteClass) throws InstantiationException {
         try {
             return remoteClass.newInstance();
         } catch (Exception ex) {

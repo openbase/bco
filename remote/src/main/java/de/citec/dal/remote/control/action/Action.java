@@ -7,6 +7,7 @@ package de.citec.dal.remote.control.action;
 
 import de.citec.dal.hal.service.ServiceType;
 import de.citec.jul.exception.CouldNotPerformException;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceConfigType;
 
 /**
@@ -40,13 +41,19 @@ public class Action implements ActionService {
     };
 
     // config
-    private String name;
-    private String description;
     private ActionPriority priority;
     private String origin;
     private long executionDelay;
     private long period;
     private ActionState state;
+
+    private ActionConfigType.ActionConfig config;
+
+    public Action(final ActionConfigType.ActionConfig config) {
+        this.config = config;
+    }
+
+
 
     @Override
     public void execute() throws CouldNotPerformException {

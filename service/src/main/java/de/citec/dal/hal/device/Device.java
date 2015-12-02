@@ -7,21 +7,22 @@ package de.citec.dal.hal.device;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.iface.Activatable;
 import de.citec.jul.iface.Identifiable;
 import de.citec.jul.extension.rsb.scope.ScopeProvider;
+import de.citec.jul.iface.provider.LabelProvider;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
  * @author Divine Threepwood
  */
-public interface Device extends ScopeProvider, Identifiable<String>, Activatable {
+public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable {
 
-    public String getName();
-
-	public String getLabel();
+    public DeviceConfig getConfig();
 
     public Location getLocation();
     
-    public ServiceFactory getDefaultServiceFactory();
+    public ServiceFactory getServiceFactory() throws NotAvailableException;
 }

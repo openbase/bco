@@ -36,7 +36,7 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
     private final StandbyService standbyService;
 
     public ScreenController(final UnitConfigType.UnitConfig config, final Device device, final Screen.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getDefaultServiceFactory());
+        this(config, device, builder, device.getServiceFactory());
     }
 
     public ScreenController(final UnitConfigType.UnitConfig config, final Device device, final Screen.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {

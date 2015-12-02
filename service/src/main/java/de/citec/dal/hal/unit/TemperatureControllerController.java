@@ -29,7 +29,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
     private final TargetTemperatureService targetTemperatureService;
 
     public TemperatureControllerController(final UnitConfigType.UnitConfig config, final Device device, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getDefaultServiceFactory());
+        this(config, device, builder, device.getServiceFactory());
     }
 
     public TemperatureControllerController(final UnitConfigType.UnitConfig config, final Device device, final TemperatureController.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {

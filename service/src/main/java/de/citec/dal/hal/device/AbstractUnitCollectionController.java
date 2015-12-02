@@ -7,15 +7,12 @@ package de.citec.dal.hal.device;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.DALService;
 import java.util.HashMap;
 import java.util.Map;
-import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.AbstractUnitController;
 import de.citec.dal.transform.UnitConfigToUnitClassTransformer;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.InitializationException;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,11 +21,11 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
+import de.citec.jul.iface.Identifiable;
 import de.citec.jul.processing.StringProcessor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
@@ -37,36 +34,13 @@ import rst.homeautomation.unit.UnitConfigType;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Device {
-
-    public final static String DEVICE_TYPE_FILED_CONFIG = "config";
-
-    protected final String id;
-    protected final String name;
-    protected final String label;
-    protected final Location location;
+public abstract class AbstractUnitCollectionController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Identifiable<String>{
 
     private final Map<String, AbstractUnitController> unitMap;
 
-    public AbstractDeviceController(final DeviceConfig config, final MB builder) throws InstantiationException, CouldNotTransformException {
+    public AbstractUnitCollectionController(final MB builder) throws InstantiationException {
         super(builder);
-        try {
-            this.id = config.getId();
-            this.name = generateName(builder.getClass().getDeclaringClass());
-            this.label = config.getLabel();
-            this.location = new Location(DALService.getRegistryProvider().getLocationRegistryRemote().getLocationConfigById(config.getPlacementConfig().getLocationId()));
-            this.unitMap = new HashMap<>();
-
-            setField(DEVICE_TYPE_FILED_CONFIG, config);
-
-            try {
-                init(config.getScope());
-            } catch (InitializationException ex) {
-                throw new InstantiationException("Could not init RSBCommunicationService!", ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException("Could not init RSBCommunicationService!", ex);
-        }
+        this.unitMap = new HashMap<>();
     }
 
     public final static String generateName(final Class hardware) {
@@ -84,27 +58,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         if (!unitMap.containsKey(id)) {
             throw new NotAvailableException("Unit[" + id + "]", this + " has no registered unit with given name!");
         }
-        return unitMap.get(name);
-    }
-
-    @Override
-    public Location getLocation() {
-        return location;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getLabel() {
-        return label;
+        return unitMap.get(id);
     }
 
     @Override
@@ -132,7 +86,11 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + id + "]";
+        try {
+            return getClass().getSimpleName() + "[" + getId() + "]";
+        } catch (CouldNotPerformException ex) {
+            return getClass().getSimpleName() + "[?]";
+        }
     }
 
     public final void registerUnits(final Collection<UnitConfigType.UnitConfig> unitConfigs) throws CouldNotPerformException {

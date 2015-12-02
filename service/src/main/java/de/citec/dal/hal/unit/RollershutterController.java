@@ -34,7 +34,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     private final OpeningRatioService openingRatioService;
 
     public RollershutterController(final UnitConfigType.UnitConfig config, Device device, Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getDefaultServiceFactory());
+        this(config, device, builder, device.getServiceFactory());
     }
 
     public RollershutterController(final UnitConfigType.UnitConfig config, Device device, Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {

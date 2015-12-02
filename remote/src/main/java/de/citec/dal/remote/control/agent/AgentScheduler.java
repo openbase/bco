@@ -25,16 +25,15 @@ public class AgentScheduler {
 
     protected static final Logger logger = LoggerFactory.getLogger(AgentScheduler.class);
 
-    private final AgentFactory factory;
+    private final AgentFactoryImpl factory;
     private final Registry<String, Agent> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
-
     private final ActivatableEntryRegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
 
     public AgentScheduler() throws InstantiationException, InterruptedException {
         logger.info("Starting agent scheduler");
         try {
-            this.factory = new AgentFactory();
+            this.factory = new AgentFactoryImpl();
             this.agentRegistry = new Registry<>();
 
             agentRegistryRemote = new AgentRegistryRemote();

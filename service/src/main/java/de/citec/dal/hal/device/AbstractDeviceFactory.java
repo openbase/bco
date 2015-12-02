@@ -13,7 +13,7 @@ import rst.homeautomation.device.DeviceConfigType;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceFactory implements DeviceFactoryInterface {
+public abstract class AbstractDeviceFactory implements DeviceFactory {
 
     private final DeviceRegistryRemote deviceRegistryRemote;
     
