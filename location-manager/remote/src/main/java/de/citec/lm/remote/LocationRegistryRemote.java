@@ -48,12 +48,12 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationRemoteRegistry;
+    private final RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRemoteRegistry;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
     public LocationRegistryRemote() throws InstantiationException {
         try {
-            this.locationRemoteRegistry = new RemoteRegistry<>(new LocationIDGenerator());
+            this.locationConfigRemoteRegistry = new RemoteRegistry<>(new LocationIDGenerator());
             deviceRegistryRemote = new DeviceRegistryRemote();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -128,11 +128,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public void notifyUpdated(final LocationRegistry data) throws CouldNotPerformException {
-        locationRemoteRegistry.notifyRegistryUpdated(data.getLocationConfigList());
+        locationConfigRemoteRegistry.notifyRegistryUpdated(data.getLocationConfigList());
     }
 
-    public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationRemoteRegistry() {
-        return locationRemoteRegistry;
+    public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRemoteRegistry() {
+        return locationConfigRemoteRegistry;
     }
 
     /**
@@ -157,7 +157,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException {
         getData();
-        return locationRemoteRegistry.getMessage(locationId);
+        return locationConfigRemoteRegistry.getMessage(locationId);
     }
 
     /**
@@ -168,7 +168,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
         getData();
-        return locationRemoteRegistry.getMessages().stream()
+        return locationConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equals(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -194,7 +194,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         getData();
-        return locationRemoteRegistry.contains(locationConfig);
+        return locationConfigRemoteRegistry.contains(locationConfig);
     }
 
     /**
@@ -205,7 +205,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException {
         getData();
-        return locationRemoteRegistry.contains(locationId);
+        return locationConfigRemoteRegistry.contains(locationId);
     }
 
     /**
@@ -245,7 +245,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
-        List<LocationConfig> messages = locationRemoteRegistry.getMessages();
+        List<LocationConfig> messages = locationConfigRemoteRegistry.getMessages();
         return messages;
     }
 
@@ -337,7 +337,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
         getData();
-        for (LocationConfig locationConfig : locationRemoteRegistry.getMessages()) {
+        for (LocationConfig locationConfig : locationConfigRemoteRegistry.getMessages()) {
             if (locationConfig.hasRoot() && locationConfig.getRoot()) {
                 return locationConfig;
             }

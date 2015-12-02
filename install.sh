@@ -2,7 +2,7 @@
 APP_NAME='registry-manager'
 clear &&
 echo "=== clean ${APP_NAME} ===" &&
-mvn clean &&
+mvn clean $@ &&
 clear &&
 echo "=== deploy ${APP_NAME} to ${prefix} ===" &&
 mvn install -DassembleDirectory=${prefix} $@ &&
