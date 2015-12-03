@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import de.citec.jul.storage.registry.version.DBVersionConverter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
 public class LocationConfig_0_To_1_DBConverter implements DBVersionConverter {
 
     @Override
-    public JsonObject upgrade(JsonObject locationConfig) {
+    public JsonObject upgrade(final JsonObject locationConfig, final Collection<JsonObject> dbSnapshot) {
 
 
         // check if child element exists otherwise we are finish

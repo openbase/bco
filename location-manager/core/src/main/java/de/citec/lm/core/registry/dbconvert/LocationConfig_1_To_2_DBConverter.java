@@ -8,6 +8,7 @@ package de.citec.lm.core.registry.dbconvert;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import de.citec.jul.storage.registry.version.DBVersionConverter;
+import java.util.Collection;
 
 /**
  *
@@ -16,7 +17,7 @@ import de.citec.jul.storage.registry.version.DBVersionConverter;
 public class LocationConfig_1_To_2_DBConverter implements DBVersionConverter {
 
     @Override
-    public JsonObject upgrade(JsonObject locationConfig) {
+    public JsonObject upgrade(JsonObject locationConfig, final Collection<JsonObject> dbSnapshot) {
 
         // check if child element exists otherwise we are finish
         JsonElement placement = locationConfig.get("placement_config");

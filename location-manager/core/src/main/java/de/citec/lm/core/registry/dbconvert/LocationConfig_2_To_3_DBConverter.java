@@ -3,6 +3,7 @@ package de.citec.lm.core.registry.dbconvert;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import de.citec.jul.storage.registry.version.DBVersionConverter;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -12,7 +13,7 @@ import java.util.UUID;
 public class LocationConfig_2_To_3_DBConverter implements DBVersionConverter {
 
     @Override
-    public JsonObject upgrade(JsonObject locationConfig) {
+    public JsonObject upgrade(JsonObject locationConfig, final Collection<JsonObject> dbSnapshot) {
         locationConfig.remove("id");
         locationConfig.add("id", new JsonPrimitive(UUID.randomUUID().toString()));
         return locationConfig;
