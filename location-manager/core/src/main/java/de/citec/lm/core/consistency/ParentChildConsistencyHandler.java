@@ -62,7 +62,7 @@ public class ParentChildConsistencyHandler implements ProtoBufRegistryConsistenc
                 childLocationConfig = registry.getMessage(childLocationId);
             }
 
-            IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig, registry.getIdGenerator());
+            IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig.getId());
             // check if parent id is registered
             if (!childLocationConfig.hasParentId()) {
                 throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
