@@ -85,7 +85,7 @@ public class LocationManager {
         MultiException.ExceptionStack exceptionStack = null;
         
         if (!locationManager.getLocationRegistry().getLocationConfigRegistry().isConsistent()) {
-            MultiException.push(locationManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("LocationConfigRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(locationManager, new VerificationFailedException("LocationConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
         
         try {

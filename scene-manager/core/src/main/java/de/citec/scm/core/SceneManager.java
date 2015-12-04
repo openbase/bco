@@ -86,7 +86,7 @@ public class SceneManager {
         MultiException.ExceptionStack exceptionStack = null;
 
         if (!sceneManager.getSceneRegistry().getSceneConfigRegistry().isConsistent()) {
-            MultiException.push(sceneManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("SceneConfigRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(sceneManager, new VerificationFailedException("SceneConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

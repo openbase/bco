@@ -85,7 +85,7 @@ public class AppManager {
         MultiException.ExceptionStack exceptionStack = null;
 
         if (!appManager.getAppRegistry().getAppConfigRegistry().isConsistent()) {
-            MultiException.push(appManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("AppConfigRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(appManager, new VerificationFailedException("AppConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

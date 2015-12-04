@@ -85,7 +85,7 @@ public class AgentManager {
         MultiException.ExceptionStack exceptionStack = null;
 
         if (!agentManager.getAgentRegistry().getAgentConfigRegistry().isConsistent()) {
-            MultiException.push(agentManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("AgentConfigRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(agentManager, new VerificationFailedException("AgentConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

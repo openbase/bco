@@ -24,7 +24,6 @@ import de.citec.jul.exception.MultiException.ExceptionStack;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
-import static javafx.scene.input.KeyCode.M;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,13 +88,13 @@ public class DeviceManager {
         ExceptionStack exceptionStack = null;
         
         if (!deviceManager.getDeviceRegistry().getUnitTemplateRegistry().isConsistent()) {
-            MultiException.push(deviceManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("UnitTemplateRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
         if (!deviceManager.getDeviceRegistry().getDeviceClassRegistry().isConsistent()) {
-            MultiException.push(deviceManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("DeviceClassRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
         if (!deviceManager.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
-            MultiException.push(deviceManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("DeviceConfigRegistry not consistent!")), exceptionStack);
+            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("DeviceConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
         
         try {
