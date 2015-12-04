@@ -457,7 +457,7 @@ public class DeviceRegistryImplTest {
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
         ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION_LABEL);
-        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION_LABEL).build();
+        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION.getId()).build();
     }
 
     private UnitConfig getUnitConfig(UnitType type, String label) {
