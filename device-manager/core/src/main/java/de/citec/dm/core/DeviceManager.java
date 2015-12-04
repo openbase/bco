@@ -18,8 +18,13 @@ import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.MultiException.ExceptionStack;
+import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import static javafx.scene.input.KeyCode.M;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +33,13 @@ import org.slf4j.LoggerFactory;
  * @author mpohling
  */
 public class DeviceManager {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(DeviceManager.class);
-
+    
     public static final String APP_NAME = DeviceManager.class.getSimpleName();
-
+    
     private final DeviceRegistryService deviceRegistry;
-
+    
     public DeviceManager() throws InitializationException, InterruptedException {
         try {
             this.deviceRegistry = new DeviceRegistryService();
@@ -44,19 +49,23 @@ public class DeviceManager {
             throw new InitializationException(this, ex);
         }
     }
-
+    
     public void shutdown() {
         if (deviceRegistry != null) {
             deviceRegistry.shutdown();
         }
     }
-
+    
+    public DeviceRegistryService getDeviceRegistry() {
+        return deviceRegistry;
+    }
+    
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
-
+        
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
@@ -69,10 +78,29 @@ public class DeviceManager {
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
         
         JPService.parseAndExitOnError(args);
-
+        
+        DeviceManager deviceManager;
         try {
-            new DeviceManager();
+            deviceManager = new DeviceManager();
         } catch (InitializationException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+        
+        ExceptionStack exceptionStack = null;
+        
+        if (!deviceManager.getDeviceRegistry().getUnitTemplateRegistry().isConsistent()) {
+            MultiException.push(deviceManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("UnitTemplateRegistry not consistent!")), exceptionStack);
+        }
+        if (!deviceManager.getDeviceRegistry().getDeviceClassRegistry().isConsistent()) {
+            MultiException.push(deviceManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("DeviceClassRegistry not consistent!")), exceptionStack);
+        }
+        if (!deviceManager.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
+            MultiException.push(deviceManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("DeviceConfigRegistry not consistent!")), exceptionStack);
+        }
+        
+        try {
+            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
         logger.info(APP_NAME + " successfully started.");

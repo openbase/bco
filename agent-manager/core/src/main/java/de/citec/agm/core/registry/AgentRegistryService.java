@@ -189,4 +189,8 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
     public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(agentConfigRegistry.isReadOnly());
     }
+
+    public ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRegistry() {
+        return agentConfigRegistry;
+    }
 }

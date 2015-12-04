@@ -427,4 +427,16 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         }
         return serviceConfigs;
     }
+
+    public ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRegistry() {
+        return unitTemplateRegistry;
+    }
+
+    public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> getDeviceClassRegistry() {
+        return deviceClassRegistry;
+    }
+
+    public ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> getDeviceConfigRegistry() {
+        return deviceConfigRegistry;
+    }
 }

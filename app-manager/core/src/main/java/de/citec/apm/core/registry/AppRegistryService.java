@@ -174,4 +174,8 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
     public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(appConfigRegistry.isReadOnly());
     }
+
+    public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRegistry() {
+        return appConfigRegistry;
+    }    
 }

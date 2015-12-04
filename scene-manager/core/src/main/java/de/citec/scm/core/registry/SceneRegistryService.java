@@ -188,4 +188,8 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
     public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(sceneConfigRegistry.isReadOnly());
     }
+
+    public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRegistry() {
+        return sceneConfigRegistry;
+    }
 }

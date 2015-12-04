@@ -17,6 +17,9 @@ import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.slf4j.Logger;
@@ -50,6 +53,10 @@ public class AgentManager {
         }
     }
 
+    public AgentRegistryService getAgentRegistry() {
+        return agentRegistry;
+    }
+
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
@@ -68,9 +75,22 @@ public class AgentManager {
 
         JPService.parseAndExitOnError(args);
 
+        AgentManager agentManager;
         try {
-            new AgentManager();
+            agentManager = new AgentManager();
         } catch (InitializationException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+
+        MultiException.ExceptionStack exceptionStack = null;
+
+        if (!agentManager.getAgentRegistry().getAgentConfigRegistry().isConsistent()) {
+            MultiException.push(agentManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("AgentConfigRegistry not consistent!")), exceptionStack);
+        }
+
+        try {
+            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
         logger.info(APP_NAME + " successfully started.");

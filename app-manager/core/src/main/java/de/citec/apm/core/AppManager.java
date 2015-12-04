@@ -17,6 +17,9 @@ import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.slf4j.Logger;
@@ -50,6 +53,10 @@ public class AppManager {
         }
     }
 
+    public AppRegistryService getAppRegistry() {
+        return appRegistry;
+    }
+
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
@@ -68,9 +75,22 @@ public class AppManager {
 
         JPService.parseAndExitOnError(args);
 
+        AppManager appManager;
         try {
-            new AppManager();
+            appManager = new AppManager();
         } catch (InitializationException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+
+        MultiException.ExceptionStack exceptionStack = null;
+
+        if (!appManager.getAppRegistry().getAppConfigRegistry().isConsistent()) {
+            MultiException.push(appManager, new VerificationFailedException("Started in read only mode!", new InvalidStateException("AppConfigRegistry not consistent!")), exceptionStack);
+        }
+
+        try {
+            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
         logger.info(APP_NAME + " successfully started.");

@@ -382,4 +382,8 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(locationConfigRegistry.isReadOnly());
     }
+
+    public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRegistry() {
+        return locationConfigRegistry;
+    }
 }
