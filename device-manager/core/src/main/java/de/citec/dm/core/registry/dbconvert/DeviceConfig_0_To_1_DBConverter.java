@@ -4,7 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import de.citec.jul.storage.registry.version.DBVersionConverter;
-import java.util.Collection;
+import java.io.File;
+import java.util.Map;
 
 /**
  *
@@ -13,7 +14,7 @@ import java.util.Collection;
 public class DeviceConfig_0_To_1_DBConverter implements DBVersionConverter {
 
     @Override
-    public JsonObject upgrade(JsonObject deviceConfig, final Collection<JsonObject> dbSnapshot) {
+    public JsonObject upgrade(JsonObject deviceConfig, final Map<File, JsonObject> dbSnapshot) {
         // recover and setup device class id
         JsonObject deviceClass = deviceConfig.get("device_class").getAsJsonObject();
         String deviceClassID = deviceClass.get("id").getAsString();
