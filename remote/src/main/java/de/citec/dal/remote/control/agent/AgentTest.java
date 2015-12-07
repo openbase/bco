@@ -5,15 +5,15 @@
  */
 package de.citec.dal.remote.control.agent;
 
-import de.citec.dal.remote.control.ColorLoopControl;
-import de.citec.dal.remote.control.PowerControl;
+import de.citec.agm.remote.AgentRegistryRemote;
+import static de.citec.dal.remote.control.agent.AgentScheduler.logger;
+import de.citec.dal.remote.control.agent.jp.JPAgentId;
+import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPDebugMode;
+import de.citec.jps.preset.JPVerbose;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import rst.homeautomation.state.PowerStateType;
-import rst.vision.HSVColorType.HSVColor;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
 
 /**
  *
@@ -21,55 +21,32 @@ import rst.vision.HSVColorType.HSVColor;
  */
 public class AgentTest {
 
+    public static final String APP_NAME = AgentTest.class.getSimpleName();
+
     /**
      * @param args the command line arguments
+     * @throws java.lang.InterruptedException
+     * @throws de.citec.jul.exception.InstantiationException
      */
-    public static void main(String[] args) throws InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
 
-        List<HSVColor> colorList = new ArrayList<>();
-        colorList.add(HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(20).build());
-        colorList.add(HSVColor.newBuilder().setHue(300).setSaturation(100).setValue(20).build());
-        colorList.add(HSVColor.newBuilder().setHue(256).setSaturation(100).setValue(20).build());
+        logger.info("Start " + APP_NAME + "...");
 
-        PowerControl powerControl = new PowerControl("Chillerstrasse", PowerStateType.PowerState.State.ON);
-        powerControl.activate();
-//        ColorControl colorControl = new ColorControl("Home");
-//
-//        while (true) {
-//            System.out.println("RED");
-//            colorControl.execute(Color.RED).get();
-//            System.out.println("BLUE");
-//            colorControl.execute(Color.BLUE).get();
-//            System.out.println("YELLOW");
-//            colorControl.execute(Color.YELLOW).get();
-//            Thread.sleep(30000);
-//        }
+        /* Setup JPService */
+        JPService.setApplicationName(APP_NAME);
+        JPService.registerProperty(JPAgentId.class, "TestPersonLight");
+        JPService.registerProperty(JPVerbose.class, true);
+        JPService.parseAndExitOnError(args);
 
-        ColorLoopControl colorControlX = new ColorLoopControl("Chillerstrasse", colorList, 1000);
-        colorControlX.activate();
-        ColorLoopControl colorControlXX = new ColorLoopControl("Kueche", colorList, 1000);
-        colorControlXX.activate();
-        ColorLoopControl colorControl2 = new ColorLoopControl("Kueche", colorList, 1000);
-        colorControl2.activate();
-        ColorLoopControl colorControl3 = new ColorLoopControl("Wohnzimmer", colorList, 1000);
-        colorControl3.activate();
-        ColorLoopControl colorControl4 = new ColorLoopControl("Bad", colorList, 1000);
-        colorControl4.activate();
-//        ColorLoopControl colorControlC = new ColorLoopControl("Control", colorList);
-//        colorControlC.activate();
-//        ColorControl colorControl3 = new ColorControl("Kitchen", colorList);
-//        colorControl3.activate();
-//        ColorControl colorControl4 = new ColorControl("Bath", colorList);
-//        colorControl4.activate();
-//        ColorControl colorControl5 = new ColorControl("Living", colorList);
-//        colorControl5.activate();
-//        ColorControl colorControl6 = new ColorControl("Control", colorList);
-//        colorControl6.activate();
-//        Thread.sleep(60000);
-        
-        
-//        PowerServiceControl powerServiceControl = new PowerServiceControl("Home", PowerStateType.PowerState.State.OFF);
-//        powerServiceControl.activate();
+        try {
+            AgentRegistryRemote agentRegistryRemote = new AgentRegistryRemote();
+            agentRegistryRemote.init();
+            agentRegistryRemote.activate();
+            AgentFactoryImpl.getInstance().newInstance(agentRegistryRemote.getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).activate();
+            agentRegistryRemote.deactivate();
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+        }
+        logger.info(APP_NAME + " successfully started.");
     }
-
 }

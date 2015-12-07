@@ -19,8 +19,21 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class AgentFactoryImpl implements AgentFactory {
-    
+
     protected final Logger logger = LoggerFactory.getLogger(AgentFactoryImpl.class);
+    private static AgentFactoryImpl instance;
+
+    public synchronized static AgentFactory getInstance() {
+
+        if (instance == null) {
+            instance = new AgentFactoryImpl();
+        }
+        return instance;
+    }
+    
+    private AgentFactoryImpl() {
+        
+    }
 
     @Override
     public Agent newInstance(final AgentConfigType.AgentConfig config) throws CouldNotPerformException {

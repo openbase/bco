@@ -18,7 +18,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
 public class PowerServiceRemote extends AbstractServiceRemote<PowerService> implements PowerService {
 
     public PowerServiceRemote() {
-        super(ServiceType.POWER_PROVIDER);
+        super(ServiceType.POWER_SERVICE);
     }
 
     @Override
