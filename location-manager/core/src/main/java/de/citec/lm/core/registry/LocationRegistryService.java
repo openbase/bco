@@ -11,6 +11,7 @@ import de.citec.lm.core.consistency.ParentChildConsistencyHandler;
 import de.citec.lm.core.consistency.RootConsistencyHandler;
 import de.citec.lm.core.consistency.ScopeConsistencyHandler;
 import de.citec.dm.remote.DeviceRegistryRemote;
+import de.citec.jp.JPConnectionConfigDatabaseDirectory;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
@@ -33,6 +34,7 @@ import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
 import de.citec.lm.core.plugin.PublishLocationTransformationRegistryPlugin;
 import de.citec.lm.core.registry.dbconvert.LocationConfig_0_To_1_DBConverter;
+import de.citec.lm.lib.generator.ConnectionIDGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +49,7 @@ import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
-import rst.spatial.LocationConfigType;
+import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -60,10 +62,13 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfigType.LocationConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
     
     private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryType.LocationRegistry.Builder> locationConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryType.LocationRegistry.Builder> connectionConfigRegistry;
+    
     private final DeviceRegistryRemote deviceRegistryRemote;
     private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
     
@@ -71,16 +76,20 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         super(LocationRegistry.newBuilder());
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+            connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
             
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
+            connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
             
             deviceRegistryUpdateObserver = (Observable<DeviceRegistry> source, DeviceRegistry data) -> {
                 locationConfigRegistry.checkConsistency();
+                connectionConfigRegistry.checkConsistency();
             };
             
             deviceRegistryRemote = new DeviceRegistryRemote();
             
             locationConfigRegistry.loadRegistry();
+            connectionConfigRegistry.loadRegistry();
             
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
@@ -92,6 +101,10 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
             
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
+                notifyChange();
+            });
+            
+            connectionConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>>> source, Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> data) -> {
                 notifyChange();
             });
             
@@ -126,6 +139,12 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         } catch (CouldNotPerformException ex) {
             logger.warn("Initial consistency check failed!");
         }
+        
+        try {
+            connectionConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            logger.warn("Initial consistency check failed!");
+        }
     }
 
     /**
@@ -154,6 +173,10 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.shutdown();
         }
         
+        if (connectionConfigRegistry != null) {
+            connectionConfigRegistry.shutdown();
+        }
+        
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -170,6 +193,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags
         setField(LocationRegistry.LOCATION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, locationConfigRegistry.isReadOnly());
+        // TODO mpohling setup for connection registry!
         super.notifyChange();
     }
 
