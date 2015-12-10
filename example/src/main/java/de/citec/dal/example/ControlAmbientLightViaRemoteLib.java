@@ -2,8 +2,6 @@ package de.citec.dal.example;
 
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPDebugMode;
-import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
@@ -21,8 +19,10 @@ public class ControlAmbientLightViaRemoteLib {
     private static final Logger logger = LoggerFactory.getLogger(ControlAmbientLightViaRemoteLib.class);
 
     public void notifyAlarm() throws CouldNotPerformException, InterruptedException {
+
+        final AmbientLightRemote testLight = new AmbientLightRemote();
+
         try {
-            AmbientLightRemote testLight = new AmbientLightRemote();
             testLight.init(new Scope("/home/control/ambientlight/testunit_0/"));
             testLight.activate();
 
@@ -35,29 +35,31 @@ public class ControlAmbientLightViaRemoteLib {
                     Thread.sleep(delay);
                     testLight.setColor(Color.RED);
                     Thread.sleep(delay);
-                } catch (CouldNotPerformException | InterruptedException ex) {
+                } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not change color!", ex), logger, LogLevel.ERROR);
                 }
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not notify alarm!", ex);
+        } finally {
+            testLight.shutdown();
         }
     }
 
     /**
-     * 
+     *
      * @param args
-     * @throws de.citec.jul.exception.InstantiationException
-     * @throws CouldNotPerformException
-     * @throws InterruptedException
      */
-    public static void main(String[] args) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void main(String[] args) {
+
         /* Setup CLParser */
         JPService.setApplicationName(ControlAmbientLightViaRemoteLib.class.getSimpleName().toLowerCase());
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        JPService.registerProperty(JPDebugMode.class, true);
         JPService.parseAndExitOnError(args);
 
-        new ControlAmbientLightViaRemoteLib().notifyAlarm();
+        try {
+            new ControlAmbientLightViaRemoteLib().notifyAlarm();
+        } catch(CouldNotPerformException | InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+        }
     }
 }
