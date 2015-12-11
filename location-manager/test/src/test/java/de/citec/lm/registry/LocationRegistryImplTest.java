@@ -187,14 +187,14 @@ public class LocationRegistryImplTest {
     @Test
     public void testGetUnitConfigs() throws Exception {
         try {
-            remote.getUnitConfigs(UnitTemplate.UnitType.UNKNOWN, locationConfig.getId());
+            remote.getUnitConfigsByLocation(UnitTemplate.UnitType.UNKNOWN, locationConfig.getId());
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
         }
 
         try {
-            remote.getUnitConfigs(UnitTemplate.UnitType.AMBIENT_LIGHT, "Quark");
+            remote.getUnitConfigsByLocation(UnitTemplate.UnitType.AMBIENT_LIGHT, "Quark");
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
