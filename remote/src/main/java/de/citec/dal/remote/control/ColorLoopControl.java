@@ -47,7 +47,7 @@ public class ColorLoopControl {
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigs(UnitType.AMBIENT_LIGHT, locationId);
+            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.AMBIENT_LIGHT, locationId);
             this.ambientLightRemoteList = new ArrayList<>();
             AmbientLightRemote ambientLightRemote;
             for (UnitConfig unitConfig : unitConfigs) {

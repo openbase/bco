@@ -40,7 +40,7 @@ public class PowerServiceControl {
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
 
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigs(ServiceType.POWER_SERVICE, locationId);
+            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(ServiceType.POWER_SERVICE, locationId);
             this.powerServiceRemote = new PowerServiceRemote();
             try {
                 this.powerServiceRemote.init(unitConfigs);

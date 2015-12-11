@@ -33,7 +33,7 @@ public class PersonLightProviderAgent extends AbstractAgent {
         locationRegistryRemote.init();
         locationRegistryRemote.activate();
 
-        this.motionStateProvider = new MotionStateFutionProvider(locationRegistryRemote.getUnitConfigs(UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR, LOCATION_ID));
+        this.motionStateProvider = new MotionStateFutionProvider(locationRegistryRemote.getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR, LOCATION_ID));
         this.motionStateProvider.addObserver((Observable<MotionState> source, MotionState data) -> {
             notifyMotionStateChanged(data);
         });

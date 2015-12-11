@@ -192,7 +192,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
             if (selectedUnitType == UnitType.UNKNOWN) {
                 if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : locationRegistryRemote.getUnitConfigs(selectedLocationConfigHolder.getConfig().getId())) {
+                    for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
                         unitConfigHolderList.add(new UnitConfigHolder(config));
                     }
                 } else {
@@ -207,7 +207,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 }
             } else {
                 if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : locationRegistryRemote.getUnitConfigs(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                    for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
                         unitConfigHolderList.add(new UnitConfigHolder(config));
                     }
                 } else {
