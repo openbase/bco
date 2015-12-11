@@ -1,0 +1,95 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package de.citec.usr.core;
+
+import de.citec.usr.core.registry.UserRegistryService;
+import de.citec.jp.JPUserDatabaseDirectory;
+import de.citec.jp.JPUserRegistryScope;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import de.citec.jps.core.JPService;
+import de.citec.jps.preset.JPDebugMode;
+import de.citec.jps.preset.JPReadOnly;
+import de.citec.jul.exception.CouldNotPerformException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InvalidStateException;
+import de.citec.jul.exception.MultiException;
+import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
+import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ *
+ * @author mpohling
+ */
+public class UserManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserManager.class);
+
+    public static final String USER_MANAGER_NAME = UserManager.class.getSimpleName();
+
+    private final UserRegistryService userRegistry;
+
+    public UserManager() throws InitializationException, InterruptedException {
+        try {
+            this.userRegistry = new UserRegistryService();
+            this.userRegistry.init();
+            this.userRegistry.activate();
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    public void shutdown() {
+        if (userRegistry != null) {
+            userRegistry.shutdown();
+        }
+    }
+
+    public UserRegistryService getPersonRegistry() {
+        return userRegistry;
+    }
+
+    public static void main(String args[]) throws Throwable {
+        logger.info("Start " + USER_MANAGER_NAME + "...");
+
+        /* Setup JPService */
+        JPService.setApplicationName(USER_MANAGER_NAME);
+
+        JPService.registerProperty(JPUserRegistryScope.class);
+        JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPInitializeDB.class);
+        JPService.registerProperty(JPUserDatabaseDirectory.class);
+        JPService.registerProperty(JPUserDatabaseDirectory.class);
+        JPService.registerProperty(JPGitRegistryPlugin.class);
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+
+        JPService.parseAndExitOnError(args);
+
+        UserManager personManager;
+        try {
+            personManager = new UserManager();
+        } catch (InitializationException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+
+        MultiException.ExceptionStack exceptionStack = null;
+
+        if (!personManager.getPersonRegistry().getPersonRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(personManager, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+
+        try {
+            MultiException.checkAndThrow(USER_MANAGER_NAME + " started in fallback mode!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+        logger.info(USER_MANAGER_NAME + " successfully started.");
+    }
+}

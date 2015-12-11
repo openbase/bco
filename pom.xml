@@ -40,6 +40,7 @@
         <module>scene-manager</module>
         <module>agent-manager</module>
         <module>app-manager</module>
+        <module>user-registry</module>
     </modules>
     
     <build>
