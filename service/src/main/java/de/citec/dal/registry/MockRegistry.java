@@ -11,16 +11,15 @@ import de.citec.dm.core.DeviceManager;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
-import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
-import de.citec.jp.JPLocationDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
+import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
@@ -132,8 +131,7 @@ public class MockRegistry {
         try {
             String user = ScopeGenerator.convertIntoValidScopeComponent(System.getProperty("user.name"));
             JPService.registerProperty(JPInitializeDB.class, true);
-            JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/" + user + "/test-device-registry"));
-            JPService.registerProperty(JPLocationDatabaseDirectory.class, new File("/tmp/" + user + "/test-location-registry"));
+            JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + user + "/test-device-manager"));
             JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
             JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
             JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);

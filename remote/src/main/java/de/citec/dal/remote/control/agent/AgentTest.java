@@ -9,7 +9,7 @@ import de.citec.agm.remote.AgentRegistryRemote;
 import static de.citec.dal.remote.control.agent.AgentScheduler.logger;
 import de.citec.dal.remote.control.agent.jp.JPAgentId;
 import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPDebugMode;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jps.preset.JPVerbose;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
@@ -28,7 +28,7 @@ public class AgentTest {
      * @throws java.lang.InterruptedException
      * @throws de.citec.jul.exception.InstantiationException
      */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
+    public static void main(String[] args) throws InterruptedException, Exception {
 
         logger.info("Start " + APP_NAME + "...");
 
@@ -44,7 +44,7 @@ public class AgentTest {
             agentRegistryRemote.activate();
             AgentFactoryImpl.getInstance().newInstance(agentRegistryRemote.getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).activate();
             agentRegistryRemote.deactivate();
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
         logger.info(APP_NAME + " successfully started.");
