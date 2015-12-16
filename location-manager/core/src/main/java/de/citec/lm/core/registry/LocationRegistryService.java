@@ -20,6 +20,7 @@ import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
@@ -137,13 +138,13 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         try {
             locationConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
 
         try {
             connectionConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
     }
 

@@ -51,7 +51,7 @@ public class UserManager {
         }
     }
 
-    public UserRegistryService getPersonRegistry() {
+    public UserRegistryService getUserRegistry() {
         return userRegistry;
     }
 
@@ -72,17 +72,21 @@ public class UserManager {
 
         JPService.parseAndExitOnError(args);
 
-        UserManager personManager;
+        UserManager userManager;
         try {
-            personManager = new UserManager();
+            userManager = new UserManager();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!personManager.getPersonRegistry().getPersonRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(personManager, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!userManager.getUserRegistry().getUserRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(userManager, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!userManager.getUserRegistry().getGroupRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(userManager, new VerificationFailedException("GroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

@@ -7,19 +7,16 @@ package de.citec.usr.lib.generator;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.extension.protobuf.IdGenerator;
-import rst.person.PersonType.Person;
+import rst.authorization.UserConfigType.UserConfig;
 
 /**
  *
  * @author mpohling
  */
-public class UserConfigIdGenerator implements IdGenerator<String, Person> {
+public class UserConfigIdGenerator implements IdGenerator<String, UserConfig> {
 
     @Override
-    public String generateId(Person message) throws CouldNotPerformException {
-        
-        //TODO: thuxohl, mpohling UUID?
+    public String generateId(UserConfig message) throws CouldNotPerformException {
         throw new UnsupportedOperationException("");
     }
-
 }

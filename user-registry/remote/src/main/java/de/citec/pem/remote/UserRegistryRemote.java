@@ -14,35 +14,42 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
+import de.citec.usr.lib.generator.GroupConfigIdGenerator;
 import de.citec.usr.lib.generator.UserConfigIdGenerator;
 import de.citec.usr.lib.registry.UserRegistryInterface;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.person.PersonRegistryType.PersonRegistry;
-import rst.person.PersonType.Person;
+import rst.authorization.GroupConfigType.GroupConfig;
+import rst.authorization.UserConfigType.UserConfig;
+import rst.authorization.UserRegistryType.UserRegistry;
 
 /**
  *
  * @author mpohling
  */
-public class UserRegistryRemote extends RSBRemoteService<PersonRegistry> implements UserRegistryInterface {
+public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements UserRegistryInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PersonRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Person.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GroupConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, Person, Person.Builder, PersonRegistry.Builder> userRemoteRegistry;
+    private final RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> userConfigRemoteRegistry;
+    private final RemoteRegistry<String, GroupConfig, GroupConfig.Builder, UserRegistry.Builder> groupConfigRemoteRegistry;
 
     public UserRegistryRemote() throws InstantiationException {
         try {
-            userRemoteRegistry = new RemoteRegistry<>(new UserConfigIdGenerator());
+            userConfigRemoteRegistry = new RemoteRegistry<>(new UserConfigIdGenerator());
+            groupConfigRemoteRegistry = new RemoteRegistry<>(new GroupConfigIdGenerator());
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -63,75 +70,170 @@ public class UserRegistryRemote extends RSBRemoteService<PersonRegistry> impleme
     }
 
     @Override
-    public void notifyUpdated(final PersonRegistry data) throws CouldNotPerformException {
-        userRemoteRegistry.notifyRegistryUpdated(data.getPersonList());
+    public void notifyUpdated(final UserRegistry data) throws CouldNotPerformException {
+        userConfigRemoteRegistry.notifyRegistryUpdated(data.getUserConfigList());
+        groupConfigRemoteRegistry.notifyRegistryUpdated(data.getGroupConfigList());
     }
 
-    public RemoteRegistry<String, Person, Person.Builder, PersonRegistry.Builder> getPersonRemoteRegistry() {
-        return userRemoteRegistry;
+    public RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> getUserConfigRemoteRegistry() {
+        return userConfigRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, GroupConfig, GroupConfig.Builder, UserRegistry.Builder> getGroupConfigRemoteRegistry() {
+        return groupConfigRemoteRegistry;
     }
 
     @Override
-    public Person registerUser(final Person person) throws CouldNotPerformException {
+    public UserConfig registerUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         try {
-            return (Person) callMethod("registerPersonConfig", person);
+            return (UserConfig) callMethod("registerUserConfig", userConfig);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register person config!", ex);
+            throw new CouldNotPerformException("Could not register user config!", ex);
         }
     }
 
     @Override
-    public Person getUserById(String personId) throws CouldNotPerformException, NotAvailableException {
+    public UserConfig getUserConfigById(String userConfigId) throws CouldNotPerformException, NotAvailableException {
         getData();
-        return userRemoteRegistry.getMessage(personId);
+        return userConfigRemoteRegistry.getMessage(userConfigId);
     }
 
     @Override
-    public Boolean containsUser(final Person person) throws CouldNotPerformException {
+    public Boolean containsUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         getData();
-        return userRemoteRegistry.contains(person);
+        return userConfigRemoteRegistry.contains(userConfig);
     }
 
     @Override
-    public Boolean containsUserById(final String personId) throws CouldNotPerformException {
+    public Boolean containsUserConfigById(final String userConfigId) throws CouldNotPerformException {
         getData();
-        return userRemoteRegistry.contains(personId);
+        return userConfigRemoteRegistry.contains(userConfigId);
     }
 
     @Override
-    public Person updateUser(final Person person) throws CouldNotPerformException {
+    public UserConfig updateUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         try {
-            return (Person) callMethod("updatePerson", person);
+            return (UserConfig) callMethod("updateUserConfig", userConfig);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update person[" + person + "]!", ex);
+            throw new CouldNotPerformException("Could not update user config[" + userConfig + "]!", ex);
         }
     }
 
     @Override
-    public Person removeUser(final Person person) throws CouldNotPerformException {
+    public UserConfig removeUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         try {
-            return (Person) callMethod("removePerson", person);
+            return (UserConfig) callMethod("removeUserConfig", userConfig);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not remove person[" + person + "]!", ex);
+            throw new CouldNotPerformException("Could not remove user config[" + userConfig + "]!", ex);
         }
     }
 
     @Override
-    public List<Person> getUsers() throws CouldNotPerformException, NotAvailableException {
+    public List<UserConfig> getUserConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
-        List<Person> messages = userRemoteRegistry.getMessages();
+        List<UserConfig> messages = userConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
-    public Future<Boolean> isUserRegistryReadOnly() throws CouldNotPerformException {
+    public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException {
         if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
             return CompletableFuture.completedFuture(true);
         }
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the person config registry!!", ex);
+            throw new CouldNotPerformException("Could not return read only state of the user config registry!!", ex);
+        }
+    }
+
+    @Override
+    public List<UserConfig> getUserConfigsByGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException {
+        getData();
+        List<UserConfig> userConfigs = new ArrayList<>();
+        for (IdentifiableMessage<String, GroupConfig, GroupConfig.Builder> group : groupConfigRemoteRegistry.getEntries()) {
+            if (group.getMessage().equals(groupConfig)) {
+                for (String memeberId : group.getMessage().getMemberIdList()) {
+                    userConfigs.add(getUserConfigById(memeberId));
+                }
+                return userConfigs;
+            }
+        }
+        return userConfigs;
+    }
+
+    @Override
+    public GroupConfig registerGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return (GroupConfig) callMethod("registerGroupConfig", groupConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not register group config!", ex);
+        }
+    }
+
+    @Override
+    public Boolean containsGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException {
+        getData();
+        return groupConfigRemoteRegistry.contains(groupConfig);
+    }
+
+    @Override
+    public Boolean containsGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        getData();
+        return groupConfigRemoteRegistry.contains(groupConfigId);
+    }
+
+    @Override
+    public GroupConfig updateGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return (GroupConfig) callMethod("updateGroupConfig", groupConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update group config[" + groupConfig + "]!", ex);
+        }
+    }
+
+    @Override
+    public GroupConfig removeGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return (GroupConfig) callMethod("removeGroupConfig", groupConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not remove group config[" + groupConfig + "]!", ex);
+        }
+    }
+
+    @Override
+    public GroupConfig getGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        getData();
+        return groupConfigRemoteRegistry.getMessage(groupConfigId);
+    }
+
+    @Override
+    public List<GroupConfig> getGroupConfigs() throws CouldNotPerformException {
+        getData();
+        return groupConfigRemoteRegistry.getMessages();
+    }
+
+    @Override
+    public List<GroupConfig> getGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
+        getData();
+        List<GroupConfig> groupConfigs = new ArrayList<>();
+        for (IdentifiableMessage<String, GroupConfig, GroupConfig.Builder> group : groupConfigRemoteRegistry.getEntries()) {
+            group.getMessage().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
+                groupConfigs.add(group.getMessage());
+            });
+        }
+        return groupConfigs;
+    }
+
+    @Override
+    public Future<Boolean> isGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        try {
+            return RPCHelper.callRemoteMethod(this, Boolean.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the group config registry!!", ex);
         }
     }
 }
