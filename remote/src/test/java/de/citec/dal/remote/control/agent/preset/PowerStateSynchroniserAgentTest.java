@@ -13,7 +13,7 @@ import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.remote.unit.DimmerRemote;
 import de.citec.dal.remote.unit.PowerPlugRemote;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;

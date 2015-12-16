@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.jp;
 
-import de.citec.jps.preset.AbstractJPMethod;
+import org.dc.jps.preset.AbstractJPMethod;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import java.lang.reflect.Method;
 

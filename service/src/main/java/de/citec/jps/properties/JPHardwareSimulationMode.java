@@ -5,12 +5,12 @@
  */
 package de.citec.jps.properties;
 
-import de.citec.jps.core.AbstractJavaProperty;
-import de.citec.jps.core.JPService;
-import de.citec.jps.exception.JPNotAvailableException;
-import de.citec.jps.exception.JPValidationException;
-import de.citec.jps.preset.AbstractJPBoolean;
-import de.citec.jps.preset.JPTestMode;
+import org.dc.jps.core.AbstractJavaProperty;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPNotAvailableException;
+import org.dc.jps.exception.JPValidationException;
+import org.dc.jps.preset.AbstractJPBoolean;
+import org.dc.jps.preset.JPTestMode;
 
 /**
  *

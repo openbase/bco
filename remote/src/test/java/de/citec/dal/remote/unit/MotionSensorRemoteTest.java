@@ -10,7 +10,7 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.MotionSensorController;
 import de.citec.dal.registry.MockFactory;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;

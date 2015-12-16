@@ -1,7 +1,7 @@
 package de.citec.dal.example;
 
 import de.citec.dal.remote.unit.AmbientLightRemote;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;

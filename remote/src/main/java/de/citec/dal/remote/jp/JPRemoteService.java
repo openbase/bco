@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.jp;
 
-import de.citec.jps.preset.AbstractJPClass;
+import org.dc.jps.preset.AbstractJPClass;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 
 /**

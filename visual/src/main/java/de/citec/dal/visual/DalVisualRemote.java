@@ -6,7 +6,7 @@
 package de.citec.dal.visual;
 
 import de.citec.dal.visual.util.StatusPanel;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;

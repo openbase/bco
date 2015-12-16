@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.control.agent.jp;
 
-import de.citec.jps.preset.AbstractJPString;
+import org.dc.jps.preset.AbstractJPString;
 
 /**
  *

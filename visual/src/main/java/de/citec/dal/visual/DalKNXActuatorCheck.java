@@ -8,7 +8,7 @@ package de.citec.dal.visual;
 import de.citec.dal.remote.unit.PowerConsumptionSensorRemote;
 import de.citec.dal.visual.unit.GenericUnitPanel;
 import de.citec.dal.visual.util.StatusPanel;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.NotAvailableException;

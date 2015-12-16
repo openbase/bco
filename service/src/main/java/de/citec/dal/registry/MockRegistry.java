@@ -14,7 +14,7 @@ import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
