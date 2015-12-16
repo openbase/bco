@@ -54,16 +54,17 @@ public class DeviceConfig_1_VersionConsistencyHandler implements ProtoBufRegistr
         if (!locationRegistryRemote.isActive()) {
             try {
                 locationRegistryRemote.activate();
+                for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
+                    if (!locationLabelIdMap.containsKey(locationConfig.getLabel())) {
+                        locationLabelIdMap.put(locationConfig.getLabel(), locationConfig.getId());
+                    }
+                }
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR));
             }
         }
 
         DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
-
-        for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
-            locationLabelIdMap.put(locationConfig.getLabel(), locationConfig.getId());
-        }
 
         if (!deviceConfig.hasPlacementConfig()) {
             throw new NotAvailableException("deviceConfig.placementconfig");
@@ -105,6 +106,8 @@ public class DeviceConfig_1_VersionConsistencyHandler implements ProtoBufRegistr
 
     @Override
     public void reset() {
-        locationLabelIdMap.clear();
     }
+
+    //TODO mpohling: mark consistency handler done within the db version if this consistency handler shuts down and the registry is consistent.
+    // Blocked by not implemented abstract consistency handler and shutdown method.
 }

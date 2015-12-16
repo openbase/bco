@@ -8,31 +8,31 @@ package de.citec.dm.test;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.exception.JPServiceException;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
-import de.citec.jul.extension.rsb.scope.ScopeGenerator;
+import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.registry.LocationRegistryService;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import static junit.framework.TestCase.assertEquals;
-import org.junit.After;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -92,7 +92,7 @@ public class DeviceRegistryImplTest {
         JPService.registerProperty(JPInitializeDB.class, true);
         JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
         JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
+        JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
@@ -257,7 +257,7 @@ public class DeviceRegistryImplTest {
      * DeviceRegistryImpl.
      */
 //    @Test
-    // TODO: fix that the consisteny handling will work after this 
+    // TODO: fix that the consisteny handling will work after this
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
         String serialNumber1 = "FIRST_DEV";
         String serialNumber2 = "BAD_DEV";
