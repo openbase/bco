@@ -4,7 +4,7 @@
     
     <groupId>de.citec</groupId>
     <artifactId>rem.usr</artifactId>
-    <name>REM User Registry</name>
+    <name>REM UserRegistry</name>
     <description>UserManager</description>
     
     <packaging>pom</packaging>
