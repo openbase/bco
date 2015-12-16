@@ -7,9 +7,9 @@ package de.citec.lm.remote;
 
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.exception.JPServiceException;
-import de.citec.jps.preset.JPReadOnly;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;

@@ -5,13 +5,13 @@
  */
 package de.citec.jp;
 
-import de.citec.jps.core.JPService;
-import de.citec.jps.exception.JPNotAvailableException;
-import de.citec.jps.exception.JPServiceException;
-import de.citec.jps.exception.JPValidationException;
-import de.citec.jps.preset.AbstractJPDirectory;
-import de.citec.jps.preset.JPHelp;
-import de.citec.jps.tools.FileHandler;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPNotAvailableException;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.exception.JPValidationException;
+import org.dc.jps.preset.AbstractJPDirectory;
+import org.dc.jps.preset.JPHelp;
+import org.dc.jps.tools.FileHandler;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
