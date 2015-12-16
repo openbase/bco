@@ -7,6 +7,7 @@ package de.citec.usr.lib.generator;
 
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.extension.protobuf.IdGenerator;
+import java.util.UUID;
 import rst.authorization.UserConfigType.UserConfig;
 
 /**
@@ -17,6 +18,6 @@ public class UserConfigIdGenerator implements IdGenerator<String, UserConfig> {
 
     @Override
     public String generateId(UserConfig message) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("");
+        return UUID.randomUUID().toString();
     }
 }
