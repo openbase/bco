@@ -10,29 +10,29 @@ import de.citec.agm.lib.registry.AgentRegistryInterface;
 import de.citec.jp.JPAgentConfigDatabaseDirectory;
 import de.citec.jp.JPAgentRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.List;
 import java.util.Map;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
-import rst.homeautomation.device.DeviceRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -91,14 +91,18 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
                 }
             });
 
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
-        locationRegistryRemote.init();
+        try {
+            super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
+            locationRegistryRemote.init();
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -136,14 +140,13 @@ public class AgentRegistryService extends RSBCommunicationService<AgentRegistry,
             ExceptionPrinter.printHistory(ex, logger);
         }
     }
-    
+
     @Override
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags
         setField(AgentRegistry.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
         super.notifyChange();
     }
-
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {

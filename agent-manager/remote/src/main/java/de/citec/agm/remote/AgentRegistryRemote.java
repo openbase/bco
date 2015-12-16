@@ -9,24 +9,25 @@ import de.citec.agm.lib.generator.AgentConfigIdGenerator;
 import de.citec.agm.lib.registry.AgentRegistryInterface;
 import de.citec.jp.JPAgentRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
+import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 /**
  *
@@ -50,7 +51,11 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
+        try {
+            super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -126,9 +131,14 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     @Override
     public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
+
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {

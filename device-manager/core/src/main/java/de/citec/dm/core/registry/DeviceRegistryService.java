@@ -7,12 +7,9 @@ package de.citec.dm.core.registry;
 
 import de.citec.dm.core.consistency.DeviceConfigDeviceClassIdConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceConfigDeviceClassUnitConsistencyHandler;
-import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.dm.core.consistency.DeviceIdConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceLabelConsistencyHandler;
 import de.citec.dm.core.consistency.DeviceLocationIdConsistencyHandler;
-import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
-import de.citec.dm.lib.generator.DeviceClassIdGenerator;
 import de.citec.dm.core.consistency.DeviceScopeConsistencyHandler;
 import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
 import de.citec.dm.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
@@ -30,42 +27,46 @@ import de.citec.dm.core.consistency.UnitTemplateValidationConsistencyHandler;
 import de.citec.dm.core.plugin.PublishDeviceTransformationRegistryPlugin;
 import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import de.citec.dm.core.registry.dbconvert.DeviceConfig_0_To_1_DBConverter;
+import de.citec.dm.lib.generator.DeviceClassIdGenerator;
+import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
+import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPUnitTemplateDatabaseDirectory;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import de.citec.lm.remote.LocationRegistryRemote;
-import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -115,7 +116,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
-            deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));   
+            deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitBoundsToDeviceConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new UnitLabelConsistencyHandler(deviceClassRegistry));
@@ -147,7 +148,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
                 deviceConfigRegistry.checkConsistency();
             };
 
-            // Check the device configs if the device classes has changed. 
+            // Check the device configs if the device classes has changed.
             deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
                 deviceConfigRegistry.checkConsistency();
             });
@@ -157,14 +158,18 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
                 deviceClassRegistry.checkConsistency();
             });
 
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
+        try {
+            super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
         locationRegistryRemote.init();
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override

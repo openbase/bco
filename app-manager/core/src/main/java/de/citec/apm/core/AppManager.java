@@ -6,22 +6,21 @@
 package de.citec.apm.core;
 
 import de.citec.apm.core.registry.AppRegistryService;
-import de.citec.jp.JPAppDatabaseDirectory;
 import de.citec.jp.JPAppClassDatabaseDirectory;
 import de.citec.jp.JPAppConfigDatabaseDirectory;
 import de.citec.jp.JPAppRegistryScope;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.jps.core.JPService;
 import de.citec.jps.preset.JPDebugMode;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +66,6 @@ public class AppManager {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPAppDatabaseDirectory.class);
         JPService.registerProperty(JPAppConfigDatabaseDirectory.class);
         JPService.registerProperty(JPAppClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);

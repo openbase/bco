@@ -5,35 +5,36 @@
  */
 package de.citec.lm.remote;
 
-import de.citec.lm.lib.generator.LocationIDGenerator;
-import de.citec.jul.storage.registry.RemoteRegistry;
-import de.citec.lm.lib.registry.LocationRegistryInterface;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPLocationRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.extension.rsb.scope.ScopeProvider;
-import java.util.ArrayList;
-import java.util.List;
-import rsb.Scope;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.spatial.LocationConfigType;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
+import de.citec.jul.extension.rsb.scope.ScopeProvider;
+import de.citec.jul.storage.registry.RemoteRegistry;
+import de.citec.lm.lib.generator.LocationIDGenerator;
+import de.citec.lm.lib.registry.LocationRegistryInterface;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import rsb.Scope;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
@@ -91,7 +92,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws InitializationException {@inheritDoc}
      */
     public void init() throws InitializationException {
-        this.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
+        try {
+            this.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     /**
@@ -352,9 +357,14 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
+
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {

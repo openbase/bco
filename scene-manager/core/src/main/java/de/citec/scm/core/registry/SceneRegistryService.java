@@ -5,31 +5,31 @@
  */
 package de.citec.scm.core.registry;
 
-import de.citec.scm.lib.registry.SceneRegistryInterface;
-import de.citec.scm.lib.generator.SceneConfigIdGenerator;
 import de.citec.jp.JPSceneConfigDatabaseDirectory;
 import de.citec.jp.JPSceneRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.lm.remote.LocationRegistryRemote;
+import de.citec.scm.lib.generator.SceneConfigIdGenerator;
+import de.citec.scm.lib.registry.SceneRegistryInterface;
 import java.util.List;
 import java.util.Map;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import rst.homeautomation.control.app.AppRegistryType;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
@@ -90,14 +90,18 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
                 }
             });
 
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPSceneRegistryScope.class).getValue());
-        locationRegistryRemote.init();
+        try {
+            super.init(JPService.getProperty(JPSceneRegistryScope.class).getValue());
+            locationRegistryRemote.init();
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -136,7 +140,7 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
             ExceptionPrinter.printHistory(ex, logger);
         }
     }
-    
+
     @Override
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags

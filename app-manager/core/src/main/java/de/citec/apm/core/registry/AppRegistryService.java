@@ -10,29 +10,29 @@ import de.citec.apm.lib.registry.AppRegistryInterface;
 import de.citec.jp.JPAppConfigDatabaseDirectory;
 import de.citec.jp.JPAppRegistryScope;
 import de.citec.jps.core.JPService;
+import de.citec.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.List;
 import java.util.Map;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
-import rst.homeautomation.device.DeviceRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -77,14 +77,18 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
                 }
             });
 
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
-        locationRegistryRemote.init();
+        try {
+            super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
+            locationRegistryRemote.init();
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -122,7 +126,7 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
             ExceptionPrinter.printHistory(ex, logger);
         }
     }
-    
+
     @Override
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags
@@ -177,5 +181,5 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
 
     public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRegistry() {
         return appConfigRegistry;
-    }    
+    }
 }
