@@ -7,9 +7,6 @@ package de.citec.lm.remote;
 
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.exception.JPServiceException;
-import de.citec.jps.preset.JPReadOnly;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPReadOnly;
@@ -570,8 +567,12 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);

@@ -5,6 +5,7 @@
  */
 package de.citec.lm.core;
 
+import de.citec.jp.JPConnectionConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
@@ -55,8 +56,6 @@ public class LocationManager {
         return locationRegistry;
     }
 
-
-
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
@@ -68,6 +67,7 @@ public class LocationManager {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPConnectionConfigDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
