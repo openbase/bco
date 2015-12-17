@@ -9,8 +9,8 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class LocationLoopConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
+public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
 
     public LocationLoopConsistencyHandler() {
     }

@@ -5,14 +5,13 @@
  */
 package de.citec.dm.core.consistency;
 
-import de.citec.dm.lib.util.DeviceConfigUtils;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
@@ -24,7 +23,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class UnitBoundsToDeviceConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class UnitBoundsToDeviceConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     public static final boolean DEFAULT_BOUND_TO_DEVICE = true;
 

@@ -10,10 +10,6 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
-/**
- *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
- */
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rct.transform.PoseTransformer;
 import de.citec.jul.storage.registry.RegistryInterface;

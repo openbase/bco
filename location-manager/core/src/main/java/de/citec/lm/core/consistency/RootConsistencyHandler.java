@@ -8,8 +8,8 @@ package de.citec.lm.core.consistency;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -18,7 +18,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author mpohling
  */
-public class RootConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> {
+public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> {
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {

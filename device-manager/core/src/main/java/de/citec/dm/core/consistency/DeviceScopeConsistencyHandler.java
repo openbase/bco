@@ -10,8 +10,8 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType;
@@ -23,7 +23,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author mpohling
  */
-public class DeviceScopeConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class DeviceScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     private final LocationRegistryRemote locationRegistryRemote;
 

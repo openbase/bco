@@ -10,10 +10,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
-import java.rmi.server.ObjID;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,7 +27,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author mpohling
  */
-public class LocationUnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
+public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
 
     private final DeviceRegistryRemote deviceRegistryRemote;
 

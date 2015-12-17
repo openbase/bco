@@ -11,8 +11,8 @@ import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,7 +24,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class UnitIdConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class UnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     private final Map<String, UnitConfig> unitMap;
 

@@ -10,8 +10,8 @@ import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType;
@@ -21,7 +21,7 @@ import rst.spatial.PlacementConfigType;
  *
  * @author mpohling
  */
-public class DeviceLocationIdConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> {
+public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> {
 
     private final LocationRegistryRemote locationRegistryRemote;
 

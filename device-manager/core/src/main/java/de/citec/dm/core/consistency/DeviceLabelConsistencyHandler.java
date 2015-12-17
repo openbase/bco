@@ -10,8 +10,8 @@ import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.VerificationFailedException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  *
  * @author mpohling
  */
-public class DeviceLabelConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class DeviceLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     private final Map<String, String> labelConsistencyMap;
 
