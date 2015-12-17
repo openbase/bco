@@ -5,34 +5,41 @@
  */
 package de.citec.lm.core.registry;
 
-import de.citec.lm.lib.generator.LocationIDGenerator;
-import de.citec.lm.lib.registry.LocationRegistryInterface;
-import de.citec.lm.core.consistency.ParentChildConsistencyHandler;
-import de.citec.lm.core.consistency.RootConsistencyHandler;
-import de.citec.lm.core.consistency.ScopeConsistencyHandler;
 import de.citec.dm.remote.DeviceRegistryRemote;
+import de.citec.jp.JPConnectionConfigDatabaseDirectory;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
+import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.lm.core.consistency.ChildWithSameLabelConsistencyHandler;
 import de.citec.lm.core.consistency.LocationLoopConsistencyHandler;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
+import de.citec.lm.core.consistency.ParentChildConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
+import de.citec.lm.core.consistency.RootConsistencyHandler;
+import de.citec.lm.core.consistency.ScopeConsistencyHandler;
 import de.citec.lm.core.plugin.PublishLocationTransformationRegistryPlugin;
 import de.citec.lm.core.registry.dbconvert.LocationConfig_0_To_1_DBConverter;
+import de.citec.lm.lib.generator.ConnectionIDGenerator;
+import de.citec.lm.lib.generator.LocationIDGenerator;
+import de.citec.lm.lib.registry.LocationRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +54,7 @@ import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
-import rst.spatial.LocationConfigType;
+import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -57,31 +64,39 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  * @author mpohling
  */
 public class LocationRegistryService extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements LocationRegistryInterface {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfigType.LocationConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
-    
+
     private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryType.LocationRegistry.Builder> locationConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryType.LocationRegistry.Builder> connectionConfigRegistry;
+
     private final DeviceRegistryRemote deviceRegistryRemote;
     private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
-    
+
     public LocationRegistryService() throws InstantiationException, InterruptedException {
         super(LocationRegistry.newBuilder());
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-            
+            connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
-            
+            connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
+
             deviceRegistryUpdateObserver = (Observable<DeviceRegistry> source, DeviceRegistry data) -> {
                 locationConfigRegistry.checkConsistency();
+                connectionConfigRegistry.checkConsistency();
             };
-            
+
             deviceRegistryRemote = new DeviceRegistryRemote();
-            
+
             locationConfigRegistry.loadRegistry();
-            
+            connectionConfigRegistry.loadRegistry();
+
+
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
@@ -90,19 +105,26 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
-            
+
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
                 notifyChange();
             });
-            
-        } catch (CouldNotPerformException ex) {
+
+            connectionConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>>> source, Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> data) -> {
+                notifyChange();
+            });
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
-        deviceRegistryRemote.init();
+        try {
+            super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
+            deviceRegistryRemote.init();
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     /**
@@ -120,11 +142,17 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
-        
+
         try {
             locationConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+        }
+
+        try {
+            connectionConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
     }
 
@@ -145,15 +173,19 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      */
     @Override
     public void shutdown() {
-        
+
         if (deviceRegistryRemote != null) {
             deviceRegistryRemote.shutdown();
         }
-        
+
         if (locationConfigRegistry != null) {
             locationConfigRegistry.shutdown();
         }
-        
+
+        if (connectionConfigRegistry != null) {
+            connectionConfigRegistry.shutdown();
+        }
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -170,6 +202,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags
         setField(LocationRegistry.LOCATION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, locationConfigRegistry.isReadOnly());
+        setField(LocationRegistry.CONNECTION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, connectionConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
@@ -222,7 +255,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getUnitConfigsByLabel(final String unitLabel, final String locationId) throws CouldNotPerformException {
+    public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
         getData();
         return deviceRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
                 .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
@@ -285,7 +318,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final String locationId) throws CouldNotPerformException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationId).getUnitIdList()) {
             unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
@@ -299,9 +332,9 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final String locationId) throws CouldNotPerformException {
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigs(locationId)) {
+        for (UnitConfig unitConfig : getUnitConfigsByLocation(locationId)) {
             serviceConfigList.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigList;
@@ -314,10 +347,10 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final UnitTemplateType.UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigsByLocation(final UnitTemplateType.UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfigType.UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -338,10 +371,10 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfigType.UnitConfig> getUnitConfigsByLocation(final ServiceTemplateType.ServiceTemplate.ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -385,5 +418,176 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
 
     public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRegistry() {
         return locationConfigRegistry;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public ConnectionConfig registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return connectionConfigRegistry.register(connectionConfig);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public ConnectionConfig getConnectionConfigById(String connectionId) throws CouldNotPerformException {
+        return connectionConfigRegistry.get(connectionId).getMessage();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<ConnectionConfig> getConnectionConfigsByLabel(String connectionLabel) throws CouldNotPerformException {
+        getData();
+        return connectionConfigRegistry.getMessages().stream()
+                .filter(m -> m.getLabel().equals(connectionLabel))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean containsConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return connectionConfigRegistry.contains(connectionConfig);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean containsConnectionConfigById(String connectionId) throws CouldNotPerformException {
+        return connectionConfigRegistry.contains(connectionId);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public ConnectionConfig updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return connectionConfigRegistry.update(connectionConfig);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public ConnectionConfig removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return connectionConfigRegistry.remove(connectionConfig);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<ConnectionConfig> getConnectionConfigs() throws CouldNotPerformException {
+        return connectionConfigRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
+        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
+            unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
+        }
+        return unitConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByConnection(UnitTemplateType.UnitTemplate.UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfigType.UnitConfig unitConfig;
+
+        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
+            try {
+                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type)) {
+                    unitConfigList.add(unitConfig);
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
+            }
+        }
+        return unitConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByConnection(ServiceTemplateType.ServiceTemplate.ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
+
+        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
+            try {
+                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+                for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getType().equals(type)) {
+                        unitConfigList.add(unitConfig);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
+            }
+        }
+        return unitConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
+        List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsByConnection(connectionConfigId)) {
+            serviceConfigList.addAll(unitConfig.getServiceConfigList());
+        }
+        return serviceConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(connectionConfigRegistry.isReadOnly());
     }
 }

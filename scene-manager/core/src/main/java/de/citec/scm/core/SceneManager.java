@@ -5,23 +5,22 @@
  */
 package de.citec.scm.core;
 
-import de.citec.scm.core.registry.SceneRegistryService;
-import de.citec.jp.JPSceneDatabaseDirectory;
 import de.citec.jp.JPSceneClassDatabaseDirectory;
 import de.citec.jp.JPSceneConfigDatabaseDirectory;
 import de.citec.jp.JPSceneRegistryScope;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPDebugMode;
-import de.citec.jps.preset.JPReadOnly;
+import org.dc.jps.core.JPService;
+import org.dc.jps.preset.JPDebugMode;
+import org.dc.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import de.citec.scm.core.registry.SceneRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +55,8 @@ public class SceneManager {
     public SceneRegistryService getSceneRegistry() {
         return sceneRegistry;
     }
-    
-    
+
+
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
@@ -68,7 +67,6 @@ public class SceneManager {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPSceneDatabaseDirectory.class);
         JPService.registerProperty(JPSceneConfigDatabaseDirectory.class);
         JPService.registerProperty(JPSceneClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);

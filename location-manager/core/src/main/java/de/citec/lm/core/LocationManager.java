@@ -5,22 +5,22 @@
  */
 package de.citec.lm.core;
 
-import de.citec.lm.core.registry.LocationRegistryService;
+import de.citec.jp.JPConnectionConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jp.JPLocationDatabaseDirectory;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPReadOnly;
+import org.dc.jps.core.JPService;
+import org.dc.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import de.citec.lm.core.registry.LocationRegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +55,6 @@ public class LocationManager {
     public LocationRegistryService getLocationRegistry() {
         return locationRegistry;
     }
-    
-    
 
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
@@ -68,11 +66,11 @@ public class LocationManager {
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPLocationDatabaseDirectory.class);
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPConnectionConfigDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-        
+
         JPService.parseAndExitOnError(args);
 
         LocationManager locationManager;
@@ -81,13 +79,13 @@ public class LocationManager {
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-        
+
         MultiException.ExceptionStack exceptionStack = null;
-        
+
         if (!locationManager.getLocationRegistry().getLocationConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(locationManager, new VerificationFailedException("LocationConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         try {
             MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
         } catch (CouldNotPerformException ex) {

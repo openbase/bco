@@ -8,12 +8,11 @@ package de.citec.dm.core;
 import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
-import de.citec.jp.JPDeviceDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPDebugMode;
-import de.citec.jps.preset.JPForce;
-import de.citec.jps.preset.JPReadOnly;
+import org.dc.jps.core.JPService;
+import org.dc.jps.preset.JPDebugMode;
+import org.dc.jps.preset.JPForce;
+import org.dc.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
@@ -32,13 +31,13 @@ import org.slf4j.LoggerFactory;
  * @author mpohling
  */
 public class DeviceManager {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DeviceManager.class);
-    
+
     public static final String APP_NAME = DeviceManager.class.getSimpleName();
-    
+
     private final DeviceRegistryService deviceRegistry;
-    
+
     public DeviceManager() throws InitializationException, InterruptedException {
         try {
             this.deviceRegistry = new DeviceRegistryService();
@@ -48,45 +47,44 @@ public class DeviceManager {
             throw new InitializationException(this, ex);
         }
     }
-    
+
     public void shutdown() {
         if (deviceRegistry != null) {
             deviceRegistry.shutdown();
         }
     }
-    
+
     public DeviceRegistryService getDeviceRegistry() {
         return deviceRegistry;
     }
-    
+
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
 
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
-        
+
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPDeviceDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-        
+
         JPService.parseAndExitOnError(args);
-        
+
         DeviceManager deviceManager;
         try {
             deviceManager = new DeviceManager();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-        
+
         ExceptionStack exceptionStack = null;
-        
+
         if (!deviceManager.getDeviceRegistry().getUnitTemplateRegistry().isConsistent()) {
             exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
@@ -96,7 +94,7 @@ public class DeviceManager {
         if (!deviceManager.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("DeviceConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         try {
             MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
         } catch (CouldNotPerformException ex) {
