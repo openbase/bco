@@ -9,14 +9,14 @@ import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABConfiguration;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABDistribution;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPPrefix;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPPrefix;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
 import de.citec.jul.schedule.RecurrenceEventFilter;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.io.File;
@@ -69,19 +69,11 @@ public class OpenHABConfigGenerator {
         locationRegistryRemote.activate();
         itemConfigGenerator.init();
 
-        this.deviceRegistryRemote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
-
-            @Override
-            public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
-                generate();
-            }
+        this.deviceRegistryRemote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
+            generate();
         });
-        this.locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
-
-            @Override
-            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
-                generate();
-            }
+        this.locationRegistryRemote.addObserver((Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) -> {
+            generate();
         });
     }
 
@@ -91,10 +83,14 @@ public class OpenHABConfigGenerator {
 
     private synchronized void internalGenerate() throws CouldNotPerformException {
         try {
-            logger.info("generate ItemConfig["+JPService.getProperty(JPOpenHABItemConfig.class).getValue()+"] ...");
-            itemConfigGenerator.generate();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate ItemConfig["+JPService.getProperty(JPOpenHABItemConfig.class).getValue()+"].", ex);
+            try {
+                logger.info("generate ItemConfig[" + JPService.getProperty(JPOpenHABItemConfig.class).getValue() + "] ...");
+                itemConfigGenerator.generate();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not generate ItemConfig[" + JPService.getProperty(JPOpenHABItemConfig.class).getValue() + "].", ex);
+            }
+        } catch (JPServiceException ex) {
+            throw new CouldNotPerformException("Could not generate ItemConfig!", ex);
         }
     }
 

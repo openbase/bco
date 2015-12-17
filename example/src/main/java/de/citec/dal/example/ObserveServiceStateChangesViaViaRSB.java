@@ -5,7 +5,7 @@
  */
 package de.citec.dal.example;
 
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.scope.ScopeTransformer;

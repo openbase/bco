@@ -47,18 +47,17 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     public void init(final UnitConfig config) throws CouldNotPerformException {
         try {
             if (!verifyServiceCompatibility(config, serviceType)) {
-                throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config, this);
+                throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config.getId(), this);
             }
 
             DALRemoteService remote = factory.createAndInitUnitRemote(config);
             try {
-                serviceMap.put(remote.getId(), (S) remote);
+                serviceMap.put(config.getId(), (S) remote);
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("Remote does not implement service interface!", remote, this, ex);
             }
 
-            unitRemoteMap.put(remote.getId(), remote);
-            remote.init(config);
+            unitRemoteMap.put(config.getId(), remote);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not init service unit.", ex);
         }

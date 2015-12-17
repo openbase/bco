@@ -12,12 +12,13 @@ import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABminZwaveConfig;
 import de.citec.dal.bindings.openhab.util.configgen.xmlpaser.XMLParser;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPPrefix;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPPrefix;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import de.citec.jul.processing.VariableProvider;
@@ -66,55 +67,60 @@ public class OpenHABminConfigGenerator {
 
     private void generate() throws CouldNotPerformException {
         try {
-
-            VariableProvider variableProvider;
             File zwaveDb = JPService.getProperty(JPOpenHABminZwaveConfig.class).getValue();
-            String zwaveNodeID;
-            String openhabBindingType;
-            File zwaveNodeConfigFile;
+            try {
 
-            logger.info("update zwave entries of HABmin zwave DB[" + zwaveDb + "] ...");
+                VariableProvider variableProvider;
 
-            List<DeviceConfigType.DeviceConfig> deviceConfigs = deviceRegistryRemote.getDeviceConfigs();
+                String zwaveNodeID;
+                String openhabBindingType;
+                File zwaveNodeConfigFile;
 
-            for (DeviceConfigType.DeviceConfig deviceConfig : deviceConfigs) {
-                try {
+                logger.info("update zwave entries of HABmin zwave DB[" + zwaveDb + "] ...");
 
-                    // check openhab binding type
-                    if (deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
-                        continue;
+                List<DeviceConfigType.DeviceConfig> deviceConfigs = deviceRegistryRemote.getDeviceConfigs();
+
+                for (DeviceConfigType.DeviceConfig deviceConfig : deviceConfigs) {
+                    try {
+
+                        // check openhab binding type
+                        if (deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
+                            continue;
+                        }
+
+                        // check if zwave
+                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getMetaConfig());
+                        openhabBindingType = variableProvider.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
+                        if (!"zwave".equals(openhabBindingType)) {
+                            continue;
+                        }
+
+                        // check if installed
+                        if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            continue;
+                        }
+
+                        variableProvider = new MetaConfigVariableProvider("DeviceConfigVariableProvider", deviceConfig.getMetaConfig());
+                        zwaveNodeID = variableProvider.getValue(OPENHAB_BINDING_DEVICE_ID);
+                        zwaveNodeConfigFile = new File(zwaveDb, "node" + zwaveNodeID + ".xml");
+
+                        if (!zwaveNodeConfigFile.exists()) {
+                            logger.warn("Could not detect zwave node config File[" + zwaveNodeConfigFile + "]! Skip device...");
+                            continue;
+                        }
+
+                        updateZwaveNodeConfig(zwaveNodeConfigFile, deviceConfig);
+                        logger.info("Successful updated zwave Node[" + zwaveNodeID + "] of Device[" + deviceConfig.getLabel() + "].");
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update node entry for Device[" + deviceConfig.getLabel() + "]!", ex), logger, LogLevel.ERROR);
                     }
-
-                    // check if zwave
-                    variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getMetaConfig());
-                    openhabBindingType = variableProvider.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
-                    if (!"zwave".equals(openhabBindingType)) {
-                        continue;
-                    }
-
-                    // check if installed
-                    if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                        continue;
-                    }
-
-                    variableProvider = new MetaConfigVariableProvider("DeviceConfigVariableProvider", deviceConfig.getMetaConfig());
-                    zwaveNodeID = variableProvider.getValue(OPENHAB_BINDING_DEVICE_ID);
-                    zwaveNodeConfigFile = new File(zwaveDb, "node" + zwaveNodeID + ".xml");
-
-                    if (!zwaveNodeConfigFile.exists()) {
-                        logger.warn("Could not detect zwave node config File[" + zwaveNodeConfigFile + "]! Skip device...");
-                        continue;
-                    }
-
-                    updateZwaveNodeConfig(zwaveNodeConfigFile, deviceConfig);
-                    logger.info("Successful updated zwave Node[" + zwaveNodeID + "] of Device[" + deviceConfig.getLabel() + "].");
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update node entry for Device[" + deviceConfig.getLabel() + "]!", ex), logger, LogLevel.ERROR);
                 }
-            }
 
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not update zwave Entries[" + JPService.getProperty(JPOpenHABItemConfig.class).getValue() + "].", ex);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not update zwave Entries[" + JPService.getProperty(JPOpenHABItemConfig.class).getValue() + "].", ex);
+            }
+        } catch (JPServiceException ex) {
+            throw new CouldNotPerformException("Could not update zwave entries!", ex);
         }
     }
 

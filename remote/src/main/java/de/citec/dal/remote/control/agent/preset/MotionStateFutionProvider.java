@@ -7,6 +7,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
+import de.citec.jul.iface.Activatable;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.schedule.Timeout;
 import java.util.ArrayList;
@@ -27,12 +28,12 @@ import rst.homeautomation.unit.UnitTemplateType;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class MotionStateFutionProvider extends Observable<MotionState> implements MotionProvider {
+public class MotionStateFutionProvider extends Observable<MotionState> implements MotionProvider, Activatable {
 
     /**
      * Default 3 minute window of no movement unit the state switches to NO_MOTION.
      */
-    public static final long MOTION_TIMEOUT = 900;
+    public static final long MOTION_TIMEOUT = 10000;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -47,6 +48,7 @@ public class MotionStateFutionProvider extends Observable<MotionState> implement
     public MotionStateFutionProvider(final Collection<UnitConfig> motionUnitConfigs, final long motionTimeout) throws InstantiationException {
         try {
             this.motionSensorList = new ArrayList<>();
+            this.motionState = MotionState.newBuilder();
             this.motionTimeout = new Timeout(motionTimeout) {
 
                 @Override
@@ -68,10 +70,40 @@ public class MotionStateFutionProvider extends Observable<MotionState> implement
                 motionSensorRemote.addObserver((Observable<MotionSensorType.MotionSensor> source, MotionSensorType.MotionSensor data) -> {
                     updateMotionState(data.getMotionState());
                 });
+
             }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        for (MotionSensorRemote remote : motionSensorList) {
+            remote.activate();
+        }
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        for (MotionSensorRemote remote : motionSensorList) {
+            remote.deactivate();
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return motionSensorList.stream().noneMatch((remote) -> (!remote.isActive()));
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            deactivate();
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+        }
+        super.shutdown();
     }
 
     private synchronized void updateMotionState(final MotionStateOrBuilder motionState) {

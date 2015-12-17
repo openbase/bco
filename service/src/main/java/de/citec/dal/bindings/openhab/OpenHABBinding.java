@@ -5,21 +5,22 @@
  */
 package de.citec.dal.bindings.openhab;
 
-import de.citec.dal.bindings.AbstractDALBinding;
 import de.citec.dal.DALService;
+import de.citec.dal.bindings.AbstractDALBinding;
 import de.citec.dal.bindings.openhab.transform.OpenhabCommandTransformer;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.com.RSBRemoteService;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.InvocationFailedException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -85,16 +86,22 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
 
             dalCommunicationService.init(SCOPE_DAL);
 
-            if (!JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
-                // Init Openhab connection
-                openhabRemoteService.activate();
-                dalCommunicationService.activate();
-
-                try (ClosableDataBuilder<DALBinding.Builder> dataBuilder = dalCommunicationService.getDataBuilder(this)) {
-                    dataBuilder.getInternalBuilder().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
-                } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not setup dalCommunicationService as active.", ex);
+            try {
+                if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
+                    return;
                 }
+            } catch (JPServiceException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+            }
+
+            // Init Openhab connection
+            openhabRemoteService.activate();
+            dalCommunicationService.activate();
+
+            try (ClosableDataBuilder<DALBinding.Builder> dataBuilder = dalCommunicationService.getDataBuilder(this)) {
+                dataBuilder.getInternalBuilder().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
+            } catch (Exception ex) {
+                throw new CouldNotPerformException("Could not setup dalCommunicationService as active.", ex);
             }
         } catch (CouldNotPerformException ex) {
             throw new de.citec.jul.exception.InstantiationException(this, ex);
@@ -139,7 +146,7 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
             try {
                 OpenHABBinding.this.internalReceiveUpdate((OpenhabCommand) request.getData());
             } catch (Throwable cause) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, OpenHABBinding.this, cause), logger , LogLevel.ERROR);
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, OpenHABBinding.this, cause), logger, LogLevel.ERROR);
             }
             return new Event(Void.class);
         }
@@ -148,19 +155,24 @@ public class OpenHABBinding extends AbstractDALBinding implements OpenHABBinding
     @Override
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
         try {
-            
-            if(!command.hasItem() || command.getItem().isEmpty()) {
+
+            if (!command.hasItem() || command.getItem().isEmpty()) {
                 throw new NotAvailableException("command item");
             }
-            
-            if(!command.hasType()) {
+
+            if (!command.hasType()) {
                 throw new NotAvailableException("command type");
             }
-            
-            if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
-                internalReceiveUpdate(command);
-                return null;
+
+            try {
+                if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
+                    internalReceiveUpdate(command);
+                    return null;
+                }
+            } catch (JPServiceException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
             }
+
             if (!openhabRemoteService.isConnected()) {
                 throw new InvalidStateException("Dal openhab binding could not reach openhab server! Please check if openhab is still running!");
             }

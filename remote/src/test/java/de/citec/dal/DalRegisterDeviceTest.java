@@ -8,7 +8,7 @@ package de.citec.dal;
 import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jps.exception.JPServiceException;
+import org.dc.jps.exception.JPServiceException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import java.util.ArrayList;

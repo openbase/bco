@@ -8,6 +8,7 @@ package de.citec.dal.remote.unit;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.processing.StringProcessor;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * A unit remote factory which can be used to create unit remote instances out
@@ -61,12 +62,16 @@ public class UnitRemoteFactory implements UnitRemoteFactoryInterface {
         return unitRemote;
     }
 
-    private static Class<? extends DALRemoteService> loadUnitRemoteClass(final UnitConfigType.UnitConfig config) throws CouldNotPerformException {
-        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(config.getType().name()) + "Remote";
+    public static Class<? extends DALRemoteService> loadUnitRemoteClass(final UnitConfigType.UnitConfig config) throws CouldNotPerformException {
+        return loadUnitRemoteClass(config.getType());
+    }
+    
+    public static Class<? extends DALRemoteService> loadUnitRemoteClass(final UnitType unitType) throws CouldNotPerformException {
+        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
             return (Class<? extends DALRemoteService>) UnitRemoteFactory.class.getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not detect unit remote class for UnitType[" + config.getType().name() + "]!", ex);
+            throw new CouldNotPerformException("Could not detect unit remote class for UnitType[" + unitType.name() + "]!", ex);
         }
     }
 

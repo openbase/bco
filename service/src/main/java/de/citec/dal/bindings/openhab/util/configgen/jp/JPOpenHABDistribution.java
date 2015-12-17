@@ -5,10 +5,11 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen.jp;
 
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.AbstractJPDirectory;
-import de.citec.jps.preset.JPPrefix;
-import de.citec.jps.tools.FileHandler;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPNotAvailableException;
+import org.dc.jps.preset.AbstractJPDirectory;
+import org.dc.jps.preset.JPPrefix;
+import org.dc.jps.tools.FileHandler;
 import java.io.File;
 
 /**
@@ -17,13 +18,13 @@ import java.io.File;
  */
 public class JPOpenHABDistribution extends AbstractJPDirectory {
     private static final String[] COMMAND_IDENTIFIERS = {"--openhab-dist"};
-    
+
     public JPOpenHABDistribution() {
         super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
     }
-    
+
     @Override
-    protected File getPropertyDefaultValue() {
+    protected File getPropertyDefaultValue() throws JPNotAvailableException {
         return new File(JPService.getProperty(JPPrefix.class).getValue(), "share/openhab/distribution");
     }
 
@@ -31,5 +32,5 @@ public class JPOpenHABDistribution extends AbstractJPDirectory {
     public String getDescription() {
         return "Defines the openhab distribution directory.";
     }
-    
+
 }

@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.jp;
 
-import de.citec.jps.core.AbstractJavaProperty;
+import org.dc.jps.core.AbstractJavaProperty;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -6,7 +6,7 @@
 package de.citec.dal;
 
 import de.citec.dal.registry.MockRegistry;
-import de.citec.jps.exception.JPServiceException;
+import org.dc.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;

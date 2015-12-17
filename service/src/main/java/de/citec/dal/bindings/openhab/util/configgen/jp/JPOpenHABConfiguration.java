@@ -5,9 +5,10 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen.jp;
 
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.AbstractJPDirectory;
-import de.citec.jps.tools.FileHandler;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPNotAvailableException;
+import org.dc.jps.preset.AbstractJPDirectory;
+import org.dc.jps.tools.FileHandler;
 import java.io.File;
 
 /**
@@ -16,13 +17,13 @@ import java.io.File;
  */
 public class JPOpenHABConfiguration extends AbstractJPDirectory {
     private static final String[] COMMAND_IDENTIFIERS = {"--openhab-config"};
-    
+
     public JPOpenHABConfiguration() {
         super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
     }
-    
+
     @Override
-    protected File getPropertyDefaultValue() {
+    protected File getPropertyDefaultValue() throws JPNotAvailableException {
         return new File(JPService.getProperty(JPOpenHABDistribution.class).getValue(), "configurations");
     }
 
@@ -30,6 +31,6 @@ public class JPOpenHABConfiguration extends AbstractJPDirectory {
     public String getDescription() {
         return "Defines the openhab configuration directory.";
     }
-    
+
 }
 
