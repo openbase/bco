@@ -10,19 +10,19 @@ import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPReadOnly;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.jul.storage.registry.RemoteRegistry;
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -68,7 +68,11 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
+        try {
+            super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -322,9 +326,14 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
+
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
@@ -334,9 +343,14 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
+
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {
@@ -346,9 +360,14 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
+
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {

@@ -6,12 +6,10 @@
 package de.citec.pem.remote;
 
 import de.citec.jp.JPUserRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
@@ -25,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPReadOnly;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.GroupConfigType.GroupConfig;
@@ -56,7 +57,11 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
+        try {
+            super.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -137,8 +142,12 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
@@ -227,8 +236,12 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public Future<Boolean> isGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);

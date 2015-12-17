@@ -8,12 +8,13 @@ package de.citec.apm.remote;
 import de.citec.apm.lib.generator.AppConfigIdGenerator;
 import de.citec.apm.lib.registry.AppRegistryInterface;
 import de.citec.jp.JPAppRegistryScope;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPReadOnly;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.rsb.com.RPCHelper;
@@ -50,7 +51,11 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
+        try {
+            super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -58,7 +63,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         super.activate();
         try {
             notifyUpdated(requestStatus());
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
     }
@@ -86,7 +91,6 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         getData();
         return appConfigRemoteRegistry.getMessage(appConfigId);
     }
-
 
     @Override
     public Boolean containsAppConfig(final AppConfigType.AppConfig appConfig) throws CouldNotPerformException {
@@ -127,9 +131,14 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     @Override
     public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
-        if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-            return CompletableFuture.completedFuture(true);
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
+
         try {
             return RPCHelper.callRemoteMethod(this, Boolean.class);
         } catch (CouldNotPerformException ex) {

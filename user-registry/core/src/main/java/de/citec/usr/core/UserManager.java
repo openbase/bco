@@ -5,21 +5,20 @@
  */
 package de.citec.usr.core;
 
-import de.citec.usr.core.registry.UserRegistryService;
-import de.citec.jp.JPUserDatabaseDirectory;
 import de.citec.jp.JPUserRegistryScope;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
-import de.citec.jps.core.JPService;
-import de.citec.jps.preset.JPDebugMode;
-import de.citec.jps.preset.JPReadOnly;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InvalidStateException;
 import de.citec.jul.exception.MultiException;
 import de.citec.jul.exception.VerificationFailedException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import de.citec.usr.core.registry.UserRegistryService;
+import org.dc.jps.core.JPService;
+import org.dc.jps.preset.JPDebugMode;
+import org.dc.jps.preset.JPReadOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +64,6 @@ public class UserManager {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPUserDatabaseDirectory.class);
-        JPService.registerProperty(JPUserDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
@@ -84,7 +81,7 @@ public class UserManager {
         if (!userManager.getUserRegistry().getUserRegistry().isConsistent()) {
             exceptionStack = MultiException.push(userManager, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!userManager.getUserRegistry().getGroupRegistry().isConsistent()) {
             exceptionStack = MultiException.push(userManager, new VerificationFailedException("GroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }

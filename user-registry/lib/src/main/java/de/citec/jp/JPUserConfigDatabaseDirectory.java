@@ -5,42 +5,33 @@
  */
 package de.citec.jp;
 
+import de.citec.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
+import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
-import de.citec.jps.core.JPService;
-import de.citec.jps.exception.JPValidationException;
-import de.citec.jps.preset.AbstractJPDirectory;
-import de.citec.jps.tools.FileHandler;
 import java.io.File;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPNotAvailableException;
 
 /**
  *
  * @author mpohling
  */
-public class JPUserConfigDatabaseDirectory extends AbstractJPDirectory {
+public class JPUserConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--user-config-db"};
 
     public JPUserConfigDatabaseDirectory() {
-        super(COMMAND_IDENTIFIERS, FileHandler.ExistenceHandling.Must, FileHandler.AutoMode.Off);
+        super(COMMAND_IDENTIFIERS);
     }
 
     @Override
-    public File getParentDirectory() {
-        return JPService.getProperty(JPUserDatabaseDirectory.class).getValue();
+    public File getParentDirectory() throws JPNotAvailableException {
+        return JPService.getProperty(JPDatabaseDirectory.class).getValue();
     }
 
     @Override
     protected File getPropertyDefaultValue() {
         return new File("user-config-db");
-    }
-
-    @Override
-    public void validate() throws JPValidationException {
-        if (JPService.getProperty(JPInitializeDB.class).getValue()) {
-            setAutoCreateMode(FileHandler.AutoMode.On);
-            setExistenceHandling(FileHandler.ExistenceHandling.Must);
-        }
-        super.validate();
     }
 
     @Override

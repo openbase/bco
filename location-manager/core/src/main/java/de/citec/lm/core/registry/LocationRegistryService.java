@@ -5,18 +5,13 @@
  */
 package de.citec.lm.core.registry;
 
-import de.citec.lm.lib.generator.LocationIDGenerator;
-import de.citec.lm.lib.registry.LocationRegistryInterface;
-import de.citec.lm.core.consistency.ParentChildConsistencyHandler;
-import de.citec.lm.core.consistency.RootConsistencyHandler;
-import de.citec.lm.core.consistency.ScopeConsistencyHandler;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPConnectionConfigDatabaseDirectory;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
-import de.citec.jps.core.JPService;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
 import de.citec.jul.exception.NotAvailableException;
@@ -24,18 +19,27 @@ import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
+import de.citec.jul.pattern.Observable;
+import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import de.citec.lm.core.consistency.ChildWithSameLabelConsistencyHandler;
 import de.citec.lm.core.consistency.LocationLoopConsistencyHandler;
 import de.citec.lm.core.consistency.LocationUnitIdConsistencyHandler;
+import de.citec.lm.core.consistency.ParentChildConsistencyHandler;
 import de.citec.lm.core.consistency.PositionConsistencyHandler;
+import de.citec.lm.core.consistency.RootConsistencyHandler;
+import de.citec.lm.core.consistency.ScopeConsistencyHandler;
 import de.citec.lm.core.plugin.PublishLocationTransformationRegistryPlugin;
 import de.citec.lm.core.registry.dbconvert.LocationConfig_0_To_1_DBConverter;
 import de.citec.lm.lib.generator.ConnectionIDGenerator;
+import de.citec.lm.lib.generator.LocationIDGenerator;
+import de.citec.lm.lib.registry.LocationRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +96,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             locationConfigRegistry.loadRegistry();
             connectionConfigRegistry.loadRegistry();
 
+
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
@@ -108,15 +113,18 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
             connectionConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>>> source, Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> data) -> {
                 notifyChange();
             });
-
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void init() throws InitializationException {
-        super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
-        deviceRegistryRemote.init();
+        try {
+            super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
+            deviceRegistryRemote.init();
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     /**

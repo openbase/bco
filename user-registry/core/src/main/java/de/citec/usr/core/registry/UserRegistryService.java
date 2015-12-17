@@ -8,34 +8,33 @@ package de.citec.usr.core.registry;
 import de.citec.jp.JPGroupConfigDatabaseDirectory;
 import de.citec.jp.JPUserConfigDatabaseDirectory;
 import de.citec.jp.JPUserRegistryScope;
-import de.citec.jps.core.JPService;
 import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.exception.InitializationException;
+import de.citec.jul.exception.InstantiationException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
+import de.citec.jul.exception.printer.LogLevel;
+import de.citec.jul.extension.protobuf.IdentifiableMessage;
+import de.citec.jul.extension.rsb.com.RPCHelper;
+import de.citec.jul.extension.rsb.com.RSBCommunicationService;
+import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
 import de.citec.jul.pattern.Observable;
 import de.citec.jul.pattern.Observer;
 import de.citec.jul.storage.file.ProtoBufJSonFileProvider;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import java.util.Map;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.rsb.com.RSBCommunicationService;
-import de.citec.jul.extension.rsb.iface.RSBLocalServerInterface;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
 import de.citec.usr.lib.generator.GroupConfigIdGenerator;
 import de.citec.usr.lib.generator.UserConfigIdGenerator;
 import de.citec.usr.lib.registry.UserRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import rst.authorization.UserConfigType.UserConfig;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.GroupConfigType.GroupConfig;
+import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserRegistryType.UserRegistry;
 
 /**
@@ -79,13 +78,17 @@ public class UserRegistryService extends RSBCommunicationService<UserRegistry, U
                 }
             });
 
-        } catch (CouldNotPerformException ex) {
+        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void init() throws InitializationException {
+        try {
         super.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
+        } catch (JPServiceException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
