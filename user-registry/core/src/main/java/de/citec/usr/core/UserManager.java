@@ -18,6 +18,7 @@ import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.usr.core.registry.UserRegistryService;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
+import org.dc.jps.preset.JPForce;
 import org.dc.jps.preset.JPReadOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,7 @@ public class UserManager {
 
         JPService.registerProperty(JPUserRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);

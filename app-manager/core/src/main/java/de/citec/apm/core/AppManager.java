@@ -21,6 +21,7 @@ import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import org.dc.jps.preset.JPForce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,7 @@ public class AppManager {
 
         JPService.registerProperty(JPAppRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPAppConfigDatabaseDirectory.class);

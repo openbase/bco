@@ -21,6 +21,7 @@ import de.citec.jul.storage.registry.jp.JPGitRegistryPlugin;
 import de.citec.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.registry.LocationRegistryService;
+import org.dc.jps.preset.JPForce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ public class LocationManager {
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
         JPService.registerProperty(JPConnectionConfigDatabaseDirectory.class);
