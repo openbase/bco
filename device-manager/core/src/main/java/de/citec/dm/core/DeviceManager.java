@@ -9,6 +9,7 @@ import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jp.JPUnitTemplateDatabaseDirectory;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
 import org.dc.jps.preset.JPForce;
@@ -71,6 +72,7 @@ public class DeviceManager {
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
+        JPService.registerProperty(JPUnitTemplateDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
