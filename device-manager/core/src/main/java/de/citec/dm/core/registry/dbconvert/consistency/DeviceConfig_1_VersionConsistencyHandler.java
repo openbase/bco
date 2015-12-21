@@ -95,26 +95,26 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
         }
 
         deviceConfig.clearUnitConfig();
-//        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-//
-//            // Check if placement is available
-//            if (!unitConfig.hasPlacementConfig()) {
-//                throw new NotAvailableException("unit.placementconfig");
-//            }
-//
-//            if (!unitConfig.getPlacementConfig().hasLocationId()) {
-//                throw new NotAvailableException("unit.placementconfig.locationid");
-//            }
-//
-//            if (locationLabelIdMap.containsKey(unitConfig.getPlacementConfig().getLocationId())) {
-//                System.out.println("Update Unit[" + unitConfig.getId() + "] Location id from [" + unitConfig.getPlacementConfig().getLocationId() + "] to [" + locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId()) + "]");
-//                unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId())));
-//                modification = true;
-//            } else {
-//                System.out.println("Could not resolve unit location id[" + unitConfig.getPlacementConfig().getLocationId() + "]");
-//            }
-//            deviceConfig.addUnitConfig(unitConfig);
-//        }
+        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
+
+            // Check if placement is available
+            if (!unitConfig.hasPlacementConfig()) {
+                throw new NotAvailableException("unit.placementconfig");
+            }
+
+            if (!unitConfig.getPlacementConfig().hasLocationId()) {
+                throw new NotAvailableException("unit.placementconfig.locationid");
+            }
+
+            if (locationLabelIdMap.containsKey(unitConfig.getPlacementConfig().getLocationId())) {
+                System.out.println("Update Unit[" + unitConfig.getId() + "] Location id from [" + unitConfig.getPlacementConfig().getLocationId() + "] to [" + locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId()) + "]");
+                unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId())));
+                modification = true;
+            } else {
+                System.out.println("Could not resolve unit location id[" + unitConfig.getPlacementConfig().getLocationId() + "]");
+            }
+            deviceConfig.addUnitConfig(unitConfig);
+        }
 
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceConfig), this);
