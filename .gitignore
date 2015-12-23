@@ -16,7 +16,7 @@ hs_err_pid*
 
 # tmp
 **/*.swp
-**/~
+**/*~
 
 # local config
 **/*/nbactions.xml

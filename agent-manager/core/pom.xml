@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>agm.core</artifactId>
+    <artifactId>coma.agm.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM AgentManager Core</name>
+    <name>COMA AgentManager Core</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>agm</artifactId>
+        <artifactId>coma.agm</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.agm.core.AgentManager</mainClass>
+                            <mainClass>org.dc.bco.coma.agm.core.AgentManager</mainClass>
                             <id>agent-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -56,12 +56,12 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>lm.remote</artifactId>
+            <artifactId>coma.lom.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>agm.lib</artifactId>
+            <artifactId>coma.agm.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

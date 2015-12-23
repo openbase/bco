@@ -4,7 +4,7 @@
     
     <groupId>org.dc.bco</groupId>
     <artifactId>coma.agm</artifactId>
-    <name>REM AgentManager</name>
+    <name>COMA AgentManager</name>
     <description>AgentManager</description>
     
     <packaging>pom</packaging>

@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>apm.remote</artifactId>
+    <artifactId>coma.apm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM AppManager Remote</name>
+    <name>COMA AppManager Remote</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>apm</artifactId>
+        <artifactId>coma.apm</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>    
     
@@ -31,14 +31,8 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>apm.lib</artifactId>
+            <artifactId>coma.apm.lib</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.storage</artifactId>
-            <version>${global.jul.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

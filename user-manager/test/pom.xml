@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>scm.test</artifactId>
+    <artifactId>coma.usm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM SceneManager Test</name>
+    <name>COMA UserManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>scm</artifactId>
+        <artifactId>coma.usm</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,25 +38,18 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>scm.lib</artifactId>
+            <artifactId>coma.usm.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>scm.core</artifactId>
+            <artifactId>coma.usm.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>scm.remote</artifactId>
+            <artifactId>coma.usm.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>lm.core</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

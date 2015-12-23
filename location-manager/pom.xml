@@ -4,8 +4,8 @@
 
     
     <groupId>org.dc.bco</groupId>
-    <artifactId>lm</artifactId>
-    <name>REM LocationManager</name>
+    <artifactId>coma.lom</artifactId>
+    <name>COMA LocationManager</name>
     <description>LocationManager</description>
     
     <packaging>pom</packaging>

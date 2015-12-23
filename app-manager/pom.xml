@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>org.dc.bco</groupId>
-    <artifactId>apm</artifactId>
-    <name>REM AppManager</name>
+    <artifactId>coma.apm</artifactId>
+    <name>COMA AppManager</name>
     <description>AppManager</description>
     
     <packaging>pom</packaging>

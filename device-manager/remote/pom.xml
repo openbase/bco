@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>scm.remote</artifactId>
+    <artifactId>coma.scm.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM SceneManager Remote</name>
+    <name>COMA SceneManager Remote</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>scm</artifactId>
+        <artifactId>coma.scm</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>    
     
@@ -31,14 +31,8 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>scm.lib</artifactId>
+            <artifactId>coma.scm.lib</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.storage</artifactId>
-            <version>${global.jul.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

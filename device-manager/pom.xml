@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.dema</artifactId>
-    <name>REM DeviceManager</name>
-    <description>SceneManager</description>
+    <artifactId>coma.dem</artifactId>
+    <name>COMA DeviceManager</name>
+    <description>DeviceManager</description>
     
     <packaging>pom</packaging>
     
@@ -20,7 +20,6 @@
         <module>core</module>
         <module>remote</module>
         <module>test</module>
-        <!--module>manager</module-->
     </modules>
     
     <dependencies>

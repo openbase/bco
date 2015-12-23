@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>apm.test</artifactId>
+    <artifactId>coma.apm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM AppManager Test</name>
+    <name>COMA AppManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>apm</artifactId>
+        <artifactId>coma.apm</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,25 +38,18 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>apm.lib</artifactId>
+            <artifactId>coma.apm.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>apm.core</artifactId>
+            <artifactId>coma.apm.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>apm.remote</artifactId>
+            <artifactId>coma.apm.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>lm.core</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

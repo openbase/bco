@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>agm.test</artifactId>
+    <artifactId>coma.agm.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM AgentManager Test</name>
+    <name>COMA AgentManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>agm</artifactId>
+        <artifactId>coma.agm</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,25 +38,18 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>agm.lib</artifactId>
+            <artifactId>coma.agm.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>agm.core</artifactId>
+            <artifactId>coma.agm.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>agm.remote</artifactId>
+            <artifactId>coma.agm.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>lm.core</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>

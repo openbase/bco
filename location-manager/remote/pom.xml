@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>lm.remote</artifactId>
+    <artifactId>coma.lom.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM LocationManager Remote</name>
+    <name>COMA LocationManager Remote</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>lm</artifactId>
+        <artifactId>coma.lom</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>    
     
@@ -31,20 +31,8 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>lm.lib</artifactId>
+            <artifactId>coma.lom.lib</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>dm.remote</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.storage</artifactId>
-            <version>${global.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>

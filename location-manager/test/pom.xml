@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>lm.test</artifactId>
+    <artifactId>coma.lom.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM LocationManager Test</name>
+    <name>COMA LocationManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>lm</artifactId>
+        <artifactId>coma.lom</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,22 +38,17 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>dm.core</artifactId>
+            <artifactId>coma.lom.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>lm.lib</artifactId>
+            <artifactId>coma.lom.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>lm.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>lm.remote</artifactId>
+            <artifactId>coma.lom.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

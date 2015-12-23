@@ -18,8 +18,8 @@
     </organization>
     
     <scm>
-        <!--developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection-->
-        <!--url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url-->
+        <developerConnection>scm:git:https://github.com/DivineThreepwood/bco.core-manager.git</developerConnection-->
+        <url>https://github.com/DivineThreepwood/bco.core-manager.git</url-->
     </scm>
     
     <properties>
@@ -41,7 +41,6 @@
         <module>agent-manager</module>
         <module>app-manager</module>
         <module>user-manager</module>
-        <!--module>object-manager</module-->
     </modules>
     
     <build>
@@ -79,11 +78,6 @@
         <dependency>
             <groupId>org.dc.bco</groupId>
             <artifactId>jul.exception</artifactId>
-            <version>${global.jul.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.extension.rsb.com</artifactId>
             <version>${global.jul.version}</version>
         </dependency>
     </dependencies>
