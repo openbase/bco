@@ -37,8 +37,6 @@ import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPUnitGroupDatabaseDirectory;
 import de.citec.jp.JPUnitTemplateDatabaseDirectory;
-import org.dc.jps.core.JPService;
-import org.dc.jps.exception.JPServiceException;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
 import de.citec.jul.exception.InstantiationException;
@@ -60,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -430,7 +430,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
-                if (unitConfig.getType() == type) {
+                if (type == UnitType.UNKNOWN || unitConfig.getType() == type) {
                     unitConfigs.add(unitConfig);
                 }
             }
@@ -561,7 +561,25 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
-    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(UnitType type, List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+
+        List<UnitConfig> unitConfigs = getUnitConfigs(type);
+
+        boolean foundServiceType;
+
+        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
+            foundServiceType = false;
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                for (ServiceType serviceType : serviceTypes) {
+                    if (serviceConfig.getType() == serviceType) {
+                        foundServiceType = true;
+                    }
+                }
+                if (!foundServiceType) {
+                    unitConfigs.remove(unitConfig);
+                }
+            }
+        }
+        return unitConfigs;
     }
 }
