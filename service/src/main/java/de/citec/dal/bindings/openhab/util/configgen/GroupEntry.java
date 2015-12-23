@@ -7,7 +7,9 @@ package de.citec.dal.bindings.openhab.util.configgen;
 
 import static de.citec.dal.bindings.openhab.util.configgen.ItemEntry.SERVICE_TEMPLATE_BINDING_ICON;
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
+import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.processing.VariableProvider;
@@ -22,6 +24,8 @@ import rst.spatial.LocationConfigType.LocationConfig;
  */
 public class GroupEntry {
 
+    public static final String OPENHAB_ID_DELIMITER = "_";
+    
     //Group LivingRoom        "Wohnzimmer"        <sofa>              (All,GroundFloor,Home)
     private final String groupId;
     private final String label;
@@ -33,8 +37,8 @@ public class GroupEntry {
     private static int maxIconSize = 0;
     private static int maxParentLocationsSize = 0;
 
-    public GroupEntry(final LocationConfig locationConfig) {
-        this(locationConfig.getId(), locationConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationConfig.getMetaConfig())), new ArrayList<>());
+    public GroupEntry(final LocationConfig locationConfig) throws CouldNotPerformException {
+        this(ScopeGenerator.generateStringRepWithDelimiter(locationConfig.getScope(), OPENHAB_ID_DELIMITER), locationConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationConfig.getMetaConfig())), new ArrayList<>());
         if (!locationConfig.getRoot()) {
             this.parentLocations.add(locationConfig.getParentId());
         }
