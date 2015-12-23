@@ -463,6 +463,10 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         return deviceConfigRegistry;
     }
 
+    public ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> getUnitGroupRegistry() {
+        return unitGroupConfigRegistry;
+    }
+
     @Override
     public UnitGroupConfig registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         return unitGroupConfigRegistry.register(groupConfig);

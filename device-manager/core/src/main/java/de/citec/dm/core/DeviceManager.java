@@ -9,6 +9,7 @@ import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jp.JPUnitGroupDatabaseDirectory;
 import de.citec.jp.JPUnitTemplateDatabaseDirectory;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
@@ -73,6 +74,7 @@ public class DeviceManager {
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPUnitTemplateDatabaseDirectory.class);
+        JPService.registerProperty(JPUnitGroupDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
@@ -95,6 +97,9 @@ public class DeviceManager {
         }
         if (!deviceManager.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("DeviceConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        if (!deviceManager.getDeviceRegistry().getUnitGroupRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("UnitGroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {
