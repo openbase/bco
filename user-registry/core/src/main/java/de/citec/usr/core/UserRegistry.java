@@ -5,7 +5,7 @@
  */
 package de.citec.usr.core;
 
-import de.citec.jp.JPGroupConfigDatabaseDirectory;
+import de.citec.jp.JPUserGroupConfigDatabaseDirectory;
 import de.citec.jp.JPUserConfigDatabaseDirectory;
 import de.citec.jp.JPUserRegistryScope;
 import de.citec.jul.exception.CouldNotPerformException;
@@ -65,7 +65,7 @@ public class UserRegistry {
 
         JPService.registerProperty(JPUserRegistryScope.class);
         JPService.registerProperty(JPUserConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPGroupConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPUserGroupConfigDatabaseDirectory.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);

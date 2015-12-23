@@ -9,7 +9,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
 import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.GroupConfigType.GroupConfig;
+import rst.authorization.UserGroupConfigType.UserGroupConfig;
 
 /**
  *
@@ -31,27 +31,27 @@ public interface UserRegistryInterface {
 
     public List<UserConfig> getUserConfigs() throws CouldNotPerformException;
 
-    public List<UserConfig> getUserConfigsByGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException;
+    public List<UserConfig> getUserConfigsByUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
 
     public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    public GroupConfig registerGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException;
+    public UserGroupConfig registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException;
+    public Boolean containsUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsGroupConfigById(String groupConfigId) throws CouldNotPerformException;
+    public Boolean containsUserGroupConfigById(String groupConfigId) throws CouldNotPerformException;
 
-    public GroupConfig updateGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException;
+    public UserGroupConfig updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public GroupConfig removeGroupConfig(GroupConfig groupConfig) throws CouldNotPerformException;
+    public UserGroupConfig removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public GroupConfig getGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+    public UserGroupConfig getUserGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    public List<GroupConfig> getGroupConfigs() throws CouldNotPerformException;
+    public List<UserGroupConfig> getUserGroupConfigs() throws CouldNotPerformException;
 
-    public List<GroupConfig> getGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 
-    public Future<Boolean> isGroupConfigRegistryReadOnly() throws CouldNotPerformException;
+    public Future<Boolean> isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
     public void shutdown();
 }

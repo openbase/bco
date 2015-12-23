@@ -8,16 +8,16 @@ package de.citec.usr.lib.generator;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.extension.protobuf.IdGenerator;
 import java.util.UUID;
-import rst.authorization.GroupConfigType.GroupConfig;
+import rst.authorization.UserGroupConfigType.UserGroupConfig;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class GroupConfigIdGenerator implements IdGenerator<String, GroupConfig> {
+public class UserGroupConfigIdGenerator implements IdGenerator<String, UserGroupConfig> {
 
     @Override
-    public String generateId(GroupConfig message) throws CouldNotPerformException {
+    public String generateId(UserGroupConfig message) throws CouldNotPerformException {
         return UUID.randomUUID().toString();
     }
 }
