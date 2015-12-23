@@ -29,11 +29,13 @@ import de.citec.dm.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import de.citec.dm.core.registry.dbconvert.DeviceConfig_0_To_1_DBConverter;
 import de.citec.dm.lib.generator.DeviceClassIdGenerator;
 import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
+import de.citec.dm.lib.generator.UnitGroupIdGenerator;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
 import de.citec.jp.JPDeviceConfigDatabaseDirectory;
 import de.citec.jp.JPDeviceRegistryScope;
+import de.citec.jp.JPUnitGroupDatabaseDirectory;
 import de.citec.jp.JPUnitTemplateDatabaseDirectory;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -63,10 +65,10 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -82,11 +84,13 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
     }
 
     private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
@@ -98,6 +102,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.UNIT_GROUP_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             deviceConfigRegistry.activateVersionControl(DeviceConfig_0_To_1_DBConverter.class.getPackage());
 
@@ -106,6 +111,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
+            unitGroupConfigRegistry.loadRegistry();
 
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
@@ -143,6 +149,10 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
                 notifyChange();
             });
 
+            unitGroupConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder>> data) -> {
+                notifyChange();
+            });
+
             // Check the device configs if the locations are modifiered.
             locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
@@ -166,7 +176,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     public void init() throws InitializationException {
         try {
             super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
-        locationRegistryRemote.init();
+            locationRegistryRemote.init();
         } catch (JPServiceException ex) {
             throw new InitializationException(this, ex);
         }
@@ -199,6 +209,12 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
+
+        try {
+            unitGroupConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+        }
     }
 
     @Override
@@ -221,6 +237,10 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
             unitTemplateRegistry.shutdown();
         }
 
+        if (unitGroupConfigRegistry != null) {
+            unitGroupConfigRegistry.shutdown();
+        }
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -234,6 +254,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
         setField(DeviceRegistry.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setField(DeviceRegistry.DEVICE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceConfigRegistry.isReadOnly());
         setField(DeviceRegistry.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
+        setField(DeviceRegistry.UNIT_GROUP_REGISTRY_READ_ONLY_FIELD_NUMBER, unitGroupConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
@@ -277,7 +298,6 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getData();
         deviceConfigRegistry.getEntries().stream().forEach((deviceConfig) -> {
             deviceConfig.getMessage().getUnitConfigList().stream().filter((unitConfig) -> (unitConfig.getLabel().equals(unitConfigLabel))).forEach((unitConfig) -> {
                 unitConfigs.add(unitConfig);
@@ -363,8 +383,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigs() throws CouldNotPerformException {
-        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
+        List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
@@ -372,8 +392,8 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
-        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+    public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
@@ -407,8 +427,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
-        getData();
-        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getType() == type) {
@@ -420,11 +439,10 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
-        getData();
-        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
-            for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 if (serviceConfig.getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
@@ -443,5 +461,103 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     public ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> getDeviceConfigRegistry() {
         return deviceConfigRegistry;
+    }
+
+    @Override
+    public UnitGroupConfig registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        return unitGroupConfigRegistry.register(groupConfig);
+    }
+
+    @Override
+    public Boolean containsUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        return unitGroupConfigRegistry.contains(groupConfig);
+    }
+
+    @Override
+    public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        return unitGroupConfigRegistry.contains(groupConfigId);
+    }
+
+    @Override
+    public UnitGroupConfig updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        return unitGroupConfigRegistry.update(groupConfig);
+    }
+
+    @Override
+    public UnitGroupConfig removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        return unitGroupConfigRegistry.remove(groupConfig);
+    }
+
+    @Override
+    public UnitGroupConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        return unitGroupConfigRegistry.get(groupConfigId).getMessage();
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException {
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> unitGroup : unitGroupConfigRegistry.getEntries()) {
+            unitGroups.add(unitGroup.getMessage());
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
+            if (unitGroup.getMemberIdList().contains(unitConfig.getId())) {
+                unitGroups.add(unitGroup);
+            }
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(UnitType type) throws CouldNotPerformException {
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
+            if (unitGroup.getUnitType() == type) {
+                unitGroups.add(unitGroup);
+            }
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
+            boolean skipGroup = false;
+            for (ServiceType serviceType : unitGroup.getServiceTypeList()) {
+                if (!serviceTypes.contains(serviceType)) {
+                    skipGroup = true;
+                }
+            }
+            if (skipGroup) {
+                continue;
+            }
+            unitGroups.add(unitGroup);
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (String unitId : groupConfig.getMemberIdList()) {
+            unitConfigs.add(getUnitConfigById(unitId));
+        }
+        return unitConfigs;
+    }
+
+    @Override
+    public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        return CompletableFuture.completedFuture(unitGroupConfigRegistry.isReadOnly());
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(UnitType type, List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

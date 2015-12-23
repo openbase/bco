@@ -243,7 +243,6 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      */
     @Override
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
-        getData();
         return locationConfigRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equals(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -256,7 +255,6 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
-        getData();
         return deviceRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
                 .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -447,7 +445,6 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      */
     @Override
     public List<ConnectionConfig> getConnectionConfigsByLabel(String connectionLabel) throws CouldNotPerformException {
-        getData();
         return connectionConfigRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equals(connectionLabel))
                 .collect(Collectors.toCollection(ArrayList::new));

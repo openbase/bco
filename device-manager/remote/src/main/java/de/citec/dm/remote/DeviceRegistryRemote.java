@@ -7,6 +7,7 @@ package de.citec.dm.remote;
 
 import de.citec.dm.lib.generator.DeviceClassIdGenerator;
 import de.citec.dm.lib.generator.DeviceConfigIdGenerator;
+import de.citec.dm.lib.generator.UnitGroupIdGenerator;
 import de.citec.dm.lib.generator.UnitTemplateIdGenerator;
 import de.citec.dm.lib.registry.DeviceRegistryInterface;
 import de.citec.jp.JPDeviceRegistryScope;
@@ -28,15 +29,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -51,17 +50,20 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRemoteRegistry;
     private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRemoteRegistry;
     private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupRemoteRegistry;
 
     public DeviceRegistryRemote() throws InstantiationException {
         try {
             unitTemplateRemoteRegistry = new RemoteRegistry<>(new UnitTemplateIdGenerator());
             deviceClassRemoteRegistry = new RemoteRegistry<>(new DeviceClassIdGenerator());
             deviceConfigRemoteRegistry = new RemoteRegistry<>(new DeviceConfigIdGenerator());
+            unitGroupRemoteRegistry = new RemoteRegistry<>(new UnitGroupIdGenerator());
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -90,6 +92,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassList());
         deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigList());
         unitTemplateRemoteRegistry.notifyRegistryUpdated(data.getUnitTemplateList());
+        unitGroupRemoteRegistry.notifyRegistryUpdated(data.getUnitGroupConfigList());
     }
 
     public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRemoteRegistry() {
@@ -104,10 +107,14 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         return deviceConfigRemoteRegistry;
     }
 
+    public RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> getUnitGroupConfigRemoteRegistry() {
+        return unitGroupRemoteRegistry;
+    }
+
     @Override
-    public DeviceConfigType.DeviceConfig registerDeviceConfig(final DeviceConfigType.DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public DeviceConfig registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfigType.DeviceConfig) callMethod("registerDeviceConfig", deviceConfig);
+            return (DeviceConfig) callMethod("registerDeviceConfig", deviceConfig);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device config!", ex);
         }
@@ -211,16 +218,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClass registerDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClass registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClassType.DeviceClass) callMethod("registerDeviceClass", deviceClass);
+            return (DeviceClass) callMethod("registerDeviceClass", deviceClass);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device class!", ex);
         }
     }
 
     @Override
-    public Boolean containsDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         getData();
         return deviceClassRemoteRegistry.contains(deviceClass);
     }
@@ -232,18 +239,18 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     }
 
     @Override
-    public DeviceClass updateDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClass updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClassType.DeviceClass) callMethod("updateDeviceClass", deviceClass);
+            return (DeviceClass) callMethod("updateDeviceClass", deviceClass);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device class!", ex);
         }
     }
 
     @Override
-    public DeviceClass removeDeviceClass(final DeviceClassType.DeviceClass deviceClass) throws CouldNotPerformException {
+    public DeviceClass removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClassType.DeviceClass) callMethod("removeDeviceClass", deviceClass);
+            return (DeviceClass) callMethod("removeDeviceClass", deviceClass);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }
@@ -252,7 +259,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
         getData();
-        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
         }
@@ -262,7 +269,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
         getData();
-        List<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getType() == type) {
@@ -276,7 +283,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException, NotAvailableException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigs;
@@ -286,7 +293,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
         getData();
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfigType.UnitConfig unitConfig : getUnitConfigs()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 if (serviceConfig.getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
@@ -373,5 +380,135 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not return read only state of the device config registry!", ex);
         }
+    }
+
+    @Override
+    public UnitGroupConfig registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return (UnitGroupConfig) callMethod("registerUnitGroupConfig", groupConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not register unit group config!", ex);
+        }
+    }
+
+    @Override
+    public Boolean containsUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        getData();
+        return unitGroupRemoteRegistry.contains(groupConfig);
+    }
+
+    @Override
+    public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        getData();
+        return unitGroupRemoteRegistry.contains(groupConfigId);
+    }
+
+    @Override
+    public UnitGroupConfig updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return (UnitGroupConfig) callMethod("updateUnitGroupConfig", groupConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update unit group config!", ex);
+        }
+    }
+
+    @Override
+    public UnitGroupConfig removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return (UnitGroupConfig) callMethod("removeUnitGroupConfig", groupConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not remove unit group config!", ex);
+        }
+    }
+
+    @Override
+    public UnitGroupConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        getData();
+        return unitGroupRemoteRegistry.getMessage(groupConfigId);
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException {
+        getData();
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> unitGroup : unitGroupRemoteRegistry.getEntries()) {
+            unitGroups.add(unitGroup.getMessage());
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
+        getData();
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
+            if (unitGroup.getMemberIdList().contains(unitConfig.getId())) {
+                unitGroups.add(unitGroup);
+            }
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        getData();
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
+            boolean skipGroup = false;
+            for (ServiceType serviceType : unitGroup.getServiceTypeList()) {
+                if (!serviceTypes.contains(serviceType)) {
+                    skipGroup = true;
+                }
+            }
+            if (skipGroup) {
+                continue;
+            }
+            unitGroups.add(unitGroup);
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(UnitType type) throws CouldNotPerformException {
+        getData();
+        List<UnitGroupConfig> unitGroups = new ArrayList<>();
+        for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
+            if (unitGroup.getUnitType() == type) {
+                unitGroups.add(unitGroup);
+            }
+        }
+        return unitGroups;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+        getData();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (String unitId : groupConfig.getMemberIdList()) {
+            unitConfigs.add(getUnitConfigById(unitId));
+        }
+        return unitConfigs;
+    }
+
+    @Override
+    public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return CompletableFuture.completedFuture(true);
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        try {
+            return RPCHelper.callRemoteMethod(this, Boolean.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not return read only state of the unit group config registry!", ex);
+        }
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(UnitType type, List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

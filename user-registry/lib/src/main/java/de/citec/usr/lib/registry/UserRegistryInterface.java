@@ -48,10 +48,10 @@ public interface UserRegistryInterface {
     public UserGroupConfig getUserGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
     public List<UserGroupConfig> getUserGroupConfigs() throws CouldNotPerformException;
-
+    
     public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 
     public Future<Boolean> isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException;
-
+    
     public void shutdown();
 }

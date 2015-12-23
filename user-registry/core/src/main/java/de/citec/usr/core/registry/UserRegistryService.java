@@ -197,7 +197,6 @@ public class UserRegistryService extends RSBCommunicationService<UserRegistry, U
 
     @Override
     public List<UserConfig> getUserConfigsByUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        getData();
         List<UserConfig> userConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : userGroupRegistry.getEntries()) {
             if (group.getMessage().equals(groupConfig)) {
@@ -247,7 +246,6 @@ public class UserRegistryService extends RSBCommunicationService<UserRegistry, U
 
     @Override
     public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        getData();
         List<UserGroupConfig> groupConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : userGroupRegistry.getEntries()) {
             group.getMessage().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
