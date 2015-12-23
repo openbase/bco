@@ -9,6 +9,7 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.extension.rst.processing.MetaConfigProcessor;
 import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -62,22 +63,22 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                     String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId()).getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()));
 
                     boolean itemEntryFound = false;
-                    
+
                     MetaConfig metaConfig;
-                    
+
                     // check if meta config already exist, otherwise create one.
                     if(!serviceConfig.getBindingServiceConfig().hasMetaConfig()) {
                         serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(MetaConfig.getDefaultInstance()));
                         modification = true;
                     }
-                    
+
                     metaConfig = serviceConfig.getBindingServiceConfig().getMetaConfig();
-                    
+
                     String configuredItemId = "";
                     try {
                         configuredItemId = MetaConfigProcessor.getValue(metaConfig, OPENHAB_BINDING_ITEM_ID);
                     } catch(NotAvailableException ex) {}
-                    
+
                     if(!configuredItemId.equals(itemId)) {
                         metaConfig = MetaConfigProcessor.setValue(metaConfig, OPENHAB_BINDING_ITEM_ID, itemId);
                         serviceConfig.setBindingServiceConfig(serviceConfig.getBindingServiceConfig().toBuilder().setMetaConfig(metaConfig));
@@ -109,36 +110,12 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
 
         return StringProcessor.transformToIdString(deviceClassLabel)
                 + ITEM_SEGMENT_DELIMITER
-                + generateLocationId(location)
+                + ScopeGenerator.generateStringRepWithDelimiter(location.getScope(), ITEM_SUBSEGMENT_DELIMITER)
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(unit.getType().toString())
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformToIdString(unit.getLabel())
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(service.getType().toString());
-    }
-
-    public static String generateLocationId(final LocationConfig location) throws CouldNotPerformException {
-
-        if (location == null) {
-            throw new NotAvailableException("locationconfig");
-        }
-
-        String location_id = "";
-
-        boolean firstEntry = true;
-        for (String component : location.getScope().getComponentList()) {
-            if (firstEntry) {
-                firstEntry = false;
-            } else {
-                location_id += ITEM_SUBSEGMENT_DELIMITER;
-            }
-            location_id += component;
-        }
-        return location_id;
-    }
-
-    @Override
-    public void reset() {
     }
 }
