@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <prerequisites>
+        <maven>3.0</maven>
+    </prerequisites>
+    
+    <groupId>org.dc.bco</groupId>
+    <artifactId>coma</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <name>COMA</name>
+    <description>Core Manager Collection</description>
+    
+    <organization>
+        <name>DC</name>
+        <url>https://www.github.com</url>
+    </organization>
+    
+    <scm>
+        <!--developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection-->
+        <!--url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url-->
+    </scm>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipTests>false</skipTests>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <global.jul.version>0.5-SNAPSHOT</global.jul.version>
+        <global.rst.sandbox.artifact>rst-sandbox-csra-ha-paramite</global.rst.sandbox.artifact>
+        <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
+    </properties>
+    
+    <packaging>pom</packaging>
+    
+    <modules>
+        <module>device-manager</module>
+        <module>location-manager</module>
+        <module>scene-manager</module>
+        <module>agent-manager</module>
+        <module>app-manager</module>
+        <module>user-manager</module>
+        <!--module>object-manager</module-->
+    </modules>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>jul.exception</artifactId>
+            <version>${global.jul.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>jul.extension.rsb.com</artifactId>
+            <version>${global.jul.version}</version>
+        </dependency>
+    </dependencies>
+</project>
