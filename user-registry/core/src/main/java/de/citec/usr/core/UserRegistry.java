@@ -5,6 +5,8 @@
  */
 package de.citec.usr.core;
 
+import de.citec.jp.JPGroupConfigDatabaseDirectory;
+import de.citec.jp.JPUserConfigDatabaseDirectory;
 import de.citec.jp.JPUserRegistryScope;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.InitializationException;
@@ -18,6 +20,7 @@ import de.citec.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.usr.core.registry.UserRegistryService;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
+import org.dc.jps.preset.JPForce;
 import org.dc.jps.preset.JPReadOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +29,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class UserManager {
+public class UserRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserRegistry.class);
 
-    public static final String USER_MANAGER_NAME = UserManager.class.getSimpleName();
+    public static final String USER_MANAGER_NAME = UserRegistry.class.getSimpleName();
 
     private final UserRegistryService userRegistry;
 
-    public UserManager() throws InitializationException, InterruptedException {
+    public UserRegistry() throws InitializationException, InterruptedException {
         try {
             this.userRegistry = new UserRegistryService();
             this.userRegistry.init();
@@ -61,7 +64,10 @@ public class UserManager {
         JPService.setApplicationName(USER_MANAGER_NAME);
 
         JPService.registerProperty(JPUserRegistryScope.class);
+        JPService.registerProperty(JPUserConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPGroupConfigDatabaseDirectory.class);
         JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
@@ -69,9 +75,9 @@ public class UserManager {
 
         JPService.parseAndExitOnError(args);
 
-        UserManager userManager;
+        UserRegistry userManager;
         try {
-            userManager = new UserManager();
+            userManager = new UserRegistry();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

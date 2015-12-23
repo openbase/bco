@@ -5,7 +5,7 @@
  */
 package de.citec.dm.test;
 
-import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistenyHandler;
+import de.citec.dm.core.consistency.OpenhabServiceConfigItemIdConsistencyHandler;
 import de.citec.dm.core.registry.DeviceRegistryService;
 import de.citec.dm.remote.DeviceRegistryRemote;
 import de.citec.jp.JPDeviceClassDatabaseDirectory;
@@ -407,7 +407,7 @@ public class DeviceRegistryImplTest {
 //        assertTrue("Unit id is not set.", !deviceConfig.getUnitConfig(0).getId().equals(""));
 //        assertTrue("Unit id in service config is not set.", !deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(""));
 //        assertTrue("Unit id in service config does not match id in unit config.", deviceConfig.getUnitConfig(0).getServiceConfig(0).getUnitId().equals(deviceConfig.getUnitConfig(0).getId()));
-        String itemId = OpenhabServiceConfigItemIdConsistenyHandler.generateItemName(deviceConfig, clazz.getLabel(), unitConfig, serviceConfig, LOCATION);
+        String itemId = OpenhabServiceConfigItemIdConsistencyHandler.generateItemName(deviceConfig, clazz.getLabel(), unitConfig, serviceConfig, LOCATION);
 
 //        assertTrue("OpenHAB item id is not set.", itemId.equals(deviceConfig.getUnitConfig(0).getServiceConfig(0).getBindingServiceConfig().getMetaConfig().getEntry(0).getValue()));
     }

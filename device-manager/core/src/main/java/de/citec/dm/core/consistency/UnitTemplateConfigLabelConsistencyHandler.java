@@ -8,8 +8,8 @@ package de.citec.dm.core.consistency;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
@@ -18,7 +18,7 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Marian Pohling</a>
  */
-public class UnitTemplateConfigLabelConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
+public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
 
     public UnitTemplateConfigLabelConsistencyHandler() {
     }

@@ -9,9 +9,9 @@ import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.extension.protobuf.IdentifiableMessage;
 import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  *
  * @author mpohling
  */
-public class DeviceConfigDeviceClassUnitConsistencyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceConfigDeviceClassUnitConsistencyHandler.class);
 

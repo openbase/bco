@@ -12,9 +12,9 @@ import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.extension.rst.processing.MetaConfigProcessor;
 import de.citec.jul.processing.StringProcessor;
+import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.EntryModification;
 import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import de.citec.jul.storage.registry.ProtoBufRegistryConsistencyHandler;
 import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
 import de.citec.lm.remote.LocationRegistryRemote;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -30,7 +30,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author thuxohl
  */
-public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
@@ -39,7 +39,7 @@ public class OpenhabServiceConfigItemIdConsistenyHandler implements ProtoBufRegi
     private final LocationRegistryRemote locationRegistryRemote;
     private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
 
-    public OpenhabServiceConfigItemIdConsistenyHandler(final LocationRegistryRemote locationRegistryRemote, ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
+    public OpenhabServiceConfigItemIdConsistencyHandler(final LocationRegistryRemote locationRegistryRemote, ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
         this.locationRegistryRemote = locationRegistryRemote;
         this.deviceClassRegistry = deviceClassRegistry;
     }
