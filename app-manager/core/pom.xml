@@ -56,11 +56,6 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.lom.remote</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
             <artifactId>coma.apm.lib</artifactId>
             <version>${project.version}</version>
         </dependency>

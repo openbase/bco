@@ -56,45 +56,8 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.lom.remote</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
             <artifactId>coma.agm.lib</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.1.2</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.1.2</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>${global.jul.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.storage</artifactId>
-            <version>${global.jul.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>jul.processing</artifactId>
-            <version>${global.jul.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>${global.rst.sandbox.artifact}</artifactId>
-            <version>${global.rst.sandbox.version}</version>
         </dependency>
     </dependencies>
 </project>

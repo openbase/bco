@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.scm.test</artifactId>
+    <artifactId>coma.dem.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA SceneManager Test</name>
+    <name>COMA DeviceManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>coma.scm</artifactId>
+        <artifactId>coma.dem</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,17 +38,17 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.scm.lib</artifactId>
+            <artifactId>coma.dem.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.scm.core</artifactId>
+            <artifactId>coma.dem.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.scm.remote</artifactId>
+            <artifactId>coma.dem.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
