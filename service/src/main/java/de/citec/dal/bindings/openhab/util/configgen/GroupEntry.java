@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -9,14 +10,19 @@ import static de.citec.dal.bindings.openhab.util.configgen.ItemEntry.SERVICE_TEM
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
+import de.citec.jul.exception.printer.ExceptionPrinter;
 import de.citec.jul.extension.rsb.scope.ScopeGenerator;
 import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
 import de.citec.jul.processing.StringProcessor;
 import de.citec.jul.processing.VariableProvider;
+import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.slf4j.LoggerFactory;
+import rst.rsb.ScopeType.Scope;
 import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -24,8 +30,10 @@ import rst.spatial.LocationConfigType.LocationConfig;
  */
 public class GroupEntry {
 
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GroupEntry.class);
+
     public static final String OPENHAB_ID_DELIMITER = "_";
-    
+
     //Group LivingRoom        "Wohnzimmer"        <sofa>              (All,GroundFloor,Home)
     private final String groupId;
     private final String label;
@@ -37,10 +45,10 @@ public class GroupEntry {
     private static int maxIconSize = 0;
     private static int maxParentLocationsSize = 0;
 
-    public GroupEntry(final LocationConfig locationConfig) throws CouldNotPerformException {
-        this(ScopeGenerator.generateStringRepWithDelimiter(locationConfig.getScope(), OPENHAB_ID_DELIMITER), locationConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationConfig.getMetaConfig())), new ArrayList<>());
+    public GroupEntry(final LocationConfig locationConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
+        this(generateGroupID(locationConfig), locationConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationConfig.getMetaConfig())), new ArrayList<>());
         if (!locationConfig.getRoot()) {
-            this.parentLocations.add(locationConfig.getParentId());
+            this.parentLocations.add(generateParentGroupID(locationConfig, locationRegistryRemote));
         }
         calculateGaps();
     }
@@ -150,5 +158,61 @@ public class GroupEntry {
         maxLabelSize = 0;
         maxIconSize = 0;
         maxParentLocationsSize = 0;
+    }
+
+    public static String generateParentGroupID(final LocationConfig childLocationConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
+
+        try {
+            return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could location parent id via placement config. Outdated registry entry!", ex), logger);
+            return generateGroupID(childLocationConfig.getParentId(), locationRegistryRemote);
+        }
+
+    }
+
+    public static String generateGroupID(final PlacementConfig placementConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
+        String locationID;
+        try {
+            if (!placementConfig.hasLocationId()) {
+                throw new NotAvailableException("placementconfig.locationid");
+            }
+            locationID = placementConfig.getLocationId();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not generate group id!", ex);
+        }
+        return generateGroupID(locationID, locationRegistryRemote);
+    }
+
+    public static String generateGroupID(final String locationId, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
+        LocationConfig locationConfig;
+        try {
+            locationConfig = locationRegistryRemote.getLocationConfigById(locationId);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not generate group id for LocationId[" + locationId + "]!", ex);
+        }
+        return generateGroupID(locationConfig);
+    }
+
+    public static String generateGroupID(final LocationConfig config) throws CouldNotPerformException {
+        try {
+            if (!config.hasScope()) {
+                throw new NotAvailableException("locationconfig.scope");
+            }
+            return generateGroupID(config.getScope());
+        } catch (NotAvailableException ex) {
+            throw new CouldNotPerformException("Could not generate group id out of LocationConfig[" + config.getId() + "] !", ex);
+        }
+    }
+
+    public static String generateGroupID(final Scope scope) throws CouldNotPerformException {
+        try {
+            if (scope == null) {
+                throw new NotAvailableException("locationconfig.scope");
+            }
+            return ScopeGenerator.generateStringRepWithDelimiter(scope, OPENHAB_ID_DELIMITER);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not generate group id out of Scope[" + scope + "]!", ex);
+        }
     }
 }

@@ -85,8 +85,8 @@ public class OpenHABItemConfigGenerator {
             GroupEntry groupEntry, rootEntry = null;
             List<LocationConfigType.LocationConfig> locationConfigList = locationRegistryRemote.getData().getLocationConfigList();
             for (LocationConfig locationConfig : locationConfigList) {
-                groupEntry = new GroupEntry(locationConfig);
-                groupEntryList.add(new GroupEntry(locationConfig));
+                groupEntry = new GroupEntry(locationConfig, locationRegistryRemote);
+                groupEntryList.add(new GroupEntry(locationConfig, locationRegistryRemote));
 
                 if (locationConfig.getRoot()) {
                     rootEntry = groupEntry;
@@ -139,7 +139,7 @@ public class OpenHABItemConfigGenerator {
                 for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
-                            itemEntryList.add(new ItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig));
+                            itemEntryList.add(new ItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }

@@ -15,6 +15,7 @@ import de.citec.jul.exception.printer.LogLevel;
 import de.citec.jul.extension.protobuf.ProtobufVariableProvider;
 import de.citec.jul.extension.rst.processing.MetaConfigPool;
 import de.citec.jul.processing.StringProcessor;
+import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,7 +79,7 @@ public class ItemEntry {
     private static int maxGroupSize = 0;
     private static int maxBindingConfigSize = 0;
 
-    public ItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws InstantiationException {
+    public ItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
         try {
             this.groups = new ArrayList<>();
 
@@ -123,21 +124,16 @@ public class ItemEntry {
                 this.icon = "";
             }
 
-            // TODO: maybe think of another strategy to name groups
-            // Dimmer and Rollershutter are key words in the openhab config and therefor cannot be used in groups
-//            String unittemplateName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
-//            if (!(unittemplateName.equals("Dimmer") || unittemplateName.equals("RolleStringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())rshutter"))) {
-                this.groups.add("Unit"+StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
-//            }
-            this.groups.add("Service"+StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
+            this.groups.add("Unit" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
+            this.groups.add("Service" + StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
 
             try {
                 // just add location group if unit is visible.
                 if (Boolean.parseBoolean(configPool.getValue(UNIT_VISIBLE_IN_GUI))) {
-                    this.groups.add(unitConfig.getPlacementConfig().getLocationId());
+                    this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
                 }
             } catch (Exception ex) {
-                this.groups.add(unitConfig.getPlacementConfig().getLocationId());
+                this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
             }
 
             try {
@@ -316,39 +312,39 @@ public class ItemEntry {
 
     private String getDefaultCommand(ServiceType type) {
         switch (type) {
-            case COLOR_SERVICE:
-                return "Color";
-            case OPENING_RATIO_PROVIDER:
-            case POWER_CONSUMPTION_PROVIDER:
-            case TEMPERATURE_PROVIDER:
-            case MOTION_PROVIDER:
-            case TAMPER_PROVIDER:
-            case BRIGHTNESS_PROVIDER:
-            case BATTERY_PROVIDER:
-            case SMOKE_ALARM_STATE_PROVIDER:
-            case SMOKE_STATE_PROVIDER:
-            case TEMPERATURE_ALARM_STATE_PROVIDER:
-            case TARGET_TEMPERATURE_PROVIDER:
-            case TARGET_TEMPERATURE_SERVICE:
-                return "Number";
-            case SHUTTER_PROVIDER:
-            case SHUTTER_SERVICE:
-                return "Rollershutter";
-            case POWER_SERVICE:
-            case POWER_PROVIDER:
-            case BUTTON_PROVIDER:
-                return "Switch";
-            case BRIGHTNESS_SERVICE:
-            case DIM_PROVIDER:
-            case DIM_SERVICE:
-                return "Dimmer";
-            case REED_SWITCH_PROVIDER:
-                return "Contact";
-            case HANDLE_PROVIDER:
-                return "String";
-            default:
-                logger.warn("Unkown Service Type: " + type);
-                return "";
+        case COLOR_SERVICE:
+            return "Color";
+        case OPENING_RATIO_PROVIDER:
+        case POWER_CONSUMPTION_PROVIDER:
+        case TEMPERATURE_PROVIDER:
+        case MOTION_PROVIDER:
+        case TAMPER_PROVIDER:
+        case BRIGHTNESS_PROVIDER:
+        case BATTERY_PROVIDER:
+        case SMOKE_ALARM_STATE_PROVIDER:
+        case SMOKE_STATE_PROVIDER:
+        case TEMPERATURE_ALARM_STATE_PROVIDER:
+        case TARGET_TEMPERATURE_PROVIDER:
+        case TARGET_TEMPERATURE_SERVICE:
+            return "Number";
+        case SHUTTER_PROVIDER:
+        case SHUTTER_SERVICE:
+            return "Rollershutter";
+        case POWER_SERVICE:
+        case POWER_PROVIDER:
+        case BUTTON_PROVIDER:
+            return "Switch";
+        case BRIGHTNESS_SERVICE:
+        case DIM_PROVIDER:
+        case DIM_SERVICE:
+            return "Dimmer";
+        case REED_SWITCH_PROVIDER:
+            return "Contact";
+        case HANDLE_PROVIDER:
+            return "String";
+        default:
+            logger.warn("Unkown Service Type: " + type);
+            return "";
         }
     }
 }
