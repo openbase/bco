@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.pem.core.UserRegistry</mainClass>
+                            <mainClass>de.citec.usr.core.UserRegistry</mainClass>
                             <id>user-registry</id>
                             <platforms>
                                 <platform>unix</platform>
