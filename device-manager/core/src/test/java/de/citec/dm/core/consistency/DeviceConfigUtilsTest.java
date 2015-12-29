@@ -5,7 +5,7 @@
  */
 package de.citec.dm.core.consistency;
 
-import de.citec.dm.lib.util.DeviceConfigUtils;
+import org.dc.bco.registry.device.lib.util.DeviceConfigUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
