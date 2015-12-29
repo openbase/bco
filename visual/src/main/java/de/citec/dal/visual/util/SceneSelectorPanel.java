@@ -6,7 +6,7 @@
 package de.citec.dal.visual.util;
 
 import de.citec.dal.visual.DalVisualRemote;
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InitializationException;
@@ -19,7 +19,7 @@ import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;

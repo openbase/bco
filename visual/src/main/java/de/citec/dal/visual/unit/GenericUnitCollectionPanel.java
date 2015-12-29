@@ -6,7 +6,7 @@
 package de.citec.dal.visual.unit;
 
 import de.citec.dal.remote.unit.DALRemoteService;
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;

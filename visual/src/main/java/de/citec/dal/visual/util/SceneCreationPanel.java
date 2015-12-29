@@ -12,7 +12,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-import de.citec.scm.remote.SceneRegistryRemote;
+import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

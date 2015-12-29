@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.device;
 
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceConfigType;
 

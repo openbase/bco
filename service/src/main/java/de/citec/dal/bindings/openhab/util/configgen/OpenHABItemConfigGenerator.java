@@ -6,7 +6,7 @@
 package de.citec.dal.bindings.openhab.util.configgen;
 
 import de.citec.dal.bindings.openhab.util.configgen.jp.JPOpenHABItemConfig;
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -14,7 +14,7 @@ import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.processing.StringProcessor;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;

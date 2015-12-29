@@ -9,7 +9,7 @@ import de.citec.dal.remote.service.PowerServiceRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InstantiationException;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;

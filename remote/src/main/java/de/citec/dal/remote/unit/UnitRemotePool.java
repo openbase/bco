@@ -1,6 +1,6 @@
 package de.citec.dal.remote.unit;
 
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import java.util.HashMap;

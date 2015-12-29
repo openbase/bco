@@ -15,7 +15,7 @@ import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.protobuf.ProtobufVariableProvider;
 import org.dc.jul.extension.rst.processing.MetaConfigPool;
 import org.dc.jul.processing.StringProcessor;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

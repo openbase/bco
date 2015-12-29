@@ -15,7 +15,7 @@ import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.dc.jul.processing.StringProcessor;
 import org.dc.jul.processing.VariableProvider;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

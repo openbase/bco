@@ -9,7 +9,7 @@ import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;

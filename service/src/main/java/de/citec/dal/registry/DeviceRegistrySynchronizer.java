@@ -7,7 +7,7 @@ package de.citec.dal.registry;
 
 import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.device.DeviceFactoryImpl;
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.VerificationFailedException;

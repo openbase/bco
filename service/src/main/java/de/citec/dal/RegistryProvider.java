@@ -8,8 +8,8 @@ package de.citec.dal;
 import de.citec.dal.bindings.DALBindingRegistry;
 import de.citec.dal.registry.DeviceRegistry;
 import de.citec.dal.registry.UnitRegistry;
-import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 
 /**
  *

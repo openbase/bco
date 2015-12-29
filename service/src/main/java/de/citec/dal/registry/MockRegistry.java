@@ -5,15 +5,15 @@
  */
 package de.citec.dal.registry;
 
-import de.citec.agm.core.AgentManager;
-import de.citec.apm.core.AppManager;
-import de.citec.dm.core.DeviceManager;
-import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jp.JPDeviceClassDatabaseDirectory;
-import de.citec.jp.JPDeviceConfigDatabaseDirectory;
-import de.citec.jp.JPDeviceRegistryScope;
-import de.citec.jp.JPLocationConfigDatabaseDirectory;
-import de.citec.jp.JPLocationRegistryScope;
+import org.dc.bco.registry.agent.core.AgentManager;
+import org.dc.bco.registry.app.core.AppManager;
+import org.dc.bco.registry.device.core.DeviceManager;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
+import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
+import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.dc.bco.registry.location.lib.jp.JPLocationConfigDatabaseDirectory;
+import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -21,9 +21,9 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.dc.jul.storage.registry.jp.JPInitializeDB;
-import de.citec.lm.core.LocationManager;
-import de.citec.lm.remote.LocationRegistryRemote;
-import de.citec.scm.core.SceneManager;
+import org.dc.bco.registry.location.core.LocationManager;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.bco.registry.scene.core.SceneManager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

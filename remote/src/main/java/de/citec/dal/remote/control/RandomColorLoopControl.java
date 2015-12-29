@@ -8,7 +8,7 @@ package de.citec.dal.remote.control;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
