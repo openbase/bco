@@ -5,6 +5,7 @@
  */
 package org.dc.bco.coma.agm.core;
 
+import org.dc.bco.coma.agm.lib.Agent;
 import org.dc.bco.coma.agm.core.preset.AbstractAgent;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;

@@ -5,6 +5,7 @@
  */
 package org.dc.bco.coma.agm.core;
 
+import org.dc.bco.coma.agm.lib.Agent;
 import de.citec.agm.remote.AgentRegistryRemote;
 import org.dc.jps.core.JPService;
 import de.citec.jul.storage.registry.ActivatableEntryRegistrySynchronizer;

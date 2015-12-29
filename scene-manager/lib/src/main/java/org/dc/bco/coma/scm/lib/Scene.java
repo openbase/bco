@@ -3,17 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.coma.agm.core;
+package org.dc.bco.coma.scm.lib;
 
 import de.citec.jul.exception.NotAvailableException;
 import de.citec.jul.iface.Activatable;
-import de.citec.jul.iface.Identifiable;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.control.scene.SceneConfigType;
 
 /**
  *
  * @author mpohling
  */
-public interface Agent extends Activatable, Identifiable<String> {
-    public AgentConfig getConfig() throws NotAvailableException;
+public interface Scene extends Activatable {
+    public SceneConfigType.SceneConfig getConfig() throws NotAvailableException;
 }

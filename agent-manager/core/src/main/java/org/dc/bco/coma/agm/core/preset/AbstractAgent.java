@@ -5,7 +5,7 @@
  */
 package org.dc.bco.coma.agm.core.preset;
 
-import org.dc.bco.coma.agm.core.Agent;
+import org.dc.bco.coma.agm.lib.Agent;
 import de.citec.jul.exception.CouldNotPerformException;
 import de.citec.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
