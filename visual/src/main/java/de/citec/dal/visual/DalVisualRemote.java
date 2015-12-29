@@ -7,12 +7,12 @@ package de.citec.dal.visual;
 
 import de.citec.dal.visual.util.StatusPanel;
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
@@ -37,7 +37,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
     /**
      * Creates new form DalVisualRemote
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
     public DalVisualRemote() throws InstantiationException, InterruptedException {
         try {
@@ -93,7 +93,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         try {
             selectorPanel = new de.citec.dal.visual.util.SelectorPanel();
-        } catch (de.citec.jul.exception.InstantiationException e1) {
+        } catch (org.dc.jul.exception.InstantiationException e1) {
             e1.printStackTrace();
         }
 

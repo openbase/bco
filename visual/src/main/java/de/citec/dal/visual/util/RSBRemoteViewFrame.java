@@ -5,12 +5,12 @@
  */
 package de.citec.dal.visual.util;
 
-import de.citec.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
 
 /**
  *

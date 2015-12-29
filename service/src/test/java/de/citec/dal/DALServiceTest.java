@@ -7,10 +7,10 @@ package de.citec.dal;
 
 import de.citec.dal.registry.MockRegistry;
 import org.dc.jps.exception.JPServiceException;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

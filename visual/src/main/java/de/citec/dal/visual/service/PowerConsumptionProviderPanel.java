@@ -7,8 +7,8 @@ package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.PowerConsumptionProvider;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.text.DecimalFormat;
@@ -29,7 +29,7 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
     /**
      * Creates new form BrightnessService
      */
-    public PowerConsumptionProviderPanel() throws de.citec.jul.exception.InstantiationException {
+    public PowerConsumptionProviderPanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

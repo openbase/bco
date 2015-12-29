@@ -6,9 +6,9 @@
 package de.citec.dal.remote.control;
 
 import de.citec.dal.remote.service.PowerServiceRemote;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.List;
 import java.util.Random;

@@ -5,8 +5,8 @@
  */
 package de.citec.dal.registry;
 
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.schedule.SyncObject;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.schedule.SyncObject;
 
 /**
  *

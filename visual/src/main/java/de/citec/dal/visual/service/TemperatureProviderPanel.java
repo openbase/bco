@@ -6,9 +6,9 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.TemperatureProvider;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import java.text.DecimalFormat;
 
 /**
@@ -21,9 +21,9 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperaturePr
 
     /**
      * Creates new form BrightnessService
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
-    public TemperatureProviderPanel() throws de.citec.jul.exception.InstantiationException {
+    public TemperatureProviderPanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

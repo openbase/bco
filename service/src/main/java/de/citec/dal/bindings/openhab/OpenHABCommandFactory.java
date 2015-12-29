@@ -9,7 +9,7 @@ import de.citec.dal.bindings.openhab.transform.HSVColorTransformer;
 import de.citec.dal.bindings.openhab.transform.PowerStateTransformer;
 import de.citec.dal.bindings.openhab.transform.StopMoveStateTransformer;
 import de.citec.dal.bindings.openhab.transform.UpDownStateTransformer;
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.openhab.HSBType;

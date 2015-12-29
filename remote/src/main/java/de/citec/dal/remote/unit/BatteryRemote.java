@@ -6,7 +6,7 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dal.hal.unit.BatteryInterface;
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BatteryType.Battery;

@@ -7,12 +7,12 @@ package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.InstantiationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,7 @@ public class ColorServicePanel extends AbstractServicePanel<ColorService> {
     /**
      * Creates new form ColorServicePanel
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
     public ColorServicePanel() throws InstantiationException {
         initComponents();

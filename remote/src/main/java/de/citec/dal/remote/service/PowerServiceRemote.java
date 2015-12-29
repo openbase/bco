@@ -6,7 +6,7 @@
 package de.citec.dal.remote.service;
 
 import de.citec.dal.hal.service.PowerService;
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.state.PowerStateType.PowerState;

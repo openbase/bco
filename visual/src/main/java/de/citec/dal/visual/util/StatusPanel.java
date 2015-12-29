@@ -5,7 +5,7 @@
  */
 package de.citec.dal.visual.util;
 
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.NotAvailableException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

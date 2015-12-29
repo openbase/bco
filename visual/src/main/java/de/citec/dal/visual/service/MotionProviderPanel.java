@@ -6,11 +6,11 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.MotionProvider;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.processing.StringProcessor;
 import java.awt.Color;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -27,9 +27,9 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
     /**
      * Creates new form BrightnessService
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
-    public MotionProviderPanel() throws de.citec.jul.exception.InstantiationException {
+    public MotionProviderPanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

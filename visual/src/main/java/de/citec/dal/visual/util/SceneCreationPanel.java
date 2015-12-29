@@ -5,13 +5,13 @@
  */
 package de.citec.dal.visual.util;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.VerificationFailedException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.VerificationFailedException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
 import de.citec.scm.remote.SceneRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;

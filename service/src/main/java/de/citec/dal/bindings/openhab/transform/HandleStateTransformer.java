@@ -5,8 +5,8 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**

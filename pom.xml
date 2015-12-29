@@ -89,7 +89,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
             <version>${global.jul.version}</version>
         </dependency>

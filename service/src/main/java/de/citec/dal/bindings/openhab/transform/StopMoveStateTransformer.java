@@ -5,8 +5,8 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.TypeNotSupportedException;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.TypeNotSupportedException;
 import rst.homeautomation.openhab.StopMoveHolderType;
 import static rst.homeautomation.openhab.StopMoveHolderType.StopMoveHolder.StopMove.STOP;
 import rst.homeautomation.state.ShutterStateType.ShutterState;

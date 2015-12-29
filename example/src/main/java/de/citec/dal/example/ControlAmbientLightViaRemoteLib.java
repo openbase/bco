@@ -2,9 +2,9 @@ package de.citec.dal.example;
 
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import java.awt.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

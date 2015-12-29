@@ -102,7 +102,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.visual</artifactId>
             <version>${global.jul.version}</version>
             <type>jar</type>

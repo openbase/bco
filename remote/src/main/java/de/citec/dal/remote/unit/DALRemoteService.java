@@ -8,12 +8,12 @@ package de.citec.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.hal.service.ServiceType;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.iface.Identifiable;
-import de.citec.jul.extension.rsb.com.RSBRemoteService;
-import de.citec.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.iface.Identifiable;
+import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 

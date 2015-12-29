@@ -10,10 +10,10 @@ import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.device.AbstractUnitCollectionController;
 import de.citec.dal.hal.device.Device;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**

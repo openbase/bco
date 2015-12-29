@@ -9,9 +9,9 @@ import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.DimService;
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -32,11 +32,11 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     private final PowerService powerService;
     private final DimService dimmService;
 
-    public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+    public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         this(config, device, builder, device.getServiceFactory());
     }
 
-    public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder, final ServiceFactory serviceFactory) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+    public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder, final ServiceFactory serviceFactory) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(config, DimmerController.class, device, builder);
         this.powerService = serviceFactory.newPowerService(device, this);
         this.dimmService = serviceFactory.newDimmService(device, this);

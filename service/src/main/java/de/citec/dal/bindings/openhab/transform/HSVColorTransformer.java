@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.CouldNotTransformException;
 import rst.vision.HSVColorType.HSVColor;
 import rst.homeautomation.openhab.HSBType;
 

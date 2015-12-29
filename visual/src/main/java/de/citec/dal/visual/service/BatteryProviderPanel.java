@@ -6,8 +6,8 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.BatteryProvider;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
 
 /**
@@ -19,7 +19,7 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> 
     /**
      * Creates new form BrightnessService
      */
-    public BatteryProviderPanel() throws de.citec.jul.exception.InstantiationException {
+    public BatteryProviderPanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

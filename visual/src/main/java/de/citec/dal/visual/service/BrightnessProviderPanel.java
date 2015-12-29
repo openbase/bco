@@ -6,9 +6,9 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.BrightnessProvider;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import java.awt.Color;
 import java.text.DecimalFormat;
 
@@ -26,9 +26,9 @@ public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessProv
     /**
      * Creates new form BrightnessService
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
-    public BrightnessProviderPanel() throws de.citec.jul.exception.InstantiationException {
+    public BrightnessProviderPanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

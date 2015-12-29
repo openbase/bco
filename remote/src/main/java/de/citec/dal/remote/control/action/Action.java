@@ -6,7 +6,7 @@
 package de.citec.dal.remote.control.action;
 
 import de.citec.dal.hal.service.ServiceType;
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceConfigType;
 

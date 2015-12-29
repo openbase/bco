@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings;
 
-import de.citec.jul.iface.Identifiable;
+import org.dc.jul.iface.Identifiable;
 
 /**
  *

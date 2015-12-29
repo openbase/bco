@@ -6,9 +6,9 @@
 package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.dal.hal.service.Service;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
 
 /**
  *

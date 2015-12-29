@@ -15,12 +15,12 @@ import de.citec.jp.JPDeviceRegistryScope;
 import de.citec.jp.JPLocationConfigDatabaseDirectory;
 import de.citec.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.extension.rsb.scope.ScopeGenerator;
-import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.extension.rsb.scope.ScopeGenerator;
+import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
+import org.dc.jul.storage.registry.jp.JPInitializeDB;
 import de.citec.lm.core.LocationManager;
 import de.citec.lm.remote.LocationRegistryRemote;
 import de.citec.scm.core.SceneManager;
@@ -146,7 +146,7 @@ public class MockRegistry {
                     try {
                         deviceManager = new DeviceManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });
@@ -158,7 +158,7 @@ public class MockRegistry {
                     try {
                         locationManager = new LocationManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });
@@ -170,7 +170,7 @@ public class MockRegistry {
                     try {
                         agentManager = new AgentManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });
@@ -182,7 +182,7 @@ public class MockRegistry {
                     try {
                         appManager = new AppManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });
@@ -194,7 +194,7 @@ public class MockRegistry {
                     try {
                         sceneManager = new SceneManager();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, de.citec.jul.exception.printer.LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                 }
             });

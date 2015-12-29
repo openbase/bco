@@ -5,8 +5,8 @@
  */
 package de.citec.dal.transform;
 
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.TypeNotSupportedException;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.TypeNotSupportedException;
 import java.awt.Color;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;

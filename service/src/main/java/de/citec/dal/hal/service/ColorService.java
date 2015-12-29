@@ -6,9 +6,9 @@
 package de.citec.dal.hal.service;
 
 import de.citec.dal.hal.provider.ColorProvider;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InvocationFailedException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InvocationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;

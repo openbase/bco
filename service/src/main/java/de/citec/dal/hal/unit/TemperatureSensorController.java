@@ -6,10 +6,10 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.Device;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;

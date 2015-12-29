@@ -6,7 +6,7 @@
 package de.citec.dal.remote.control.action;
 
 import de.citec.dal.hal.service.Service;
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 
 /**
  *

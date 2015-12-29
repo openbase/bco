@@ -9,14 +9,14 @@ import de.citec.dal.remote.unit.PowerConsumptionSensorRemote;
 import de.citec.dal.visual.unit.GenericUnitPanel;
 import de.citec.dal.visual.util.StatusPanel;
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
-import de.citec.jul.schedule.TriggerFilter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.jul.schedule.TriggerFilter;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,13 +50,13 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
     /**
      * Creates new form DalKNXActuatorCheck
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
-    public DalKNXActuatorCheck() throws de.citec.jul.exception.InstantiationException {
+    public DalKNXActuatorCheck() throws org.dc.jul.exception.InstantiationException {
         try {
             initComponents();
         } catch (Exception ex) {
-            throw new de.citec.jul.exception.InstantiationException(this, ex);
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
 

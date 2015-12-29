@@ -9,13 +9,13 @@ import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.remote.unit.DALRemoteService;
 import de.citec.dal.visual.service.AbstractServicePanel;
 import de.citec.dal.visual.util.RSBRemoteView;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
-import de.citec.jul.processing.StringProcessor;
-import de.citec.jul.visual.layout.LayoutGenerator;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.jul.processing.StringProcessor;
+import org.dc.jul.visual.layout.LayoutGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -119,13 +119,13 @@ public class GenericUnitPanel<RS extends DALRemoteService> extends RSBRemoteView
         }
     }
 
-    private AbstractServicePanel instantiatServicePanel(Class<? extends AbstractServicePanel> servicePanelClass, DALRemoteService remoteService) throws de.citec.jul.exception.InstantiationException {
+    private AbstractServicePanel instantiatServicePanel(Class<? extends AbstractServicePanel> servicePanelClass, DALRemoteService remoteService) throws org.dc.jul.exception.InstantiationException {
         try {
             AbstractServicePanel instance = servicePanelClass.newInstance();
             instance.initService(remoteService, remoteService);
             return instance;
         } catch (NullPointerException | InstantiationException | IllegalAccessException ex) {
-            throw new de.citec.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);
+            throw new org.dc.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);
         }
     }
 

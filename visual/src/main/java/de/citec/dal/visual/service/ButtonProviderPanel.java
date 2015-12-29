@@ -6,11 +6,11 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.provider.ButtonProvider;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.processing.StringProcessor;
 import java.awt.Color;
 
 /**
@@ -22,9 +22,9 @@ public class ButtonProviderPanel extends AbstractServicePanel<ButtonProvider> {
     /**
      * Creates new form BrightnessService
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
-    public ButtonProviderPanel() throws de.citec.jul.exception.InstantiationException {
+    public ButtonProviderPanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

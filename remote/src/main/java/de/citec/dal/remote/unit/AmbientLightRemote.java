@@ -7,8 +7,8 @@ package de.citec.dal.remote.unit;
 
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import de.citec.dal.hal.unit.AmbientLightInterface;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.extension.rsb.com.RPCHelper;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

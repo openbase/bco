@@ -7,11 +7,11 @@ package de.citec.dal.visual.unit;
 
 import de.citec.dal.remote.unit.DALRemoteService;
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.MultiException;
-import de.citec.jul.schedule.SyncObject;
-import de.citec.jul.visual.layout.LayoutGenerator;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.MultiException;
+import org.dc.jul.schedule.SyncObject;
+import org.dc.jul.visual.layout.LayoutGenerator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

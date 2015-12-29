@@ -12,9 +12,9 @@ import de.citec.dal.hal.unit.HandleSensorController;
 import de.citec.dal.registry.MockFactory;
 import org.dc.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InvalidStateException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InvalidStateException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -42,7 +42,7 @@ public class HandleSensorRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, de.citec.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, org.dc.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockFactory.newMockRegistry();
 

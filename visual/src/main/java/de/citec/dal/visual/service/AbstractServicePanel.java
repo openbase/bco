@@ -8,14 +8,14 @@ package de.citec.dal.visual.service;
 import de.citec.dal.hal.service.Service;
 import de.citec.dal.visual.DalVisualRemote;
 import de.citec.dal.visual.util.StatusPanel;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
-import de.citec.jul.schedule.SyncObject;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.jul.schedule.SyncObject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,7 +44,7 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     /**
      * Creates new form AbstractServiceView
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
     public AbstractServicePanel() throws InstantiationException {
         try {

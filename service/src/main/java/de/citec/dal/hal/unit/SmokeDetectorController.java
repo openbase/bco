@@ -6,9 +6,9 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.Device;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
@@ -28,7 +28,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
-    public SmokeDetectorController(final UnitConfigType.UnitConfig config, Device device, SmokeDetector.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+    public SmokeDetectorController(final UnitConfigType.UnitConfig config, Device device, SmokeDetector.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(config, SmokeDetectorController.class, device, builder);
     }
 

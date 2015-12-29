@@ -15,8 +15,8 @@ import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ShutterService;
 import de.citec.dal.hal.service.StandbyService;
 import de.citec.dal.hal.service.TargetTemperatureService;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotSupportedException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotSupportedException;
 
 /**
  *

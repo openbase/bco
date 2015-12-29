@@ -6,9 +6,9 @@
 package de.citec.dal.hal.unit;
 
 import de.citec.dal.hal.device.Device;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.protobuf.ClosableDataBuilder;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionStateType.MotionState;
@@ -27,7 +27,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
 
-    public MotionSensorController(final UnitConfigType.UnitConfig config, final Device device, final MotionSensor.Builder builder) throws de.citec.jul.exception.InstantiationException, CouldNotPerformException {
+    public MotionSensorController(final UnitConfigType.UnitConfig config, final Device device, final MotionSensor.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(config, MotionSensorController.class, device, builder);
 
     }

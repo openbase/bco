@@ -6,8 +6,8 @@
 package de.citec.dal.registry;
 
 import de.citec.dal.hal.unit.Unit;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.storage.registry.Registry;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.storage.registry.Registry;
 import java.util.HashMap;
 
 /**

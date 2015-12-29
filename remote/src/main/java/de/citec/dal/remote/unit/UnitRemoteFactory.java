@@ -5,8 +5,8 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -75,12 +75,12 @@ public class UnitRemoteFactory implements UnitRemoteFactoryInterface {
         }
     }
 
-    private static DALRemoteService instantiatUnitRemote(final Class<? extends DALRemoteService> unitRemoteClass) throws de.citec.jul.exception.InstantiationException {
+    private static DALRemoteService instantiatUnitRemote(final Class<? extends DALRemoteService> unitRemoteClass) throws org.dc.jul.exception.InstantiationException {
         try {
             DALRemoteService instance = unitRemoteClass.newInstance();
             return instance;
         } catch (Exception ex) {
-            throw new de.citec.jul.exception.InstantiationException("Could not instantiate unit remote out of Class[" + unitRemoteClass.getName() + "]", ex);
+            throw new org.dc.jul.exception.InstantiationException("Could not instantiate unit remote out of Class[" + unitRemoteClass.getName() + "]", ex);
         }
     }
 }

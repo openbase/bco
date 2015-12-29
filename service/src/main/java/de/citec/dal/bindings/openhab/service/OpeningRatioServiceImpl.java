@@ -9,8 +9,8 @@ import de.citec.dal.bindings.openhab.OpenHABCommandFactory;
 import de.citec.dal.hal.device.Device;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.unit.Unit;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
 
 /**
  *

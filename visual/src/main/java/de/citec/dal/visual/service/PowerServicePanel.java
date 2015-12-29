@@ -6,10 +6,10 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.service.PowerService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.processing.StringProcessor;
 import java.awt.Color;
 import java.util.concurrent.Callable;
 import rst.homeautomation.state.PowerStateType;
@@ -23,7 +23,7 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
     /**
      * Creates new form BrightnessService
      */
-    public PowerServicePanel() throws de.citec.jul.exception.InstantiationException {
+    public PowerServicePanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

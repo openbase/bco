@@ -16,10 +16,10 @@ import de.citec.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
 import de.citec.jps.properties.JPHardwareSimulationMode;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import de.citec.lm.remote.LocationRegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +137,7 @@ public class DALService implements RegistryProvider {
         try {
             DALService dalService = new DALService();
             dalService.init();
-        } catch (de.citec.jul.exception.InstantiationException ex) {
+        } catch (org.dc.jul.exception.InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 

@@ -7,9 +7,9 @@ package de.citec.dal.visual;
 
 import static de.citec.dal.visual.DalVisualRemote.logger;
 import de.citec.dal.visual.service.AbstractServicePanel;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -30,9 +30,9 @@ public class DalSceneEditor extends javax.swing.JFrame {
     /**
      * Creates new form DalSceneEditor
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
-    public DalSceneEditor() throws de.citec.jul.exception.InstantiationException {
+    public DalSceneEditor() throws org.dc.jul.exception.InstantiationException {
         try {
             initComponents();
             genericUnitPanel.setAutoRemove(false);
@@ -162,7 +162,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
             public void run() {
                 try {
                     new DalSceneEditor().setVisible(true);
-                } catch (de.citec.jul.exception.InstantiationException ex) {
+                } catch (org.dc.jul.exception.InstantiationException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
                     System.exit(1);
                 }

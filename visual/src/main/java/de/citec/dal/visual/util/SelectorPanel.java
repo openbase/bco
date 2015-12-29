@@ -6,18 +6,18 @@
 package de.citec.dal.visual.util;
 
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.MultiException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.rsb.scope.ScopeGenerator;
-import de.citec.jul.extension.rsb.scope.ScopeTransformer;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.MultiException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.rsb.scope.ScopeGenerator;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.jul.processing.StringProcessor;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     /**
      * Creates new form SelectorPanel
      *
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
     public SelectorPanel() throws InstantiationException {
         try {

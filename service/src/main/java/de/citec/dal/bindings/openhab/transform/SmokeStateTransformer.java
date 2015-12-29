@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings.openhab.transform;
 
-import de.citec.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.CouldNotTransformException;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
 import rst.homeautomation.state.SmokeStateType.SmokeState.State;
 

@@ -1,8 +1,8 @@
 package de.citec.dal.remote.unit;
 
 import de.citec.dm.remote.DeviceRegistryRemote;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InitializationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import java.util.HashMap;
 import java.util.Map;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -17,17 +17,17 @@ public class UnitRemotePool {
     private UnitRemoteFactoryInterface factory;
     private DeviceRegistryRemote deviceRegistryRemote;
 
-    public UnitRemotePool() throws de.citec.jul.exception.InstantiationException, InterruptedException {
+    public UnitRemotePool() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         this(UnitRemoteFactory.getInstance());
     }
 
-    public UnitRemotePool(UnitRemoteFactoryInterface factory) throws de.citec.jul.exception.InstantiationException, InterruptedException {
+    public UnitRemotePool(UnitRemoteFactoryInterface factory) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
             this.pool = new HashMap<>();
             this.factory = factory;
             this.deviceRegistryRemote = new DeviceRegistryRemote();
         } catch (CouldNotPerformException ex) {
-            throw new de.citec.jul.exception.InstantiationException(this, ex);
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
 

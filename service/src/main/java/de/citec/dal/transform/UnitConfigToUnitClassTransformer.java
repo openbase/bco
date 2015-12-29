@@ -6,8 +6,8 @@
 package de.citec.dal.transform;
 
 import de.citec.dal.hal.unit.AbstractUnitController;
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**

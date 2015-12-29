@@ -6,9 +6,9 @@
 package de.citec.dal.bindings.openhab.transform;
 
 import de.citec.dal.bindings.openhab.OpenHABBinding;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.CouldNotTransformException;
-import de.citec.jul.exception.NotSupportedException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
+import org.dc.jul.exception.NotSupportedException;
 import rst.homeautomation.openhab.OpenhabCommandType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 

@@ -7,9 +7,9 @@ package de.citec.dal.example;
 
 import de.citec.dm.remote.DeviceRegistryRemote;
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import de.citec.lm.remote.LocationRegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

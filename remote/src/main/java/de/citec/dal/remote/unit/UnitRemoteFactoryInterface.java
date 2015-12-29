@@ -5,7 +5,7 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**

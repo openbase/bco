@@ -5,7 +5,7 @@
  */
 package de.citec.dal.bindings.openhab;
 
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import java.util.concurrent.Future;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 

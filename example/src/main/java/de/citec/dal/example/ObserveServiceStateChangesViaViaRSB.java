@@ -6,9 +6,9 @@
 package de.citec.dal.example;
 
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;

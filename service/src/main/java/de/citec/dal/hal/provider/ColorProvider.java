@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.provider;
 
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;

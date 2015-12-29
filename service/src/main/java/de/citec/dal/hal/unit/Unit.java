@@ -7,9 +7,9 @@ package de.citec.dal.hal.unit;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.MultiService;
-import de.citec.jul.iface.Identifiable;
-import de.citec.jul.extension.rsb.scope.ScopeProvider;
-import de.citec.jul.iface.provider.LabelProvider;
+import org.dc.jul.iface.Identifiable;
+import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.iface.provider.LabelProvider;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 

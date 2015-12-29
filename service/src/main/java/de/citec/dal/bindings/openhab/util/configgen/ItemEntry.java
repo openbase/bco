@@ -5,16 +5,16 @@
  */
 package de.citec.dal.bindings.openhab.util.configgen;
 
-import de.citec.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
 import static de.citec.dal.bindings.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.protobuf.ProtobufVariableProvider;
-import de.citec.jul.extension.rst.processing.MetaConfigPool;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.protobuf.ProtobufVariableProvider;
+import org.dc.jul.extension.rst.processing.MetaConfigPool;
+import org.dc.jul.processing.StringProcessor;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,7 +144,7 @@ public class ItemEntry {
 
             this.calculateGaps();
         } catch (Exception ex) {
-            throw new de.citec.jul.exception.InstantiationException(this, ex);
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
 

@@ -6,8 +6,8 @@
 package de.citec.dal.visual.service;
 
 import de.citec.dal.hal.service.BrightnessService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.util.concurrent.Callable;
 
 /**
@@ -19,7 +19,7 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
     /**
      * Creates new form BrightnessService
      */
-    public BrightnessServicePanel() throws de.citec.jul.exception.InstantiationException {
+    public BrightnessServicePanel() throws org.dc.jul.exception.InstantiationException {
         initComponents();
     }
 

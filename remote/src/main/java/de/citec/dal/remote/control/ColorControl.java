@@ -7,8 +7,8 @@ package de.citec.dal.remote.control;
 
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;

@@ -5,7 +5,7 @@
  */
 package de.citec.dal;
 
-import de.citec.jul.extension.protobuf.ProtobufVariableProvider;
+import org.dc.jul.extension.protobuf.ProtobufVariableProvider;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
