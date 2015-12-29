@@ -5,8 +5,8 @@
  */
 package de.citec.lm.lib.registry;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import java.util.List;
 import java.util.concurrent.Future;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;

@@ -5,10 +5,10 @@
  */
 package de.citec.dm.core.plugin;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import de.citec.jul.storage.registry.RegistryInterface;
-import de.citec.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.dc.jul.storage.registry.RegistryInterface;
+import org.dc.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;

@@ -30,7 +30,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.storage</artifactId>
             <version>${global.jul.version}</version>
             <type>jar</type>

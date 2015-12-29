@@ -5,10 +5,10 @@
  */
 package de.citec.dm.lib.generator;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.extension.rsb.scope.ScopeGenerator;
-import de.citec.jul.extension.protobuf.IdGenerator;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.rsb.scope.ScopeGenerator;
+import org.dc.jul.extension.protobuf.IdGenerator;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**

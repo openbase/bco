@@ -7,8 +7,8 @@ package de.citec.jp;
 
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPNotAvailableException;
-import de.citec.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
+import org.dc.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
+import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
 import java.io.File;
 
 /**

@@ -5,14 +5,14 @@
  */
 package de.citec.dm.core.consistency;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.VerificationFailedException;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
-import de.citec.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.VerificationFailedException;
+import org.dc.jul.extension.protobuf.IdentifiableMessage;
+import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
+import org.dc.jul.storage.registry.EntryModification;
+import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.HashMap;
 import java.util.Map;
 import rst.homeautomation.device.DeviceConfigType;

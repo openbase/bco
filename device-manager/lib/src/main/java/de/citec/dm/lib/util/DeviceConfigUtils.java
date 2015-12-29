@@ -1,7 +1,7 @@
 package de.citec.dm.lib.util;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import java.util.ArrayList;
 import java.util.List;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -46,7 +46,7 @@ public class DeviceConfigUtils {
      * @param deviceConfig the device config to lookup device label.
      * @param deviceClass the device class to lookup the unit template.
      * @return true if the unitConfig was modified otherwise false.
-     * @throws de.citec.jul.exception.CouldNotPerformException
+     * @throws org.dc.jul.exception.CouldNotPerformException
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final DeviceConfigOrBuilder deviceConfig, final DeviceClassOrBuilder deviceClass) throws CouldNotPerformException {
         return setupUnitLabelByDeviceConfig(unitConfig, deviceConfig, deviceClass, checkDuplicatedUnitType(deviceConfig));
@@ -60,7 +60,7 @@ public class DeviceConfigUtils {
      * @param deviceClass the device class to lookup the unit template.
      * @param deviceConfigHasDuplicatedUnitType can be precomputed out of performance reasons.
      * @return true if the unitConfig was modified otherwise false.
-     * @throws de.citec.jul.exception.CouldNotPerformException
+     * @throws org.dc.jul.exception.CouldNotPerformException
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final DeviceConfigOrBuilder deviceConfig, final DeviceClassOrBuilder deviceClass, boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
         try {

@@ -5,8 +5,8 @@
  */
 package de.citec.dm.lib.generator;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.extension.protobuf.IdGenerator;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.protobuf.IdGenerator;
 import java.util.UUID;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 

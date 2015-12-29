@@ -5,10 +5,10 @@
  */
 package de.citec.dm.lib.generator;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.extension.protobuf.IdGenerator;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.extension.protobuf.IdGenerator;
+import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 
 /**

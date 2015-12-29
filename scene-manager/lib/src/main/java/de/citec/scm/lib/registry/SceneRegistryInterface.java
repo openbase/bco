@@ -5,7 +5,7 @@
  */
 package de.citec.scm.lib.registry;
 
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;

@@ -5,7 +5,7 @@
  */
 package de.citec.usr.lib.registry;
 
-import de.citec.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
 import rst.authorization.UserConfigType.UserConfig;

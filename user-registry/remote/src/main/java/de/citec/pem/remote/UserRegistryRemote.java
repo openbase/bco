@@ -6,16 +6,16 @@
 package de.citec.pem.remote;
 
 import de.citec.jp.JPUserRegistryScope;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InitializationException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import de.citec.jul.extension.rsb.com.RSBRemoteService;
-import de.citec.jul.storage.registry.RemoteRegistry;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.protobuf.IdentifiableMessage;
+import org.dc.jul.extension.rsb.com.RPCHelper;
+import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.storage.registry.RemoteRegistry;
 import de.citec.usr.lib.generator.UserGroupConfigIdGenerator;
 import de.citec.usr.lib.generator.UserConfigIdGenerator;
 import de.citec.usr.lib.registry.UserRegistryInterface;

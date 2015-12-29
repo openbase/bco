@@ -77,17 +77,17 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
             <version>${global.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.storage</artifactId>
             <version>${global.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.processing</artifactId>
             <version>${global.jul.version}</version>
         </dependency>

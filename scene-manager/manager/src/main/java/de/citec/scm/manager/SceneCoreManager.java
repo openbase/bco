@@ -6,12 +6,12 @@
 package de.citec.scm.manager;
 
 import de.citec.jp.JPSceneRegistryScope;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import org.dc.jul.storage.registry.jp.JPInitializeDB;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InitializationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InitializationException;
 import de.citec.scm.remote.SceneRegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

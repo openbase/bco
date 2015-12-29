@@ -10,11 +10,11 @@ import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.exception.JPValidationException;
 import org.dc.jps.tools.FileHandler;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import de.citec.jul.storage.registry.jp.JPDatabaseDirectory;
-import de.citec.jul.storage.registry.jp.JPInitializeDB;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
+import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
+import org.dc.jul.storage.registry.jp.JPInitializeDB;
 import java.io.File;
 
 /**

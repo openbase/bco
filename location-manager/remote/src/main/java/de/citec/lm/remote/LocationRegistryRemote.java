@@ -10,18 +10,18 @@ import de.citec.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPReadOnly;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InitializationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import rst.spatial.LocationConfigType;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.extension.rsb.com.RPCHelper;
-import de.citec.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.extension.rsb.com.RPCHelper;
+import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import de.citec.lm.lib.generator.ConnectionIDGenerator;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import de.citec.jul.extension.rsb.scope.ScopeProvider;
-import de.citec.jul.storage.registry.RemoteRegistry;
+import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.storage.registry.RemoteRegistry;
 import de.citec.lm.lib.generator.LocationIDGenerator;
 import de.citec.lm.lib.registry.LocationRegistryInterface;
 import java.util.ArrayList;
@@ -110,7 +110,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * {@inheritDoc}
      *
      * @throws java.lang.InterruptedException {@inheritDoc}
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
@@ -136,7 +136,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * {@inheritDoc}
      *
      * @param data
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public void notifyUpdated(final LocationRegistry data) throws CouldNotPerformException {
@@ -151,7 +151,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
@@ -165,7 +165,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException {
@@ -176,7 +176,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
@@ -189,7 +189,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
@@ -202,7 +202,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
@@ -213,7 +213,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException {
@@ -224,7 +224,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
@@ -238,7 +238,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public LocationConfig removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
@@ -252,8 +252,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException, NotAvailableException {
@@ -265,7 +265,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException, NotAvailableException {
@@ -279,8 +279,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -303,8 +303,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -329,8 +329,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException, NotAvailableException {
@@ -344,8 +344,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
@@ -361,7 +361,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
@@ -383,7 +383,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public ConnectionConfig registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
@@ -397,7 +397,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public ConnectionConfig getConnectionConfigById(String connectionId) throws CouldNotPerformException {
@@ -408,7 +408,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<ConnectionConfig> getConnectionConfigsByLabel(String connectionLabel) throws CouldNotPerformException {
@@ -421,7 +421,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
@@ -432,7 +432,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsConnectionConfigById(String connectionId) throws CouldNotPerformException {
@@ -443,7 +443,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public ConnectionConfig updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
@@ -457,7 +457,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public ConnectionConfig removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
@@ -471,8 +471,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<ConnectionConfig> getConnectionConfigs() throws CouldNotPerformException {
@@ -484,7 +484,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
@@ -498,8 +498,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -522,8 +522,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -548,8 +548,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws de.citec.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
@@ -563,7 +563,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @throws de.citec.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {

@@ -3,7 +3,7 @@ package de.citec.dm.core.registry.dbconvert;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import de.citec.jul.storage.registry.version.DBVersionConverter;
+import org.dc.jul.storage.registry.version.DBVersionConverter;
 import java.io.File;
 import java.util.Map;
 

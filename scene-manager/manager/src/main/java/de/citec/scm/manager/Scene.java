@@ -7,9 +7,9 @@ package de.citec.scm.manager;
 
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.ServiceFactory;
-import de.citec.jul.extension.rsb.scope.ScopeProvider;
-import de.citec.jul.iface.Activatable;
-import de.citec.jul.iface.Identifiable;
+import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.iface.Activatable;
+import org.dc.jul.iface.Identifiable;
 
 /**
  *

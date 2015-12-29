@@ -76,12 +76,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.exception</artifactId>
             <version>${global.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.extension.rsb.com</artifactId>
             <version>${global.jul.version}</version>
         </dependency>

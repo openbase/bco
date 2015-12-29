@@ -5,20 +5,20 @@
  */
 package de.citec.dm.core.registry.dbconvert.consistency;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.InvalidStateException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.extension.protobuf.IdentifiableMessage;
-import de.citec.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
-import de.citec.jul.processing.StringProcessor;
-import de.citec.jul.storage.registry.AbstractVersionConsistencyHandler;
-import de.citec.jul.storage.registry.EntryModification;
-import de.citec.jul.storage.registry.FileSynchronizedRegistryInterface;
-import de.citec.jul.storage.registry.ProtoBufRegistryInterface;
-import de.citec.jul.storage.registry.version.DBVersionControl;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.protobuf.IdentifiableMessage;
+import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
+import org.dc.jul.processing.StringProcessor;
+import org.dc.jul.storage.registry.AbstractVersionConsistencyHandler;
+import org.dc.jul.storage.registry.EntryModification;
+import org.dc.jul.storage.registry.FileSynchronizedRegistryInterface;
+import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
+import org.dc.jul.storage.registry.version.DBVersionControl;
 import de.citec.lm.remote.LocationRegistryRemote;
 import java.util.HashMap;
 import java.util.Map;
