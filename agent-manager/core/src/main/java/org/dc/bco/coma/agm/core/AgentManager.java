@@ -6,14 +6,14 @@
 package org.dc.bco.coma.agm.core;
 
 import org.dc.bco.coma.agm.lib.Agent;
-import de.citec.agm.remote.AgentRegistryRemote;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.jps.core.JPService;
-import de.citec.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.storage.registry.Registry;
+import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.storage.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
@@ -58,7 +58,7 @@ public class AgentManager {
     /**
      * @param args the command line arguments
      * @throws java.lang.InterruptedException
-     * @throws de.citec.jul.exception.CouldNotPerformException
+     * @throws org.dc.jul.exception.CouldNotPerformException
      */
     public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
 

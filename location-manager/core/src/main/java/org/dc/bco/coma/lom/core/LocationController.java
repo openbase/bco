@@ -2,9 +2,9 @@ package org.dc.bco.coma.lom.core;
 
 import org.dc.bco.coma.lom.lib.Location;
 import de.citec.dal.hal.device.AbstractUnitCollectionController;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 import rst.spatial.LocationConfigType.LocationConfig;
 

@@ -6,8 +6,8 @@
 package org.dc.bco.coma.scm.core;
 
 import org.dc.bco.coma.scm.lib.Scene;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
 /**

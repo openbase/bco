@@ -5,8 +5,8 @@
  */
 package org.dc.bco.coma.scm.lib;
 
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.iface.Activatable;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.iface.Activatable;
 import rst.homeautomation.control.scene.SceneConfigType;
 
 /**

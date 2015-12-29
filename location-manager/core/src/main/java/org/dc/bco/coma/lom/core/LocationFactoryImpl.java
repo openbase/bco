@@ -1,7 +1,7 @@
 package org.dc.bco.coma.lom.core;
 
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType.LocationConfig;

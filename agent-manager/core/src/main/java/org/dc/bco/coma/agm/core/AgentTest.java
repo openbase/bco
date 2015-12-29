@@ -5,15 +5,15 @@
  */
 package org.dc.bco.coma.agm.core;
 
-import de.citec.agm.remote.AgentRegistryRemote;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import static org.dc.bco.coma.agm.core.AgentManager.logger;
 import org.dc.bco.coma.agm.lib.jp.JPAgentId;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPVerbose;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 
 /**
  *
@@ -24,7 +24,7 @@ public class AgentTest {
     /**
      * @param args the command line arguments
      * @throws java.lang.InterruptedException
-     * @throws de.citec.jul.exception.InstantiationException
+     * @throws org.dc.jul.exception.InstantiationException
      */
     public static void main(String[] args) throws InterruptedException, Exception {
 

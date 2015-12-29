@@ -1,8 +1,8 @@
 package org.dc.bco.coma.lom.core;
 
 import org.dc.bco.coma.lom.lib.Location;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.pattern.Factory;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.pattern.Factory;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**

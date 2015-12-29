@@ -13,7 +13,7 @@ package org.dc.bco.coma.agm.core.preset;
 //import com.philips.lighting.hue.sdk.PHMessageType;
 //import com.philips.lighting.hue.sdk.PHSDKListener;
 //import com.philips.lighting.model.PHBridge;
-//import de.citec.jul.exception.CouldNotPerformException;
+//import org.dc.jul.exception.CouldNotPerformException;
 //import java.util.List;
 //import rst.homeautomation.control.agent.AgentConfigType;
 //

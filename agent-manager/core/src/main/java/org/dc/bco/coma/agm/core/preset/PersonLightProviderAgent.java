@@ -6,10 +6,10 @@
 package org.dc.bco.coma.agm.core.preset;
 
 import de.citec.dal.remote.service.PowerServiceRemote;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.pattern.Observable;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Observable;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.state.MotionStateType.MotionState;

@@ -6,18 +6,18 @@
 package org.dc.bco.coma.agm.test.preset;
 
 import org.dc.bco.coma.agm.core.preset.PowerStateSynchroniserAgent;
-import de.citec.agm.remote.AgentRegistryRemote;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import de.citec.dal.DALService;
 import de.citec.dal.registry.MockFactory;
 import de.citec.dal.registry.MockRegistry;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.remote.unit.DimmerRemote;
 import de.citec.dal.remote.unit.PowerPlugRemote;
-import de.citec.dm.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.InstantiationException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;

@@ -2,12 +2,12 @@ package org.dc.bco.coma.lom.core;
 
 import org.dc.bco.coma.lom.lib.Location;
 import org.dc.jps.core.JPService;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.printer.LogLevel;
-import de.citec.jul.storage.registry.Registry;
-import de.citec.jul.storage.registry.RegistrySynchronizer;
-import de.citec.lm.remote.LocationRegistryRemote;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.storage.registry.Registry;
+import org.dc.jul.storage.registry.RegistrySynchronizer;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType;
@@ -26,7 +26,7 @@ public class LocationManager {
     private final LocationRegistryRemote locationRegistryRemote;
     private final RegistrySynchronizer<String, Location, LocationConfig, LocationConfigType.LocationConfig.Builder> registrySynchronizer;
 
-    public LocationManager() throws de.citec.jul.exception.InstantiationException, InterruptedException {
+    public LocationManager() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         logger.info("Starting " + JPService.getApplicationName());
         try {
             this.factory = new LocationFactoryImpl();
@@ -42,7 +42,7 @@ public class LocationManager {
             logger.info("waiting for locations...");
 
         } catch (CouldNotPerformException ex) {
-            throw new de.citec.jul.exception.InstantiationException(this, ex);
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
 

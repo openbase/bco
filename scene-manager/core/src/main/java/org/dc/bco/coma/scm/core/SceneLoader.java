@@ -6,13 +6,13 @@
 package org.dc.bco.coma.scm.core;
 
 import org.dc.bco.coma.scm.lib.Scene;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.printer.ExceptionPrinter;
-import de.citec.jul.exception.InstantiationException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.pattern.Observable;
-import de.citec.jul.pattern.Observer;
-import de.citec.scm.remote.SceneRegistryRemote;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -107,7 +107,7 @@ public class SceneLoader {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws de.citec.jul.exception.InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
+    public static void main(String[] args) throws org.dc.jul.exception.InstantiationException, InterruptedException, CouldNotPerformException, ExecutionException {
         new SceneLoader();
     }
 }

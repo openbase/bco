@@ -77,7 +77,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc</groupId>
             <artifactId>jul.exception</artifactId>
             <version>${global.jul.version}</version>
         </dependency>

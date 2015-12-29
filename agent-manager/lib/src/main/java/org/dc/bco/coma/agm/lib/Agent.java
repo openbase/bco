@@ -5,9 +5,9 @@
  */
 package org.dc.bco.coma.agm.lib;
 
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.iface.Activatable;
-import de.citec.jul.iface.Identifiable;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.iface.Activatable;
+import org.dc.jul.iface.Identifiable;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**

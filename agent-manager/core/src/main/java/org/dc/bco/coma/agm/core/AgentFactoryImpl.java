@@ -7,9 +7,9 @@ package org.dc.bco.coma.agm.core;
 
 import org.dc.bco.coma.agm.lib.Agent;
 import org.dc.bco.coma.agm.core.preset.AbstractAgent;
-import de.citec.jul.exception.CouldNotPerformException;
-import de.citec.jul.exception.NotAvailableException;
-import de.citec.jul.processing.StringProcessor;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType;
