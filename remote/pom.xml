@@ -46,20 +46,6 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
-                        <program>
-                            <mainClass>de.citec.dal.remote.control.agent.AgentTest</mainClass>
-                            <id>dal-agent-test</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>de.citec.dal.remote.control.agent.AgentScheduler</mainClass>
-                            <id>agent-scheduler</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
                     </programs>
                 </configuration>
             </plugin>
