@@ -27,6 +27,7 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <global.dal.version>0.6-SNAPSHOT</global.dal.version>
         <global.jul.version>0.5-SNAPSHOT</global.jul.version>
         <global.rst.sandbox.artifact>rst-sandbox-csra-ha-paramite</global.rst.sandbox.artifact>
         <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
@@ -75,10 +76,10 @@
     </build>
     
     <dependencies>
-        <!--dependency>
-            <groupId>org.dc.bco</groupId>
+        <dependency>
+            <groupId>de.citec</groupId>
             <artifactId>jul.exception</artifactId>
             <version>${global.jul.version}</version>
-        </dependency-->
+        </dependency>
     </dependencies>
 </project>

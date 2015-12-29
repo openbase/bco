@@ -59,5 +59,10 @@
             <artifactId>coma.agm.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.citec</groupId>
+            <artifactId>dal.remote</artifactId>
+            <version>${global.dal.version}</version>
+        </dependency>
     </dependencies>
 </project>
