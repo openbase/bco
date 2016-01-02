@@ -9,7 +9,7 @@ import org.dc.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.dc.bco.registry.device.lib.generator.DeviceConfigIdGenerator;
 import org.dc.bco.registry.device.lib.generator.UnitGroupIdGenerator;
 import org.dc.bco.registry.device.lib.generator.UnitTemplateIdGenerator;
-import org.dc.bco.registry.device.lib.DeviceRegistryInterface;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -43,7 +43,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author mpohling
  */
-public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> implements DeviceRegistryInterface {
+public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> implements DeviceRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));

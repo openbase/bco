@@ -15,7 +15,7 @@ import rst.authorization.UserGroupConfigType.UserGroupConfig;
  *
  * @author mpohling
  */
-public interface UserRegistryInterface {
+public interface UserRegistry {
 
     public UserConfig registerUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 

@@ -9,9 +9,9 @@ package org.dc.bco.registry.app.test;
  *
  * @author mpohling
  */
-public class AppRegistryImplTest {
+public class AppRegistryTest {
 //
-//    private static final Logger logger = LoggerFactory.getLogger(AppRegistryImplTest.class);
+//    private static final Logger logger = LoggerFactory.getLogger(AppRegistryTest.class);
 //
 //    public static final String LOCATION_LABEL = "paradise";
 //    public static LocationConfig LOCATION;
@@ -27,7 +27,7 @@ public class AppRegistryImplTest {
 //    private static AppConfig.Builder appConfigRemoteMessage;
 //    private static AppRegistryRemote remote;
 //
-//    public AppRegistryImplTest() {
+//    public AppRegistryTest() {
 //    }
 //
 //    @BeforeClass

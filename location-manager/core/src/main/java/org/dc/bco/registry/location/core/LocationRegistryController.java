@@ -39,7 +39,7 @@ import org.dc.bco.registry.location.core.plugin.PublishLocationTransformationReg
 import org.dc.bco.registry.location.core.dbconvert.LocationConfig_0_To_1_DBConverter;
 import org.dc.bco.registry.location.lib.generator.ConnectionIDGenerator;
 import org.dc.bco.registry.location.lib.generator.LocationIDGenerator;
-import org.dc.bco.registry.location.lib.LocationRegistryInterface;
+import org.dc.bco.registry.location.lib.LocationRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +63,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class LocationRegistryService extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements LocationRegistryInterface {
+public class LocationRegistryController extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements LocationRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
@@ -77,7 +77,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
     private final DeviceRegistryRemote deviceRegistryRemote;
     private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
 
-    public LocationRegistryService() throws InstantiationException, InterruptedException {
+    public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(LocationRegistry.newBuilder());
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
@@ -213,7 +213,7 @@ public class LocationRegistryService extends RSBCommunicationService<LocationReg
      */
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(LocationRegistryInterface.class, this, server);
+        RPCHelper.registerInterface(LocationRegistry.class, this, server);
     }
 
     /**

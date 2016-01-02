@@ -6,7 +6,7 @@
 package org.dc.bco.registry.app.remote;
 
 import org.dc.bco.registry.app.lib.generator.AppConfigIdGenerator;
-import org.dc.bco.registry.app.lib.AppRegistryInterface;
+import org.dc.bco.registry.app.lib.AppRegistry;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -33,7 +33,7 @@ import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
  *
  * @author mpohling
  */
-public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements AppRegistryInterface {
+public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements AppRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));

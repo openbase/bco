@@ -9,9 +9,9 @@ package org.dc.bco.registry.agent.test;
  *
  * @author mpohling
  */
-public class AgentRegistryImplTest {
+public class AgentRegistryTest {
 
-//    private static final Logger logger = LoggerFactory.getLogger(AgentRegistryImplTest.class);
+//    private static final Logger logger = LoggerFactory.getLogger(AgentRegistryTest.class);
 //
 //    public static final String LOCATION_LABEL = "paradise";
 //    public static LocationConfig LOCATION;
@@ -27,7 +27,7 @@ public class AgentRegistryImplTest {
 //    private static AgentConfig.Builder agentConfigRemoteMessage;
 //    private static AgentRegistryRemote remote;
 //
-//    public AgentRegistryImplTest() {
+//    public AgentRegistryTest() {
 //    }
 //
 //    @BeforeClass

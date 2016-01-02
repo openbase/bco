@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.registry.agent.core;
+package org.dc.bco.registry.scene.core;
 
-import org.dc.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
-import org.dc.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
-import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.dc.bco.registry.scm.lib.jp.JPSceneClassDatabaseDirectory;
+import org.dc.bco.registry.scm.lib.jp.JPSceneConfigDatabaseDirectory;
+import org.dc.bco.registry.scm.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
 import org.dc.jps.preset.JPReadOnly;
@@ -28,33 +28,34 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class AgentManager {
+public class SceneRegistryLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(AgentManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(SceneRegistryLauncher.class);
 
-    public static final String APP_NAME = AgentManager.class.getSimpleName();
+    public static final String APP_NAME = SceneRegistryLauncher.class.getSimpleName();
 
-    private final AgentRegistryMaster agentRegistry;
+    private final SceneRegistryController sceneRegistry;
 
-    public AgentManager() throws InitializationException, InterruptedException {
+    public SceneRegistryLauncher() throws InitializationException, InterruptedException {
         try {
-            this.agentRegistry = new AgentRegistryMaster();
-            this.agentRegistry.init();
-            this.agentRegistry.activate();
+            this.sceneRegistry = new SceneRegistryController();
+            this.sceneRegistry.init();
+            this.sceneRegistry.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     public void shutdown() {
-        if (agentRegistry != null) {
-            agentRegistry.shutdown();
+        if (sceneRegistry != null) {
+            sceneRegistry.shutdown();
         }
     }
 
-    public AgentRegistryMaster getAgentRegistry() {
-        return agentRegistry;
+    public SceneRegistryController getSceneRegistry() {
+        return sceneRegistry;
     }
+
 
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
@@ -62,29 +63,29 @@ public class AgentManager {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
 
-        JPService.registerProperty(JPAgentRegistryScope.class);
+        JPService.registerProperty(JPSceneRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPAgentClassDatabaseDirectory.class);
+        JPService.registerProperty(JPSceneConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPSceneClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.parseAndExitOnError(args);
 
-        AgentManager agentManager;
+        SceneRegistryLauncher sceneManager;
         try {
-            agentManager = new AgentManager();
+            sceneManager = new SceneRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!agentManager.getAgentRegistry().getAgentConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(agentManager, new VerificationFailedException("AgentConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!sceneManager.getSceneRegistry().getSceneConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(sceneManager, new VerificationFailedException("SceneConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

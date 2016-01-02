@@ -23,7 +23,7 @@ import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
 import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
-import org.dc.bco.registry.user.lib.UserRegistryInterface;
+import org.dc.bco.registry.user.lib.UserRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +41,7 @@ import rst.authorization.UserRegistryType.UserRegistry;
  *
  * @author mpohling
  */
-public class UserRegistryController extends RSBCommunicationService<UserRegistry, UserRegistry.Builder> implements UserRegistryInterface {
+public class UserRegistryController extends RSBCommunicationService<UserRegistry, UserRegistry.Builder> implements UserRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));
@@ -144,7 +144,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(UserRegistryInterface.class, this, server);
+        RPCHelper.registerInterface(UserRegistry.class, this, server);
     }
 
     public ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> getUserRegistry() {

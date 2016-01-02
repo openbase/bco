@@ -28,17 +28,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class LocationManager {
+public class LocationRegistryLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocationManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocationRegistryLauncher.class);
 
     public static final String APP_NAME = "LocationManager";
 
-    private final LocationRegistryService locationRegistry;
+    private final LocationRegistryController locationRegistry;
 
-    public LocationManager() throws InitializationException, InterruptedException {
+    public LocationRegistryLauncher() throws InitializationException, InterruptedException {
         try {
-            this.locationRegistry = new LocationRegistryService();
+            this.locationRegistry = new LocationRegistryController();
             this.locationRegistry.init();
             this.locationRegistry.activate();
         } catch (CouldNotPerformException ex) {
@@ -52,7 +52,7 @@ public class LocationManager {
         }
     }
 
-    public LocationRegistryService getLocationRegistry() {
+    public LocationRegistryController getLocationRegistry() {
         return locationRegistry;
     }
 
@@ -74,9 +74,9 @@ public class LocationManager {
 
         JPService.parseAndExitOnError(args);
 
-        LocationManager locationManager;
+        LocationRegistryLauncher locationManager;
         try {
-            locationManager = new LocationManager();
+            locationManager = new LocationRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

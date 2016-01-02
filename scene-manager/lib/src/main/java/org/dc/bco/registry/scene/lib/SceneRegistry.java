@@ -14,7 +14,7 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
  *
  * @author mpohling
  */
-public interface SceneRegistryInterface {
+public interface SceneRegistry {
 
     public SceneConfig registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
 

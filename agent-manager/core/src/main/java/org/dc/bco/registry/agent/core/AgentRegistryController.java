@@ -6,7 +6,7 @@
 package org.dc.bco.registry.agent.core;
 
 import org.dc.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
-import org.dc.bco.registry.agent.lib.AgentRegistryInterface;
+import org.dc.bco.registry.agent.lib.AgentRegistry;
 import org.dc.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
@@ -39,7 +39,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class AgentRegistryMaster extends RSBCommunicationService<AgentRegistry, AgentRegistry.Builder> implements AgentRegistryInterface {
+public class AgentRegistryController extends RSBCommunicationService<AgentRegistry, AgentRegistry.Builder> implements AgentRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistry.getDefaultInstance()));
@@ -51,7 +51,7 @@ public class AgentRegistryMaster extends RSBCommunicationService<AgentRegistry, 
     private final LocationRegistryRemote locationRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
-    public AgentRegistryMaster() throws InstantiationException, InterruptedException {
+    public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(AgentRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
@@ -150,7 +150,7 @@ public class AgentRegistryMaster extends RSBCommunicationService<AgentRegistry, 
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(AgentRegistryInterface.class, this, server);
+        RPCHelper.registerInterface(AgentRegistry.class, this, server);
     }
 
     @Override

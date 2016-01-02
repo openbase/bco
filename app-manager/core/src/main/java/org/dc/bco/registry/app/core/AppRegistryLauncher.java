@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.registry.scene.core;
+package org.dc.bco.registry.app.core;
 
-import org.dc.bco.registry.scm.lib.jp.JPSceneClassDatabaseDirectory;
-import org.dc.bco.registry.scm.lib.jp.JPSceneConfigDatabaseDirectory;
-import org.dc.bco.registry.scm.lib.jp.JPSceneRegistryScope;
+import org.dc.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
+import org.dc.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
+import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
 import org.dc.jps.preset.JPReadOnly;
@@ -28,34 +28,33 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class SceneManager {
+public class AppRegistryLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(SceneManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppRegistryLauncher.class);
 
-    public static final String APP_NAME = SceneManager.class.getSimpleName();
+    public static final String APP_NAME = AppRegistryLauncher.class.getSimpleName();
 
-    private final SceneRegistryService sceneRegistry;
+    private final AppRegistryController appRegistry;
 
-    public SceneManager() throws InitializationException, InterruptedException {
+    public AppRegistryLauncher() throws InitializationException, InterruptedException {
         try {
-            this.sceneRegistry = new SceneRegistryService();
-            this.sceneRegistry.init();
-            this.sceneRegistry.activate();
+            this.appRegistry = new AppRegistryController();
+            this.appRegistry.init();
+            this.appRegistry.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     public void shutdown() {
-        if (sceneRegistry != null) {
-            sceneRegistry.shutdown();
+        if (appRegistry != null) {
+            appRegistry.shutdown();
         }
     }
 
-    public SceneRegistryService getSceneRegistry() {
-        return sceneRegistry;
+    public AppRegistryController getAppRegistry() {
+        return appRegistry;
     }
-
 
     public static void main(String args[]) throws Throwable {
         logger.info("Start " + APP_NAME + "...");
@@ -63,29 +62,29 @@ public class SceneManager {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
 
-        JPService.registerProperty(JPSceneRegistryScope.class);
+        JPService.registerProperty(JPAppRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPSceneConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPSceneClassDatabaseDirectory.class);
+        JPService.registerProperty(JPAppConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPAppClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.parseAndExitOnError(args);
 
-        SceneManager sceneManager;
+        AppRegistryLauncher appManager;
         try {
-            sceneManager = new SceneManager();
+            appManager = new AppRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!sceneManager.getSceneRegistry().getSceneConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(sceneManager, new VerificationFailedException("SceneConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!appManager.getAppRegistry().getAppConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(appManager, new VerificationFailedException("AppConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

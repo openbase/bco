@@ -5,7 +5,7 @@
  */
 package org.dc.bco.registry.location.test;
 
-import org.dc.bco.registry.device.core.DeviceRegistryService;
+import org.dc.bco.registry.device.core.DeviceRegistryController;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.bco.registry.location.lib.jp.JPLocationConfigDatabaseDirectory;
 import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
@@ -19,7 +19,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.dc.jul.storage.registry.jp.JPInitializeDB;
-import org.dc.bco.registry.location.core.LocationRegistryService;
+import org.dc.bco.registry.location.core.LocationRegistryController;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
 import java.io.IOException;
@@ -43,19 +43,19 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author mpohling
  */
-public class LocationRegistryImplTest {
+public class LocationRegistryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocationRegistryImplTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocationRegistryTest.class);
 
-    private static DeviceRegistryService deviceRegistry;
+    private static DeviceRegistryController deviceRegistry;
 
-    private static LocationRegistryService locationRegistry;
+    private static LocationRegistryController locationRegistry;
     private static LocationConfigType.LocationConfig.Builder locationConfig;
 
     private static LocationConfigType.LocationConfig.Builder locationConfigRemote;
     private static LocationRegistryRemote remote;
 
-    public LocationRegistryImplTest() {
+    public LocationRegistryTest() {
     }
 
     @BeforeClass
@@ -68,8 +68,8 @@ public class LocationRegistryImplTest {
         JPService.registerProperty(JPVerbose.class, true);
         JPService.setupJUnitTestMode();
 
-        deviceRegistry = new DeviceRegistryService();
-        locationRegistry = new LocationRegistryService();
+        deviceRegistry = new DeviceRegistryController();
+        locationRegistry = new LocationRegistryController();
 
         deviceRegistry.init();
         locationRegistry.init();

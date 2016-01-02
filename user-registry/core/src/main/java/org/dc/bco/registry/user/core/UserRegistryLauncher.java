@@ -28,15 +28,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class UserRegistry {
+public class UserRegistryLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserRegistryLauncher.class);
 
-    public static final String USER_MANAGER_NAME = UserRegistry.class.getSimpleName();
+    public static final String USER_MANAGER_NAME = UserRegistryLauncher.class.getSimpleName();
 
     private final UserRegistryController userRegistry;
 
-    public UserRegistry() throws InitializationException, InterruptedException {
+    public UserRegistryLauncher() throws InitializationException, InterruptedException {
         try {
             this.userRegistry = new UserRegistryController();
             this.userRegistry.init();
@@ -74,9 +74,9 @@ public class UserRegistry {
 
         JPService.parseAndExitOnError(args);
 
-        UserRegistry userManager;
+        UserRegistryLauncher userManager;
         try {
-            userManager = new UserRegistry();
+            userManager = new UserRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

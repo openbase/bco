@@ -31,17 +31,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class DeviceManager {
+public class DeviceRegistryLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryLauncher.class);
 
-    public static final String APP_NAME = DeviceManager.class.getSimpleName();
+    public static final String APP_NAME = DeviceRegistryLauncher.class.getSimpleName();
 
-    private final DeviceRegistryService deviceRegistry;
+    private final DeviceRegistryController deviceRegistry;
 
-    public DeviceManager() throws InitializationException, InterruptedException {
+    public DeviceRegistryLauncher() throws InitializationException, InterruptedException {
         try {
-            this.deviceRegistry = new DeviceRegistryService();
+            this.deviceRegistry = new DeviceRegistryController();
             this.deviceRegistry.init();
             this.deviceRegistry.activate();
         } catch (CouldNotPerformException ex) {
@@ -55,7 +55,7 @@ public class DeviceManager {
         }
     }
 
-    public DeviceRegistryService getDeviceRegistry() {
+    public DeviceRegistryController getDeviceRegistry() {
         return deviceRegistry;
     }
 
@@ -79,9 +79,9 @@ public class DeviceManager {
 
         JPService.parseAndExitOnError(args);
 
-        DeviceManager deviceManager;
+        DeviceRegistryLauncher deviceManager;
         try {
-            deviceManager = new DeviceManager();
+            deviceManager = new DeviceRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }

@@ -31,7 +31,7 @@ import org.dc.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.dc.bco.registry.device.lib.generator.DeviceConfigIdGenerator;
 import org.dc.bco.registry.device.lib.generator.UnitGroupIdGenerator;
 import org.dc.bco.registry.device.lib.generator.UnitTemplateIdGenerator;
-import org.dc.bco.registry.device.lib.DeviceRegistryInterface;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -77,7 +77,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistryInterface {
+public class DeviceRegistryController extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements DeviceRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
@@ -95,7 +95,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
     private final LocationRegistryRemote locationRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
-    public DeviceRegistryService() throws InstantiationException, InterruptedException {
+    public DeviceRegistryController() throws InstantiationException, InterruptedException {
         super(DeviceRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
@@ -260,7 +260,7 @@ public class DeviceRegistryService extends RSBCommunicationService<DeviceRegistr
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(DeviceRegistryInterface.class, this, server);
+        RPCHelper.registerInterface(DeviceRegistry.class, this, server);
     }
 
     @Override

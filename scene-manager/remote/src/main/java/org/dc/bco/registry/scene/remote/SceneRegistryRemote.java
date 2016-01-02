@@ -19,7 +19,7 @@ import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.storage.registry.RemoteRegistry;
 import org.dc.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
-import org.dc.bco.registry.scene.lib.SceneRegistryInterface;
+import org.dc.bco.registry.scene.lib.SceneRegistry;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -33,7 +33,7 @@ import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
  *
  * @author mpohling
  */
-public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> implements SceneRegistryInterface {
+public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> implements SceneRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));

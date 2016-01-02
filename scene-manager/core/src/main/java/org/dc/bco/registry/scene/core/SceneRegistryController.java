@@ -39,7 +39,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class SceneRegistryService extends RSBCommunicationService<SceneRegistry, SceneRegistry.Builder> implements SceneRegistryInterface {
+public class SceneRegistryController extends RSBCommunicationService<SceneRegistry, SceneRegistry.Builder> implements SceneRegistryInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));
@@ -51,7 +51,7 @@ public class SceneRegistryService extends RSBCommunicationService<SceneRegistry,
     private final LocationRegistryRemote locationRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
-    public SceneRegistryService() throws InstantiationException, InterruptedException {
+    public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(SceneRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();

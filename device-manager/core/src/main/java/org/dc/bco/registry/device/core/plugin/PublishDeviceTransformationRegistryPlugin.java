@@ -5,7 +5,7 @@
  */
 package org.dc.bco.registry.device.core.plugin;
 
-import org.dc.bco.registry.device.core.DeviceManager;
+import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -36,7 +36,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
         try {
             this.transformerFactory = TransformerFactory.getInstance();
             //TODO:mpholing check if there is a way to use a configuration for interprocess communication for unit tests
-            this.transformPublisher = transformerFactory.createTransformPublisher(DeviceManager.APP_NAME);
+            this.transformPublisher = transformerFactory.createTransformPublisher(DeviceRegistryLauncher.APP_NAME);
         } catch (Exception ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }

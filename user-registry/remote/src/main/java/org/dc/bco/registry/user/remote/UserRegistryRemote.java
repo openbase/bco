@@ -18,7 +18,7 @@ import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.storage.registry.RemoteRegistry;
 import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
 import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
-import org.dc.bco.registry.user.lib.UserRegistryInterface;
+import org.dc.bco.registry.user.lib.UserRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +36,7 @@ import rst.authorization.UserRegistryType.UserRegistry;
  *
  * @author mpohling
  */
-public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements UserRegistryInterface {
+public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements UserRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));

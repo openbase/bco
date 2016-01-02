@@ -10,9 +10,9 @@ package org.dc.bco.registry.scene.test;
  *
  * @author mpohling
  */
-public class SceneRegistryImplTest {
+public class SceneRegistryTest {
 
-//    private static final Logger logger = LoggerFactory.getLogger(SceneRegistryImplTest.class);
+//    private static final Logger logger = LoggerFactory.getLogger(SceneRegistryTest.class);
 //
 //    public static final String LOCATION_LABEL = "paradise";
 //    public static LocationConfig LOCATION;
@@ -28,7 +28,7 @@ public class SceneRegistryImplTest {
 //    private static SceneConfig.Builder sceneConfigRemoteMessage;
 //    private static SceneRegistryRemote remote;
 
-    public SceneRegistryImplTest() {
+    public SceneRegistryTest() {
     }
 
 //    @BeforeClass

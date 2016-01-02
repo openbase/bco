@@ -20,7 +20,7 @@ import rst.spatial.ConnectionConfigType.ConnectionConfig;
  *
  * @author mpohling
  */
-public interface LocationRegistryInterface {
+public interface LocationRegistry {
 
     /**
      * This method registered the given location config in the registry.

@@ -6,7 +6,7 @@
 package org.dc.bco.registry.agent.remote;
 
 import org.dc.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
-import org.dc.bco.registry.agent.lib.AgentRegistryInterface;
+import org.dc.bco.registry.agent.lib.AgentRegistry;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -33,7 +33,7 @@ import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
  *
  * @author mpohling
  */
-public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> implements AgentRegistryInterface {
+public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> implements AgentRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistry.getDefaultInstance()));

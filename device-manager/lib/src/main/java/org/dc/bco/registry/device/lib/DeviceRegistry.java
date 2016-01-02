@@ -23,7 +23,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @author mpohling
  */
 // TODO mpohling: write java doc
-public interface DeviceRegistryInterface {
+public interface DeviceRegistry {
 
     public DeviceConfig registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
 

@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.registry.app.core;
+package org.dc.bco.registry.agent.core;
 
-import org.dc.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
-import org.dc.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
-import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.dc.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
+import org.dc.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
+import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.preset.JPDebugMode;
 import org.dc.jps.preset.JPReadOnly;
@@ -28,32 +28,32 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class AppManager {
+public class AgentRegistryLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(AgentRegistryLauncher.class);
 
-    public static final String APP_NAME = AppManager.class.getSimpleName();
+    public static final String APP_NAME = AgentRegistryLauncher.class.getSimpleName();
 
-    private final AppRegistryService appRegistry;
+    private final AgentRegistryController agentRegistry;
 
-    public AppManager() throws InitializationException, InterruptedException {
+    public AgentRegistryLauncher() throws InitializationException, InterruptedException {
         try {
-            this.appRegistry = new AppRegistryService();
-            this.appRegistry.init();
-            this.appRegistry.activate();
+            this.agentRegistry = new AgentRegistryController();
+            this.agentRegistry.init();
+            this.agentRegistry.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     public void shutdown() {
-        if (appRegistry != null) {
-            appRegistry.shutdown();
+        if (agentRegistry != null) {
+            agentRegistry.shutdown();
         }
     }
 
-    public AppRegistryService getAppRegistry() {
-        return appRegistry;
+    public AgentRegistryController getAgentRegistry() {
+        return agentRegistry;
     }
 
     public static void main(String args[]) throws Throwable {
@@ -62,29 +62,29 @@ public class AppManager {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
 
-        JPService.registerProperty(JPAppRegistryScope.class);
+        JPService.registerProperty(JPAgentRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPAppConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPAppClassDatabaseDirectory.class);
+        JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPAgentClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.parseAndExitOnError(args);
 
-        AppManager appManager;
+        AgentRegistryLauncher agentManager;
         try {
-            appManager = new AppManager();
+            agentManager = new AgentRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!appManager.getAppRegistry().getAppConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(appManager, new VerificationFailedException("AppConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!agentManager.getAgentRegistry().getAgentConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(agentManager, new VerificationFailedException("AgentConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

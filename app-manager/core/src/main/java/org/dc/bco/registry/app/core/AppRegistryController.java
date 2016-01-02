@@ -6,7 +6,7 @@
 package org.dc.bco.registry.app.core;
 
 import org.dc.bco.registry.app.lib.generator.AppConfigIdGenerator;
-import org.dc.bco.registry.app.lib.AppRegistryInterface;
+import org.dc.bco.registry.app.lib.AppRegistry;
 import org.dc.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
@@ -39,7 +39,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class AppRegistryService extends RSBCommunicationService<AppRegistry, AppRegistry.Builder> implements AppRegistryInterface {
+public class AppRegistryController extends RSBCommunicationService<AppRegistry, AppRegistry.Builder> implements AppRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));
@@ -51,7 +51,7 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
     private final LocationRegistryRemote locationRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
 
-    public AppRegistryService() throws InstantiationException, InterruptedException {
+    public AppRegistryController() throws InstantiationException, InterruptedException {
         super(AppRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
@@ -136,7 +136,7 @@ public class AppRegistryService extends RSBCommunicationService<AppRegistry, App
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(AppRegistryInterface.class, this, server);
+        RPCHelper.registerInterface(AppRegistry.class, this, server);
     }
 
     @Override

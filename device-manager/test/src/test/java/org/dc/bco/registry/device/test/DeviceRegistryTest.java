@@ -6,7 +6,7 @@
 package org.dc.bco.registry.device.test;
 
 import org.dc.bco.registry.device.core.consistency.OpenhabServiceConfigItemIdConsistencyHandler;
-import org.dc.bco.registry.device.core.DeviceRegistryService;
+import org.dc.bco.registry.device.core.DeviceRegistryController;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
@@ -25,7 +25,7 @@ import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.dc.jul.storage.registry.jp.JPInitializeDB;
-import org.dc.bco.registry.location.core.LocationRegistryService;
+import org.dc.bco.registry.location.core.LocationRegistryController;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,25 +66,25 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  *
  * @author mpohling
  */
-public class DeviceRegistryImplTest {
+public class DeviceRegistryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryImplTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryTest.class);
 
     public static final String LOCATION_LABEL = "paradise";
     public static LocationConfig LOCATION;
 
-    private static DeviceRegistryService deviceRegistry;
+    private static DeviceRegistryController deviceRegistry;
     private static DeviceClass.Builder deviceClass;
     private static DeviceConfig.Builder deviceConfig;
 
-    private static LocationRegistryService locationRegistry;
+    private static LocationRegistryController locationRegistry;
 
     private static DeviceClass.Builder deviceClassRemoteMessage;
     private static DeviceClass.Builder returnValue;
     private static DeviceConfig.Builder deviceConfigRemoteMessage;
     private static DeviceRegistryRemote remote;
 
-    public DeviceRegistryImplTest() {
+    public DeviceRegistryTest() {
     }
 
     @BeforeClass
@@ -97,8 +97,8 @@ public class DeviceRegistryImplTest {
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
 
-        deviceRegistry = new DeviceRegistryService();
-        locationRegistry = new LocationRegistryService();
+        deviceRegistry = new DeviceRegistryController();
+        locationRegistry = new LocationRegistryController();
 
         deviceRegistry.init();
         locationRegistry.init();

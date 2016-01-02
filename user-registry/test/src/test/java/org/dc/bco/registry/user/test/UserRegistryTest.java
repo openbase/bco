@@ -9,7 +9,7 @@ package org.dc.bco.registry.user.test;
  *
  * @author mpohling
  */
-public class UserRegistryImplTest {
+public class UserRegistryTest {
 //
 //    private static final Logger logger = LoggerFactory.getLogger(AppRegistryImplTest.class);
 //

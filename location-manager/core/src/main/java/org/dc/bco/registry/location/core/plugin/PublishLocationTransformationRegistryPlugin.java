@@ -17,7 +17,7 @@ import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rct.transform.PoseTransformer;
 import org.dc.jul.storage.registry.RegistryInterface;
 import org.dc.jul.storage.registry.plugin.FileRegistryPluginAdapter;
-import org.dc.bco.registry.location.core.LocationManager;
+import org.dc.bco.registry.location.core.LocationRegistryLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
@@ -36,7 +36,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     public PublishLocationTransformationRegistryPlugin() throws org.dc.jul.exception.InstantiationException {
         try {
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(LocationManager.APP_NAME);
+            this.transformPublisher = transformerFactory.createTransformPublisher(LocationRegistryLauncher.APP_NAME);
         } catch (Exception ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
@@ -69,7 +69,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
                 Transform transformation = PoseTransformer.transform(locationConfig.getPosition(), locationConfig.getParentId(), locationConfig.getId());
 
                 // Publish the transform object
-                transformation.setAuthority(LocationManager.APP_NAME);
+                transformation.setAuthority(LocationRegistryLauncher.APP_NAME);
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
             }
         } catch (Exception ex) {

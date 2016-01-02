@@ -14,7 +14,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  *
  * @author mpohling
  */
-public interface AgentRegistryInterface {
+public interface AgentRegistry {
 
     public AgentConfig registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
 

@@ -14,7 +14,7 @@ import rst.homeautomation.control.app.AppConfigType.AppConfig;
  *
  * @author mpohling
  */
-public interface AppRegistryInterface {
+public interface AppRegistry {
 
     public AppConfig registerAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
