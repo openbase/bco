@@ -5,9 +5,9 @@
  */
 package de.citec.dal.registry;
 
-import org.dc.bco.registry.agent.core.AgentManager;
-import org.dc.bco.registry.app.core.AppManager;
-import org.dc.bco.registry.device.core.DeviceManager;
+import org.dc.bco.registry.agent.core.AgentRegistryLauncher;
+import org.dc.bco.registry.app.core.AppRegistryLauncher;
+import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
@@ -21,9 +21,9 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.dc.jul.storage.registry.jp.JPInitializeDB;
-import org.dc.bco.registry.location.core.LocationManager;
+import org.dc.bco.registry.location.core.LocationRegistryLauncher;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import org.dc.bco.registry.scene.core.SceneManager;
+import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,11 +72,11 @@ public class MockRegistry {
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
 
-    private static DeviceManager deviceManager;
-    private static LocationManager locationManager;
-    private static AgentManager agentManager;
-    private static AppManager appManager;
-    private static SceneManager sceneManager;
+    private static DeviceRegistryLauncher deviceManager;
+    private static LocationRegistryLauncher locationManager;
+    private static AgentRegistryLauncher agentManager;
+    private static AppRegistryLauncher appManager;
+    private static SceneRegistryLauncher sceneManager;
 
     private final DeviceRegistryRemote deviceRemote;
     private final LocationRegistryRemote locationRemote;
@@ -144,7 +144,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        deviceManager = new DeviceManager();
+                        deviceManager = new DeviceRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -156,7 +156,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        locationManager = new LocationManager();
+                        locationManager = new LocationRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -168,7 +168,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        agentManager = new AgentManager();
+                        agentManager = new AgentRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -180,7 +180,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        appManager = new AppManager();
+                        appManager = new AppRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -192,7 +192,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        sceneManager = new SceneManager();
+                        sceneManager = new SceneRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
