@@ -6,8 +6,8 @@
         <maven>3.0</maven>
     </prerequisites>
     
-    <groupId>de.citec</groupId>
-    <artifactId>rm</artifactId>
+    <groupId>org.dc.bco</groupId>
+    <artifactId>registry</artifactId>
     <version>0.7-SNAPSHOT</version>
     <name>REM</name>
     <description>Registry Manager Collection</description>
@@ -35,11 +35,11 @@
     <packaging>pom</packaging>
     
     <modules>
-        <module>device-manager</module>
-        <module>location-manager</module>
-        <module>scene-manager</module>
-        <module>agent-manager</module>
-        <module>app-manager</module>
+        <module>device-registry</module>
+        <module>location-registry</module>
+        <module>scene-registry</module>
+        <module>agent-registry</module>
+        <module>app-registry</module>
         <module>user-registry</module>
     </modules>
     
