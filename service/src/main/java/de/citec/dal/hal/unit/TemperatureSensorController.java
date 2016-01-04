@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.Device;
+import org.dc.bco.coma.dem.lib.Device;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -27,7 +27,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(final UnitConfigType.UnitConfig config, Device device, TemperatureSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public TemperatureSensorController(final UnitConfigType.UnitConfig config, final TemperatureSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(config, TemperatureSensorController.class, device, builder);
     }
 

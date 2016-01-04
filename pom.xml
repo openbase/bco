@@ -6,11 +6,11 @@
         <maven>3.0</maven>
     </prerequisites>
     
-    <groupId>de.citec</groupId>
+    <groupId>org.dc.bco</groupId>
     <artifactId>dal</artifactId>
     <version>0.6-SNAPSHOT</version>
     <name>DAL</name>
-    <description>Device Abstraction Layer</description>
+    <description>Domotic Abstraction Layer</description>
     
     <organization>
         <name>DC</name>

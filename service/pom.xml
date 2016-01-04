@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.citec</groupId>
+    <groupId>org.dc.bco</groupId>
     <artifactId>dal.service</artifactId>
     <packaging>jar</packaging>
 
-    <name>DAL DeviceService</name>
+    <name>DAL Library</name>
     
     <parent>
-        <groupId>de.citec</groupId>
+        <groupId>org.dc.bco</groupId>
         <artifactId>dal</artifactId>
         <version>0.6-SNAPSHOT</version>
     </parent>    
@@ -77,66 +77,66 @@
             <artifactId>jul.extension.rsb.com</artifactId>
             <version>${global.jul.version}</version>
         </dependency>
-        <dependency>
-            <groupId>de.citec</groupId>
+<!--        <dependency>
+            <groupId>org.dc.bco</groupId>
             <artifactId>dm.core</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>lm.core</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>de.citec</groupId>
+        </dependency>-->
+<!--        <dependency>
+            <groupId>org.dc.bco</groupId>
             <artifactId>agm.core</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>apm.core</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>scm.core</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>dm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>lm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>agm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>apm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>scm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.dc</groupId>
             <artifactId>jul.extension.rsb.processing</artifactId>

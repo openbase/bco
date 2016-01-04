@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.Device;
+import org.dc.bco.coma.dem.lib.Device;
 import de.citec.dal.hal.service.OpeningRatioService;
 import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.service.ShutterService;

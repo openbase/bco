@@ -5,7 +5,7 @@
  */
 package de.citec.dal;
 
-import de.citec.dal.registry.MockRegistry;
+import org.dc.bco.registry.device.core.mock.MockRegistry;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jps.exception.JPServiceException;

@@ -5,7 +5,6 @@
  */
 package de.citec.dal.hal.service;
 
-import de.citec.dal.bindings.openhab.service.OpenHABService;
 import de.citec.dal.hal.provider.BatteryProvider;
 import de.citec.dal.hal.provider.ButtonProvider;
 import de.citec.dal.hal.provider.HandleProvider;
@@ -25,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.dc.jps.core.JPService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.patterns.Callback;
@@ -174,7 +174,7 @@ public enum ServiceType {
             }
             throw new NotAvailableException(serviceName);
         } catch (IllegalArgumentException | CouldNotPerformException ex) {
-            throw new NotSupportedException(serviceName, OpenHABService.class.getSimpleName());
+            throw new NotSupportedException(serviceName, JPService.getApplicationName());
         }
     }
 }

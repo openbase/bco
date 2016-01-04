@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import de.citec.dal.hal.device.Device;
+import org.dc.bco.coma.dem.lib.Device;
 import com.google.protobuf.GeneratedMessage;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
@@ -41,10 +41,10 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     protected final UnitConfig config;
     protected final Location location;
-    private final Device device;
+//    private final Device device;
     private final List<Service> serviceList;
 
-    public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final Device device, final MB builder) throws CouldNotPerformException {
+    public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final MB builder) throws CouldNotPerformException {
         super(builder);
         try {
             if (config == null) {
@@ -67,7 +67,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                 throw new NotAvailableException("Field config.label is emty!");
             }
             this.config = config;
-            this.device = device;
+//            this.device = device;
             this.location = new Location(DALService.getRegistryProvider().getLocationRegistryRemote().getLocationConfigById(config.getPlacementConfig().getLocationId()));
             this.serviceList = new ArrayList<>();
 
@@ -109,9 +109,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return location;
     }
 
-    public Device getDevice() {
-        return device;
-    }
+//    public Device getDevice() {
+//        return device;
+//    }
 
     @Override
     public UnitConfig getUnitConfig() {

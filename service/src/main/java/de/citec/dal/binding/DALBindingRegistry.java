@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.bindings;
+package de.citec.dal.binding;
 
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.storage.registry.Registry;

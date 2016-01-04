@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.hal.device;
+package de.citec.dal.hal.unit;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
+import org.dc.bco.coma.dem.lib.Device;
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.hal.unit.AbstractUnitController;

@@ -5,11 +5,11 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.dal.registry.MockRegistry;
+import org.dc.bco.registry.device.core.mock.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.unit.DimmerController;
-import de.citec.dal.registry.MockFactory;
+import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
 import de.citec.jps.properties.JPHardwareSimulationMode;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -44,7 +44,7 @@ public class DimmerRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, org.dc.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockFactory.newMockRegistry();
+        registry = MockRegistryHolder.newMockRegistry();
 
         dalService = new DALService();
         dalService.init();
@@ -66,7 +66,7 @@ public class DimmerRemoteTest {
             dimmerRemote.shutdown();
         }
         if (registry != null) {
-            MockFactory.shutdownMockRegistry();
+            MockRegistryHolder.shutdownMockRegistry();
         }
     }
 

@@ -5,7 +5,7 @@
  */
 package de.citec.dal;
 
-import de.citec.dal.registry.MockRegistry;
+import org.dc.bco.registry.device.core.mock.MockRegistry;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;

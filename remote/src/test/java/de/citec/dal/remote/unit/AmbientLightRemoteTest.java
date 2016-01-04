@@ -5,10 +5,10 @@
  */
 package de.citec.dal.remote.unit;
 
-import de.citec.dal.registry.MockRegistry;
+import org.dc.bco.registry.device.core.mock.MockRegistry;
 import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
-import de.citec.dal.registry.MockFactory;
+import org.dc.bco.registry.mock.MockRegistryHolder;
 import de.citec.dal.transform.HSVColorToRGBColorTransformer;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -49,7 +49,7 @@ public class AmbientLightRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockFactory.newMockRegistry();
+        registry = MockRegistryHolder.newMockRegistry();
 
         dalService = new DALService();
         dalService.init();
@@ -72,7 +72,7 @@ public class AmbientLightRemoteTest {
             ambientLightRemote.shutdown();
         }
         if (registry != null) {
-            MockFactory.shutdownMockRegistry();
+            MockRegistryHolder.shutdownMockRegistry();
         }
     }
 

@@ -3,16 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.bindings;
+package de.citec.dal.binding;
+
+import org.dc.jul.iface.Identifiable;
 
 /**
  *
  * @author mpohling
  */
-public class AbstractDALBinding implements Binding {
-
-    @Override
-    public Class<? extends Binding> getId() {
-        return getClass();
-    }    
+public interface Binding extends Identifiable<Class<? extends Binding>> {
+    
 }

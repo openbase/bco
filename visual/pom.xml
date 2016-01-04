@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.citec</groupId>
+    <groupId>org.dc.bco</groupId>
     <artifactId>dal.visual</artifactId>
     <packaging>jar</packaging>
 
-    <name>DAL DeviceVisualisation</name>
+    <name>DAL Visualisation</name>
     
     <parent>
-        <groupId>de.citec</groupId>
+        <groupId>org.dc.bco</groupId>
         <artifactId>dal</artifactId>
         <version>0.6-SNAPSHOT</version>
     </parent>    
@@ -97,7 +97,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>dal.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -108,7 +108,7 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>de.citec</groupId>
+            <groupId>org.dc.bco</groupId>
             <artifactId>scm.remote</artifactId>
             <version>${global.rm.version}</version>
             <type>jar</type>
