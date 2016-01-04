@@ -41,6 +41,7 @@
         <module>agent-registry</module>
         <module>app-registry</module>
         <module>user-registry</module>
+        <module>util</module>
     </modules>
     
     <build>
