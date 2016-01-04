@@ -8,8 +8,8 @@ package org.dc.bco.coma.agm.test.preset;
 import org.dc.bco.coma.agm.core.preset.PowerStateSynchroniserAgent;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import de.citec.dal.DALService;
-import de.citec.dal.registry.MockFactory;
-import de.citec.dal.registry.MockRegistry;
+import org.dc.bco.registry.mock.MockRegistryHolder;
+import org.dc.bco.registry.device.core.mock.MockRegistry;
 import de.citec.dal.remote.unit.AmbientLightRemote;
 import de.citec.dal.remote.unit.DimmerRemote;
 import de.citec.dal.remote.unit.PowerPlugRemote;
@@ -54,7 +54,7 @@ public class PowerStateSynchroniserAgentTest {
     @BeforeClass
     public static void setUpClass() throws CouldNotPerformException, InstantiationException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockFactory.newMockRegistry();
+        registry = MockRegistryHolder.newMockRegistry();
 
         dalService = new DALService();
         dalService.init();
@@ -80,7 +80,7 @@ public class PowerStateSynchroniserAgentTest {
             deviceRemote.shutdown();
         }
         if (registry != null) {
-            MockFactory.shutdownMockRegistry();
+            MockRegistryHolder.shutdownMockRegistry();
         }
     }
 

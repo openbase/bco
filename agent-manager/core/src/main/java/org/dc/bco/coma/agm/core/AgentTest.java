@@ -6,7 +6,7 @@
 package org.dc.bco.coma.agm.core;
 
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
-import static org.dc.bco.coma.agm.core.AgentManager.logger;
+import static org.dc.bco.coma.agm.core.AgentManagerLauncher.logger;
 import org.dc.bco.coma.agm.lib.jp.JPAgentId;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;

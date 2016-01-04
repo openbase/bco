@@ -23,16 +23,16 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  *
  * @author mpohling
  */
-public class AgentManager {
+public class AgentManagerLauncher {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AgentManager.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AgentManagerLauncher.class);
 
     private final AgentFactory factory;
     private final Registry<String, Agent> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
     private final ActivatableEntryRegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
 
-    public AgentManager() throws InstantiationException, InterruptedException {
+    public AgentManagerLauncher() throws InstantiationException, InterruptedException {
         try {
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new Registry<>();
@@ -63,13 +63,13 @@ public class AgentManager {
     public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
 
         /* Setup JPService */
-        JPService.setApplicationName(AgentManager.class);
+        JPService.setApplicationName(AgentManagerLauncher.class);
         JPService.parseAndExitOnError(args);
 
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
         try {
-            new AgentManager();
+            new AgentManagerLauncher();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }

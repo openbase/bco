@@ -5,8 +5,8 @@
  */
 package org.dc.bco.coma.agm.core.preset;
 
-import de.citec.dal.remote.control.ColorLoopControl;
-import de.citec.dal.remote.control.PowerControl;
+import org.dc.bco.coma.lom.lib.util.ColorLoopControl;
+import org.dc.bco.coma.lom.lib.util.PowerControl;
 import java.util.ArrayList;
 import rst.homeautomation.state.PowerStateType;
 import rst.vision.HSVColorType;
