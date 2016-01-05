@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.agm.core.AgentRegistry</mainClass>
+                            <mainClass>org.dc.bco.registry.agent.core.AgentRegistryLauncher</mainClass>
                             <id>agent-registry</id>
                             <platforms>
                                 <platform>unix</platform>

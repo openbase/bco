@@ -41,8 +41,8 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.apm.core.AppRegistry</mainClass>
-                            <id>app-manager</id>
+                            <mainClass>org.dc.bco.registry.agent.core.AppRegistryLauncher</mainClass>
+                            <id>app-registry</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

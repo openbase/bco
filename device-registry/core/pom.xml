@@ -41,8 +41,8 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.dm.core.DeviceRegistry</mainClass>
-                            <id>device-manager</id>
+                            <mainClass>org.dc.bco.registry.agent.core.DeviceRegistryLauncher</mainClass>
+                            <id>device-registry</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

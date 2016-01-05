@@ -41,8 +41,8 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.lm.core.LocationRegistry</mainClass>
-                            <id>location-manager</id>
+                            <mainClass>org.dc.bco.registry.agent.core.LocationRegistryLauncher</mainClass>
+                            <id>location-registry</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
