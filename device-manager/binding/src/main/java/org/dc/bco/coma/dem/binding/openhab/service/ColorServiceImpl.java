@@ -20,7 +20,7 @@ import rst.vision.HSVColorType;
  */
 public class ColorServiceImpl<ST extends ColorService & Unit>  extends OpenHABService<ST> implements ColorService {
 
-    public ColorServiceImpl(Device device, ST unit) throws InstantiationException {
+    public ColorServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
 

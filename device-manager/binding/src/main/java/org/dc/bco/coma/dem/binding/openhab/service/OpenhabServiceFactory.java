@@ -31,42 +31,42 @@ public class OpenhabServiceFactory implements ServiceFactory {
     }
 
     @Override
-    public BrightnessService newBrightnessService(Device device, BrightnessService unit) throws InstantiationException {
+    public BrightnessService newBrightnessService(final BrightnessService unit) throws InstantiationException {
         return new BrightnessServiceImpl(device, unit);
     }
 
     @Override
-    public ColorService newColorService(Device device, ColorService unit) throws InstantiationException {
+    public ColorService newColorService(final ColorService unit) throws InstantiationException {
         return new ColorServiceImpl(device, unit);
     }
 
     @Override
-    public PowerService newPowerService(Device device, PowerService unit) throws InstantiationException {
+    public PowerService newPowerService(final PowerService unit) throws InstantiationException {
         return new PowerServiceImpl(device, unit);
     }
 
     @Override
-    public OpeningRatioService newOpeningRatioService(Device device, OpeningRatioService unit) throws InstantiationException {
+    public OpeningRatioService newOpeningRatioService(final OpeningRatioService unit) throws InstantiationException {
         return new OpeningRatioServiceImpl(device, unit);
     }
 
     @Override
-    public ShutterService newShutterService(Device device, ShutterService unit) throws InstantiationException {
+    public ShutterService newShutterService(final ShutterService unit) throws InstantiationException {
         return new ShutterServiceImpl(device, unit);
     }
 
     @Override
-    public DimService newDimmService(Device device, DimService unit) throws InstantiationException {
+    public DimService newDimmService(final DimService unit) throws InstantiationException {
        return new DimServiceImpl(device, unit);
     }
 
     @Override
-    public StandbyService newStandbyService(Device device, StandbyService unit) throws InstantiationException {
+    public StandbyService newStandbyService(final StandbyService unit) throws InstantiationException {
         throw new InstantiationException(this, new NotSupportedException("newStandbyService", this));
     }
 
     @Override
-    public TargetTemperatureService newTargetTemperatureService(Device device, TargetTemperatureService unit) throws InstantiationException {
+    public TargetTemperatureService newTargetTemperatureService(final TargetTemperatureService unit) throws InstantiationException {
         return new TargetTemperatureServiceImpl(device, unit);
     }
 }

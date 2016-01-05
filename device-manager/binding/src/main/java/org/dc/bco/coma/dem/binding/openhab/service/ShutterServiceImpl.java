@@ -20,7 +20,7 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  */
 public class ShutterServiceImpl<ST extends ShutterService & Unit> extends OpenHABService<ST> implements ShutterService {
 
-    public ShutterServiceImpl(Device device, ST unit) throws InstantiationException {
+    public ShutterServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
 

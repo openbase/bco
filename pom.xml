@@ -27,10 +27,10 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <global.dal.version>0.6-SNAPSHOT</global.dal.version>
-        <global.jul.version>0.5-SNAPSHOT</global.jul.version>
-        <global.rst.sandbox.artifact>rst-sandbox-csra-ha-paramite</global.rst.sandbox.artifact>
-        <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
+        <dependency.bco.dal.version>0.6-SNAPSHOT</dependency.bco.dal.version>
+        <dependency.jul.version>0.5-SNAPSHOT</dependency.jul.version>
+        <dependency.rst.sandbox.artifact>rst-sandbox-csra-ha-paramite</dependency.rst.sandbox.artifact>
+        <dependency.rst.sandbox.version>0.12-SNAPSHOT</dependency.rst.sandbox.version>
     </properties>
     
     <packaging>pom</packaging>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.dc</groupId>
             <artifactId>jul.exception</artifactId>
-            <version>${global.jul.version}</version>
+            <version>${dependency.jul.version}</version>
         </dependency>
     </dependencies>
 </project>

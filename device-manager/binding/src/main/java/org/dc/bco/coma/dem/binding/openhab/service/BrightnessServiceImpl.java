@@ -19,7 +19,7 @@ import org.dc.jul.exception.InstantiationException;
  */
 public class BrightnessServiceImpl<ST extends BrightnessService & Unit> extends OpenHABService<ST> implements BrightnessService {
 
-    public BrightnessServiceImpl(Device device, ST unit) throws InstantiationException {
+    public BrightnessServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
 

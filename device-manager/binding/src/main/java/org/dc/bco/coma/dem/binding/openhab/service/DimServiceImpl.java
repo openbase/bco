@@ -19,7 +19,7 @@ import org.dc.jul.exception.InstantiationException;
  */
 public class DimServiceImpl<ST extends DimService & Unit> extends OpenHABService<ST> implements DimService {
 
-    public DimServiceImpl(Device device, ST unit) throws InstantiationException {
+    public DimServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
 

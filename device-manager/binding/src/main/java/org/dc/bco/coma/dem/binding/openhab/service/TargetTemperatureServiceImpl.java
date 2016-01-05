@@ -19,7 +19,7 @@ import org.dc.jul.exception.InstantiationException;
  */
 public class TargetTemperatureServiceImpl<ST extends TargetTemperatureService & Unit> extends OpenHABService<ST> implements TargetTemperatureService {
     
-    public TargetTemperatureServiceImpl(Device device, ST unit) throws InstantiationException {
+    public TargetTemperatureServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
     

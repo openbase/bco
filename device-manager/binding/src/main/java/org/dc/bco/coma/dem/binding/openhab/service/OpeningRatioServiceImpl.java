@@ -19,7 +19,7 @@ import org.dc.jul.exception.InstantiationException;
  */
 public class OpeningRatioServiceImpl<ST extends OpeningRatioService & Unit>  extends OpenHABService<ST> implements OpeningRatioService {
 
-    public OpeningRatioServiceImpl(Device device, ST unit) throws InstantiationException {
+    public OpeningRatioServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
 

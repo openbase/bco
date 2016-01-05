@@ -32,7 +32,39 @@
         <dependency>
             <groupId>org.dc.bco</groupId>
             <artifactId>dal.remote</artifactId>
-            <version>${global.dal.version}</version>
+            <version>${dependency.bco.dal.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        
+<!--        <dependency>
+            hue binding
+            <groupId>com.syncleus.philipshue</groupId>
+            <artifactId>hue-local</artifactId>
+            <version>1.8.1.0</version>
+        </dependency>
+        <dependency>
+            hue binding
+            <groupId>com.syncleus.philipshue</groupId>
+            <artifactId>hue-resources</artifactId>
+            <version>1.8.1.0</version>
+        </dependency>-->
+        <dependency>
+            <!-- for openhab binding habmin zwave config gen -->
+            <groupId>com.io7m.xom</groupId>
+            <artifactId>xom</artifactId>
+            <version>1.2.10</version>
+        </dependency>
+        <dependency>
+            <!-- for openhab binding -->
+            <groupId>org.dc</groupId>
+            <artifactId>jul.extension.rst.processing</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 

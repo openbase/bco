@@ -20,7 +20,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  */
 public class PowerServiceImpl<ST extends PowerService & Unit> extends OpenHABService<ST> implements de.citec.dal.hal.service.PowerService {
 
-    public PowerServiceImpl(Device device, ST unit) throws InstantiationException {
+    public PowerServiceImpl(final ST unit) throws InstantiationException {
         super(device, unit);
     }
 

@@ -40,7 +40,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 	private final ServiceType serviceType;
     private final ServiceConfigType.ServiceConfig config;
 
-	public OpenHABService(final Device device, final ST unit) throws InstantiationException {
+	public OpenHABService(final ST unit) throws InstantiationException {
 		try {
 			this.device = device;
 			this.unit = unit;

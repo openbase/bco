@@ -20,6 +20,7 @@
         <module>core</module>
         <module>remote</module>
         <module>test</module>
+        <module>visual</module>
     </modules>
     
     <dependencies>
