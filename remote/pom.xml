@@ -40,7 +40,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.dal.remote.DALRemote</mainClass>
+                            <mainClass>org.dc.bco.dal.remote.DALRemote</mainClass>
                             <id>dal-remote</id>
                             <platforms>
                                 <platform>unix</platform>

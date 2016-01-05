@@ -40,14 +40,14 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>de.citec.dal.visual.DalVisualRemote</mainClass>
+                            <mainClass>org.dc.bco.dal.visual.DalVisualRemote</mainClass>
                             <id>dal-visual-remote</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>de.citec.dal.visual.DalKNXActuatorCheck</mainClass>
+                            <mainClass>org.dc.bco.dal.visual.DalKNXActuatorCheck</mainClass>
                             <id>dal-knx-actuator-check</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -63,7 +63,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>de.citec.dal.visual.DalVisualRemote</mainClass>
+                            <mainClass>org.dc.bco.dal.visual.DalVisualRemote</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
