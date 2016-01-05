@@ -5,16 +5,16 @@
  */
 package org.dc.bco.coma.dem.binding.openhab.service;
 
-import de.citec.dal.hal.service.BrightnessService;
-import de.citec.dal.hal.service.ColorService;
-import de.citec.dal.hal.service.PowerService;
-import de.citec.dal.hal.service.ServiceFactory;
+import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.ColorService;
+import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.coma.dem.lib.Device;
-import de.citec.dal.hal.service.DimService;
-import de.citec.dal.hal.service.OpeningRatioService;
-import de.citec.dal.hal.service.ShutterService;
-import de.citec.dal.hal.service.StandbyService;
-import de.citec.dal.hal.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.ShutterService;
+import org.dc.bco.dal.lib.layer.service.StandbyService;
+import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotSupportedException;
 

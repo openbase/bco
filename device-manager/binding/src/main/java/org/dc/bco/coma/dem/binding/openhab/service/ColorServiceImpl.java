@@ -6,9 +6,9 @@
 package org.dc.bco.coma.dem.binding.openhab.service;
 
 import org.dc.bco.coma.dem.binding.openhab.OpenHABCommandFactory;
-import de.citec.dal.hal.service.ColorService;
+import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.bco.coma.dem.lib.Device;
-import de.citec.dal.hal.unit.Unit;
+import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import rst.vision.HSVColorType;

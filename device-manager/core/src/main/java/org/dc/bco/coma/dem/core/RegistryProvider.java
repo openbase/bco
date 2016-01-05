@@ -5,8 +5,8 @@
  */
 package org.dc.bco.coma.dem.core;
 
-import de.citec.dal.binding.DALBindingRegistry;
-import de.citec.dal.registry.UnitRegistry;
+import org.dc.bco.dal.lib.binding.DALBindingRegistry;
+import org.dc.bco.dal.lib.registry.UnitRegistry;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 

@@ -5,14 +5,14 @@
  */
 package org.dc.bco.coma.dem.binding.openhab.service;
 
-import de.citec.dal.DALService;
+import org.dc.bco.dal.DALService;
 import org.dc.bco.coma.dem.binding.openhab.OpenHABBinding;
 import org.dc.bco.coma.dem.binding.openhab.OpenHABBindingInterface;
 import org.dc.bco.coma.dem.binding.openhab.transform.ItemTransformer;
-import de.citec.dal.hal.service.Service;
+import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.coma.dem.lib.Device;
-import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.hal.unit.Unit;
+import org.dc.bco.dal.lib.layer.service.ServiceType;
+import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;

@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal;
+package org.dc.bco.dal;
 
 import org.dc.bco.registry.device.core.mock.MockRegistry;
-import de.citec.dal.remote.unit.AmbientLightRemote;
+import org.dc.bco.dal.remote.unit.AmbientLightRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.InitializationException;

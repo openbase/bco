@@ -5,8 +5,8 @@
  */
 package org.dc.bco.coma.scm.visual;
 
-import static de.citec.dal.visual.DalVisualRemote.logger;
-import de.citec.dal.visual.service.AbstractServicePanel;
+import static org.dc.bco.dal.visual.DalVisualRemote.logger;
+import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -64,9 +64,9 @@ public class DalSceneEditor extends javax.swing.JFrame {
 
         sceneCreationPanel = new org.dc.bco.coma.scm.visual.SceneCreationPanel();
         sceneSelectorPanel = new org.dc.bco.coma.scm.visual.SceneSelectorPanel();
-        genericUnitPanel = new de.citec.dal.visual.unit.GenericUnitPanel();
+        genericUnitPanel = new org.dc.bco.dal.visual.unit.GenericUnitPanel();
         saveButton = new javax.swing.JButton();
-        statusPanel1 = new de.citec.dal.visual.util.StatusPanel();
+        statusPanel1 = new org.dc.bco.dal.visual.util.StatusPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -171,10 +171,10 @@ public class DalSceneEditor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private de.citec.dal.visual.unit.GenericUnitPanel genericUnitPanel;
+    private org.dc.bco.dal.visual.unit.GenericUnitPanel genericUnitPanel;
     private javax.swing.JButton saveButton;
     private org.dc.bco.coma.scm.visual.SceneCreationPanel sceneCreationPanel;
     private org.dc.bco.coma.scm.visual.SceneSelectorPanel sceneSelectorPanel;
-    private de.citec.dal.visual.util.StatusPanel statusPanel1;
+    private org.dc.bco.dal.visual.util.StatusPanel statusPanel1;
     // End of variables declaration//GEN-END:variables
 }

@@ -5,7 +5,7 @@
  */
 package org.dc.bco.coma.lom.lib.util;
 
-import de.citec.dal.remote.service.PowerServiceRemote;
+import org.dc.bco.dal.remote.service.PowerServiceRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InstantiationException;

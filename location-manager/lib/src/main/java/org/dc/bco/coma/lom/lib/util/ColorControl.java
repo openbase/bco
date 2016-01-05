@@ -5,8 +5,8 @@
  */
 package org.dc.bco.coma.lom.lib.util;
 
-import de.citec.dal.remote.unit.AmbientLightRemote;
-import de.citec.dal.transform.HSVColorToRGBColorTransformer;
+import org.dc.bco.dal.remote.unit.AmbientLightRemote;
+import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;

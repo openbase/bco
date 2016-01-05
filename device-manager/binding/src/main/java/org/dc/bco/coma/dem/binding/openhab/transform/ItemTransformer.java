@@ -5,7 +5,7 @@
  */
 package org.dc.bco.coma.dem.binding.openhab.transform;
 
-import de.citec.dal.hal.service.Service;
+import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;

@@ -7,8 +7,8 @@ package org.dc.bco.coma.dem.binding.openhab.service;
 
 import org.dc.bco.coma.dem.binding.openhab.OpenHABCommandFactory;
 import org.dc.bco.coma.dem.lib.Device;
-import de.citec.dal.hal.service.DimService;
-import de.citec.dal.hal.unit.Unit;
+import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 

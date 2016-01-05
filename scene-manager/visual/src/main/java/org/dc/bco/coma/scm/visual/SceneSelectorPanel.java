@@ -5,9 +5,9 @@
  */
 package org.dc.bco.coma.scm.visual;
 
-import de.citec.dal.visual.DalVisualRemote;
-import de.citec.dal.visual.util.RSBRemoteView;
-import de.citec.dal.visual.util.StatusPanel;
+import org.dc.bco.dal.visual.DalVisualRemote;
+import org.dc.bco.dal.visual.util.RSBRemoteView;
+import org.dc.bco.dal.visual.util.StatusPanel;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;

@@ -1,7 +1,7 @@
 package org.dc.bco.coma.dem.core;
 
-import de.citec.dal.DALService;
-import de.citec.jps.properties.JPHardwareSimulationMode;
+import org.dc.bco.dal.DALService;
+import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;

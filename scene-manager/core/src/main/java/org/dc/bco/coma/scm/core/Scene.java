@@ -1,7 +1,7 @@
 package org.dc.bco.coma.scm.core;
 
-import de.citec.dal.data.Location;
-import de.citec.dal.hal.service.ServiceFactory;
+import org.dc.bco.dal.lib.data.Location;
+import org.dc.bco.dal.lib.hal.service.ServiceFactory;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Identifiable;

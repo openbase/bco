@@ -1,6 +1,6 @@
 package org.dc.bco.coma.dem.core;
 
-import de.citec.dal.registry.UnitRegistry;
+import org.dc.bco.dal.lib.registry.UnitRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 

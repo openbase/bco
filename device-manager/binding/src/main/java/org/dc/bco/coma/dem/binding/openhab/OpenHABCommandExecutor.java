@@ -6,9 +6,9 @@
 package org.dc.bco.coma.dem.binding.openhab;
 
 import org.dc.bco.coma.dem.binding.openhab.transform.OpenhabCommandTransformer;
-import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.hal.unit.Unit;
-import de.citec.dal.registry.UnitRegistry;
+import org.dc.bco.dal.lib.layer.service.ServiceType;
+import org.dc.bco.dal.lib.layer.unit.Unit;
+import org.dc.bco.dal.lib.registry.UnitRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.processing.StringProcessor;

@@ -6,9 +6,9 @@
 package org.dc.bco.coma.dem.binding.openhab;
 
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.DALService;
-import de.citec.dal.data.Location;
-import de.citec.dal.hal.unit.AbstractUnitCollectionController;
+import org.dc.bco.dal.DALService;
+import org.dc.bco.dal.lib.data.Location;
+import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
 import org.dc.bco.coma.dem.lib.Device;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;

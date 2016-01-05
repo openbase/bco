@@ -5,10 +5,10 @@
  */
 package org.dc.bco.coma.dem.core;
 
-import de.citec.dal.DALService;
-import de.citec.dal.bindings.openhab.AbstractDeviceController;
-import de.citec.dal.bindings.openhab.service.OpenhabServiceFactory;
-import de.citec.dal.hal.service.ServiceFactory;
+import org.dc.bco.dal.DALService;
+import org.dc.bco.dal.bindings.openhab.AbstractDeviceController;
+import org.dc.bco.dal.bindings.openhab.service.OpenhabServiceFactory;
+import org.dc.bco.dal.lib.hal.service.ServiceFactory;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InstantiationException;

@@ -5,7 +5,7 @@ package org.dc.bco.coma.agm.core.preset;
 // * To change this template file, choose Tools | Templates
 // * and open the template in the editor.
 // */
-//package de.citec.dal.remote.control.agent.preset;
+//package org.dc.bco.dal.remote.control.agent.preset;
 //
 //import com.philips.lighting.hue.sdk.PHAccessPoint;
 //import com.philips.lighting.hue.sdk.PHBridgeSearchManager;

@@ -5,12 +5,12 @@
  */
 package org.dc.bco.coma.dem.binding.openhab;
 
-import de.citec.dal.DALService;
-import de.citec.dal.binding.AbstractDALBinding;
+import org.dc.bco.dal.DALService;
+import org.dc.bco.dal.lib.binding.AbstractDALBinding;
 import org.dc.bco.coma.dem.binding.openhab.transform.OpenhabCommandTransformer;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
-import de.citec.jps.properties.JPHardwareSimulationMode;
+import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;

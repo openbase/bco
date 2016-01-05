@@ -1,8 +1,8 @@
 package org.dc.bco.coma.agm.core.preset;
 
-import de.citec.dal.hal.provider.BrightnessProvider;
-import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.remote.unit.BrightnessSensorRemote;
+import org.dc.bco.dal.lib.hal.provider.BrightnessProvider;
+import org.dc.bco.dal.lib.hal.service.ServiceType;
+import org.dc.bco.dal.remote.BrightnessSensorRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;

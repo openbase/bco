@@ -7,7 +7,7 @@
 package org.dc.bco.coma.dem.core;
 
 import org.dc.bco.coma.dem.lib.Device;
-import de.citec.dal.util.ConnectionManager;
+import org.dc.bco.coma.lom.core.ConnectionManager;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InstantiationException;

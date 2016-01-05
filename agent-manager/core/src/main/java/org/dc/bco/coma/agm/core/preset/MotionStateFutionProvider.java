@@ -1,8 +1,8 @@
 package org.dc.bco.coma.agm.core.preset;
 
-import de.citec.dal.hal.provider.MotionProvider;
-import de.citec.dal.hal.service.ServiceType;
-import de.citec.dal.remote.unit.MotionSensorRemote;
+import org.dc.bco.dal.lib.hal.provider.MotionProvider;
+import org.dc.bco.dal.lib.hal.service.ServiceType;
+import org.dc.bco.dal.remote.MotionSensorRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;

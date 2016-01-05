@@ -5,8 +5,8 @@
  */
 package org.dc.bco.coma.dem.lib;
 
-import de.citec.dal.data.Location;
-import de.citec.dal.hal.service.ServiceFactory;
+import org.dc.bco.dal.lib.data.Location;
+import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Identifiable;

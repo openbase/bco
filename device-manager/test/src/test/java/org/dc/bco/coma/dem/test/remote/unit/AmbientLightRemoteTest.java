@@ -3,16 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.citec.dal.remote.unit;
+package org.dc.bco.dal.remote.unit;
 
+import org.dc.bco.dal.remote.unit.AmbientLightRemote;
 import org.dc.bco.registry.device.core.mock.MockRegistry;
-import de.citec.dal.DALService;
-import de.citec.dal.data.Location;
+import org.dc.bco.dal.DALService;
+import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.registry.mock.MockRegistryHolder;
-import de.citec.dal.transform.HSVColorToRGBColorTransformer;
+import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
-import de.citec.jps.properties.JPHardwareSimulationMode;
+import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;

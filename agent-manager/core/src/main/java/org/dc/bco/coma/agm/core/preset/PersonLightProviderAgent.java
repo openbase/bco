@@ -5,7 +5,7 @@
  */
 package org.dc.bco.coma.agm.core.preset;
 
-import de.citec.dal.remote.service.PowerServiceRemote;
+import org.dc.bco.dal.remote.service.PowerServiceRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.pattern.Observable;

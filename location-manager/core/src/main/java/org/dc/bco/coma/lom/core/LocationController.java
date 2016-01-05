@@ -1,7 +1,7 @@
 package org.dc.bco.coma.lom.core;
 
 import org.dc.bco.coma.lom.lib.Location;
-import de.citec.dal.hal.unit.AbstractUnitCollectionController;
+import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
