@@ -5,10 +5,9 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import de.citec.dal.hal.service.DimService;
 import de.citec.dal.hal.service.PowerService;
-import de.citec.dal.hal.service.ServiceFactory;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
@@ -32,14 +31,10 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     private final PowerService powerService;
     private final DimService dimmService;
 
-    public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
-
-    public DimmerController(final UnitConfigType.UnitConfig config, Device device, Dimmer.Builder builder, final ServiceFactory serviceFactory) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
-        super(config, DimmerController.class, device, builder);
-        this.powerService = serviceFactory.newPowerService(device, this);
-        this.dimmService = serviceFactory.newDimmService(device, this);
+    public DimmerController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
+        super(config, DimmerController.class, unitHost, builder);
+        this.powerService = getServiceFactory().newPowerService(this);
+        this.dimmService = getServiceFactory().newDimmService(this);
     }
 
     public void updatePower(final PowerState.State value) throws CouldNotPerformException {

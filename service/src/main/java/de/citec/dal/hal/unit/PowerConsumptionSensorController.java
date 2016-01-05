@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -27,8 +27,8 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(final UnitConfigType.UnitConfig config, Device device, PowerConsumptionSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, PowerConsumptionSensorController.class, device, builder);
+    public PowerConsumptionSensorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final PowerConsumptionSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, PowerConsumptionSensorController.class, unitHost, builder);
     }
 
     public void updatePowerConsumption(final PowerConsumptionState state) throws CouldNotPerformException {

@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -28,11 +28,11 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
 
-    public TamperSwitchController(final UnitConfigType.UnitConfig config, Device device, TamperSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, TamperSwitchController.class, device, builder);
+    public TamperSwitchController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final TamperSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, TamperSwitchController.class, unitHost, builder);
     }
 
-    public void updateTamper(TamperState state) throws CouldNotPerformException {
+    public void updateTamper(final TamperState state) throws CouldNotPerformException {
         
         logger.debug("Apply tamper Update[" + state + "] for " + this + ".");
         

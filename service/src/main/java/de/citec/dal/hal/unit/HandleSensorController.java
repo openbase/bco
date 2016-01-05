@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -27,8 +27,8 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
     }
 
-    public HandleSensorController(final UnitConfigType.UnitConfig config, Device device, HandleSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, HandleSensorController.class, device, builder);
+    public HandleSensorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final HandleSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, HandleSensorController.class, unitHost, builder);
     }
 
     public void updateHandle(final HandleState.State value) throws CouldNotPerformException {

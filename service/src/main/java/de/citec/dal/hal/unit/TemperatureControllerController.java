@@ -5,8 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
-import de.citec.dal.hal.service.ServiceFactory;
+
 import de.citec.dal.hal.service.TargetTemperatureService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -28,13 +27,10 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
 
     private final TargetTemperatureService targetTemperatureService;
 
-    public TemperatureControllerController(final UnitConfigType.UnitConfig config, final Device device, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
 
-    public TemperatureControllerController(final UnitConfigType.UnitConfig config, final Device device, final TemperatureController.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(config, TemperatureControllerController.class, device, builder);
-        this.targetTemperatureService = serviceFactory.newTargetTemperatureService(device, this);
+    public TemperatureControllerController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, TemperatureControllerController.class, unitHost, builder);
+        this.targetTemperatureService = getServiceFactory().newTargetTemperatureService(this);
     }
 
     @Override

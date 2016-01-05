@@ -1,8 +1,7 @@
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import de.citec.dal.hal.service.PowerService;
-import de.citec.dal.hal.service.ServiceFactory;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -26,13 +25,9 @@ public class LightController extends AbstractUnitController<Light, Light.Builder
 
     private final PowerService powerService;
 
-    public LightController(final UnitConfigType.UnitConfig config, Device device, Light.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
-
-    public LightController(final UnitConfigType.UnitConfig config, Device device, Light.Builder builder, ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(config, LightController.class, device, builder);
-        this.powerService = serviceFactory.newPowerService(device, this);
+    public LightController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final Light.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, LightController.class, unitHost, builder);
+        this.powerService = getServiceFactory().newPowerService(this);
     }
 
     public void updatePower(final PowerState.State value) throws CouldNotPerformException {

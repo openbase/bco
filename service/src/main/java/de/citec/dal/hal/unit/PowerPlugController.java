@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import de.citec.dal.hal.service.PowerService;
 import de.citec.dal.hal.service.ServiceFactory;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -31,13 +31,9 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     private final PowerService powerService;
 
-    public PowerPlugController(final UnitConfigType.UnitConfig config, final Device device, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
-
-    public PowerPlugController(final UnitConfigType.UnitConfig config, final Device device, final PowerPlug.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(config, PowerPlugController.class, device, builder);
-        this.powerService = serviceFactory.newPowerService(device, this);
+    public PowerPlugController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, PowerPlugController.class, unitHost, builder);
+        this.powerService = getServiceFactory().newPowerService(this);
     }
 
     public void updatePower(final PowerState.State value) throws CouldNotPerformException {

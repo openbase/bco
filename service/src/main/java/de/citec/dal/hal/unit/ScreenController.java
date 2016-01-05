@@ -5,9 +5,8 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import de.citec.dal.hal.service.PowerService;
-import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.service.StandbyService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -35,14 +34,10 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
     private final PowerService powerService;
     private final StandbyService standbyService;
 
-    public ScreenController(final UnitConfigType.UnitConfig config, final Device device, final Screen.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
-
-    public ScreenController(final UnitConfigType.UnitConfig config, final Device device, final Screen.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(config, ScreenController.class, device, builder);
-        this.powerService = serviceFactory.newPowerService(device, this);
-        this.standbyService = serviceFactory.newStandbyService(device, this);
+    public ScreenController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final Screen.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, ScreenController.class, unitHost, builder);
+        this.powerService = getServiceFactory().newPowerService(this);
+        this.standbyService = getServiceFactory().newStandbyService(this);
     }
 
     public void updatePower(final PowerState.State value) throws CouldNotPerformException {

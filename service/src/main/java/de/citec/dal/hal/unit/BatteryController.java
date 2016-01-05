@@ -5,7 +5,6 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -27,8 +26,8 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
 
-    public BatteryController(final UnitConfigType.UnitConfig config, Device device, Battery.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, BatteryController.class, device, builder);
+    public BatteryController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, Battery.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, BatteryController.class, unitHost, builder);
     }
 
     public void updateBattery(final BatteryState value) throws CouldNotPerformException {

@@ -5,11 +5,11 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
 import com.google.protobuf.GeneratedMessage;
-import de.citec.dal.DALService;
 import de.citec.dal.data.Location;
 import de.citec.dal.hal.service.Service;
+import de.citec.dal.hal.service.ServiceFactory;
+import de.citec.dal.hal.service.ServiceFactoryProvider;
 import de.citec.dal.hal.service.ServiceType;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.rsb.com.RSBCommunicationService;
@@ -34,17 +34,18 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Unit {
+public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Unit, ServiceFactoryProvider {
 
     public final static String TYPE_FILED_ID = "id";
     public final static String TYPE_FILED_LABEL = "label";
 
     protected final UnitConfig config;
     protected final Location location;
-//    private final Device device;
+    private final UnitHost unitHost;
     private final List<Service> serviceList;
+    private final ServiceFactory serviceFactory;
 
-    public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final MB builder) throws CouldNotPerformException {
+    public AbstractUnitController(final UnitConfigType.UnitConfig config, final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
         try {
             if (config == null) {
@@ -66,9 +67,15 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             if (config.getLabel().isEmpty()) {
                 throw new NotAvailableException("Field config.label is emty!");
             }
+
+            if (unitHost.getServiceFactory() == null) {
+                throw new NotAvailableException("service factory");
+            }
+
             this.config = config;
-//            this.device = device;
-            this.location = new Location(DALService.getRegistryProvider().getLocationRegistryRemote().getLocationConfigById(config.getPlacementConfig().getLocationId()));
+            this.unitHost = unitHost;
+            this.serviceFactory = unitHost.getServiceFactory();
+            this.location = new Location(unitHost.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId()));
             this.serviceList = new ArrayList<>();
 
             setField(TYPE_FILED_ID, getId());
@@ -81,7 +88,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                 ex.printExceptionStack();
             }
 
-            DALService.getRegistryProvider().getUnitRegistry().register(this);
+            //TODO mpohling: is this still needed?
+//            DALService.getRegistryProvider().getUnitRegistry().register(this);
 
             init(ScopeTransformer.transform(config.getScope()));
         } catch (CouldNotPerformException ex) {
@@ -109,9 +117,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return location;
     }
 
-//    public Device getDevice() {
-//        return device;
-//    }
+    public UnitHost getUnitHost() {
+        return unitHost;
+    }
 
     @Override
     public UnitConfig getUnitConfig() {
@@ -134,6 +142,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public ServiceType getServiceType() {
         return ServiceType.MULTI;
+    }
+
+    @Override
+    public ServiceFactory getServiceFactory() throws CouldNotPerformException {
+        return serviceFactory;
     }
 
     /**

@@ -58,22 +58,5 @@
             <artifactId>dal.service</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>registr..remote</artifactId>
-            <version>${global.rm.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>agm.remote</artifactId>
-            <version>${global.rm.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>apm.remote</artifactId>
-            <version>${global.rm.version}</version>
-        </dependency>
-                -->
     </dependencies>
 </project>

@@ -25,8 +25,8 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 		DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
 	}
 
-	public BrightnessSensorController(final UnitConfigType.UnitConfig config, BrightnessSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
-		super(config, BrightnessSensorController.class, builder);
+	public BrightnessSensorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, BrightnessSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+		super(config, BrightnessSensorController.class, unitHost, builder);
 	}
 
 	public void updateBrightness(final Double value) throws CouldNotPerformException {
@@ -42,7 +42,6 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 	@Override
 	public Double getBrightness() throws NotAvailableException {
         try {
-            //TODO mpohling: check double or float?
             return getData().getBrightness();
         } catch(CouldNotPerformException ex) {
             throw new NotAvailableException("brightness", ex);

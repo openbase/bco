@@ -5,16 +5,13 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
 import de.citec.dal.hal.service.BrightnessService;
 import de.citec.dal.hal.service.ColorService;
 import de.citec.dal.hal.service.PowerService;
-import de.citec.dal.hal.service.ServiceFactory;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
-import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -39,15 +36,11 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     private final BrightnessService brightnessService;
     private final PowerService powerService;
 
-    public AmbientLightController(final UnitConfigType.UnitConfig config, final Device device, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
-
-    public AmbientLightController(final UnitConfigType.UnitConfig config, final Device device, final AmbientLight.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(config, AmbientLightController.class, device, builder);
-        this.powerService = serviceFactory.newPowerService(device, this);
-        this.colorService = serviceFactory.newColorService(device, this);
-        this.brightnessService = serviceFactory.newBrightnessService(device, this);
+    public AmbientLightController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, AmbientLightController.class, unitHost, builder);
+        this.powerService = getServiceFactory().newPowerService(this);
+        this.colorService = getServiceFactory().newColorService(this);
+        this.brightnessService = getServiceFactory().newBrightnessService(this);
     }
 
     public void updatePower(final PowerState.State value) throws CouldNotPerformException {
@@ -130,10 +123,5 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("brightness", ex);
         }
-    }
-
-    @Override
-    public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
-        super.registerMethods(server); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
@@ -27,9 +27,8 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
 
-    public MotionSensorController(final UnitConfigType.UnitConfig config, final Device device, final MotionSensor.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
-        super(config, MotionSensorController.class, device, builder);
-
+    public MotionSensorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final MotionSensor.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
+        super(config, MotionSensorController.class, unitHost, builder);
     }
 
     public void updateMotion(MotionState state) throws CouldNotPerformException {

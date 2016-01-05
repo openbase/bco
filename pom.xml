@@ -66,12 +66,8 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <global.jul.version>0.5-SNAPSHOT</global.jul.version>
-        <global.rm.version>0.7-SNAPSHOT</global.rm.version>
-        <global.rst.sandbox.artifact>rst-sandbox-csra-ha-paramite</global.rst.sandbox.artifact>
-        <global.rst.sandbox.version>0.12-SNAPSHOT</global.rst.sandbox.version>
-        <global.rst.stable.artifact>rst-csra-ha-paramite</global.rst.stable.artifact>
-        <global.rst.stable.version>0.12-SNAPSHOT</global.rst.stable.version>
+        <dependency.jul.version>0.5-SNAPSHOT</dependency.jul.version>
+        <dependency.bco.registry.version>0.7-SNAPSHOT</dependency.bco.registry.version>
     </properties>
 
     <repositories>
@@ -91,39 +87,12 @@
         <dependency>
             <groupId>org.dc</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>${global.jul.version}</version>
+            <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>${global.rst.stable.artifact}</artifactId>
-            <version>${global.rst.stable.version}</version>
+            <groupId>org.dc</groupId>
+            <artifactId>jul.extension.rst.container</artifactId>
+            <version>${dependency.jul.version}</version>
         </dependency>
-        <dependency>
-            <groupId>rsb</groupId>
-            <artifactId>${global.rst.sandbox.artifact}</artifactId>
-            <version>${global.rst.sandbox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.12</version>
-        </dependency>
-        <!--start hue binding-->
-<!--        <dependency>
-            <groupId>com.syncleus.philipshue</groupId>
-            <artifactId>hue-local</artifactId>
-            <version>1.8.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.syncleus.philipshue</groupId>
-            <artifactId>hue-resources</artifactId>
-            <version>1.8.1.0</version>
-        </dependency>-->
-        <!--end hue binding-->
     </dependencies>
 </project>

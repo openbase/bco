@@ -104,13 +104,7 @@
         <dependency>
             <groupId>org.dc</groupId>
             <artifactId>jul.visual</artifactId>
-            <version>${global.jul.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.dc.bco</groupId>
-            <artifactId>scm.remote</artifactId>
-            <version>${global.rm.version}</version>
+            <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>

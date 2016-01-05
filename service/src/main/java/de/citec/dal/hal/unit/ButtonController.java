@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -28,8 +28,8 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
 
-    public ButtonController(final UnitConfigType.UnitConfig config, Device device, Button.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, ButtonController.class, device, builder);
+    public ButtonController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final Button.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, ButtonController.class, unitHost, builder);
     }
 
     public void updateButton(final ButtonState state) throws CouldNotPerformException {

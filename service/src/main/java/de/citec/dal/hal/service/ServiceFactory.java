@@ -5,7 +5,7 @@
  */
 package de.citec.dal.hal.service;
 
-import org.dc.bco.coma.dem.lib.Device;
+import de.citec.dal.hal.unit.Unit;
 import org.dc.jul.exception.InstantiationException;
 
 /**
@@ -14,20 +14,20 @@ import org.dc.jul.exception.InstantiationException;
  */
 public interface ServiceFactory {
 
-    public abstract BrightnessService newBrightnessService(Device device, BrightnessService unit) throws InstantiationException;
+    public abstract <UNIT extends BrightnessService & Unit> BrightnessService newBrightnessService(UNIT unit) throws InstantiationException;
 
-    public abstract ColorService newColorService(Device device, ColorService unit) throws InstantiationException;
+    public abstract <UNIT extends ColorService & Unit> ColorService newColorService(UNIT unit) throws InstantiationException;
 
-    public abstract PowerService newPowerService(Device device, PowerService unit) throws InstantiationException;
-    
-    public abstract OpeningRatioService newOpeningRatioService(Device device, OpeningRatioService unit) throws InstantiationException;
-    
-    public abstract ShutterService newShutterService(Device device, ShutterService unit) throws InstantiationException;
-    
-    public abstract DimService newDimmService(Device device, DimService unit) throws InstantiationException;
-    
-    public abstract StandbyService newStandbyService(Device device, StandbyService unit) throws InstantiationException;
-    
-    public abstract TargetTemperatureService newTargetTemperatureService(Device device, TargetTemperatureService unit) throws InstantiationException;
-    
+    public abstract <UNIT extends PowerService & Unit> PowerService newPowerService(UNIT unit) throws InstantiationException;
+
+    public abstract <UNIT extends OpeningRatioService & Unit> OpeningRatioService newOpeningRatioService(UNIT unit) throws InstantiationException;
+
+    public abstract <UNIT extends ShutterService & Unit> ShutterService newShutterService(UNIT unit) throws InstantiationException;
+
+    public abstract <UNIT extends DimService & Unit> DimService newDimmService(UNIT unit) throws InstantiationException;
+
+    public abstract <UNIT extends StandbyService & Unit> StandbyService newStandbyService(UNIT unit) throws InstantiationException;
+
+    public abstract <UNIT extends TargetTemperatureService & Unit> TargetTemperatureService newTargetTemperatureService(UNIT unit) throws InstantiationException;
+
 }

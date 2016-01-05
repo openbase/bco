@@ -7,7 +7,7 @@ package de.citec.dal.hal.unit;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-import org.dc.bco.coma.dem.lib.Device;
+
 import java.util.HashMap;
 import java.util.Map;
 import de.citec.dal.hal.unit.AbstractUnitController;
@@ -106,7 +106,7 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
 
             Constructor<? extends AbstractUnitController> unitConstructor;
             try {
-                unitConstructor = UnitConfigToUnitClassTransformer.transform(unitConfig).getConstructor(UnitConfigType.UnitConfig.class, Device.class, unitMessageBuilder.getClass());
+                unitConstructor = UnitConfigToUnitClassTransformer.transform(unitConfig).getConstructor(UnitConfigType.UnitConfig.class, UnitHost.class, unitMessageBuilder.getClass());
             } catch (CouldNotTransformException | NoSuchMethodException | SecurityException | NullPointerException ex) {
                 throw new CouldNotPerformException("Could not instantiate Unit[" + unitConfig + "]!", ex);
             }

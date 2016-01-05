@@ -39,11 +39,6 @@ public class ObserveServiceStateChangesViaRemoteLib {
             DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
             deviceRegistryRemote.init();
             deviceRegistryRemote.activate();
-//            
-//            deviceRegistryRemote.gets
-//                    
-//                    LocationRegistryRemote l;
-//                    l.get
             
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);

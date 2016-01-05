@@ -5,9 +5,8 @@
  */
 package de.citec.dal.hal.unit;
 
-import org.dc.bco.coma.dem.lib.Device;
+
 import de.citec.dal.hal.service.OpeningRatioService;
-import de.citec.dal.hal.service.ServiceFactory;
 import de.citec.dal.hal.service.ShutterService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -33,14 +32,10 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     private final ShutterService shutterService;
     private final OpeningRatioService openingRatioService;
 
-    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
-        this(config, device, builder, device.getServiceFactory());
-    }
-
-    public RollershutterController(final UnitConfigType.UnitConfig config, Device device, Rollershutter.Builder builder, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(config, RollershutterController.class, device, builder);
-        this.shutterService = serviceFactory.newShutterService(device, this);
-        this.openingRatioService = serviceFactory.newOpeningRatioService(device, this);
+    public RollershutterController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(config, RollershutterController.class, unitHost, builder);
+        this.shutterService = getServiceFactory().newShutterService(this);
+        this.openingRatioService = getServiceFactory().newOpeningRatioService(this);
     }
 
     public void updateShutter(final ShutterState.State value) throws CouldNotPerformException {
