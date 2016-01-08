@@ -13,6 +13,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -21,7 +22,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  * @param <M>
  * @param <MB>
  */
-    public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitCollectionController<M, MB> implements Device {
+public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitCollectionController<M, MB> implements Device {
 
     public final static String DEVICE_TYPE_FILED_CONFIG = "config";
 
@@ -36,20 +37,22 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
             setField(DEVICE_TYPE_FILED_CONFIG, config);
 
-            try {
-                init(config.getScope());
-            } catch (InitializationException ex) {
-                throw new InstantiationException("Could not init RSBCommunicationService!", ex);
-            }
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(RSBCommunicationService.class, ex);
+        }
+    }
+
+    public void init() throws InitializationException {
+        try {
+            init(config.getScope());
 
             try {
                 registerUnits(config.getUnitConfigList());
             } catch (CouldNotPerformException ex) {
                 throw new InstantiationException(this, ex);
             }
-            
         } catch (CouldNotPerformException ex) {
-            throw new InstantiationException("Could not init RSBCommunicationService!", ex);
+            throw new InitializationException(this, ex);
         }
     }
 

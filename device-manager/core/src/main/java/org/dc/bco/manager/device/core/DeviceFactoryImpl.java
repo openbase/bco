@@ -19,6 +19,7 @@ public class DeviceFactoryImpl extends AbstractDeviceFactory {
     private final ServiceFactory serviceFactory;
 
     public DeviceFactoryImpl(final ServiceFactory serviceFactory) throws InstantiationException {
+        assert serviceFactory != null;
         this.serviceFactory = serviceFactory;
     }
 

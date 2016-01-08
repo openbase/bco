@@ -53,21 +53,21 @@
                     <programs>
                         <program>
                             <mainClass>org.dc.bco.dal.bindings.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
-                            <id>dal-openhab-config-generator</id>
+                            <id>binding-openhab-config-generator</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
                             <mainClass>org.dc.bco.dal.bindings.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
-                            <id>dal-openhabmin-zwave-config-updater</id>
+                            <id>binding-openhab-habmin-zwave-config-updater</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
                             <mainClass>org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher</mainClass>
-                            <id>dal-openhab-device-service</id>
+                            <id>binding-openhab-device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
