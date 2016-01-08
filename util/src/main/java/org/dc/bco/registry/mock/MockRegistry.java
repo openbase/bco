@@ -5,30 +5,20 @@
  */
 package org.dc.bco.registry.mock;
 
-import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
-import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
-import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
-import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
-import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.dc.bco.registry.location.lib.jp.JPLocationConfigDatabaseDirectory;
-import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
-import org.dc.jps.core.JPService;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.extension.rsb.scope.ScopeGenerator;
-import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
-import org.dc.jul.storage.registry.jp.JPInitializeDB;
-import org.dc.bco.registry.location.core.LocationRegistryLauncher;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.dc.bco.registry.agent.core.AgentRegistryLauncher;
 import org.dc.bco.registry.app.core.AppRegistryLauncher;
+import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.location.core.LocationRegistryLauncher;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
+import org.dc.jps.core.JPService;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
@@ -129,12 +119,8 @@ public class MockRegistry {
 
     public MockRegistry() throws InstantiationException {
         try {
-            String user = ScopeGenerator.convertIntoValidScopeComponent(System.getProperty("user.name"));
+//            String user = ScopeGenerator.convertIntoValidScopeComponent(System.getProperty("user.name"));
 //            JPService.registerProperty(JPInitializeDB.class, true);
-//            JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + user + "/test-device-registry"));
-//            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
-//            JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
-//            JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
             JPService.setupJUnitTestMode();
 
             Thread deviceRegistryThread = new Thread(new Runnable() {
