@@ -1,6 +1,6 @@
 package org.dc.bco.dal.lib.layer.service;
 
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
@@ -8,5 +8,5 @@ import org.dc.jul.exception.CouldNotPerformException;
  */
 public interface ServiceFactoryProvider {
 
-    public ServiceFactory getServiceFactory() throws CouldNotPerformException;
+    public ServiceFactory getServiceFactory() throws NotAvailableException;
 }

@@ -55,7 +55,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>dal.service</artifactId>
+            <artifactId>dal.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

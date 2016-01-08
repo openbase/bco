@@ -145,7 +145,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public ServiceFactory getServiceFactory() throws CouldNotPerformException {
+    public ServiceFactory getServiceFactory() throws NotAvailableException {
         return serviceFactory;
     }
 

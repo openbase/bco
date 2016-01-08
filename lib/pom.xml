@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>dal.service</artifactId>
+    <artifactId>dal.lib</artifactId>
     <packaging>jar</packaging>
 
     <name>DAL Library</name>
@@ -31,12 +31,32 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
+            <artifactId>registry.agent.remote</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.app.remote</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
             <artifactId>registry.device.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
             <artifactId>registry.location.remote</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.scene.remote</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.user.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>

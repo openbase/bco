@@ -6,7 +6,7 @@
 package org.dc.bco.dal.lib.binding;
 
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.storage.registry.Registry;
+import org.dc.jul.storage.registry.RegistryImpl;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
@@ -14,18 +14,20 @@ import java.util.HashMap;
  *
  * @author mpohling
  */
-public class DALBindingRegistry extends Registry<Class<? extends Binding>, Binding> {
+public class DALBindingRegistryImpl extends RegistryImpl<Class<? extends Binding>, Binding> {
 
-    public DALBindingRegistry() throws org.dc.jul.exception.InstantiationException {
+    public DALBindingRegistryImpl() throws org.dc.jul.exception.InstantiationException {
     }
 
-    public DALBindingRegistry(HashMap<Class<? extends Binding>, Binding> entryMap) throws org.dc.jul.exception.InstantiationException {
+    public DALBindingRegistryImpl(HashMap<Class<? extends Binding>, Binding> entryMap) throws org.dc.jul.exception.InstantiationException {
         super(entryMap);
     }
 
     public <BC extends Binding> BC getBinding(Class<BC> key) throws CouldNotPerformException {
         return (BC) super.get(key);
     }
+
+
 
     public void register(Class<? extends Binding> bindingClazz) throws CouldNotPerformException {
         try {

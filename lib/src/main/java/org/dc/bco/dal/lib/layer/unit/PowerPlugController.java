@@ -7,7 +7,6 @@ package org.dc.bco.dal.lib.layer.unit;
 
 
 import org.dc.bco.dal.lib.layer.service.PowerService;
-import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;

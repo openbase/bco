@@ -35,7 +35,7 @@ import rst.homeautomation.unit.UnitConfigType;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractUnitCollectionController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Identifiable<String>{
+public abstract class AbstractUnitCollectionController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Identifiable<String>, UnitHost {
 
     private final Map<String, AbstractUnitController> unitMap;
 
