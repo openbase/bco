@@ -8,6 +8,7 @@ package org.dc.bco.manager.device.core;
 import com.google.protobuf.GeneratedMessage;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
+import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.bco.manager.device.lib.Device;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
@@ -48,9 +49,14 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
             try {
                 registerUnits(config.getUnitConfigList());
+
+                for (Unit unit : getUnits()) {
+                    DeviceManagerController.getDeviceManager().getUnitControllerRegistry().register(unit);
+                }
             } catch (CouldNotPerformException ex) {
                 throw new InstantiationException(this, ex);
             }
+
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
