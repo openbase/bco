@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.apm.core</artifactId>
+    <artifactId>manager.app.core</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA AppManager Core</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>coma.apm</artifactId>
+        <artifactId>manager.app</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.coma.apm.core.AppManager</mainClass>
+                            <mainClass>org.dc.bco.manager.app.core.AppManager</mainClass>
                             <id>app-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -56,7 +56,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.apm.lib</artifactId>
+            <artifactId>manager.app.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

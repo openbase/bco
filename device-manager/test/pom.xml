@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.dem.test</artifactId>
+    <artifactId>manager.device.test</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA DeviceManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>coma.dem</artifactId>
+        <artifactId>manager.device</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,18 +38,24 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.dem.lib</artifactId>
+            <artifactId>manager.device.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.dem.core</artifactId>
+            <artifactId>manager.device.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.dem.remote</artifactId>
+            <artifactId>manager.device.remote</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.util</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.agm.test</artifactId>
+    <artifactId>manager.agent.test</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA AgentManager Test</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>coma.agm</artifactId>
+        <artifactId>manager.agent</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -38,18 +38,30 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.agm.lib</artifactId>
+            <artifactId>manager.agent.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.agm.core</artifactId>
+            <artifactId>manager.agent.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.agm.remote</artifactId>
+            <artifactId>manager.agent.remote</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>manager.device.core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.util</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

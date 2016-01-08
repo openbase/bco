@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.dc.bco</groupId>
+    <artifactId>manager.device.binding.openhab</artifactId>
+    <packaging>jar</packaging>
+
+    <name>COMA DeviceManager Binding OpenHAB</name>
+    
+    <parent>
+        <groupId>org.dc.bco</groupId>
+        <artifactId>manager.device.binding</artifactId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>    
+    
+    <url>http://maven.apache.org</url>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.8.1</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <programs>
+                        <program>
+                            <mainClass>org.dc.bco.dal.bindings.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
+                            <id>dal-openhab-config-generator</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.dc.bco.dal.bindings.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
+                            <id>dal-openhabmin-zwave-config-updater</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>manager.device.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!--        <dependency>
+            hue binding
+            <groupId>com.syncleus.philipshue</groupId>
+            <artifactId>hue-local</artifactId>
+            <version>1.8.1.0</version>
+        </dependency>
+        <dependency>
+            hue binding
+            <groupId>com.syncleus.philipshue</groupId>
+            <artifactId>hue-resources</artifactId>
+            <version>1.8.1.0</version>
+        </dependency>-->
+        <dependency>
+            <!-- for openhab binding habmin zwave config gen -->
+            <groupId>com.io7m.xom</groupId>
+            <artifactId>xom</artifactId>
+            <version>1.2.10</version>
+        </dependency>
+        <dependency>
+            <!-- for openhab binding -->
+            <groupId>org.dc</groupId>
+            <artifactId>jul.extension.rst.processing</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.lom.core</artifactId>
+    <artifactId>manager.location.core</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA LocationManager Core</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>coma.lom</artifactId>
+        <artifactId>manager.location</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
     
@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.coma.lm.core.LocationManager</mainClass>
+                            <mainClass>org.dc.bco.manager.lm.core.LocationManager</mainClass>
                             <id>location-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -56,7 +56,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>coma.lom.lib</artifactId>
+            <artifactId>manager.location.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

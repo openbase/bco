@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>coma.usm.lib</artifactId>
+    <artifactId>manager.user.lib</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA UserManager Library</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>coma.usm</artifactId>
+        <artifactId>manager.user</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>    
     
