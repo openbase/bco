@@ -79,26 +79,26 @@ public class DeviceRegistryLauncher {
 
         JPService.parseAndExitOnError(args);
 
-        DeviceRegistryLauncher deviceManager;
+        DeviceRegistryLauncher deviceRegistry;
         try {
-            deviceManager = new DeviceRegistryLauncher();
+            deviceRegistry = new DeviceRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         ExceptionStack exceptionStack = null;
 
-        if (!deviceManager.getDeviceRegistry().getUnitTemplateRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!deviceRegistry.getDeviceRegistry().getUnitTemplateRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        if (!deviceManager.getDeviceRegistry().getDeviceClassRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!deviceRegistry.getDeviceRegistry().getDeviceClassRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        if (!deviceManager.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("DeviceConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!deviceRegistry.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        if (!deviceManager.getDeviceRegistry().getUnitGroupRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceManager, new VerificationFailedException("UnitGroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!deviceRegistry.getDeviceRegistry().getUnitGroupRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("UnitGroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

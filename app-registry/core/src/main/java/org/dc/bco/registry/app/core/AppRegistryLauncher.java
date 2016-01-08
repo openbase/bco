@@ -74,17 +74,17 @@ public class AppRegistryLauncher {
 
         JPService.parseAndExitOnError(args);
 
-        AppRegistryLauncher appManager;
+        AppRegistryLauncher appRegistry;
         try {
-            appManager = new AppRegistryLauncher();
+            appRegistry = new AppRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!appManager.getAppRegistry().getAppConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(appManager, new VerificationFailedException("AppConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!appRegistry.getAppRegistry().getAppConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(appRegistry, new VerificationFailedException("AppConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

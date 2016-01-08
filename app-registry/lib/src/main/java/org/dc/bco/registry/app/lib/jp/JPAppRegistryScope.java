@@ -22,7 +22,7 @@ public class JPAppRegistryScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return new Scope("/appmanager/registry");
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/app"));
     }
     
     @Override

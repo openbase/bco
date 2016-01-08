@@ -22,7 +22,7 @@ public class JPSceneRegistryScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return new Scope("/scenemanager/registry");
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/scene"));
     }
     
     @Override

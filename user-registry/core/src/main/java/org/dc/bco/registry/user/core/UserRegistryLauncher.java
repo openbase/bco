@@ -32,7 +32,7 @@ public class UserRegistryLauncher {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRegistryLauncher.class);
 
-    public static final String USER_MANAGER_NAME = UserRegistryLauncher.class.getSimpleName();
+    public static final String USER_REGISTRY_NAME = UserRegistryLauncher.class.getSimpleName();
 
     private final UserRegistryController userRegistry;
 
@@ -57,10 +57,10 @@ public class UserRegistryLauncher {
     }
 
     public static void main(String args[]) throws Throwable {
-        logger.info("Start " + USER_MANAGER_NAME + "...");
+        logger.info("Start " + USER_REGISTRY_NAME + "...");
 
         /* Setup JPService */
-        JPService.setApplicationName(USER_MANAGER_NAME);
+        JPService.setApplicationName(USER_REGISTRY_NAME);
 
         JPService.registerProperty(JPUserRegistryScope.class);
         JPService.registerProperty(JPUserConfigDatabaseDirectory.class);
@@ -74,28 +74,28 @@ public class UserRegistryLauncher {
 
         JPService.parseAndExitOnError(args);
 
-        UserRegistryLauncher userManager;
+        UserRegistryLauncher userRegistry;
         try {
-            userManager = new UserRegistryLauncher();
+            userRegistry = new UserRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!userManager.getUserRegistry().getUserRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(userManager, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!userRegistry.getUserRegistry().getUserRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(userRegistry, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
-        if (!userManager.getUserRegistry().getGroupRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(userManager, new VerificationFailedException("GroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!userRegistry.getUserRegistry().getGroupRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(userRegistry, new VerificationFailedException("GroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {
-            MultiException.checkAndThrow(USER_MANAGER_NAME + " started in fallback mode!", exceptionStack);
+            MultiException.checkAndThrow(USER_REGISTRY_NAME + " started in fallback mode!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-        logger.info(USER_MANAGER_NAME + " successfully started.");
+        logger.info(USER_REGISTRY_NAME + " successfully started.");
     }
 }

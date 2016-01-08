@@ -7,7 +7,7 @@ package org.dc.bco.registry.device.core.plugin;
 
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.dc.jul.storage.registry.RegistryInterface;
+import org.dc.jul.storage.registry.Registry;
 import org.dc.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.unit.UnitTemplateType;
@@ -27,7 +27,7 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
     }
 
     @Override
-    public void init(RegistryInterface reg) throws CouldNotPerformException {
+    public void init(Registry reg) throws CouldNotPerformException {
         try {
             String templateId;
             UnitTemplate template;

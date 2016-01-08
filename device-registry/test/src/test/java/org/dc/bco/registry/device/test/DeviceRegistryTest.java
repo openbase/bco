@@ -89,12 +89,12 @@ public class DeviceRegistryTest {
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException {
-        JPService.registerProperty(JPInitializeDB.class, true);
-        JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/devicemanager/registry/"));
-        JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/locationmanager/registry/"));
-        JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
+//        JPService.registerProperty(JPInitializeDB.class, true);
+//        JPService.registerProperty(JPDeviceRegistryScope.class);
+//        JPService.registerProperty(JPLocationRegistryScope.class);
+//        JPService.registerProperty(JPDatabaseDirectory.class);
+//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
+//        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
 
         deviceRegistry = new DeviceRegistryController();

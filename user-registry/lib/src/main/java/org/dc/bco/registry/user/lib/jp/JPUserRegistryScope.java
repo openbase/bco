@@ -22,7 +22,7 @@ public class JPUserRegistryScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return new Scope("/user/registry");
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/user"));
     }
     
     @Override

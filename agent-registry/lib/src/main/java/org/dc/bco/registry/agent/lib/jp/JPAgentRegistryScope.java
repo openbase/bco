@@ -22,7 +22,7 @@ public class JPAgentRegistryScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return new Scope("/agentregistry/registry");
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/agent"));
     }
     
     @Override

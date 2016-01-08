@@ -13,13 +13,42 @@
     <description>Registry Manager Collection</description>
     
     <organization>
-        <name>DC</name>
-        <url>https://www.cit-ec.de</url>
+        <name>DivineCooperation</name>
+        <url>https://github.com/divinecooperation</url>
     </organization>
+    <developers>
+        <developer>
+            <id>DivineThreepwood</id>
+            <name>Marian Pohling</name>
+
+            <email>divinethreepwood@gmail.com</email>
+            <url>https://github.com/DivineThreepwood</url>
+            <organization>DivineCooperation</organization>
+            <organizationUrl>https://github.com/divinecooperation</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <id>pLeminoq</id>
+            <name>Tamino Huxohl</name>
+            <email>taminoh@ymail.com</email>
+            <url>https://github.com/pLeminoq</url>
+            <organization>DivineCooperation</organization>
+            <organizationUrl>https://github.com/divinecooperation</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
     
     <scm>
-        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
-        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
+        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-registry.git</developerConnection>
+        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-registry.git</url>
     </scm>
     
     <properties>

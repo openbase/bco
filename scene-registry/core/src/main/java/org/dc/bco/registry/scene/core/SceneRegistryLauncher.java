@@ -75,17 +75,17 @@ public class SceneRegistryLauncher {
 
         JPService.parseAndExitOnError(args);
 
-        SceneRegistryLauncher sceneManager;
+        SceneRegistryLauncher sceneRegistry;
         try {
-            sceneManager = new SceneRegistryLauncher();
+            sceneRegistry = new SceneRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!sceneManager.getSceneRegistry().getSceneConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(sceneManager, new VerificationFailedException("SceneConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!sceneRegistry.getSceneRegistry().getSceneConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(sceneRegistry, new VerificationFailedException("SceneConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

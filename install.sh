@@ -1,5 +1,5 @@
 #!/bin/bash
-APP_NAME='registry-manager'
+APP_NAME='registry-registry'
 clear &&
 echo "=== clean ${APP_NAME} ===" &&
 mvn clean $@ &&

@@ -74,17 +74,17 @@ public class AgentRegistryLauncher {
 
         JPService.parseAndExitOnError(args);
 
-        AgentRegistryLauncher agentManager;
+        AgentRegistryLauncher agentRegistry;
         try {
-            agentManager = new AgentRegistryLauncher();
+            agentRegistry = new AgentRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!agentManager.getAgentRegistry().getAgentConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(agentManager, new VerificationFailedException("AgentConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!agentRegistry.getAgentRegistry().getAgentConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(agentRegistry, new VerificationFailedException("AgentConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

@@ -72,11 +72,11 @@ public class MockRegistry {
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
 
-    private static DeviceRegistryLauncher deviceManager;
-    private static LocationRegistryLauncher locationManager;
-    private static AgentRegistryLauncher agentManager;
-    private static AppRegistryLauncher appManager;
-    private static SceneRegistryLauncher sceneManager;
+    private static DeviceRegistryLauncher deviceRegistry;
+    private static LocationRegistryLauncher locationRegistry;
+    private static AgentRegistryLauncher agentRegistry;
+    private static AppRegistryLauncher appRegistry;
+    private static SceneRegistryLauncher sceneRegistry;
 
     private final DeviceRegistryRemote deviceRemote;
     private final LocationRegistryRemote locationRemote;
@@ -130,13 +130,11 @@ public class MockRegistry {
     public MockRegistry() throws InstantiationException {
         try {
             String user = ScopeGenerator.convertIntoValidScopeComponent(System.getProperty("user.name"));
-            JPService.registerProperty(JPInitializeDB.class, true);
-            JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + user + "/test-device-manager"));
-            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
-            JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
-            JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
-            JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/" + user + "/device_registry"));
-            JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/" + user + "/location_registry"));
+//            JPService.registerProperty(JPInitializeDB.class, true);
+//            JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + user + "/test-device-registry"));
+//            JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
+//            JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
+//            JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
             JPService.setupJUnitTestMode();
 
             Thread deviceRegistryThread = new Thread(new Runnable() {
@@ -144,7 +142,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        deviceManager = new DeviceRegistryLauncher();
+                        deviceRegistry = new DeviceRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -156,7 +154,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        locationManager = new LocationRegistryLauncher();
+                        locationRegistry = new LocationRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -168,7 +166,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        agentManager = new AgentRegistryLauncher();
+                        agentRegistry = new AgentRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -180,7 +178,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        appManager = new AppRegistryLauncher();
+                        appRegistry = new AppRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -192,7 +190,7 @@ public class MockRegistry {
                 @Override
                 public void run() {
                     try {
-                        sceneManager = new SceneRegistryLauncher();
+                        sceneRegistry = new SceneRegistryLauncher();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
@@ -236,11 +234,11 @@ public class MockRegistry {
     public void shutdown() {
         deviceRemote.shutdown();
         locationRemote.shutdown();
-        deviceManager.shutdown();
-        locationManager.shutdown();
-        agentManager.shutdown();
-        appManager.shutdown();
-        sceneManager.shutdown();
+        deviceRegistry.shutdown();
+        locationRegistry.shutdown();
+        agentRegistry.shutdown();
+        appRegistry.shutdown();
+        sceneRegistry.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException {

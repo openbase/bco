@@ -12,7 +12,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rct.transform.PoseTransformer;
-import org.dc.jul.storage.registry.RegistryInterface;
+import org.dc.jul.storage.registry.Registry;
 import org.dc.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     }
 
     @Override
-    public void init(RegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry) throws CouldNotPerformException {
+    public void init(Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry) throws CouldNotPerformException {
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry : registry.getEntries()) {
             publishtransformation(entry);
         }

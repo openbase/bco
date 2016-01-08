@@ -22,7 +22,7 @@ public class JPLocationRegistryScope extends JPScope {
     
     @Override
     protected Scope getPropertyDefaultValue() {
-        return new Scope("/locationmanager/registry");
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/location"));
     }
     
     @Override

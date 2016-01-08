@@ -74,17 +74,17 @@ public class LocationRegistryLauncher {
 
         JPService.parseAndExitOnError(args);
 
-        LocationRegistryLauncher locationManager;
+        LocationRegistryLauncher locationRegistry;
         try {
-            locationManager = new LocationRegistryLauncher();
+            locationRegistry = new LocationRegistryLauncher();
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!locationManager.getLocationRegistry().getLocationConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(locationManager, new VerificationFailedException("LocationConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!locationRegistry.getLocationRegistry().getLocationConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(locationRegistry, new VerificationFailedException("LocationConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

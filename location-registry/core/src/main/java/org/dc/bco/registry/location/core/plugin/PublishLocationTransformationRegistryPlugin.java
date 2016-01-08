@@ -15,7 +15,7 @@ import org.dc.jul.exception.printer.LogLevel;
  */
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rct.transform.PoseTransformer;
-import org.dc.jul.storage.registry.RegistryInterface;
+import org.dc.jul.storage.registry.Registry;
 import org.dc.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.dc.bco.registry.location.core.LocationRegistryLauncher;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     }
     
     @Override
-    public void init(RegistryInterface<String, IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>, ?> registry) throws CouldNotPerformException {
+    public void init(Registry<String, IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>, ?> registry) throws CouldNotPerformException {
         for (IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entry : registry.getEntries()) {
             publishtransformation(entry);
         }

@@ -22,7 +22,7 @@ public class JPDeviceRegistryScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return new Scope("/devicemanager/registry");
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/device"));
     }
     
     @Override
