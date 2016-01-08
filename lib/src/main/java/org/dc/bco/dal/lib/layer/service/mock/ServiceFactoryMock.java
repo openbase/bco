@@ -250,11 +250,11 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
             String methodName;
             try {
-                methodName = stackTrace[1].getMethodName().replaceFirst("set", "update");
+                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update");
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not detect update method name!", ex);
             }
-            unit.getClass().getMethod(methodName, argument.getClass()).invoke(argument, stackTrace);
+            unit.getClass().getMethod(methodName, argument.getClass()).invoke(unit, argument);
 //            return (Future<RETURN>) remote.callMethodAsync(methodName, argument);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);
