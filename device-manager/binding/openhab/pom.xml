@@ -65,6 +65,13 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher</mainClass>
+                            <id>dal-openhab-device-service</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>
