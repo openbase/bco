@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.registry.agent.core.AppRegistryLauncher</mainClass>
+                            <mainClass>org.dc.bco.registry.app.core.AppRegistryLauncher</mainClass>
                             <id>app-registry</id>
                             <platforms>
                                 <platform>unix</platform>

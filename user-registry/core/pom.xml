@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.registry.agent.core.UserRegistryLauncher</mainClass>
+                            <mainClass>org.dc.bco.registry.user.core.UserRegistryLauncher</mainClass>
                             <id>user-registry</id>
                             <platforms>
                                 <platform>unix</platform>

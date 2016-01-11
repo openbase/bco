@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.registry.agent.core.LocationRegistryLauncher</mainClass>
+                            <mainClass>org.dc.bco.registry.location.core.LocationRegistryLauncher</mainClass>
                             <id>location-registry</id>
                             <platforms>
                                 <platform>unix</platform>

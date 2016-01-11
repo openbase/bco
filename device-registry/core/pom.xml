@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.registry.agent.core.DeviceRegistryLauncher</mainClass>
+                            <mainClass>org.dc.bco.registry.device.core.DeviceRegistryLauncher</mainClass>
                             <id>device-registry</id>
                             <platforms>
                                 <platform>unix</platform>

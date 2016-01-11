@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.registry.agent.core.SceneRegistryLauncher</mainClass>
+                            <mainClass>org.dc.bco.registry.scene.core.SceneRegistryLauncher</mainClass>
                             <id>scene-registry</id>
                             <platforms>
                                 <platform>unix</platform>
