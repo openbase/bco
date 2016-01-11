@@ -1,8 +1,6 @@
 package org.dc.bco.manager.device.binding.openhab;
 
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.dc.bco.manager.device.core.DeviceManagerLauncher;
-import org.dc.bco.manager.device.lib.DeviceManager;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
@@ -48,7 +46,7 @@ public class OpenHABBindingLauncher {
     public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
 
         /* Setup JPService */
-        JPService.setApplicationName(OpenHABBindingImpl.class);
+        JPService.setApplicationName(OpenHABBinding.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
@@ -57,7 +55,7 @@ public class OpenHABBindingLauncher {
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
         try {
-            new DeviceManagerLauncher().launch();
+            new OpenHABBindingLauncher().launch();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
