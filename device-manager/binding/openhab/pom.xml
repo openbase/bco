@@ -28,6 +28,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -52,14 +53,14 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.dal.bindings.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
+                            <mainClass>org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
                             <id>binding-openhab-config-generator</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.dc.bco.dal.bindings.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
+                            <mainClass>org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
                             <id>binding-openhab-habmin-zwave-config-updater</id>
                             <platforms>
                                 <platform>unix</platform>
