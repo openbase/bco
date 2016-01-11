@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.dc.bco</groupId>
             <artifactId>registry.user.lib</artifactId>
-            <version>0.7-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
