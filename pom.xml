@@ -47,8 +47,8 @@
     </developers>
     
     <scm>
-        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-registry.git</developerConnection>
-        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-registry.git</url>
+        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
+        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
     </scm>
     
     <properties>
