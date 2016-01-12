@@ -7,6 +7,7 @@ import org.dc.bco.manager.device.core.DeviceManagerController;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
@@ -28,8 +29,13 @@ public class OpenHABBindingImpl implements OpenHABBinding {
     private OpenHABCommunicatorImpl busCommunicator;
     private DeviceRegistryRemote deviceRegistryRemote;
 
-    public OpenHABBindingImpl() {
-        instance = this;
+    public OpenHABBindingImpl() throws InstantiationException {
+        try {
+            instance = this;
+            this.busCommunicator = new OpenHABCommunicatorImpl();
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     public static OpenHABBinding getInstance() throws NotAvailableException {
@@ -44,6 +50,7 @@ public class OpenHABBindingImpl implements OpenHABBinding {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
+
             this.deviceManagerController = new DeviceManagerController(new OpenhabServiceFactory()) {
 
                 @Override
@@ -60,16 +67,23 @@ public class OpenHABBindingImpl implements OpenHABBinding {
                     }
                 }
             };
-            deviceManagerController.init();
-            this.busCommunicator = new OpenHABCommunicatorImpl();
+
+            this.busCommunicator.init();
+            this.deviceManagerController.init();
+            this.busCommunicator.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     public void shutdown() throws InterruptedException {
-        deviceManagerController.shutdown();
-        busCommunicator.shutdown();
+        if (deviceManagerController != null) {
+            deviceManagerController.shutdown();
+        }
+
+        if (busCommunicator != null) {
+            busCommunicator.shutdown();
+        }
         instance = null;
     }
 
