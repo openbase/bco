@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.user.core.UserManager</mainClass>
+                            <mainClass>org.dc.bco.manager.user.core.UserManagerLauncher</mainClass>
                             <id>user-manager</id>
                             <platforms>
                                 <platform>unix</platform>

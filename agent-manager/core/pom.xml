@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.agent.core.AgentManager</mainClass>
+                            <mainClass>org.dc.bco.manager.agent.core.AgentManagerLauncher</mainClass>
                             <id>agent-manager</id>
                             <platforms>
                                 <platform>unix</platform>

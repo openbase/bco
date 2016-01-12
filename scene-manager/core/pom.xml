@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.scene.core.SceneManager</mainClass>
+                            <mainClass>org.dc.bco.manager.scene.core.SceneManagerLauncher</mainClass>
                             <id>scene-manager</id>
                             <platforms>
                                 <platform>unix</platform>

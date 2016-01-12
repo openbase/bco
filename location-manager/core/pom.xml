@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.lm.core.LocationManager</mainClass>
+                            <mainClass>org.dc.bco.manager.lm.core.LocationManagerLauncher</mainClass>
                             <id>location-manager</id>
                             <platforms>
                                 <platform>unix</platform>

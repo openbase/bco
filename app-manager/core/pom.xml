@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.app.core.AppManager</mainClass>
+                            <mainClass>org.dc.bco.manager.app.core.AppManagerLauncher</mainClass>
                             <id>app-manager</id>
                             <platforms>
                                 <platform>unix</platform>

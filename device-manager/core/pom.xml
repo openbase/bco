@@ -41,7 +41,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.core.DeviceManager</mainClass>
+                            <mainClass>org.dc.bco.manager.device.core.DeviceManagerLauncher</mainClass>
                             <id>device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
