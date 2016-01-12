@@ -60,6 +60,7 @@ public class OpenHABBindingImpl implements OpenHABBinding {
                     }
                 }
             };
+            deviceManagerController.init();
             this.busCommunicator = new OpenHABCommunicatorImpl();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

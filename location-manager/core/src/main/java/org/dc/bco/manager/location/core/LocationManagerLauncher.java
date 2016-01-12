@@ -17,16 +17,16 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class LocationManager {
+public class LocationManagerLauncher {
 
-    protected static final Logger logger = LoggerFactory.getLogger(LocationManager.class);
+    protected static final Logger logger = LoggerFactory.getLogger(LocationManagerLauncher.class);
 
     private final LocationFactory factory;
     private final RegistryImpl<String, Location> locationRegistry;
     private final LocationRegistryRemote locationRegistryRemote;
     private final RegistrySynchronizer<String, Location, LocationConfig, LocationConfigType.LocationConfig.Builder> registrySynchronizer;
 
-    public LocationManager() throws org.dc.jul.exception.InstantiationException, InterruptedException {
+    public LocationManagerLauncher() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         logger.info("Starting " + JPService.getApplicationName());
         try {
             this.factory = new LocationFactoryImpl();
@@ -52,10 +52,10 @@ public class LocationManager {
      */
     public static void main(String[] args) throws InterruptedException {
         try {
-            JPService.setApplicationName(LocationManager.class.getSimpleName());
+            JPService.setApplicationName(LocationManagerLauncher.class.getSimpleName());
 
             JPService.parseAndExitOnError(args);
-            new LocationManager();
+            new LocationManagerLauncher();
         } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
