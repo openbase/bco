@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
 import org.dc.bco.dal.remote.unit.DALRemoteService;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
@@ -71,6 +72,8 @@ public class AmbientColorAgent extends AbstractAgent {
 //
 ////        PowerServiceControl powerServiceControl = new PowerServiceControl("Home", PowerStateType.PowerState.State.OFF);
 ////        powerServiceControl.activate();
+    private static int globalId = 1;
+    private final int localId;
     /**
      * Key to identify a color from the meta configuration.
      */
@@ -121,8 +124,9 @@ public class AmbientColorAgent extends AbstractAgent {
 
     public AmbientColorAgent(AgentConfigType.AgentConfig agentConfig) throws InstantiationException, InterruptedException, CouldNotPerformException {
         super(agentConfig);
-        logger.info("Creating AmbienColorAgent");
-
+        localId = globalId;
+        globalId++;
+        logger.info("Creating AmbienColorAgent[" + localId + "]");
         factory = UnitRemoteFactory.getInstance();
         random = new Random();
 
@@ -146,7 +150,7 @@ public class AmbientColorAgent extends AbstractAgent {
             }
         } catch (NotAvailableException ex) {
             i--;
-            logger.info("Found [" + i + "] target/s");
+            logger.info("Found [" + i + "] unit/s");
         }
         i = 1;
         String colorString;
@@ -162,7 +166,7 @@ public class AmbientColorAgent extends AbstractAgent {
             }
         } catch (NotAvailableException ex) {
             i--;
-            logger.info("Found [" + i + "] target/s");
+            logger.info("Found [" + i + "] color/s");
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
             logger.warn("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex);
         }
@@ -187,7 +191,7 @@ public class AmbientColorAgent extends AbstractAgent {
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getClass().getSimpleName() + "]");
+        logger.info("Activating [" + getClass().getSimpleName() + "][" + localId + "]");
         for (DALRemoteService colorRemote : colorRemotes) {
             colorRemote.activate();
         }
@@ -197,20 +201,27 @@ public class AmbientColorAgent extends AbstractAgent {
     }
 
     private void initColorStates() throws CouldNotPerformException {
+        HSVColor color;
         for (DALRemoteService colorRemote : colorRemotes) {
             if (!colors.contains(invokeGetColor(colorRemote))) {
-                invokeSetColor(colorRemote, colors.get(random.nextInt(colors.size())));
+                color = colors.get(random.nextInt(colors.size()));
+                invokeSetColor(colorRemote, color);
             }
         }
     }
 
+    public String stringHSV(HSVColor color) {
+        return color.getHue() + SEPERATOR + color.getSaturation() + SEPERATOR + color.getValue();
+    }
+
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+        logger.info("Deactivating [" + getClass().getSimpleName() + "][" + localId + "]");
+        super.deactivate();
+        logger.info("ActivaState [" + active + "]");
         for (DALRemoteService colorRemote : colorRemotes) {
             colorRemote.deactivate();
         }
-        super.deactivate();
     }
 
     private void invokeSetColor(DALRemoteService remote, HSVColor color) throws CouldNotPerformException {
@@ -250,6 +261,7 @@ public class AmbientColorAgent extends AbstractAgent {
                     }
                     lastModification = System.currentTimeMillis();
                 }
+                Thread.yield();
             }
         }
     }
@@ -259,16 +271,24 @@ public class AmbientColorAgent extends AbstractAgent {
         @Override
         public void run() {
             DALRemoteService remote = null;
-            while (active) {
+            HSVColor color;
+            while (AmbientColorAgent.this.isActive()) {
                 if (lastModification + holdingTime < System.currentTimeMillis()) {
+                    logger.info("ActiveState [" + active + "]");
                     remote = choseDifferentElem(colorRemotes, remote);
+                    if (!AmbientColorAgent.this.isActive()) {
+                        break;
+                    }
                     try {
-                        invokeSetColor(remote, choseDifferentElem(colors, invokeGetColor(remote)));
+                        color = invokeGetColor(remote);
+                        color = choseDifferentElem(colors, color);
+                        invokeSetColor(remote, color);
                     } catch (CouldNotPerformException ex) {
                         logger.warn("Could not set/get color of [" + remote.getClass().getName() + "]", ex);
                     }
                     lastModification = System.currentTimeMillis();
                 }
+                Thread.yield();
             }
         }
 
