@@ -71,17 +71,42 @@ public class AmbientColorAgent extends AbstractAgent {
 //
 ////        PowerServiceControl powerServiceControl = new PowerServiceControl("Home", PowerStateType.PowerState.State.OFF);
 ////        powerServiceControl.activate();
-    
-    
+    /**
+     * Key to identify a color from the meta configuration.
+     */
     private static final String COLOR_KEY = "COLOR";
+    /**
+     * Key to identify a unit from the meta configuration.
+     */
     private static final String UNIT_KEY = "UNIT";
+    /**
+     * Key to identify the holding time from the meta configuration.
+     */
     private static final String HOLDING_TIME_KEY = "HOLDING_TIME";
+    /**
+     * Key to identify the strategy from the meta configuration.
+     */
     private static final String STRATEGY_KEY = "STRATEGY";
+    /**
+     * Separator to get the hue,saturation and brightness values out of one
+     * color string.
+     */
     private static final String SEPERATOR = ";";
 
+    /**
+     * The strategy how the agent will change the color of the lights.
+     */
     public enum ColoringStrategy {
 
+        /**
+         * After the holding time one random light which differs from the last
+         * will be changed to a random different color.
+         */
         ONE,
+        /**
+         * After the holding time all lights are change their color to a random
+         * different one.
+         */
         ALL;
     }
 
@@ -188,14 +213,14 @@ public class AmbientColorAgent extends AbstractAgent {
         super.deactivate();
     }
 
-    private void invokeSetColor(DALRemoteService remote, HSVColor color) {
+    private void invokeSetColor(DALRemoteService remote, HSVColor color) throws CouldNotPerformException {
         try {
             Method method = remote.getClass().getMethod("setColor", HSVColor.class);
             method.invoke(remote, color);
         } catch (NoSuchMethodException ex) {
-            logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Color method");
+            throw new CouldNotPerformException("Remote [" + remote.getClass().getSimpleName() + "] has no set Color method", ex);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            logger.error("Could not invoke setColor method on remote [" + remote.getClass().getSimpleName() + "] with value [" + color + "]");
+            throw new CouldNotPerformException("Could not invoke setColor method on remote [" + remote.getClass().getSimpleName() + "] with value [" + color + "]", ex);
         }
     }
 
@@ -249,6 +274,17 @@ public class AmbientColorAgent extends AbstractAgent {
 
     }
 
+    /**
+     * Get a random element out of the list that differs from currentElem. If
+     * the list only contains one element then this element is returned despite
+     * being possibly the same as currentElem. If currentElem is not contained
+     * by the list a random element from the list is returned.
+     *
+     * @param <T> the type of list elements
+     * @param list the list containing elements of type T
+     * @param currentElem the currently hold element out of the list
+     * @return a different element from the list than currentElem
+     */
     private <T> T choseDifferentElem(List<T> list, T currentElem) {
         if (list.size() == 1) {
             return list.get(0);
