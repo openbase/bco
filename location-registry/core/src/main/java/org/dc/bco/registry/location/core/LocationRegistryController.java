@@ -37,6 +37,7 @@ import org.dc.bco.registry.location.core.dbconvert.LocationConfig_0_To_1_DBConve
 import org.dc.bco.registry.location.lib.generator.ConnectionIDGenerator;
 import org.dc.bco.registry.location.lib.generator.LocationIDGenerator;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -46,13 +47,11 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
@@ -67,8 +66,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
 
-    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryType.LocationRegistry.Builder> locationConfigRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryType.LocationRegistry.Builder> connectionConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> connectionConfigRegistry;
 
     private final DeviceRegistryRemote deviceRegistryRemote;
     private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
@@ -91,7 +90,6 @@ public class LocationRegistryController extends RSBCommunicationService<Location
 
             locationConfigRegistry.loadRegistry();
             connectionConfigRegistry.loadRegistry();
-
 
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
@@ -313,14 +311,14 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationId).getUnitIdList()) {
             unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
     }
-    
+
     /**
      * {@inheritDoc}
      *
@@ -328,11 +326,13 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException {
-        List<UnitConfigType.UnitConfig> unitConfigList =  new ArrayList<>();
-        for(LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
-            unitConfigList.addAll(getUnitConfigsByLocation(location.getId()));
+        HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
+        for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+            for (UnitConfig unitConfig : getUnitConfigsByLocation(location.getId())) {
+                unitConfigMap.put(unitConfig.getId(), unitConfig);
+            }
         }
-        return unitConfigList;
+        return new ArrayList<>(unitConfigMap.values());
     }
 
     /**
@@ -356,9 +356,9 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigsByLocation(final UnitTemplateType.UnitTemplate.UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
-        UnitConfigType.UnitConfig unitConfig;
+    public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
 
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
@@ -380,8 +380,25 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfigType.UnitConfig> getUnitConfigsByLocation(final ServiceTemplateType.ServiceTemplate.ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException {
+        HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
+        for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+            for (UnitConfig unitConfig : getUnitConfigsByLocation(unitType, location.getId())) {
+                unitConfigMap.put(unitConfig.getId(), unitConfig);
+            }
+        }
+        return new ArrayList<>(unitConfigMap.values());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
@@ -518,7 +535,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
         }
@@ -532,9 +549,9 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getUnitConfigsByConnection(UnitTemplateType.UnitTemplate.UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
-        UnitConfigType.UnitConfig unitConfig;
+    public List<UnitConfig> getUnitConfigsByConnection(UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
 
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             try {
@@ -556,8 +573,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getUnitConfigsByConnection(ServiceTemplateType.ServiceTemplate.ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigsByConnection(ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {

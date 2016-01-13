@@ -24,6 +24,7 @@ import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import org.dc.jul.storage.registry.RemoteRegistry;
 import org.dc.bco.registry.location.lib.generator.LocationIDGenerator;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -283,11 +284,13 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException {
-        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
         for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
-            unitConfigList.addAll(getUnitConfigsByLocation(location.getId()));
+            for (UnitConfig unitConfig : getUnitConfigsByLocation(location.getId())) {
+                unitConfigMap.put(unitConfig.getId(), unitConfig);
+            }
         }
-        return unitConfigList;
+        return new ArrayList<>(unitConfigMap.values());
     }
 
     /**
@@ -312,6 +315,23 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
             }
         }
         return unitConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.dc.jul.exception.NotAvailableException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException {
+        HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
+        for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+            for (UnitConfig unitConfig : getUnitConfigsByLocation(unitType, location.getId())) {
+                unitConfigMap.put(unitConfig.getId(), unitConfig);
+            }
+        }
+        return new ArrayList<>(unitConfigMap.values());
     }
 
     /**
