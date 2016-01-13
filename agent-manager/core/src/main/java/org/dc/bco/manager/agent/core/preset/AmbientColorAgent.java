@@ -5,17 +5,29 @@
  */
 package org.dc.bco.manager.agent.core.preset;
 
-import org.dc.bco.manager.location.lib.util.ColorLoopControl;
-import org.dc.bco.manager.location.lib.util.PowerControl;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import rst.homeautomation.state.PowerStateType;
-import rst.vision.HSVColorType;
+import java.util.List;
+import java.util.Random;
+import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
+import rst.homeautomation.control.agent.AgentConfigType;
+import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
-public class AmbientColorAgent {
+public class AmbientColorAgent extends AbstractAgent {
+
 //    List<HSVColorType.HSVColor> colorList = new ArrayList<>();
 //        colorList.add(HSVColorType.HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(20).build());
 //        colorList.add(HSVColorType.HSVColor.newBuilder().setHue(300).setSaturation(100).setValue(20).build());
@@ -59,4 +71,198 @@ public class AmbientColorAgent {
 //
 ////        PowerServiceControl powerServiceControl = new PowerServiceControl("Home", PowerStateType.PowerState.State.OFF);
 ////        powerServiceControl.activate();
+    
+    
+    private static final String COLOR_KEY = "COLOR";
+    private static final String UNIT_KEY = "UNIT";
+    private static final String HOLDING_TIME_KEY = "HOLDING_TIME";
+    private static final String STRATEGY_KEY = "STRATEGY";
+    private static final String SEPERATOR = ";";
+
+    public enum ColoringStrategy {
+
+        ONE,
+        ALL;
+    }
+
+    private ColoringStrategy strategy;
+    private Thread thread;
+    private long holdingTime;
+    private long lastModification;
+    private final List<DALRemoteService> colorRemotes = new ArrayList<>();
+    private final List<HSVColor> colors = new ArrayList<>();
+    private final UnitRemoteFactoryInterface factory;
+    private final Random random;
+
+    public AmbientColorAgent(AgentConfigType.AgentConfig agentConfig) throws InstantiationException, InterruptedException, CouldNotPerformException {
+        super(agentConfig);
+        logger.info("Creating AmbienColorAgent");
+
+        factory = UnitRemoteFactory.getInstance();
+        random = new Random();
+
+        init();
+    }
+
+    private void init() throws InstantiationException, InterruptedException, CouldNotPerformException {
+        DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
+        deviceRegistryRemote.init();
+        deviceRegistryRemote.activate();
+
+        MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", agentConfig.getMetaConfig());
+
+        int i = 1;
+        String unitId;
+        try {
+            while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
+                logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
+                colorRemotes.add(factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(unitId)));
+                i++;
+            }
+        } catch (NotAvailableException ex) {
+            i--;
+            logger.info("Found [" + i + "] target/s");
+        }
+        i = 1;
+        String colorString;
+        try {
+            while (!(colorString = configVariableProvider.getValue(COLOR_KEY + "_" + i)).isEmpty()) {
+                logger.info("Found color [" + colorString + "] with key [" + COLOR_KEY + "_" + i + "]");
+                String[] split = colorString.split(SEPERATOR);
+                double hue = Double.parseDouble(split[0]);
+                double saturation = Double.parseDouble(split[1]);
+                double brightness = Double.parseDouble(split[2]);
+                colors.add(HSVColor.newBuilder().setHue(hue).setSaturation(saturation).setValue(brightness).build());
+                i++;
+            }
+        } catch (NotAvailableException ex) {
+            i--;
+            logger.info("Found [" + i + "] target/s");
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
+            logger.warn("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex);
+        }
+
+        holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
+        strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
+
+        deviceRegistryRemote.shutdown();
+
+        switch (strategy) {
+            case ALL:
+                thread = new AllStrategyThread();
+                break;
+            case ONE:
+                thread = new OneStrategyThread();
+                break;
+            default:
+                thread = new OneStrategyThread();
+
+        }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        logger.info("Activating [" + getClass().getSimpleName() + "]");
+        for (DALRemoteService colorRemote : colorRemotes) {
+            colorRemote.activate();
+        }
+        super.activate();
+        initColorStates();
+        thread.start();
+    }
+
+    private void initColorStates() throws CouldNotPerformException {
+        for (DALRemoteService colorRemote : colorRemotes) {
+            if (!colors.contains(invokeGetColor(colorRemote))) {
+                invokeSetColor(colorRemote, colors.get(random.nextInt(colors.size())));
+            }
+        }
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+        for (DALRemoteService colorRemote : colorRemotes) {
+            colorRemote.deactivate();
+        }
+        super.deactivate();
+    }
+
+    private void invokeSetColor(DALRemoteService remote, HSVColor color) {
+        try {
+            Method method = remote.getClass().getMethod("setColor", HSVColor.class);
+            method.invoke(remote, color);
+        } catch (NoSuchMethodException ex) {
+            logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Color method");
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            logger.error("Could not invoke setColor method on remote [" + remote.getClass().getSimpleName() + "] with value [" + color + "]");
+        }
+    }
+
+    private HSVColor invokeGetColor(DALRemoteService remote) throws CouldNotPerformException {
+        try {
+            Method method = remote.getClass().getMethod("getColor");
+            return (HSVColor) method.invoke(remote);
+        } catch (NoSuchMethodException ex) {
+            throw new CouldNotPerformException("Remote [" + remote.getClass().getSimpleName() + "] has no get Color method", ex);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new CouldNotPerformException("Could not get color from remote [" + remote.getClass().getSimpleName() + "]", ex);
+        }
+    }
+
+    private class AllStrategyThread extends Thread {
+
+        @Override
+        public void run() {
+            while (active) {
+                if (lastModification + holdingTime < System.currentTimeMillis()) {
+                    for (DALRemoteService colorRemote : colorRemotes) {
+                        try {
+                            invokeSetColor(colorRemote, choseDifferentElem(colors, invokeGetColor(colorRemote)));
+                        } catch (CouldNotPerformException ex) {
+                            logger.warn("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex);
+                        }
+                    }
+                    lastModification = System.currentTimeMillis();
+                }
+            }
+        }
+    }
+
+    private class OneStrategyThread extends Thread {
+
+        @Override
+        public void run() {
+            DALRemoteService remote = null;
+            while (active) {
+                if (lastModification + holdingTime < System.currentTimeMillis()) {
+                    remote = choseDifferentElem(colorRemotes, remote);
+                    try {
+                        invokeSetColor(remote, choseDifferentElem(colors, invokeGetColor(remote)));
+                    } catch (CouldNotPerformException ex) {
+                        logger.warn("Could not set/get color of [" + remote.getClass().getName() + "]", ex);
+                    }
+                    lastModification = System.currentTimeMillis();
+                }
+            }
+        }
+
+    }
+
+    private <T> T choseDifferentElem(List<T> list, T currentElem) {
+        if (list.size() == 1) {
+            return list.get(0);
+        }
+
+        int oldIndex = list.indexOf(currentElem);
+        if (oldIndex == -1) {
+            return list.get(random.nextInt(list.size()));
+        }
+
+        int newIndex = random.nextInt(list.size());
+        while (newIndex == oldIndex) {
+            newIndex = random.nextInt(list.size());
+        }
+        return list.get(newIndex);
+    }
 }
