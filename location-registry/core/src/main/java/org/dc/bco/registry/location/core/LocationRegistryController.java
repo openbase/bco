@@ -320,6 +320,20 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         }
         return unitConfigList;
     }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException {
+        List<UnitConfigType.UnitConfig> unitConfigList =  new ArrayList<>();
+        for(LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+            unitConfigList.addAll(getUnitConfigsByLocation(location.getId()));
+        }
+        return unitConfigList;
+    }
 
     /**
      * {@inheritDoc}

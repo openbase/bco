@@ -32,6 +32,7 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -271,6 +272,20 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationId).getUnitIdList()) {
             unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
+        }
+        return unitConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException {
+        List<UnitConfigType.UnitConfig> unitConfigList = new ArrayList<>();
+        for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+            unitConfigList.addAll(getUnitConfigsByLocation(location.getId()));
         }
         return unitConfigList;
     }

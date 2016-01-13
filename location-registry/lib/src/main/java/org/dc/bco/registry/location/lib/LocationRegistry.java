@@ -112,6 +112,18 @@ public interface LocationRegistry {
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException;
 
     /**
+     * Method returns all unit configurations which are direct or recursive
+     * related to the given location label which can represent more than one
+     * location.
+     *
+     * @param locationLabel
+     * @return A collection of unit configs.
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException
+     */
+    public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException;
+
+    /**
      * Method returns a collection of unit configs which are located within the
      * defined location and match the given unit label.
      *
