@@ -31,7 +31,7 @@ import org.dc.bco.registry.location.core.consistency.LocationUnitIdConsistencyHa
 import org.dc.bco.registry.location.core.consistency.ParentChildConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.PositionConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.RootConsistencyHandler;
-import org.dc.bco.registry.location.core.consistency.ScopeConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.LocationScopeConsistencyHandler;
 import org.dc.bco.registry.location.core.plugin.PublishLocationTransformationRegistryPlugin;
 import org.dc.bco.registry.location.core.dbconvert.LocationConfig_0_To_1_DBConverter;
 import org.dc.bco.registry.location.lib.generator.ConnectionIDGenerator;
@@ -43,6 +43,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import org.dc.bco.registry.location.core.consistency.ConnectionLabelConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.ConnectionLocationConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.ConnectionScopeConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.ConnectionTilesConsistencyHandler;
 import org.dc.bco.registry.location.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -95,11 +99,16 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
-            locationConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
+
+            connectionConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());
+            connectionConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationConfigRegistry));
+            connectionConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationConfigRegistry));
+            connectionConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin());
 
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {

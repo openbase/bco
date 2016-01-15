@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import org.dc.bco.registry.agent.core.consistency.LabelConsistencyHandler;
+import org.dc.bco.registry.agent.core.consistency.ScopeConsistencyHandler;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType;
@@ -68,20 +70,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
             agentConfigRegistry.loadRegistry();
 
-//            agentConfigRegistry.registerConsistencyHandler(new AgentIdConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassConsistencyHandler(agentClassRegistry));
-//            agentConfigRegistry.registerConsistencyHandler(new AgentLabelConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new AgentLocationIdConsistencyHandler(locationRegistryRemote));
-//            agentConfigRegistry.registerConsistencyHandler(new AgentScopeConsistencyHandler(locationRegistryRemote));
-//            agentConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new UnitTemplateConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new UnitLabelConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationRegistryRemote));
-//            agentConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
-//            agentConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler());
-//            agentConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote));
-//            agentConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+            agentConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
+            agentConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
             agentConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>>() {
 
                 @Override

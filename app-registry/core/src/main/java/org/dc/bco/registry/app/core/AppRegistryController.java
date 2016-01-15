@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import org.dc.bco.registry.app.core.consistency.LabelConsistencyHandler;
+import org.dc.bco.registry.app.core.consistency.ScopeConsistencyHandler;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppConfigType;
@@ -68,6 +70,8 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
 
             appConfigRegistry.loadRegistry();
 
+            appConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
+            appConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
             appConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppConfig, AppConfig.Builder>>>() {
 
                 @Override

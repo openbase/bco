@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import org.dc.bco.registry.scene.core.consistency.LabelConsistencyHandler;
+import org.dc.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
 import org.dc.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
 import org.dc.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
 import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
@@ -68,19 +70,8 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
             sceneConfigRegistry.loadRegistry();
 
-//            sceneConfigRegistry.registerConsistencyHandler(new SceneIdConsistencyHandler());
-//            sceneConfigRegistry.registerConsistencyHandler(new SceneConfigSceneClassConsistencyHandler(sceneClassRegistry));
-//            sceneConfigRegistry.registerConsistencyHandler(new SceneLabelConsistencyHandler());
-//            sceneConfigRegistry.registerConsistencyHandler(new SceneLocationIdConsistencyHandler(locationRegistryRemote));
-//            sceneConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationRegistryRemote));
-//            sceneConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
-//            sceneConfigRegistry.registerConsistencyHandler(new UnitLabelConsistencyHandler());
-//            sceneConfigRegistry.registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationRegistryRemote));
-//            sceneConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
-//            sceneConfigRegistry.registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler());
-//            sceneConfigRegistry.registerConsistencyHandler(new ServiceConfigBindingTypeConsistencyHandler());
-//            sceneConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistenyHandler(locationRegistryRemote));
-//            sceneConfigRegistry.registerConsistencyHandler(new TransformationConsistencyHandler());
+            sceneConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
+            sceneConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
             sceneConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>>>() {
 
                 @Override
