@@ -23,6 +23,11 @@ public class LocationController extends AbstractUnitCollectionController<Generic
         this.config = config;
     }
 
+    public LocationController update(final LocationConfig config) {
+        this.config = config;
+        return this;
+    }
+
     @Override
     public String getId() throws CouldNotPerformException {
         return config.getId();

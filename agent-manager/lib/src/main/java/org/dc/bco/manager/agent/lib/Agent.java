@@ -5,8 +5,8 @@
  */
 package org.dc.bco.manager.agent.lib;
 
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.iface.Activatable;
+import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.Identifiable;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
@@ -14,6 +14,5 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  *
  * @author mpohling
  */
-public interface Agent extends Activatable, Identifiable<String> {
-    public AgentConfig getConfig() throws NotAvailableException;
+public interface Agent extends Activatable, Identifiable<String>, Configurable<String, AgentConfig, Agent>{
 }

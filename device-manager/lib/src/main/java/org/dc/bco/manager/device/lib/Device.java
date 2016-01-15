@@ -13,12 +13,13 @@ import org.dc.jul.iface.Identifiable;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import org.dc.jul.iface.provider.LabelProvider;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import org.dc.jul.iface.Configurable;
 
 /**
  *
  * @author Divine Threepwood
  */
-public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable {
+public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable, Configurable<String, DeviceConfig, Device> {
 
     public DeviceConfig getConfig();
 

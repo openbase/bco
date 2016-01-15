@@ -34,6 +34,11 @@
             <artifactId>dal.remote</artifactId>
             <version>${dependency.bco.dal.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.dc</groupId>
+            <artifactId>jul.interface</artifactId>
+            <version>${dependency.bco.dal.version}</version>
+        </dependency>
 
     </dependencies>
 

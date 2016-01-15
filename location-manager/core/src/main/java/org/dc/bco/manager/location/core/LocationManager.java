@@ -1,6 +1,5 @@
 package org.dc.bco.manager.location.core;
 
-import org.dc.bco.manager.location.lib.Location;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -12,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
+import org.dc.bco.manager.location.lib.Location;
 
 /**
  *

@@ -27,7 +27,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 
     public final static String DEVICE_TYPE_FILED_CONFIG = "config";
 
-    private final DeviceConfig config;
+    private DeviceConfig config;
     protected final Location location;
 
     public AbstractDeviceController(final DeviceConfig config, final MB builder) throws InstantiationException, CouldNotTransformException {
@@ -60,6 +60,12 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public Device update(DeviceConfig config) throws CouldNotPerformException {
+        this.config = config;
+        return this;
     }
 
     @Override

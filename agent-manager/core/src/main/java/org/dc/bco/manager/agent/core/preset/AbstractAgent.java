@@ -21,21 +21,27 @@ public abstract class AbstractAgent implements Agent {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected boolean active;
-    protected final AgentConfig agentConfig;
+    protected AgentConfig config;
 
-    public AbstractAgent(final AgentConfig agentConfig) {
-        logger.info("Creating "+getClass().getSimpleName()+"["+agentConfig.getId()+"]");
-        this.agentConfig = agentConfig;
+    public AbstractAgent(final AgentConfig config) {
+        logger.info("Creating "+getClass().getSimpleName()+"["+config.getId()+"]");
+        this.config = config;
     }
 
     @Override
     public String getId() throws CouldNotPerformException {
-        return agentConfig.getId();
+        return config.getId();
     }
 
     @Override
     public AgentConfig getConfig() throws NotAvailableException {
-        return agentConfig;
+        return config;
+    }
+
+    @Override
+    public AbstractAgent update(AgentConfig config) throws CouldNotPerformException {
+        this.config = config;
+        return this;
     }
 
     @Override

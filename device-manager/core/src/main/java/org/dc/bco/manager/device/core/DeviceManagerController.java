@@ -94,6 +94,10 @@ public class DeviceManagerController implements DeviceManager {
         return deviceControllerRegistry;
     }
 
+    public DeviceControllerRegistryImpl getDeviceControllerRegistryImpl() {
+        return deviceControllerRegistry;
+    }
+
     @Override
     public UnitControllerRegistry getUnitControllerRegistry() {
         return unitControllerRegistry;
