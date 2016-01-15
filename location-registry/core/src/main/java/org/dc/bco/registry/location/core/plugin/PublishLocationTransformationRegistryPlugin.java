@@ -24,9 +24,9 @@ import rct.Transform;
 import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerFactory;
-import rst.spatial.LocationConfigType;
+import rst.spatial.LocationConfigType.LocationConfig;
 
-public class PublishLocationTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>> {
+public class PublishLocationTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -43,15 +43,15 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     }
     
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder>, ?> registry) throws CouldNotPerformException {
-        for (IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entry : registry.getEntries()) {
+    public void init(Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> registry) throws CouldNotPerformException {
+        for (IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry : registry.getEntries()) {
             publishtransformation(entry);
         }
     }
 
-    public void publishtransformation(IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entry) {
+    public void publishtransformation(IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) {
         try {
-            LocationConfigType.LocationConfig locationConfig = entry.getMessage();
+            LocationConfig locationConfig = entry.getMessage();
 
             if (!locationConfig.getRoot() && locationConfig.hasPosition()) {
 
@@ -78,12 +78,12 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     }
     
     @Override
-    public void afterRegister(IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entry) {
+    public void afterRegister(IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) {
         publishtransformation(entry);
     }
 
     @Override
-    public void afterUpdate(IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entry) throws CouldNotPerformException {
+    public void afterUpdate(IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) throws CouldNotPerformException {
         publishtransformation(entry);
     }
 }

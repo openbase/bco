@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import org.dc.bco.registry.location.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
@@ -101,6 +102,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
+            connectionConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin());
 
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
                 notifyChange();
