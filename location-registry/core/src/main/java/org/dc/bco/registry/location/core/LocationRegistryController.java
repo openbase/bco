@@ -54,6 +54,7 @@ import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -374,7 +375,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type)) {
+                if (unitConfig.getType().equals(type) || deviceRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -567,7 +568,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type)) {
+                if (unitConfig.getType().equals(type) || deviceRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {

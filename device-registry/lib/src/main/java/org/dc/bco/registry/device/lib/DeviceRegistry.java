@@ -109,5 +109,7 @@ public interface DeviceRegistry {
 
     public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    public List<UnitType> getSubUnitTypesOfUnitType(UnitType type) throws CouldNotPerformException;
+
     public void shutdown();
 }

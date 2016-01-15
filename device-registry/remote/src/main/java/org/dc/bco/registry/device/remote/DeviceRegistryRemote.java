@@ -271,7 +271,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
-                if (type == UnitType.UNKNOWN || unitConfig.getType() == type) {
+                if (type == UnitType.UNKNOWN || unitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigs.add(unitConfig);
                 }
             }
@@ -472,7 +472,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         getData();
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
-            if (unitGroup.getUnitType() == type) {
+            if (unitGroup.getUnitType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroup.getUnitType())) {
                 unitGroups.add(unitGroup);
             }
         }
@@ -527,5 +527,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             }
         }
         return unitConfigs;
+    }
+
+    @Override
+    public List<UnitType> getSubUnitTypesOfUnitType(UnitType type) throws CouldNotPerformException {
+        List<UnitType> unitTypes = new ArrayList<>();
+        for (UnitTemplate template : getUnitTemplates()) {
+            if (template.getIncludedTypeList().contains(type)) {
+                unitTypes.add(template.getType());
+            }
+        }
+        return unitTypes;
     }
 }
