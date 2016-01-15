@@ -29,6 +29,11 @@ public class LocationController extends AbstractUnitCollectionController<Generic
     }
 
     @Override
+    public LocationConfig getConfig() {
+        return config;
+    }
+
+    @Override
     public String getId() throws CouldNotPerformException {
         return config.getId();
     }
