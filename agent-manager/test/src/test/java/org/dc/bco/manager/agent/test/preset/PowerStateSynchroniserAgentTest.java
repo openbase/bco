@@ -5,18 +5,18 @@
  */
 package org.dc.bco.manager.agent.test.preset;
 
-import org.dc.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
-import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
-import org.dc.bco.registry.mock.MockRegistryHolder;
+import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.bco.dal.remote.unit.AmbientLightRemote;
 import org.dc.bco.dal.remote.unit.DimmerRemote;
 import org.dc.bco.dal.remote.unit.PowerPlugRemote;
-import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
-import org.dc.jps.core.JPService;
-import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.dc.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
-import org.dc.bco.manager.device.lib.DeviceManager;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.mock.MockRegistry;
+import org.dc.bco.registry.mock.MockRegistryHolder;
+import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.junit.After;
@@ -48,6 +48,7 @@ public class PowerStateSynchroniserAgentTest {
     private static MockRegistry registry;
     private static AgentRegistryRemote agentRemote;
     private static DeviceRegistryRemote deviceRemote;
+    private static LocationRegistryRemote locationRemote;
 
     public PowerStateSynchroniserAgentTest() {
     }
@@ -67,6 +68,10 @@ public class PowerStateSynchroniserAgentTest {
         deviceRemote = new DeviceRegistryRemote();
         deviceRemote.init();
         deviceRemote.activate();
+
+        locationRemote = new LocationRegistryRemote();
+        locationRemote.init();
+        locationRemote.activate();
     }
 
     @AfterClass
@@ -79,6 +84,9 @@ public class PowerStateSynchroniserAgentTest {
         }
         if (deviceRemote != null) {
             deviceRemote.shutdown();
+        }
+        if (locationRemote != null) {
+            locationRemote.shutdown();
         }
         if (registry != null) {
             MockRegistryHolder.shutdownMockRegistry();
@@ -186,6 +194,6 @@ public class PowerStateSynchroniserAgentTest {
                 .addEntry(target2)
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
-        return agentRemote.registerAgentConfig(AgentConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setMetaConfig(metaConfig).build());
+        return agentRemote.registerAgentConfig(AgentConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setLocationId(locationRemote.getRootLocationConfig().getId()).setMetaConfig(metaConfig).build());
     }
 }
