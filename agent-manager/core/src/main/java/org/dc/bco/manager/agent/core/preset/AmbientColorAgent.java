@@ -138,7 +138,7 @@ public class AmbientColorAgent extends AbstractAgent {
         deviceRegistryRemote.init();
         deviceRegistryRemote.activate();
 
-        MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", agentConfig.getMetaConfig());
+        MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", config.getMetaConfig());
 
         int i = 1;
         String unitId;
