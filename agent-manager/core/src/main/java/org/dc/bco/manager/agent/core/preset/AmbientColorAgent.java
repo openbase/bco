@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Timer;
 import org.dc.bco.dal.remote.unit.DALRemoteService;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
@@ -72,8 +71,8 @@ public class AmbientColorAgent extends AbstractAgent {
 //
 ////        PowerServiceControl powerServiceControl = new PowerServiceControl("Home", PowerStateType.PowerState.State.OFF);
 ////        powerServiceControl.activate();
-    private static int globalId = 1;
-    private final int localId;
+//    private static int globalId = 1;
+//    private final int localId;
     /**
      * Key to identify a color from the meta configuration.
      */
@@ -124,9 +123,9 @@ public class AmbientColorAgent extends AbstractAgent {
 
     public AmbientColorAgent(AgentConfigType.AgentConfig agentConfig) throws InstantiationException, InterruptedException, CouldNotPerformException {
         super(agentConfig);
-        localId = globalId;
-        globalId++;
-        logger.info("Creating AmbienColorAgent[" + localId + "]");
+//        localId = globalId;
+//        globalId++;
+        logger.info("Creating AmbienColorAgent");
         factory = UnitRemoteFactory.getInstance();
         random = new Random();
 
@@ -175,28 +174,17 @@ public class AmbientColorAgent extends AbstractAgent {
         strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
 
         deviceRegistryRemote.shutdown();
-
-        switch (strategy) {
-            case ALL:
-                thread = new AllStrategyThread();
-                break;
-            case ONE:
-                thread = new OneStrategyThread();
-                break;
-            default:
-                thread = new OneStrategyThread();
-
-        }
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getClass().getSimpleName() + "][" + localId + "]");
+        logger.info("Activating [" + getClass().getSimpleName() + "]");
         for (DALRemoteService colorRemote : colorRemotes) {
             colorRemote.activate();
         }
         super.activate();
         initColorStates();
+        setExecutionThread();
         thread.start();
     }
 
@@ -210,15 +198,28 @@ public class AmbientColorAgent extends AbstractAgent {
         }
     }
 
+    private void setExecutionThread() {
+        switch (strategy) {
+            case ALL:
+                thread = new AllStrategyThread();
+                break;
+            case ONE:
+                thread = new OneStrategyThread();
+                break;
+            default:
+                thread = new OneStrategyThread();
+
+        }
+    }
+
     public String stringHSV(HSVColor color) {
         return color.getHue() + SEPERATOR + color.getSaturation() + SEPERATOR + color.getValue();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "][" + localId + "]");
+        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         super.deactivate();
-        logger.info("ActivaState [" + active + "]");
         for (DALRemoteService colorRemote : colorRemotes) {
             colorRemote.deactivate();
         }
@@ -274,7 +275,6 @@ public class AmbientColorAgent extends AbstractAgent {
             HSVColor color;
             while (AmbientColorAgent.this.isActive()) {
                 if (lastModification + holdingTime < System.currentTimeMillis()) {
-                    logger.info("ActiveState [" + active + "]");
                     remote = choseDifferentElem(colorRemotes, remote);
                     if (!AmbientColorAgent.this.isActive()) {
                         break;
