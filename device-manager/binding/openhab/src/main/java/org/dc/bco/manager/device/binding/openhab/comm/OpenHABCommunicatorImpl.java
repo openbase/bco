@@ -5,12 +5,16 @@
  */
 package org.dc.bco.manager.device.binding.openhab.comm;
 
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.binding.AbstractDALBinding;
+import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor;
 import org.dc.bco.manager.device.binding.openhab.transform.OpenhabCommandTransformer;
+import org.dc.bco.manager.device.core.DeviceManagerController;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
-import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.InvocationFailedException;
@@ -21,9 +25,6 @@ import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
-import java.util.concurrent.Future;
-import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor;
-import org.dc.bco.manager.device.core.DeviceManagerController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
@@ -55,8 +56,8 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
 
     private OpenHABCommandExecutor commandExecutor;
 
-    private final RSBRemoteService<RSBBinding> openhabRemoteService;
-    private final RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
+    private RSBRemoteService<RSBBinding> openhabRemoteService;
+    private RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
@@ -64,7 +65,16 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DALBindingType.DALBinding.getDefaultInstance()));
     }
 
-    public OpenHABCommunicatorImpl() throws InstantiationException, InterruptedException {
+    public OpenHABCommunicatorImpl() throws InstantiationException {
+//        try {
+//
+//
+//        } catch (CouldNotPerformException ex) {
+//            throw new org.dc.jul.exception.InstantiationException(this, ex);
+//        }
+    }
+
+    public void init() throws InitializationException {
         try {
             this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerController.getDeviceManager().getUnitControllerRegistry());
 
@@ -75,7 +85,6 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
                     OpenHABCommunicatorImpl.this.notifyUpdated(data);
                 }
             };
-            openhabRemoteService.init(SCOPE_OPENHAB);
 
             dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(DALBinding.newBuilder()) {
 
@@ -84,9 +93,15 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
                     OpenHABCommunicatorImpl.this.registerMethods(server);
                 }
             };
-
+            openhabRemoteService.init(SCOPE_OPENHAB);
             dalCommunicationService.init(SCOPE_DAL);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
 
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        try {
             try {
                 if (JPService.getProperty(JPHardwareSimulationMode.class).getValue()) {
                     return;
@@ -105,7 +120,7 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
                 throw new CouldNotPerformException("Could not setup dalCommunicationService as active.", ex);
             }
         } catch (CouldNotPerformException ex) {
-            throw new org.dc.jul.exception.InstantiationException(this, ex);
+            throw new CouldNotPerformException("Could not activate " + OpenHABCommunicator.class.getSimpleName() + "!", ex);
         }
     }
 
