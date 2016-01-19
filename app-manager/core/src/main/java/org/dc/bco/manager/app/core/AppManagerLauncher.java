@@ -14,8 +14,9 @@ public class AppManagerLauncher {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    public static void main(String[] args) throws InterruptedException {
+        while(Thread.interrupted()) {
+            Thread.sleep(10000);
+        }
     }
-
 }

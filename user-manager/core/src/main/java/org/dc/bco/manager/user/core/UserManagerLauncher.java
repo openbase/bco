@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.scene.core;
+package org.dc.bco.manager.user.core;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class SceneManagerLauncher {
+public class UserManagerLauncher {
 
     /**
      * @param args the command line arguments
