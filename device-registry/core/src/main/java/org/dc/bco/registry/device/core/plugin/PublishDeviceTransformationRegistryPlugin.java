@@ -29,13 +29,14 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry;
+
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
     public PublishDeviceTransformationRegistryPlugin() throws org.dc.jul.exception.InstantiationException {
         try {
             this.transformerFactory = TransformerFactory.getInstance();
-            //TODO:mpholing check if there is a way to use a configuration for interprocess communication for unit tests
             this.transformPublisher = transformerFactory.createTransformPublisher(DeviceRegistryLauncher.APP_NAME);
         } catch (Exception ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
@@ -43,13 +44,14 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry) throws CouldNotPerformException {
+    public void init(final Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry) throws CouldNotPerformException {
+        this.registry = registry;
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry : registry.getEntries()) {
-            publishtransformation(entry);
+            publishTransformation(entry);
         }
     }
 
-    public void publishtransformation(IdentifiableMessage<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entry) {
+    public void publishTransformation(IdentifiableMessage<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entry) {
         try {
             DeviceConfigType.DeviceConfig deviceConfig = entry.getMessage();
 
@@ -65,8 +67,12 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
                 throw new NotAvailableException("deviceconfig.placement.position");
             }
 
+            if (!deviceConfig.getPlacementConfig().hasTransformationFrameId() || deviceConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                throw new NotAvailableException("deviceconfig.placement.transformationframeid");
+            }
+
             if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                throw new NotAvailableException("unitconfig.placement.locationid");
+                throw new NotAvailableException("deviceconfig.placement.locationid");
             }
 
             Transform transformation;
@@ -74,7 +80,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
             // publish device transformation
             if (isTransformationPresent(deviceConfig.getPlacementConfig().getPosition())) {
                 logger.debug("Publish " + deviceConfig.getPlacementConfig().getLocationId() + " to " + deviceConfig.getId());
-                transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), deviceConfig.getPlacementConfig().getLocationId(), deviceConfig.getId());
+                transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), registry.get(deviceConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
                 try {
                     transformPublisher.sendTransform(transformation, TransformType.STATIC);
@@ -94,12 +100,16 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
                     throw new NotAvailableException("unitconfig.placement.position");
                 }
 
+                if (!unitConfig.getPlacementConfig().hasTransformationFrameId() || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                    throw new NotAvailableException("unitconfig.placement.transformationframeid");
+                }
+
                 if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
                     throw new NotAvailableException("unitconfig.placement.locationid");
                 }
 
                 if (isTransformationPresent(unitConfig.getPlacementConfig().getPosition())) {
-                    transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), unitConfig.getPlacementConfig().getLocationId(), unitConfig.getId());
+                    transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), registry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
 
                     try {
                         transformPublisher.sendTransform(transformation, TransformType.STATIC);
@@ -135,11 +145,11 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
 
     @Override
     public void afterRegister(IdentifiableMessage<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entry) {
-        publishtransformation(entry);
+        publishTransformation(entry);
     }
 
     @Override
     public void afterUpdate(IdentifiableMessage<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entry) throws CouldNotPerformException {
-        publishtransformation(entry);
+        publishTransformation(entry);
     }
 }

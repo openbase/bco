@@ -50,9 +50,15 @@ public class UnitBoundsToDeviceConsistencyHandler extends AbstractProtoBufRegist
             // Copy device placement and label if bound to device is enabled.
             if (unitConfig.getBoundToDevice()) {
 
-                // copy placement
-                if (!unitConfig.getPlacementConfig().equals(deviceConfig.getPlacementConfig())) {
-                    unitConfig.setPlacementConfig(deviceConfig.getPlacementConfig());
+                // copy location id
+                if (!unitConfig.getPlacementConfig().getLocationId().equals(deviceConfig.getPlacementConfig().getLocationId())) {
+                    unitConfig.getPlacementConfigBuilder().setLocationId(deviceConfig.getPlacementConfig().getLocationId());
+                    modification = true;
+                }
+
+                // copy position
+                if (!unitConfig.getPlacementConfig().getPosition().equals(deviceConfig.getPlacementConfig().getPosition())) {
+                    unitConfig.getPlacementConfigBuilder().setPosition(deviceConfig.getPlacementConfig().getPosition());
                     modification = true;
                 }
             }

@@ -83,7 +83,7 @@
         </dependency>
         <dependency>
             <groupId>org.dc</groupId>
-            <artifactId>jul.storage</artifactId>
+            <artifactId>jul.extension.rst.storage</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>

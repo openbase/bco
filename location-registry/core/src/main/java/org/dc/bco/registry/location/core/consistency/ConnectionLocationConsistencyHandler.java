@@ -36,9 +36,9 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         ConnectionConfig connection = entry.getMessage();
 
         String locationId = getLowestCommonParentLocation(connection.getTileIdList(), locationConfigRegistry).getId();
-        if (!locationId.equals(connection.getPlacement().getLocationId())) {
-            PlacementConfig.Builder placement = connection.getPlacement().toBuilder().setLocationId(locationId);
-            throw new EntryModification(entry.setMessage(connection.toBuilder().setPlacement(placement).build()), this);
+        if (!locationId.equals(connection.getPlacementConfig().getLocationId())) {
+            PlacementConfig.Builder placement = connection.getPlacementConfig().toBuilder().setLocationId(locationId);
+            throw new EntryModification(entry.setMessage(connection.toBuilder().setPlacementConfig(placement).build()), this);
         }
     }
 

@@ -34,15 +34,11 @@ public class ConnectionScopeConsistencyHandler extends AbstractProtoBufRegistryC
     public void processData(String id, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry, ProtoBufMessageMapInterface<String, ConnectionConfig, ConnectionConfig.Builder> entryMap, ProtoBufRegistryInterface<String, ConnectionConfig, ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         ConnectionConfig connectionConfig = entry.getMessage();
 
-        Scope newScope = ScopeGenerator.generateConnectionScope(connectionConfig, locationConfigRegistry.getMessage(connectionConfig.getPlacement().getLocationId()));
+        Scope newScope = ScopeGenerator.generateConnectionScope(connectionConfig, locationConfigRegistry.getMessage(connectionConfig.getPlacementConfig().getLocationId()));
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(connectionConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
             entry.setMessage(connectionConfig.toBuilder().setScope(newScope));
             throw new EntryModification(entry, this);
         }
-    }
-
-    @Override
-    public void reset() {
     }
 }

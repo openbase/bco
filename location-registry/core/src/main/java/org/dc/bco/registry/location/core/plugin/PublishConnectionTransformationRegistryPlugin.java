@@ -9,10 +9,6 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
-/**
- *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
- */
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rct.transform.PoseTransformer;
 import org.dc.jul.storage.registry.Registry;
@@ -30,6 +26,8 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry;
+
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
@@ -41,49 +39,62 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
-    
+
     @Override
     public void init(Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry) throws CouldNotPerformException {
+        this.registry = registry;
         for (IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry : registry.getEntries()) {
-            publishtransformation(entry);
+            publishTransformation(entry);
         }
     }
 
-    public void publishtransformation(IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry) {
+    public void publishTransformation(IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry) {
         try {
             ConnectionConfig connectionConfig = entry.getMessage();
 
-            if (connectionConfig.hasPlacement() && connectionConfig.getPlacement().hasPosition()) {
+            if (connectionConfig.hasPlacementConfig() && connectionConfig.getPlacementConfig().hasPosition()) {
 
                 if (!connectionConfig.hasId()) {
                     throw new NotAvailableException("connectionconfig.id");
                 }
 
-                if (!connectionConfig.getPlacement().hasLocationId()) {
-                    throw new NotAvailableException("connectionconfig.placement.locationid");
+                 if (!connectionConfig.hasPlacementConfig()) {
+                    throw new NotAvailableException("unitconfig.placement");
                 }
 
-                logger.debug("Publish " + connectionConfig.getPlacement().getLocationId()+ " to " + connectionConfig.getId());
+                if (!connectionConfig.getPlacementConfig().hasPosition()) {
+                    throw new NotAvailableException("unitconfig.placement.position");
+                }
+
+                if (!connectionConfig.getPlacementConfig().hasTransformationFrameId() || connectionConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                    throw new NotAvailableException("unitconfig.placement.transformationframeid");
+                }
+
+                if (!connectionConfig.getPlacementConfig().hasLocationId() || connectionConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                    throw new NotAvailableException("unitconfig.placement.locationid");
+                }
+
+                logger.debug("Publish " + connectionConfig.getPlacementConfig().getLocationId()+ " to " + connectionConfig.getId());
 
                 // Create the rct transform object with source and target frames
-                Transform transformation = PoseTransformer.transform(connectionConfig.getPlacement().getPosition(), connectionConfig.getPlacement().getLocationId(), connectionConfig.getId());
+                Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), registry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
 
                 // Publish the transform object
                 transformation.setAuthority(PublishConnectionTransformationRegistryPlugin.class.getSimpleName());
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
             }
-        } catch (NotAvailableException | TransformerException ex) {
+        } catch (CouldNotPerformException | TransformerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);
         }
     }
-    
+
     @Override
     public void afterRegister(IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry) {
-        publishtransformation(entry);
+        publishTransformation(entry);
     }
 
     @Override
     public void afterUpdate(IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry) throws CouldNotPerformException {
-        publishtransformation(entry);
+        publishTransformation(entry);
     }
 }

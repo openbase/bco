@@ -16,7 +16,6 @@ import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.bco.registry.location.core.LocationRegistryController;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.IOException;
-import org.dc.bco.registry.location.core.consistency.LocationScopeConsistencyHandler;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -264,8 +263,8 @@ public class LocationRegistryTest {
         ConnectionConfig connection1 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection1Label).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build());
         ConnectionConfig connection2 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build());
 
-        assertEquals(root.getId(), connection1.getPlacement().getLocationId());
-        assertEquals(zone.getId(), connection2.getPlacement().getLocationId());
+        assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
+        assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
 
         assertEquals("/rootzoneforconnectiontest/door/connection1/", ScopeGenerator.generateStringRep(connection1.getScope()));
         assertEquals(ScopeGenerator.generateConnectionScope(connection2, zone), connection2.getScope());

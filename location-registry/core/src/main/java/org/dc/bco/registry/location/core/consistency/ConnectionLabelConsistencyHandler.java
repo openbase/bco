@@ -38,11 +38,11 @@ public class ConnectionLabelConsistencyHandler extends AbstractProtoBufRegistryC
             throw new NotAvailableException("connection.label");
         }
 
-        if (!connection.hasPlacement() || !connection.getPlacement().hasLocationId() || connection.getPlacement().getLocationId().isEmpty()) {
+        if (!connection.hasPlacementConfig()|| !connection.getPlacementConfig().hasLocationId() || connection.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("connection.placement.locationId");
         }
 
-        String key = connection.getLabel() + connection.getPlacement().getLocationId();
+        String key = connection.getLabel() + connection.getPlacementConfig().getLocationId();
         if (!connectionMap.containsKey(key)) {
             connectionMap.put(key, connection);
         } else {

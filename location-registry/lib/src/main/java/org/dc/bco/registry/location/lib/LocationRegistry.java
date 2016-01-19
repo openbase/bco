@@ -5,16 +5,16 @@
  */
 package org.dc.bco.registry.location.lib;
 
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.NotAvailableException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
