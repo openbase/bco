@@ -28,6 +28,12 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerService> impl
         }
     }
 
+    /**
+     * Returns on if at least one of the power services is on and else off.
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public PowerStateType.PowerState getPower() throws CouldNotPerformException {
         for (PowerService service : getServices()) {
