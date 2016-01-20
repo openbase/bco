@@ -166,7 +166,7 @@ public class GroupEntry {
             return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could location parent id via placement config. Outdated registry entry!", ex), logger);
-            return generateGroupID(childLocationConfig.getParentId(), locationRegistryRemote);
+            return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
         }
 
     }
