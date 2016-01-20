@@ -28,6 +28,6 @@ public class DimServiceRemote extends AbstractServiceRemote<DimService> implemen
     
     @Override
     public Double getDim() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

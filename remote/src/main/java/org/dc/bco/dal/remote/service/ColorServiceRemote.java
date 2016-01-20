@@ -29,6 +29,6 @@ public class ColorServiceRemote extends AbstractServiceRemote<ColorService> impl
 
     @Override
     public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new CouldNotPerformException("Not supported yet.");
     }
 }

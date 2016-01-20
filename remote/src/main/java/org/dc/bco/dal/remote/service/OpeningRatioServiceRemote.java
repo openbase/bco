@@ -28,7 +28,7 @@ public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRati
 
     @Override
     public Double getOpeningRatio() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
