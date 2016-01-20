@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.dc.bco</groupId>
         <artifactId>manager.agent</artifactId>
-        <version>1.0.8-SNAPSHOT</version>
+        <version>1.0.8</version>
     </parent>    
     
     <url>http://maven.apache.org</url>
