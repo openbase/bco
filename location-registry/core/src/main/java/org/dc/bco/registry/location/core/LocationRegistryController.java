@@ -113,7 +113,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionTransformationFrameConsistencyHandler(locationConfigRegistry));
-            connectionConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin());
+            connectionConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationConfigRegistry));
 
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
                 notifyChange();

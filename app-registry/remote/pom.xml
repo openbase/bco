@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.dc.bco</groupId>
         <artifactId>registry.app</artifactId>
-        <version>1.0.5-SNAPSHOT</version>
+        <version>1.0.6-SNAPSHOT</version>
     </parent>    
     
     <url>http://maven.apache.org</url>

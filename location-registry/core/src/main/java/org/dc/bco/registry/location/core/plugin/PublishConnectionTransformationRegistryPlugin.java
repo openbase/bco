@@ -21,18 +21,21 @@ import rct.TransformType;
 import rct.TransformerException;
 import rct.TransformerFactory;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 public class PublishConnectionTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry;
+    final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> locationRegistry;
 
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    public PublishConnectionTransformationRegistryPlugin() throws org.dc.jul.exception.InstantiationException {
+    public PublishConnectionTransformationRegistryPlugin(final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> locationRegistry) throws org.dc.jul.exception.InstantiationException {
         try {
+            this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
             this.transformPublisher = transformerFactory.createTransformPublisher(PublishConnectionTransformationRegistryPlugin.class.getSimpleName());
         } catch (Exception ex) {
@@ -58,7 +61,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
                     throw new NotAvailableException("connectionconfig.id");
                 }
 
-                 if (!connectionConfig.hasPlacementConfig()) {
+                if (!connectionConfig.hasPlacementConfig()) {
                     throw new NotAvailableException("unitconfig.placement");
                 }
 
@@ -74,10 +77,10 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
                     throw new NotAvailableException("unitconfig.placement.locationid");
                 }
 
-                logger.debug("Publish " + connectionConfig.getPlacementConfig().getLocationId()+ " to " + connectionConfig.getId());
+                logger.debug("Publish " + connectionConfig.getPlacementConfig().getLocationId() + " to " + connectionConfig.getId());
 
                 // Create the rct transform object with source and target frames
-                Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), registry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
+                Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
 
                 // Publish the transform object
                 transformation.setAuthority(PublishConnectionTransformationRegistryPlugin.class.getSimpleName());
