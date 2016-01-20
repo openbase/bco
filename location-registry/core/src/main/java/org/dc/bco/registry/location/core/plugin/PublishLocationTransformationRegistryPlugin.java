@@ -60,22 +60,22 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
                 }
 
                 if (!locationConfig.hasPlacementConfig()) {
-                    throw new NotAvailableException("locationconfig.placement");
+                    throw new NotAvailableException("locationconfig.placementconfig");
                 }
 
                 if (!locationConfig.getPlacementConfig().hasPosition()) {
-                    throw new NotAvailableException("locationconfig.placement.position");
+                    throw new NotAvailableException("locationconfig.placementconfig.position");
                 }
 
                 if (!locationConfig.getPlacementConfig().hasTransformationFrameId() || locationConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                    throw new NotAvailableException("locationconfig.placement.transformationframeid");
+                    throw new NotAvailableException("locationconfig.placementconfig.transformationframeid");
                 }
 
                 if (!locationConfig.getPlacementConfig().hasLocationId() || locationConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                    throw new NotAvailableException("locationconfig.placement.locationid");
+                    throw new NotAvailableException("locationconfig.placementconfig.locationid");
                 }
 
-                logger.debug("Publish " + locationConfig.getParentId() + " to " + locationConfig.getId());
+                logger.debug("Publish " + locationConfig.getPlacementConfig().getLocationId() + " to " + locationConfig.getId());
 
                 // Create the rct transform object with source and target frames
                 Transform transformation = PoseTransformer.transform(locationConfig.getPosition(), registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());

@@ -19,6 +19,7 @@ import org.dc.bco.registry.location.core.consistency.ConnectionLocationConsisten
 import org.dc.bco.registry.location.core.consistency.ConnectionScopeConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.ConnectionTilesConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.ConnectionTransformationFrameConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.LocationIdConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationLoopConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationScopeConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationTransformationFrameConsistencyHandler;
@@ -99,13 +100,15 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             connectionConfigRegistry.loadRegistry();
 
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
-            locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler(this));
+            locationConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler(this));
             locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
             locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationConfigRegistry));
+
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
 
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());

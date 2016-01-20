@@ -5,18 +5,18 @@
  */
 package org.dc.bco.registry.location.core.consistency;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
-import java.util.ArrayList;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.PlacementConfigType;
 
 /**
  *
@@ -24,53 +24,65 @@ import rst.spatial.LocationConfigType.LocationConfig;
  */
 public class ParentChildConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ParentChildConsistencyHandler.class);
+    private final LocationRegistry locationConfigRegistry;
+
+    public ParentChildConsistencyHandler(final LocationRegistry locationConfigRegistry) {
+        this.locationConfigRegistry = locationConfigRegistry;
+    }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
 
-        LocationConfig locationConfig = entry.getMessage();
+        LocationConfig.Builder locationConfig = entry.getMessage().toBuilder();
 
-        // check if parents know their children.
-        if (locationConfig.hasParentId()) {
+        // check if placement exists.
+        if (!locationConfig.hasPlacementConfig()) {
+            locationConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder());
+        }
+
+        // check children consistency
+        if (locationConfig.getPlacementConfig().hasLocationId()) {
 
             // check if parent is registered.
-            if (!entryMap.containsKey(locationConfig.getParentId())) {
-                logger.warn("Parent[" + locationConfig.getParentId() + "] of child[" + locationConfig.getId() + "] is unknown! Parent entry will be erased!");
-                entry.setMessage(locationConfig.toBuilder().clearParentId().setRoot(true).build());
+
+            // check if parent is registered.
+            if (!entryMap.containsKey(locationConfig.getPlacementConfig().getLocationId())) {
+                logger.warn("Parent[" + locationConfig.getPlacementConfig().getLocationId() + "] of child[" + locationConfig.getId() + "] is unknown! Entry will moved to root location!");
+                entry.setMessage(locationConfig.setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfigRegistry.getRootLocationConfig().getId()))); //clear !!!
                 throw new EntryModification(entry, this);
             }
 
             // check if parents knows given child.
-            IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfig.Builder> parent = registry.get(locationConfig.getParentId());
-            if (parent != null && !parentHasChild(parent.getMessage(), locationConfig)) {
-                parent.setMessage(parent.getMessage().toBuilder().addChildId(locationConfig.getId()).build());
+            IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfig.Builder> parent = registry.get(locationConfig.getPlacementConfig().getLocationId());
+            if (parent != null && !parentHasChild(parent.getMessage(), locationConfig.build())) {
+                parent.setMessage(parent.getMessage().toBuilder().addChildId(locationConfig.getId()));
                 throw new EntryModification(entry, this);
             }
         }
-        // check if children know their parent.
-        for (String childLocationId : new ArrayList<>(locationConfig.getChildIdList())) {
-            LocationConfig childLocationConfig;
 
-            // check if given child is registered otherwise register.
+        // check parent consistency
+        for (String childLocationId : new ArrayList<>(locationConfig.getChildIdList())) {
+
+            // check if given child is registered otherwise remove child.
             if (!registry.contains(childLocationId)) {
-                logger.warn("registered child[" + childLocationId + "] for parent[" + locationConfig + "] does not exists.");
+                logger.warn("Registered ChildLocation[" + childLocationId + "] for ParentLocation[" + locationConfig.getId() + "] does not exists.");
                 List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
                 childIds.remove(childLocationId);
-                throw new EntryModification(entry.setMessage(locationConfig.toBuilder().clearChildId().addAllChildId(childIds).build()), this);
-            } else {
-                childLocationConfig = registry.getMessage(childLocationId);
+                throw new EntryModification(entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
             }
 
+            final LocationConfig childLocationConfig = registry.getMessage(childLocationId);
+
             IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig.getId());
+
             // check if parent id is registered
-            if (!childLocationConfig.hasParentId()) {
-                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
+            if (!childLocationConfig.hasPlacementConfig() || locationConfig.getPlacementConfig().hasLocationId()) {
+                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()))), this);
             }
 
             // check if parent id is valid.
-            if (!childLocationConfig.getParentId().equals(locationConfig.getId())) {
-                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setParentId(locationConfig.getId())), this);
+            if (!childLocationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId())) {
+                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()).build())), this);
             }
         }
     }

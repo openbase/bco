@@ -13,6 +13,7 @@ import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.PlacementConfigType;
 
 /**
  *
@@ -22,17 +23,22 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        LocationConfigType.LocationConfig locationConfig = entry.getMessage();
+        LocationConfig.Builder locationConfig = entry.getMessage().toBuilder();
+
+        // check if placement exists.
+        if (!locationConfig.hasPlacementConfig()) {
+            locationConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder());
+        }
 
         // check if root flag is set for child node.
-        if (locationConfig.hasParentId() &&  locationConfig.getRoot()) {
-            entry.setMessage(locationConfig.toBuilder().setRoot(false).build());
+        if (locationConfig.getPlacementConfig().hasLocationId() && !locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && locationConfig.getRoot()) {
+            entry.setMessage(locationConfig.setRoot(false).build());
             throw new EntryModification(entry, this);
         }
 
         // check if root flag is missing for root node.
-        if (!locationConfig.hasParentId() && !locationConfig.getRoot()) {
-            entry.setMessage(locationConfig.toBuilder().setRoot(true).build());
+        if (locationConfig.getPlacementConfig().hasLocationId() && locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && !locationConfig.getRoot()) {
+            entry.setMessage(locationConfig.setRoot(true).setPlacementConfig(locationConfig.getPlacementConfig().toBuilder()));
             throw new EntryModification(entry, this);
         }
     }

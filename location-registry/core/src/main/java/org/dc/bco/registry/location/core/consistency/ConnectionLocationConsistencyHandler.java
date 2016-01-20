@@ -52,8 +52,8 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         for (String id : locationIds) {
             LocationConfig location = locationConfigRegistry.getMessage(id);
             pathToRootLists.add(new ArrayList<>());
-            while (!location.getParentId().isEmpty()) {
-                location = locationConfigRegistry.getMessage(location.getParentId());
+            while (!location.getPlacementConfig().getLocationId().isEmpty()) {
+                location = locationConfigRegistry.getMessage(location.getPlacementConfig().getLocationId());
                 pathToRootLists.get(pathToRootLists.size() - 1).add(0, location);
             }
             if (pathToRootLists.get(pathToRootLists.size() - 1).size() < shortestList) {

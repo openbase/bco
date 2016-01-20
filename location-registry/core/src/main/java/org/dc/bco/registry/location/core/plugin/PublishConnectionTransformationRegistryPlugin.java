@@ -62,19 +62,19 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
                 }
 
                 if (!connectionConfig.hasPlacementConfig()) {
-                    throw new NotAvailableException("unitconfig.placement");
+                    throw new NotAvailableException("connectionconfig.placement");
                 }
 
                 if (!connectionConfig.getPlacementConfig().hasPosition()) {
-                    throw new NotAvailableException("unitconfig.placement.position");
+                    throw new NotAvailableException("connectionconfig.placement.position");
                 }
 
                 if (!connectionConfig.getPlacementConfig().hasTransformationFrameId() || connectionConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                    throw new NotAvailableException("unitconfig.placement.transformationframeid");
+                    throw new NotAvailableException("connectionconfig.placement.transformationframeid");
                 }
 
                 if (!connectionConfig.getPlacementConfig().hasLocationId() || connectionConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                    throw new NotAvailableException("unitconfig.placement.locationid");
+                    throw new NotAvailableException("connectionconfig.placement.locationid");
                 }
 
                 logger.debug("Publish " + connectionConfig.getPlacementConfig().getLocationId() + " to " + connectionConfig.getId());
