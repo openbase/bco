@@ -6,6 +6,7 @@
 package org.dc.bco.registry.device.core.plugin;
 
 import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
+import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -30,12 +31,14 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry;
+    final LocationRegistry locationRegistry;
 
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    public PublishDeviceTransformationRegistryPlugin() throws org.dc.jul.exception.InstantiationException {
+    public PublishDeviceTransformationRegistryPlugin(final LocationRegistry locationRegistry) throws org.dc.jul.exception.InstantiationException {
         try {
+            this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
             this.transformPublisher = transformerFactory.createTransformPublisher(DeviceRegistryLauncher.APP_NAME);
         } catch (Exception ex) {
@@ -80,7 +83,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
             // publish device transformation
             if (isTransformationPresent(deviceConfig.getPlacementConfig().getPosition())) {
                 logger.debug("Publish " + deviceConfig.getPlacementConfig().getLocationId() + " to " + deviceConfig.getId());
-                transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), registry.get(deviceConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
+                transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), locationRegistry.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
                 try {
                     transformPublisher.sendTransform(transformation, TransformType.STATIC);
@@ -93,23 +96,23 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
             for (UnitConfigType.UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
 
                 if (!unitConfig.hasPlacementConfig()) {
-                    throw new NotAvailableException("unitconfig.placement");
+                    throw new NotAvailableException("unitconfig.placementconfig");
                 }
 
                 if (!unitConfig.getPlacementConfig().hasPosition()) {
-                    throw new NotAvailableException("unitconfig.placement.position");
+                    throw new NotAvailableException("unitconfig.placementconfig.position");
                 }
 
                 if (!unitConfig.getPlacementConfig().hasTransformationFrameId() || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                    throw new NotAvailableException("unitconfig.placement.transformationframeid");
+                    throw new NotAvailableException("unitconfig.placementconfig.transformationframeid");
                 }
 
                 if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                    throw new NotAvailableException("unitconfig.placement.locationid");
+                    throw new NotAvailableException("unitconfig.placementconfig.locationid");
                 }
 
                 if (isTransformationPresent(unitConfig.getPlacementConfig().getPosition())) {
-                    transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), registry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
+                    transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
 
                     try {
                         transformPublisher.sendTransform(transformation, TransformType.STATIC);

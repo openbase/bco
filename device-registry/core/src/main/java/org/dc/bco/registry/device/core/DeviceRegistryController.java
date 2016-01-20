@@ -117,7 +117,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
 
-            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin());
+            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
