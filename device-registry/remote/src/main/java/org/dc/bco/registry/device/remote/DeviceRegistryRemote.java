@@ -515,8 +515,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
         for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
             foundServiceType = false;
-            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                for (ServiceType serviceType : serviceTypes) {
+            for (ServiceType serviceType : serviceTypes) {
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getType() == serviceType) {
                         foundServiceType = true;
                     }
