@@ -5,11 +5,12 @@
  */
 package org.dc.bco.registry.location.core;
 
-import org.dc.bco.registry.location.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.dc.bco.registry.location.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.dc.bco.registry.location.lib.jp.JPLocationConfigDatabaseDirectory;
 import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
+import org.dc.jps.preset.JPForce;
 import org.dc.jps.preset.JPReadOnly;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -20,7 +21,6 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.dc.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.dc.jul.storage.registry.jp.JPInitializeDB;
-import org.dc.jps.preset.JPForce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +85,10 @@ public class LocationRegistryLauncher {
 
         if (!locationRegistry.getLocationRegistry().getLocationConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(locationRegistry, new VerificationFailedException("LocationConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+
+        if (!locationRegistry.getLocationRegistry().getConnectionConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(locationRegistry, new VerificationFailedException("ConnectionConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

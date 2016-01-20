@@ -457,8 +457,20 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         return CompletableFuture.completedFuture(locationConfigRegistry.isReadOnly());
     }
 
+     /**
+     * Returns the internal location config registry.
+     * @return the location config registry.
+     */
     public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRegistry() {
         return locationConfigRegistry;
+    }
+
+    /**
+     * Returns the internal connection config registry.
+     * @return the connection config registry.
+     */
+    public ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> getConnectionConfigRegistry() {
+        return connectionConfigRegistry;
     }
 
     /**
