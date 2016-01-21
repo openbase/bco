@@ -5,6 +5,9 @@
  */
 package org.dc.bco.registry.location.core.consistency;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
@@ -12,11 +15,6 @@ import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
@@ -24,8 +22,6 @@ import rst.spatial.LocationConfigType.LocationConfig;
  * @author mpohling
  */
 public class ChildWithSameLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
-
-    private static final Logger logger = LoggerFactory.getLogger(ChildWithSameLabelConsistencyHandler.class);
 
     private final Map<String, String> labelConsistencyMap;
 

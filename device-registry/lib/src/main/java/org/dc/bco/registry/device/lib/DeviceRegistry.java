@@ -5,9 +5,9 @@
  */
 package org.dc.bco.registry.device.lib;
 
-import org.dc.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -59,6 +59,14 @@ public interface DeviceRegistry {
 
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
+    /**
+     * Method returns all registered units with the given label.
+     * Label resolving is done case insensitive!
+     *
+     * @param unitConfigLabel
+     * @return
+     * @throws CouldNotPerformException
+     */
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;

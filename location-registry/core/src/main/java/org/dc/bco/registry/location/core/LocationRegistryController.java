@@ -19,13 +19,15 @@ import org.dc.bco.registry.location.core.consistency.ConnectionLocationConsisten
 import org.dc.bco.registry.location.core.consistency.ConnectionScopeConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.ConnectionTilesConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.ConnectionTransformationFrameConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.LocationChildConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationIdConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationLoopConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.LocationParentConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.LocationPlacementConfigConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.LocationPositionConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationScopeConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationTransformationFrameConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationUnitIdConsistencyHandler;
-import org.dc.bco.registry.location.core.consistency.ParentChildConsistencyHandler;
-import org.dc.bco.registry.location.core.consistency.PositionConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.RootConsistencyHandler;
 import org.dc.bco.registry.location.core.dbconvert.LocationConfig_0_To_1_DBConverter;
 import org.dc.bco.registry.location.core.plugin.PublishConnectionTransformationRegistryPlugin;
@@ -99,14 +101,18 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.loadRegistry();
             connectionConfigRegistry.loadRegistry();
 
+            locationConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
-            locationConfigRegistry.registerConsistencyHandler(new ParentChildConsistencyHandler(this));
-            locationConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler(this));
+            locationConfigRegistry.registerConsistencyHandler(new LocationChildConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new LocationParentConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
-            locationConfigRegistry.registerConsistencyHandler(new PositionConsistencyHandler());
-            locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
+
+
             locationConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationConfigRegistry));
 
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
@@ -257,7 +263,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     @Override
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
         return locationConfigRegistry.getMessages().stream()
-                .filter(m -> m.getLabel().equals(locationLabel))
+                .filter(m -> m.getLabel().equalsIgnoreCase(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

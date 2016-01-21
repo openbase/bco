@@ -157,7 +157,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
-                if (unitConfig.getLabel().equals(unitConfigLabel)) {
+                if (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel)) {
                     unitConfigs.add(unitConfig);
                 }
             }

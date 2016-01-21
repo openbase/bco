@@ -53,37 +53,39 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
         try {
             LocationConfig locationConfig = entry.getMessage();
 
-            if (!locationConfig.getRoot() && locationConfig.hasPosition()) {
-
-                if (!locationConfig.hasId()) {
-                    throw new NotAvailableException("locationconfig.id");
-                }
-
-                if (!locationConfig.hasPlacementConfig()) {
-                    throw new NotAvailableException("locationconfig.placementconfig");
-                }
-
-                if (!locationConfig.getPlacementConfig().hasPosition()) {
-                    throw new NotAvailableException("locationconfig.placementconfig.position");
-                }
-
-                if (!locationConfig.getPlacementConfig().hasTransformationFrameId() || locationConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                    throw new NotAvailableException("locationconfig.placementconfig.transformationframeid");
-                }
-
-                if (!locationConfig.getPlacementConfig().hasLocationId() || locationConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                    throw new NotAvailableException("locationconfig.placementconfig.locationid");
-                }
-
-                logger.debug("Publish " + locationConfig.getPlacementConfig().getLocationId() + " to " + locationConfig.getId());
-
-                // Create the rct transform object with source and target frames
-                Transform transformation = PoseTransformer.transform(locationConfig.getPosition(), registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());
-
-                // Publish the transform object
-                transformation.setAuthority(LocationRegistryLauncher.APP_NAME);
-                transformPublisher.sendTransform(transformation, TransformType.STATIC);
+            // skip root locations
+            if (!locationConfig.getRoot()) {
+                return;
             }
+
+            if (!locationConfig.hasId()) {
+                throw new NotAvailableException("locationconfig.id");
+            }
+
+            if (!locationConfig.hasPlacementConfig()) {
+                throw new NotAvailableException("locationconfig.placementconfig");
+            }
+
+            if (!locationConfig.getPlacementConfig().hasPosition()) {
+                throw new NotAvailableException("locationconfig.placementconfig.position");
+            }
+
+            if (!locationConfig.getPlacementConfig().hasTransformationFrameId() || locationConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                throw new NotAvailableException("locationconfig.placementconfig.transformationframeid");
+            }
+
+            if (!locationConfig.getPlacementConfig().hasLocationId() || locationConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                throw new NotAvailableException("locationconfig.placementconfig.locationid");
+            }
+
+            logger.debug("Publish " + locationConfig.getPlacementConfig().getLocationId() + " to " + locationConfig.getId());
+
+            // Create the rct transform object with source and target frames
+            Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());
+
+            // Publish the transform object
+            transformation.setAuthority(LocationRegistryLauncher.APP_NAME);
+            transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (CouldNotPerformException | TransformerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);
         }

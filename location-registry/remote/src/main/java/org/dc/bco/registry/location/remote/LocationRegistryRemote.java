@@ -182,7 +182,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
         getData();
         return locationConfigRemoteRegistry.getMessages().stream()
-                .filter(m -> m.getLabel().equals(locationLabel))
+                .filter(m -> m.getLabel().equalsIgnoreCase(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

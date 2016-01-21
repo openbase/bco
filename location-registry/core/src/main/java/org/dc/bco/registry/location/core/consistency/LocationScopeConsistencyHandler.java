@@ -24,18 +24,15 @@ public class LocationScopeConsistencyHandler extends AbstractProtoBufRegistryCon
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        LocationConfigType.LocationConfig locationConfig = entry.getMessage();
 
+        LocationConfigType.LocationConfig locationConfig = entry.getMessage();
         ScopeType.Scope newScope = ScopeGenerator.generateLocationScope(locationConfig, entryMap);
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(locationConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
             entry.setMessage(locationConfig.toBuilder().setScope(newScope));
+            logger.info("setup Scope["+ScopeGenerator.generateStringRep(newScope)+"] for "+locationConfig.getLabel()+"["+locationConfig.getId()+"]");
             throw new EntryModification(entry, this);
         }
-    }
-
-    @Override
-    public void reset() {
     }
 }

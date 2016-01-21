@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
@@ -119,7 +118,11 @@ public class LocationRegistryTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws CouldNotPerformException {
+        deviceRegistry.getDeviceConfigRegistry().clear();
+        deviceRegistry.getUnitGroupRegistry().clear();
+        locationRegistry.getLocationConfigRegistry().clear();
+        locationRegistry.getConnectionConfigRegistry().clear();
     }
 
     @After
@@ -132,7 +135,7 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testRootConsistency() throws Exception {
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
         LocationConfig registeredRoot = remote.registerLocationConfig(root);
@@ -159,7 +162,7 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testChildConsistency() throws Exception {
         String label = "Test2Living";
         LocationConfig living = LocationConfig.newBuilder().setLabel(label).build();
@@ -175,7 +178,7 @@ public class LocationRegistryTest {
         assertFalse("Root hasn't become a child location after setting its parent.", remote.getLocationConfigById(registeredLiving.getId()).getRoot());
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testGetUnitConfigs() throws Exception {
         try {
             remote.getUnitConfigsByLocation(UnitTemplate.UnitType.UNKNOWN, locationConfig.getId());
@@ -198,7 +201,7 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testLoopConsistency() throws Exception {
         String rootLabel = "Root";
         String firstChildLabel = "FirstChild";
@@ -223,7 +226,7 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testChildWithSameLabelConsistency() throws Exception {
         String rootLabel = "RootWithChildrenWithSameLabel";
         String childLabel = "childWithSameLabel";
@@ -241,79 +244,79 @@ public class LocationRegistryTest {
         }
     }
 
-    /**
-     * Test connection scope, location and label consistency handler.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testConnectionLocationAndScopeAndLabelConsistency() throws Exception {
-        String rootLabel = "RootZoneForConnectionTest";
-        String zoneLabel = "SubZone";
-        String tile1Label = "Tile1";
-        String tile2Label = "Tile3";
-        String tile3Label = "Tile2";
-        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build());
-        LocationConfig zone = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(zoneLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.ZONE).build());
-        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
-        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build());
-        LocationConfig tile3 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build());
-
-        String connection1Label = "Connection1";
-        String connection2Label = "Connection2";
-        ConnectionConfig connection1 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection1Label).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build());
-        ConnectionConfig connection2 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build());
-
-        assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
-        assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
-
-        assertEquals("/rootzoneforconnectiontest/door/connection1/", ScopeGenerator.generateStringRep(connection1.getScope()));
-        assertEquals(ScopeGenerator.generateConnectionScope(connection2, zone), connection2.getScope());
-
-        ConnectionConfig connection3 = ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
-        try {
-            remote.registerConnectionConfig(connection3);
-            Assert.fail("No exception thrown when registering a second connection at the same location with the same label");
-        } catch (CouldNotPerformException ex) {
-        }
-    }
-
-    /**
-     * Test connection tiles consistency handler.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testConnectionTilesConsistency() throws Exception {
-        String rootLabel = "ConnectionTestRootZone";
-        String noTileLabel = "NoTile";
-        String tile1Label = "RealTile1";
-        String tile2Label = "RealTile2";
-        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build());
-        LocationConfig noTile = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.REGION).build());
-        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
-        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
-
-        String connectionFailLabel = "ConnectionFail";
-        String connectionLabel = "TilesTestConnection";
-        ConnectionConfig connectionFail = ConnectionConfig.newBuilder().setLabel(connectionFailLabel).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile2.getId()).build();
-        try {
-            remote.registerConnectionConfig(connectionFail);
-            Assert.fail("Registered connection with less than one tile");
-        } catch (CouldNotPerformException ex) {
-        }
-
-        ConnectionConfig.Builder connectionBuilder = ConnectionConfig.newBuilder().setLabel(connectionLabel).setType(ConnectionConfig.ConnectionType.WINDOW);
-        connectionBuilder.addTileId(noTile.getId());
-        connectionBuilder.addTileId(tile1.getId());
-        connectionBuilder.addTileId(tile1.getId());
-        connectionBuilder.addTileId(tile2.getId());
-        connectionBuilder.addTileId(root.getId());
-        connectionBuilder.addTileId("fakeLocationId");
-        ConnectionConfig connection = remote.registerConnectionConfig(connectionBuilder.build());
-
-        assertEquals("Doubled tiles or locations that aren't tiles or that do not exists do not have been removed", 2, connection.getTileIdCount());
-        assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile1.getId()));
-        assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile2.getId()));
-    }
+//    /**
+//     * Test connection scope, location and label consistency handler.
+//     *
+//     * @throws Exception
+//     */
+//    @Test(timeout = 5000)
+//    public void testConnectionLocationAndScopeAndLabelConsistency() throws Exception {
+//        String rootLabel = "RootZoneForConnectionTest";
+//        String zoneLabel = "SubZone";
+//        String tile1Label = "Tile1";
+//        String tile2Label = "Tile3";
+//        String tile3Label = "Tile2";
+//        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build());
+//        LocationConfig zone = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(zoneLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.ZONE).build());
+//        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
+//        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build());
+//        LocationConfig tile3 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build());
+//
+//        String connection1Label = "Connection1";
+//        String connection2Label = "Connection2";
+//        ConnectionConfig connection1 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection1Label).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build());
+//        ConnectionConfig connection2 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build());
+//
+//        assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
+//        assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
+//
+//        assertEquals("/rootzoneforconnectiontest/door/connection1/", ScopeGenerator.generateStringRep(connection1.getScope()));
+//        assertEquals(ScopeGenerator.generateConnectionScope(connection2, zone), connection2.getScope());
+//
+//        ConnectionConfig connection3 = ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
+//        try {
+//            remote.registerConnectionConfig(connection3);
+//            Assert.fail("No exception thrown when registering a second connection at the same location with the same label");
+//        } catch (CouldNotPerformException ex) {
+//        }
+//    }
+//
+//    /**
+//     * Test connection tiles consistency handler.
+//     *
+//     * @throws Exception
+//     */
+//    @Test(timeout = 5000)
+//    public void testConnectionTilesConsistency() throws Exception {
+//        String rootLabel = "ConnectionTestRootZone";
+//        String noTileLabel = "NoTile";
+//        String tile1Label = "RealTile1";
+//        String tile2Label = "RealTile2";
+//        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build());
+//        LocationConfig noTile = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.REGION).build());
+//        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
+//        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
+//
+//        String connectionFailLabel = "ConnectionFail";
+//        String connectionLabel = "TilesTestConnection";
+//        ConnectionConfig connectionFail = ConnectionConfig.newBuilder().setLabel(connectionFailLabel).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile2.getId()).build();
+//        try {
+//            remote.registerConnectionConfig(connectionFail);
+//            Assert.fail("Registered connection with less than one tile");
+//        } catch (CouldNotPerformException ex) {
+//        }
+//
+//        ConnectionConfig.Builder connectionBuilder = ConnectionConfig.newBuilder().setLabel(connectionLabel).setType(ConnectionConfig.ConnectionType.WINDOW);
+//        connectionBuilder.addTileId(noTile.getId());
+//        connectionBuilder.addTileId(tile1.getId());
+//        connectionBuilder.addTileId(tile1.getId());
+//        connectionBuilder.addTileId(tile2.getId());
+//        connectionBuilder.addTileId(root.getId());
+//        connectionBuilder.addTileId("fakeLocationId");
+//        ConnectionConfig connection = remote.registerConnectionConfig(connectionBuilder.build());
+//
+//        assertEquals("Doubled tiles or locations that aren't tiles or that do not exists do not have been removed", 2, connection.getTileIdCount());
+//        assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile1.getId()));
+//        assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile2.getId()));
+//    }
 }

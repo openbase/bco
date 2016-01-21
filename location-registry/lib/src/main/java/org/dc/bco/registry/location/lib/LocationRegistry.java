@@ -43,8 +43,8 @@ public interface LocationRegistry {
     public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
 
     /**
-     * Method returns all location configs which are assigned to the given
-     * label.
+     * Method returns all location configs which are assigned to the given label.
+     * Label resolving is done case insensitive!
      *
      * @param locationLabel
      * @return
@@ -115,6 +115,7 @@ public interface LocationRegistry {
      * Method returns all unit configurations which are direct or recursive
      * related to the given location label which can represent more than one
      * location.
+     * Label resolving is done case insensitive!
      *
      * @param locationLabel
      * @return A collection of unit configs.
@@ -127,6 +128,7 @@ public interface LocationRegistry {
      * Method returns all unit configurations with a given type which are direct
      * or recursive related to the given location label which can represent more
      * than one location.
+     * Label resolving is done case insensitive!
      *
      * @param unitType
      * @param locationLabel
@@ -139,6 +141,7 @@ public interface LocationRegistry {
     /**
      * Method returns a collection of unit configs which are located within the
      * defined location and match the given unit label.
+     * Label resolving is done case insensitive!
      *
      * @param unitLabel
      * @param locationId
@@ -150,6 +153,7 @@ public interface LocationRegistry {
     /**
      * Method returns all unit configurations which are direct or recursive
      * related to the given location id and an instance of the given unit type.
+     * Label resolving is done case insensitive!
      *
      * @param type
      * @param locationConfigId
