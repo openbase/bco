@@ -24,6 +24,10 @@ import org.dc.bco.registry.device.core.consistency.ServiceConfigUnitIdConsistenc
 import org.dc.bco.registry.device.core.consistency.UnitBoundsToDeviceConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.UnitConfigUnitTemplateConfigIdConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
+import org.dc.bco.registry.device.core.consistency.UnitGroupMemberExistsConsistencyHandler;
+import org.dc.bco.registry.device.core.consistency.UnitGroupMemberListDuplicationConsistencyHandler;
+import org.dc.bco.registry.device.core.consistency.UnitGroupMemberListTypesConsistencyHandler;
+import org.dc.bco.registry.device.core.consistency.UnitGroupUnitTypeConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.UnitIdConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.UnitLabelConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.UnitLocationIdConsistencyHandler;
@@ -135,9 +139,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConfigIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassUnitConsistencyHandler(deviceClassRegistry));
 
-
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler());
             unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+
+            unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListDuplicationConsistencyHandler());
+            unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberExistsConsistencyHandler(deviceConfigRegistry));
+            unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
+            unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(deviceConfigRegistry, unitTemplateRegistry));
 
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 notifyChange();
@@ -160,14 +168,19 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
                 deviceConfigRegistry.checkConsistency();
             };
 
-            // Check the device configs if the device classes has changed.
+            // Check the device configs if the device classes have changed.
             deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
                 deviceConfigRegistry.checkConsistency();
             });
 
-            // Check the device classes if the unit templates has changed.
+            // Check the device classes if the unit templates have changed.
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 deviceClassRegistry.checkConsistency();
+            });
+
+            // Check the unit groups if the device configs have changed.
+            deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) -> {
+                unitGroupConfigRegistry.checkConsistency();
             });
 
         } catch (JPServiceException | CouldNotPerformException ex) {
@@ -578,8 +591,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
 
         for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
             foundServiceType = false;
-            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                for (ServiceType serviceType : serviceTypes) {
+            for (ServiceType serviceType : serviceTypes) {
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getType() == serviceType) {
                         foundServiceType = true;
                     }
