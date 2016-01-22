@@ -5,9 +5,17 @@
  */
 package org.dc.bco.registry.agent.core;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import org.dc.bco.registry.agent.core.consistency.LabelConsistencyHandler;
+import org.dc.bco.registry.agent.core.consistency.LocationIdConsistencyHandler;
+import org.dc.bco.registry.agent.core.consistency.ScopeConsistencyHandler;
 import org.dc.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.dc.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -22,13 +30,6 @@ import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import org.dc.bco.registry.agent.core.consistency.LabelConsistencyHandler;
-import org.dc.bco.registry.agent.core.consistency.ScopeConsistencyHandler;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType;
@@ -70,6 +71,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
             agentConfigRegistry.loadRegistry();
 
+            agentConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler(locationRegistryRemote));
             agentConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
             agentConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
             agentConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>>() {
