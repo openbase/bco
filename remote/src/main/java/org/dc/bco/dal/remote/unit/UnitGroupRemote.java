@@ -54,7 +54,6 @@ public class UnitGroupRemote extends DALRemoteService<UnitGroupConfig> implement
     private DeviceRegistryRemote deviceRegistryRemote;
 
     public UnitGroupRemote() throws InstantiationException {
-        super();
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
     }
 
@@ -169,7 +168,7 @@ public class UnitGroupRemote extends DALRemoteService<UnitGroupConfig> implement
         for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
             remote.activate();
         }
-        super.activate();
+//        super.activate();
     }
 
     @Override
@@ -177,14 +176,14 @@ public class UnitGroupRemote extends DALRemoteService<UnitGroupConfig> implement
         for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
             remote.deactivate();
         }
-        super.deactivate();
+//        super.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        if (!super.isActive()) {
-            return false;
-        }
+//        if (!super.isActive()) {
+//            return false;
+//        }
         for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
             if (!remote.isActive()) {
                 return false;
@@ -193,7 +192,7 @@ public class UnitGroupRemote extends DALRemoteService<UnitGroupConfig> implement
         return true;
     }
 
-    private void init(UnitGroupConfig unitGroupConfig) throws InstantiationException, InitializationException, InterruptedException, CouldNotPerformException {
+    public void init(UnitGroupConfig unitGroupConfig) throws InstantiationException, InitializationException, InterruptedException, CouldNotPerformException {
 //        super.init(unitGroupConfig.getScope);
 
         deviceRegistryRemote = new DeviceRegistryRemote();
@@ -201,14 +200,14 @@ public class UnitGroupRemote extends DALRemoteService<UnitGroupConfig> implement
         deviceRegistryRemote.activate();
 
         List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (String unitConfigId : getData().getMemberIdList()) {
+        for (String unitConfigId : unitGroupConfig.getMemberIdList()) {
             unitConfigs.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
         }
         deviceRegistryRemote.deactivate();
 
         List<UnitConfig> unitConfigsByService = new ArrayList<>();
-        for (ServiceTemplate.ServiceType serviceType : getData().getServiceTypeList()) {
-            for (UnitConfig unitConfig : unitConfigsByService) {
+        for (ServiceTemplate.ServiceType serviceType : unitGroupConfig.getServiceTypeList()) {
+            for (UnitConfig unitConfig : unitConfigs) {
                 if (unitHasService(unitConfig, serviceType)) {
                     unitConfigsByService.add(unitConfig);
                 }
