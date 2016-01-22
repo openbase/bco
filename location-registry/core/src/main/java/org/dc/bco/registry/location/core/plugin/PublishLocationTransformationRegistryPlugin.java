@@ -34,6 +34,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
 
     public PublishLocationTransformationRegistryPlugin() throws org.dc.jul.exception.InstantiationException {
         try {
+            logger.info("create location transformation publisher");
             this.transformerFactory = TransformerFactory.getInstance();
             this.transformPublisher = transformerFactory.createTransformPublisher(LocationRegistryLauncher.APP_NAME);
         } catch (Exception ex) {
@@ -54,7 +55,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             LocationConfig locationConfig = entry.getMessage();
 
             // skip root locations
-            if (!locationConfig.getRoot()) {
+            if (locationConfig.getRoot()) {
                 return;
             }
 
@@ -78,7 +79,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
                 throw new NotAvailableException("locationconfig.placementconfig.locationid");
             }
 
-            logger.debug("Publish " + locationConfig.getPlacementConfig().getLocationId() + " to " + locationConfig.getId());
+            logger.info("Publish " + registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + locationConfig.getPlacementConfig().getTransformationFrameId());
 
             // Create the rct transform object with source and target frames
             Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());

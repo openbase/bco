@@ -77,7 +77,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
                     throw new NotAvailableException("connectionconfig.placement.locationid");
                 }
 
-                logger.debug("Publish " + connectionConfig.getPlacementConfig().getLocationId() + " to " + connectionConfig.getId());
+                logger.info("Publish " + locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + connectionConfig.getPlacementConfig().getTransformationFrameId());
 
                 // Create the rct transform object with source and target frames
                 Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());

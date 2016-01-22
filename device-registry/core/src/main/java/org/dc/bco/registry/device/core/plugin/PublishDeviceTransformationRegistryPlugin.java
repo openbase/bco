@@ -82,7 +82,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
 
             // publish device transformation
             if (isTransformationPresent(deviceConfig.getPlacementConfig().getPosition())) {
-                logger.debug("Publish " + deviceConfig.getPlacementConfig().getLocationId() + " to " + deviceConfig.getId());
+                logger.info("Publish " + locationRegistry.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId() + " to " + deviceConfig.getPlacementConfig().getTransformationFrameId());
                 transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), locationRegistry.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
                 try {
