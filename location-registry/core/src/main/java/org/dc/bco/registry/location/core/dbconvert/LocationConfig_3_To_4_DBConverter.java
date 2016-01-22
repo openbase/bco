@@ -19,6 +19,11 @@ public class LocationConfig_3_To_4_DBConverter implements DBVersionConverter {
 
     @Override
     public JsonObject upgrade(JsonObject locationConfig, final Map<File, JsonObject> dbSnapshot) {
+        // remove position
+        if (locationConfig.getAsJsonObject("position") != null) {
+            locationConfig.remove("position");
+        }
+
         if (locationConfig.getAsJsonPrimitive("parent_id") == null) {
             return locationConfig;
         }
