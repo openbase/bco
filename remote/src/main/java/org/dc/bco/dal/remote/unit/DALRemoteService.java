@@ -11,9 +11,9 @@ import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InitializationException;
-import org.dc.jul.iface.Identifiable;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.iface.Identifiable;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -46,7 +46,7 @@ public abstract class DALRemoteService<M extends GeneratedMessage> extends RSBRe
     @Deprecated
     public ServiceConfigType.ServiceConfig getServiceConfig() {
         // TODO mpohling: redesign!
-        throw new UnsupportedOperationException("Not supported yet."); 
-        
+        throw new UnsupportedOperationException("Not supported yet.");
+
     }
 }

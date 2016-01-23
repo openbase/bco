@@ -5,6 +5,10 @@
  */
 package org.dc.bco.dal.lib.layer.service;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.dc.bco.dal.lib.layer.service.provider.BatteryProvider;
 import org.dc.bco.dal.lib.layer.service.provider.ButtonProvider;
 import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
@@ -15,16 +19,12 @@ import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
 import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
 import org.dc.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProvider;
 import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.NotSupportedException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.dc.jps.core.JPService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.patterns.Callback;
@@ -33,7 +33,9 @@ import rst.homeautomation.service.ServiceTemplateType;
 /**
  *
  * @author mpohling
+ * @deprecated This enum is mainly outdated. Please use the rst ServiceType instead!
  */
+@Deprecated
 public enum ServiceType {
 
     MULTI(MultiService.class, ServiceTemplateType.ServiceTemplate.ServiceType.UNKNOWN),
@@ -54,7 +56,7 @@ public enum ServiceType {
     SMOKE_ALARM_STATE(SmokeAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
     TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
     SMOKE_STATE(SmokeStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_PROVIDER);
-    
+
 
     public static final String SET = "set";
     public static final String UPDATE = "update";
