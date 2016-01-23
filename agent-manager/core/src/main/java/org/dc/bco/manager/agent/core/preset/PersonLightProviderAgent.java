@@ -6,11 +6,11 @@
 package org.dc.bco.manager.agent.core.preset;
 
 import org.dc.bco.dal.remote.service.PowerServiceRemote;
+import org.dc.bco.manager.agent.core.AbstractAgent;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.pattern.Observable;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
@@ -27,8 +27,8 @@ public class PersonLightProviderAgent extends AbstractAgent {
     private MotionStateFutionProvider motionStateProvider;
     private PowerServiceRemote powerServiceRemote;
 
-    public PersonLightProviderAgent(AgentConfig agentConfig) throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super(agentConfig);
+    public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
+        super(false);
     }
 
     @Override
@@ -49,10 +49,6 @@ public class PersonLightProviderAgent extends AbstractAgent {
         String homeId = locationRegistryRemote.getLocationConfigsByLabel("Home").stream().findFirst().get().getId();
         powerServiceRemote = new PowerServiceRemote();
         powerServiceRemote.init(locationRegistryRemote.getUnitConfigsByLocation(ServiceTemplate.ServiceType.POWER_SERVICE, homeId));
-
-        motionStateProvider.activate();
-        powerServiceRemote.activate();
-
         locationRegistryRemote.deactivate();
     }
 
@@ -63,7 +59,22 @@ public class PersonLightProviderAgent extends AbstractAgent {
         motionStateProvider.shutdown();
 
         super.deactivate();
+
     }
+
+    @Override
+    protected void execute() throws CouldNotPerformException, InterruptedException {
+        motionStateProvider.activate();
+        powerServiceRemote.activate();
+    }
+
+    @Override
+    protected void stop() throws CouldNotPerformException, InterruptedException {
+        motionStateProvider.deactivate();
+        powerServiceRemote.deactivate();
+    }
+
+
 
     private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
         if (motionState.getValue() == MotionState.State.MOVEMENT) {

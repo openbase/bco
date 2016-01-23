@@ -5,7 +5,6 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.pattern.Factory;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
@@ -14,9 +13,9 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  *
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface AgentFactory extends Factory<Agent, AgentConfig> {
+public interface AgentFactory extends Factory<AgentController, AgentConfig> {
 
     @Override
-    public Agent newInstance(final AgentConfig config) throws InstantiationException;
+    public AgentController newInstance(final AgentConfig config) throws InstantiationException;
 
 }

@@ -6,21 +6,23 @@
 package org.dc.bco.manager.agent.core.preset;
 
 import com.google.protobuf.GeneratedMessage;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import org.dc.bco.dal.remote.unit.DALRemoteService;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
+import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
@@ -46,46 +48,56 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
      * State that determines what the targets do if the source changes and vice
      * versa.
      *
-     * OFF when all targets are off. 
+     * OFF when all targets are off.
      * ON when at least one target is one.
      */
     private PowerState.State targetLatestPowerState;
-    private final List<DALRemoteService> targetRemotes = new ArrayList<>();
-    private final DALRemoteService sourceRemote;
-    private final PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
+    private List<DALRemoteService> targetRemotes = new ArrayList<>();
+    private DALRemoteService sourceRemote;
+    private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private final UnitRemoteFactoryInterface factory;
 
-    public PowerStateSynchroniserAgent(AgentConfig agentConfig) throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super(agentConfig);
+    public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
+        super(true);
         factory = UnitRemoteFactory.getInstance();
-        logger.info("Creating PowerStateSynchroniserAgent");
+    }
 
-        DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
-        deviceRegistryRemote.init();
-        deviceRegistryRemote.activate();
-
-        MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", agentConfig.getMetaConfig());
-
-        sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
-        int i = 1;
-        String unitId;
+    @Override
+    public void init(AgentConfigType.AgentConfig config) throws InitializationException {
+        super.init(config);
         try {
-            while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
-                logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
-                targetRemotes.add(factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(unitId)));
-                i++;
+            logger.info("Creating PowerStateSynchroniserAgent");
+
+            DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
+            deviceRegistryRemote.init();
+            deviceRegistryRemote.activate();
+
+            MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
+
+            sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+            int i = 1;
+            String unitId;
+            try {
+                while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
+                    logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                    targetRemotes.add(factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(unitId)));
+                    i++;
+                }
+            } catch (NotAvailableException ex) {
+                i--;
+                logger.info("Found [" + i + "] target/s");
             }
-        } catch (NotAvailableException ex) {
-            i--;
-            logger.info("Found [" + i + "] target/s");
+            sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
+            targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
+
+            deviceRegistryRemote.shutdown();
+
+            logger.info("Initializing observers");
+            initObserver();
+            //TODO mpohling: interrupted should be forwarded! Interface change needed!
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            throw new InitializationException(this, ex);
         }
-        sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
-        targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
-
-        deviceRegistryRemote.shutdown();
-
-        logger.info("Initializing observers");
-        initObserver();
     }
 
     private void initObserver() {
@@ -212,6 +224,17 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getClass().getSimpleName() + "]");
+        super.activate();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+        super.deactivate();
+    }
+
+    @Override
+    protected void execute() throws CouldNotPerformException, InterruptedException {
         sourceRemote.activate();
         String targetIds = "";
         targetLatestPowerState = PowerState.State.UNKNOWN;
@@ -227,17 +250,14 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
         logger.info("Targets [" + targetIds + "], behaviour [" + targetBehaviour + "]");
         sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
-        super.activate();
     }
 
     @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+    protected void stop() throws CouldNotPerformException, InterruptedException {
         sourceRemote.deactivate();
         for (DALRemoteService targetRemote : targetRemotes) {
             targetRemote.deactivate();
         }
-        super.deactivate();
     }
 
     public DALRemoteService getSourceRemote() {

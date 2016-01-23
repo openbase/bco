@@ -5,7 +5,6 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -28,9 +27,9 @@ public class AgentManagerLauncher {
     protected static final Logger logger = LoggerFactory.getLogger(AgentManagerLauncher.class);
 
     private final AgentFactory factory;
-    private final RegistryImpl<String, Agent> agentRegistry;
+    private final RegistryImpl<String, AgentController> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
-    private final ActivatableEntryRegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder> registrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, AgentController, AgentConfig, AgentConfig.Builder> registrySynchronizer;
 
     public AgentManagerLauncher() throws InstantiationException, InterruptedException {
         try {
@@ -39,7 +38,7 @@ public class AgentManagerLauncher {
 
             agentRegistryRemote = new AgentRegistryRemote();
 
-            this.registrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, Agent, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AgentController, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean activationCondition(final AgentConfig config) {

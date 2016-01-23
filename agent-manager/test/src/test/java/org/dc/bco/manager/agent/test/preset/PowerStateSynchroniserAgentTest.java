@@ -108,7 +108,7 @@ public class PowerStateSynchroniserAgentTest {
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
         AgentConfig config = registerAgent();
-        agent = new PowerStateSynchroniserAgent(config);
+        agent = new PowerStateSynchroniserAgent();
 
         DimmerRemote dimmerRemote = (DimmerRemote) agent.getSourceRemote();
         AmbientLightRemote ambientLightRemote = (AmbientLightRemote) agent.getTargetRemotes().get(0);

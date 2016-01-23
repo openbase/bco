@@ -5,20 +5,18 @@
  */
 package org.dc.bco.manager.agent.core.preset;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
-import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
-import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
+import org.dc.bco.dal.remote.service.ColorServiceRemote;
+import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
-import rst.homeautomation.control.agent.AgentConfigType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
@@ -115,20 +113,14 @@ public class AmbientColorAgent extends AbstractAgent {
     private ColoringStrategy strategy;
     private Thread thread;
     private long holdingTime;
-    private long lastModification;
-    private final List<DALRemoteService> colorRemotes = new ArrayList<>();
+    private final List<ColorServiceRemote> colorRemotes = new ArrayList<>();
     private final List<HSVColor> colors = new ArrayList<>();
-    private final UnitRemoteFactoryInterface factory;
     private final Random random;
 
-    public AmbientColorAgent(AgentConfigType.AgentConfig agentConfig) throws InstantiationException, InterruptedException, CouldNotPerformException {
-        super(agentConfig);
-//        localId = globalId;
-//        globalId++;
+    public AmbientColorAgent() throws InstantiationException, InterruptedException, CouldNotPerformException {
+        super(false);
         logger.info("Creating AmbienColorAgent");
-        factory = UnitRemoteFactory.getInstance();
         random = new Random();
-
         init();
     }
 
@@ -144,7 +136,9 @@ public class AmbientColorAgent extends AbstractAgent {
         try {
             while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
                 logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
-                colorRemotes.add(factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(unitId)));
+                ColorServiceRemote remote = new ColorServiceRemote();
+                remote.init(deviceRegistryRemote.getUnitConfigById(unitId));
+                colorRemotes.add(remote);
                 i++;
             }
         } catch (NotAvailableException ex) {
@@ -172,28 +166,40 @@ public class AmbientColorAgent extends AbstractAgent {
 
         holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
         strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
-
         deviceRegistryRemote.shutdown();
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getClass().getSimpleName() + "]");
-        for (DALRemoteService colorRemote : colorRemotes) {
+        for (ColorServiceRemote colorRemote : colorRemotes) {
             colorRemote.activate();
         }
         super.activate();
+    }
+
+    @Override
+    public void execute() throws CouldNotPerformException {
         initColorStates();
         setExecutionThread();
         thread.start();
     }
 
+    @Override
+    public void stop() throws CouldNotPerformException, InterruptedException {
+        thread.interrupt();
+        thread.join(10000);
+        if (thread.isAlive()) {
+            throw new CouldNotPerformException("Fatal error: Could not stop " + this + "!");
+        }
+    }
+
     private void initColorStates() throws CouldNotPerformException {
         HSVColor color;
-        for (DALRemoteService colorRemote : colorRemotes) {
-            if (!colors.contains(invokeGetColor(colorRemote))) {
+        for (ColorServiceRemote colorRemote : colorRemotes) {
+            if (!colors.contains(colorRemote.getColor())) {
                 color = colors.get(random.nextInt(colors.size()));
-                invokeSetColor(colorRemote, color);
+                colorRemote.setColor(color);
             }
         }
     }
@@ -208,7 +214,6 @@ public class AmbientColorAgent extends AbstractAgent {
                 break;
             default:
                 thread = new OneStrategyThread();
-
         }
     }
 
@@ -220,30 +225,8 @@ public class AmbientColorAgent extends AbstractAgent {
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         super.deactivate();
-        for (DALRemoteService colorRemote : colorRemotes) {
+        for (ColorServiceRemote colorRemote : colorRemotes) {
             colorRemote.deactivate();
-        }
-    }
-
-    private void invokeSetColor(DALRemoteService remote, HSVColor color) throws CouldNotPerformException {
-        try {
-            Method method = remote.getClass().getMethod("setColor", HSVColor.class);
-            method.invoke(remote, color);
-        } catch (NoSuchMethodException ex) {
-            throw new CouldNotPerformException("Remote [" + remote.getClass().getSimpleName() + "] has no set Color method", ex);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException("Could not invoke setColor method on remote [" + remote.getClass().getSimpleName() + "] with value [" + color + "]", ex);
-        }
-    }
-
-    private HSVColor invokeGetColor(DALRemoteService remote) throws CouldNotPerformException {
-        try {
-            Method method = remote.getClass().getMethod("getColor");
-            return (HSVColor) method.invoke(remote);
-        } catch (NoSuchMethodException ex) {
-            throw new CouldNotPerformException("Remote [" + remote.getClass().getSimpleName() + "] has no get Color method", ex);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException("Could not get color from remote [" + remote.getClass().getSimpleName() + "]", ex);
         }
     }
 
@@ -251,18 +234,23 @@ public class AmbientColorAgent extends AbstractAgent {
 
         @Override
         public void run() {
-            while (active) {
-                if (lastModification + holdingTime < System.currentTimeMillis()) {
-                    for (DALRemoteService colorRemote : colorRemotes) {
-                        try {
-                            invokeSetColor(colorRemote, choseDifferentElem(colors, invokeGetColor(colorRemote)));
-                        } catch (CouldNotPerformException ex) {
-                            logger.warn("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex);
-                        }
-                    }
-                    lastModification = System.currentTimeMillis();
+            try {
+                if (colorRemotes.isEmpty()) {
+                    throw new InvalidStateException("No service remote available!");
                 }
-                Thread.yield();
+                final long delay = holdingTime / colorRemotes.size();
+                while (executing && Thread.interrupted()) {
+                    for (ColorServiceRemote colorRemote : colorRemotes) {
+                        try {
+                            colorRemote.setColor(choseDifferentElem(colors, colorRemote.getColor()));
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex), logger);
+                        }
+                        Thread.sleep(delay);
+                    }
+                }
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Execution thread canceled!", ex), logger);
             }
         }
     }
@@ -271,27 +259,25 @@ public class AmbientColorAgent extends AbstractAgent {
 
         @Override
         public void run() {
-            DALRemoteService remote = null;
-            HSVColor color;
-            while (AmbientColorAgent.this.isActive()) {
-                if (lastModification + holdingTime < System.currentTimeMillis()) {
-                    remote = choseDifferentElem(colorRemotes, remote);
-                    if (!AmbientColorAgent.this.isActive()) {
-                        break;
-                    }
-                    try {
-                        color = invokeGetColor(remote);
-                        color = choseDifferentElem(colors, color);
-                        invokeSetColor(remote, color);
-                    } catch (CouldNotPerformException ex) {
-                        logger.warn("Could not set/get color of [" + remote.getClass().getName() + "]", ex);
-                    }
-                    lastModification = System.currentTimeMillis();
+            ColorServiceRemote remote = null;
+            try {
+                if (colorRemotes.isEmpty()) {
+                    throw new InvalidStateException("No service remote available!");
                 }
-                Thread.yield();
+
+                while (executing && Thread.interrupted()) {
+                    try {
+                        choseDifferentElem(colorRemotes, remote).setColor(choseDifferentElem(colors, remote.getColor()));
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set/get color of [" + remote + "]", ex), logger);
+                    }
+                    Thread.sleep(holdingTime);
+                }
+                logger.info("Execution thread finished.");
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Execution thread canceled!", ex), logger);
             }
         }
-
     }
 
     /**
@@ -306,7 +292,7 @@ public class AmbientColorAgent extends AbstractAgent {
      * @return a different element from the list than currentElem
      */
     private <T> T choseDifferentElem(List<T> list, T currentElem) {
-        if (list.size() == 1) {
+        if (currentElem == null || list.size() == 1) {
             return list.get(0);
         }
 
@@ -322,3 +308,16 @@ public class AmbientColorAgent extends AbstractAgent {
         return list.get(newIndex);
     }
 }
+
+//TODO Tamino: hierüber müssen wir unbedingt mal reden :D
+//                    if (lastModification + holdingTime < System.currentTimeMillis()) {
+//                        for (ColorServiceRemote colorRemote : colorRemotes) {
+//                            try {
+//                                colorRemote.setColor(choseDifferentElem(colors, colorRemote.getColor()));
+//                            } catch (CouldNotPerformException ex) {
+//                                logger.warn("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex);
+//                            }
+//                        }
+//                        lastModification = System.currentTimeMillis();
+//                    }
+//                    Thread.yield();

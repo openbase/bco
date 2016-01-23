@@ -5,12 +5,10 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import java.lang.reflect.InvocationTargetException;
 import org.dc.bco.manager.agent.lib.Agent;
-import org.dc.bco.manager.agent.core.preset.AbstractAgent;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +31,14 @@ public class AgentFactoryImpl implements AgentFactory {
         }
         return instance;
     }
-    
+
     private AgentFactoryImpl() {
-        
+
     }
 
     @Override
-    public Agent newInstance(final AgentConfig config) throws InstantiationException {
+    public AgentController newInstance(final AgentConfig config) throws InstantiationException {
+        AgentController agent;
         try {
             if (config == null) {
                 throw new NotAvailableException("agentconfig");
@@ -49,10 +48,12 @@ public class AgentFactoryImpl implements AgentFactory {
             }
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(config));
             logger.info("Creating agent of type [" + agentClass.getSimpleName() + "]");
-            return (Agent) agentClass.getConstructor(AgentConfig.class).newInstance(config);
-        } catch (NotAvailableException | ClassNotFoundException | NoSuchMethodException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            agent = (AgentController) agentClass.newInstance();
+            agent.init(config);
+        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
             throw new InstantiationException(Agent.class, config.getId(), ex);
         }
+        return agent;
     }
 
     private String getAgentClass(final AgentConfigType.AgentConfig config) {
