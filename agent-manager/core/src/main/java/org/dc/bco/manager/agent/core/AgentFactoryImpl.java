@@ -58,6 +58,7 @@ public class AgentFactoryImpl implements AgentFactory {
 
     private String getAgentClass(final AgentConfigType.AgentConfig config) {
         return AbstractAgent.class.getPackage().getName() + "."
+                + "preset."
                 + StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
                 + "Agent";
     }
