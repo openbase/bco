@@ -18,7 +18,7 @@ import rst.homeautomation.unit.TemperatureSensorType;
  *
  * @author thuxohl
  */
-public class SmokeDetectorRemote extends DALRemoteService<SmokeDetector> implements SmokeDetectorInterface {
+public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetector> implements SmokeDetectorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorType.TemperatureSensor.getDefaultInstance()));

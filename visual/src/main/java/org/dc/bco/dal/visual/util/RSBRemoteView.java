@@ -6,8 +6,8 @@
 package org.dc.bco.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
+import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
 import org.dc.bco.dal.remote.unit.DALRemoteService;
-import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -26,7 +26,7 @@ import rst.rsb.ScopeType.Scope;
  *
  * @author mpohling
  */
-public abstract class RSBRemoteView<RS extends DALRemoteService> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
+public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
 //public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -115,7 +115,7 @@ public abstract class RSBRemoteView<RS extends DALRemoteService> extends javax.s
         }
     }
 
-    private void initUnitRemote(DALRemoteService unitRemote, UnitConfig config) throws CouldNotPerformException {
+    private void initUnitRemote(AbstractUnitRemote unitRemote, UnitConfig config) throws CouldNotPerformException {
         try {
             unitRemote.init(config);
         } catch (InitializationException ex) {
@@ -123,7 +123,7 @@ public abstract class RSBRemoteView<RS extends DALRemoteService> extends javax.s
         }
     }
 
-    private void initUnitRemote(DALRemoteService unitRemote, Scope scope) throws CouldNotPerformException {
+    private void initUnitRemote(AbstractUnitRemote unitRemote, Scope scope) throws CouldNotPerformException {
         try {
             unitRemote.init(scope);
         } catch (InitializationException ex) {

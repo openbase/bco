@@ -5,12 +5,12 @@
  */
 package org.dc.bco.dal.remote.unit;
 
-import org.dc.bco.dal.lib.layer.unit.LightInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dc.bco.dal.lib.layer.unit.LightInterface;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -20,7 +20,7 @@ import rst.homeautomation.unit.LightType.Light;
  *
  * @author thuxohl
  */
-public class LightRemote extends DALRemoteService<Light> implements LightInterface {
+public class LightRemote extends AbstractUnitRemote<Light> implements LightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Light.getDefaultInstance()));

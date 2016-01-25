@@ -5,25 +5,25 @@
  */
 package org.dc.bco.dal.remote.unit;
 
-import org.dc.bco.dal.lib.layer.unit.ScreenInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dc.bco.dal.lib.layer.unit.ScreenInterface;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.ScreenType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.StandbyStateType;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
+import rst.homeautomation.unit.ScreenType;
 
 /**
  *
  * @author mpohling
  */
-public class ScreenRemote extends DALRemoteService<ScreenType.Screen> implements ScreenInterface {
+public class ScreenRemote extends AbstractUnitRemote<ScreenType.Screen> implements ScreenInterface {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ScreenRemote.class);
 

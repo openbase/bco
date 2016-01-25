@@ -5,18 +5,18 @@
  */
 package org.dc.bco.dal.remote.unit;
 
-import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
-import org.dc.bco.dal.lib.layer.unit.AmbientLightInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dc.bco.dal.lib.layer.unit.AmbientLightInterface;
+import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.AmbientLightType;
 import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.AmbientLightType;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -24,7 +24,7 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author mpohling
  */
-public class AmbientLightRemote extends DALRemoteService<AmbientLightType.AmbientLight> implements AmbientLightInterface {
+public class AmbientLightRemote extends AbstractUnitRemote<AmbientLightType.AmbientLight> implements AmbientLightInterface {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemote.class);
 

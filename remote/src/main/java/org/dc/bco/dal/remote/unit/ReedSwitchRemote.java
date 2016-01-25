@@ -16,8 +16,8 @@ import rst.homeautomation.unit.ReedSwitchType.ReedSwitch;
  *
  * @author thuxohl
  */
-public class ReedSwitchRemote extends DALRemoteService<ReedSwitch> implements ReedSwitchInterface {
-    
+public class ReedSwitchRemote extends AbstractUnitRemote<ReedSwitch> implements ReedSwitchInterface {
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitch.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
@@ -34,5 +34,5 @@ public class ReedSwitchRemote extends DALRemoteService<ReedSwitch> implements Re
     public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
         return getData().getReedSwitchState();
     }
-     
+
 }
