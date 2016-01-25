@@ -8,7 +8,7 @@
     
     <groupId>org.dc.bco</groupId>
     <artifactId>dal</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.4</version>
     <name>DAL</name>
     <description>Domotic Abstraction Layer</description>
     
