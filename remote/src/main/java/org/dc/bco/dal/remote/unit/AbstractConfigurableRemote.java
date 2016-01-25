@@ -23,6 +23,7 @@ public abstract class AbstractConfigurableRemote<M extends GeneratedMessage, CON
 
     public void init(final CONFIG config) throws InitializationException {
         try {
+            this.config = config;
             super.init(getScopeProvider(config).getScope());
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
