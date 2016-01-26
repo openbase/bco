@@ -5,8 +5,10 @@
  */
 package org.dc.bco.manager.agent.core;
 
+import java.util.logging.Level;
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.processing.StringProcessor;
@@ -50,7 +52,7 @@ public class AgentFactoryImpl implements AgentFactory {
             logger.info("Creating agent of type [" + agentClass.getSimpleName() + "]");
             agent = (AgentController) agentClass.newInstance();
             agent.init(config);
-        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException ex) {
+        } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
             throw new InstantiationException(Agent.class, config.getId(), ex);
         }
         return agent;

@@ -44,7 +44,7 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
     }
 
     @Override
-    public void init(final AgentConfig config) throws InitializationException {
+    public void init(final AgentConfig config) throws InitializationException, InterruptedException {
         this.config = config;
         this.executing = false;
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");

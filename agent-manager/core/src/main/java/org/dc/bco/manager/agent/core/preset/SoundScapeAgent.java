@@ -83,7 +83,7 @@ public class SoundScapeAgent extends AbstractAgent {
     }
 
     @Override
-    public void init(final AgentConfig config) throws InitializationException {
+    public void init(final AgentConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             agentRegistryRemote.activate();

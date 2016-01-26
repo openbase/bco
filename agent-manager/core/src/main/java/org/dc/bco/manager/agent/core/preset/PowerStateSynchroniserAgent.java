@@ -14,6 +14,8 @@ import org.dc.bco.dal.remote.unit.DALRemoteService;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
 import org.dc.bco.manager.agent.core.AbstractAgent;
+import org.dc.bco.manager.agent.core.AgentManagerController;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -22,7 +24,7 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-import rst.homeautomation.control.agent.AgentConfigType;
+import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
@@ -56,31 +58,35 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     private DALRemoteService sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private final UnitRemoteFactoryInterface factory;
+    private final DeviceRegistry deviceRegistry;
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
         super(true);
-        factory = UnitRemoteFactory.getInstance();
+        this.factory = UnitRemoteFactory.getInstance();
+        this.deviceRegistry = AgentManagerController.getInstance().getDeviceRegistry();
     }
 
     @Override
-    public void init(AgentConfigType.AgentConfig config) throws InitializationException {
+    public void init(AgentConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            logger.info("Creating PowerStateSynchroniserAgent");
+            logger.info("Creating PowerStateSynchroniserAgent["+config.getLabel()+"]");
 
-            DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
-            deviceRegistryRemote.init();
-            deviceRegistryRemote.activate();
+//            final DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
+//            System.out.println("### init["+config.getLabel()+"]");
+//            deviceRegistryRemote.init();
+//            System.out.println("### activate["+config.getLabel()+"]");
+//            deviceRegistryRemote.activate();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
-            sourceRemote = factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+            sourceRemote = factory.createAndInitUnitRemote(deviceRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
             int i = 1;
             String unitId;
             try {
                 while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
                     logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
-                    targetRemotes.add(factory.createAndInitUnitRemote(deviceRegistryRemote.getUnitConfigById(unitId)));
+                    targetRemotes.add(factory.createAndInitUnitRemote(deviceRegistry.getUnitConfigById(unitId)));
                     i++;
                 }
             } catch (NotAvailableException ex) {
@@ -90,12 +96,12 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
             targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
 
-            deviceRegistryRemote.shutdown();
+            System.out.println("### shutdown["+config.getLabel()+"]");
 
             logger.info("Initializing observers");
             initObserver();
             //TODO mpohling: interrupted should be forwarded! Interface change needed!
-        } catch (CouldNotPerformException | InterruptedException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }

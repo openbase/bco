@@ -12,11 +12,13 @@ import org.dc.bco.dal.remote.service.ColorServiceRemote;
 import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
+import rst.homeautomation.control.agent.AgentConfigType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
@@ -121,52 +123,58 @@ public class AmbientColorAgent extends AbstractAgent {
         super(false);
         logger.info("Creating AmbienColorAgent");
         random = new Random();
-        init();
     }
 
-    private void init() throws InstantiationException, InterruptedException, CouldNotPerformException {
-        DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
-        deviceRegistryRemote.init();
-        deviceRegistryRemote.activate();
-
-        MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", config.getMetaConfig());
-
-        int i = 1;
-        String unitId;
+    @Override
+    public void init(final AgentConfigType.AgentConfig config) throws InitializationException, InterruptedException {
         try {
-            while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
-                logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
-                ColorServiceRemote remote = new ColorServiceRemote();
-                remote.init(deviceRegistryRemote.getUnitConfigById(unitId));
-                colorRemotes.add(remote);
-                i++;
-            }
-        } catch (NotAvailableException ex) {
-            i--;
-            logger.info("Found [" + i + "] unit/s");
-        }
-        i = 1;
-        String colorString;
-        try {
-            while (!(colorString = configVariableProvider.getValue(COLOR_KEY + "_" + i)).isEmpty()) {
-                logger.info("Found color [" + colorString + "] with key [" + COLOR_KEY + "_" + i + "]");
-                String[] split = colorString.split(SEPERATOR);
-                double hue = Double.parseDouble(split[0]);
-                double saturation = Double.parseDouble(split[1]);
-                double brightness = Double.parseDouble(split[2]);
-                colors.add(HSVColor.newBuilder().setHue(hue).setSaturation(saturation).setValue(brightness).build());
-                i++;
-            }
-        } catch (NotAvailableException ex) {
-            i--;
-            logger.info("Found [" + i + "] color/s");
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-            logger.warn("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex);
-        }
+            super.init(config);
 
-        holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
-        strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
-        deviceRegistryRemote.shutdown();
+            DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
+            deviceRegistryRemote.init();
+            deviceRegistryRemote.activate();
+
+            MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", config.getMetaConfig());
+
+            int i = 1;
+            String unitId;
+            try {
+                while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
+                    logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
+                    ColorServiceRemote remote = new ColorServiceRemote();
+                    remote.init(deviceRegistryRemote.getUnitConfigById(unitId));
+                    colorRemotes.add(remote);
+                    i++;
+                }
+            } catch (NotAvailableException ex) {
+                i--;
+                logger.info("Found [" + i + "] unit/s");
+            }
+            i = 1;
+            String colorString;
+            try {
+                while (!(colorString = configVariableProvider.getValue(COLOR_KEY + "_" + i)).isEmpty()) {
+                    logger.info("Found color [" + colorString + "] with key [" + COLOR_KEY + "_" + i + "]");
+                    String[] split = colorString.split(SEPERATOR);
+                    double hue = Double.parseDouble(split[0]);
+                    double saturation = Double.parseDouble(split[1]);
+                    double brightness = Double.parseDouble(split[2]);
+                    colors.add(HSVColor.newBuilder().setHue(hue).setSaturation(saturation).setValue(brightness).build());
+                    i++;
+                }
+            } catch (NotAvailableException ex) {
+                i--;
+                logger.info("Found [" + i + "] color/s");
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
+                logger.warn("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex);
+            }
+
+            holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
+            strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
+            deviceRegistryRemote.shutdown();
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -206,14 +214,14 @@ public class AmbientColorAgent extends AbstractAgent {
 
     private void setExecutionThread() {
         switch (strategy) {
-            case ALL:
-                thread = new AllStrategyThread();
-                break;
-            case ONE:
-                thread = new OneStrategyThread();
-                break;
-            default:
-                thread = new OneStrategyThread();
+        case ALL:
+            thread = new AllStrategyThread();
+            break;
+        case ONE:
+            thread = new OneStrategyThread();
+            break;
+        default:
+            thread = new OneStrategyThread();
         }
     }
 

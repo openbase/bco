@@ -8,6 +8,7 @@ package org.dc.bco.manager.agent.core;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -26,29 +27,13 @@ public class AgentManagerLauncher {
 
     protected static final Logger logger = LoggerFactory.getLogger(AgentManagerLauncher.class);
 
-    private final AgentFactory factory;
-    private final RegistryImpl<String, AgentController> agentRegistry;
-    private final AgentRegistryRemote agentRegistryRemote;
-    private final ActivatableEntryRegistrySynchronizer<String, AgentController, AgentConfig, AgentConfig.Builder> registrySynchronizer;
+    private final AgentManagerController agentManagerController;
 
     public AgentManagerLauncher() throws InstantiationException, InterruptedException {
         try {
-            this.factory = AgentFactoryImpl.getInstance();
-            this.agentRegistry = new RegistryImpl<>();
-
-            agentRegistryRemote = new AgentRegistryRemote();
-
-            this.registrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AgentController, AgentConfig, AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
-
-                @Override
-                public boolean activationCondition(final AgentConfig config) {
-                    return config.getActivationState().getValue() == ActivationState.State.ACTIVE;
-                }
-            };
-
-            agentRegistryRemote.init();
-            agentRegistryRemote.activate();
-            registrySynchronizer.init();
+            this.agentManagerController = new AgentManagerController();
+            this.agentManagerController.init();
+            this.agentManagerController.activate();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

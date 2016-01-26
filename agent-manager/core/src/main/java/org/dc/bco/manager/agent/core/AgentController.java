@@ -18,6 +18,6 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  */
 public interface AgentController extends Identifiable<String>, Configurable<String, AgentConfig, AgentController>, Activatable, Agent {
 
-    public void init(final AgentConfig config) throws InitializationException;
+    public void init(final AgentConfig config) throws InitializationException, InterruptedException;
 
 }
