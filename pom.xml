@@ -56,8 +56,8 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <!--<dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>-->
-        <dependency.jul.version>[1.1,1.2-SNAPSHOT)</dependency.jul.version>
+        <dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>
+        <!--dependency.jul.version>[1.1,1.2-SNAPSHOT)</dependency.jul.version-->
     </properties>
     
     <packaging>pom</packaging>
