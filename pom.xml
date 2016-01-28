@@ -56,9 +56,9 @@
         <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <dependency.bco.registry.version>[1.0,1.1-SNAPSHOT)</dependency.bco.registry.version>
-        <dependency.bco.dal.version>[1.0,1.1-SNAPSHOT)</dependency.bco.dal.version>
-        <dependency.jul.version>[1.0,1.1-SNAPSHOT)</dependency.jul.version>
+        <dependency.bco.registry.version>1.1-SNAPSHOT</dependency.bco.registry.version>
+        <dependency.bco.dal.version>1.1-SNAPSHOT</dependency.bco.dal.version>
+        <dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>
     </properties>
     
     <packaging>pom</packaging>
