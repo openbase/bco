@@ -9,14 +9,14 @@ import org.dc.bco.dal.lib.layer.unit.BatteryInterface;
 import org.dc.jul.exception.CouldNotPerformException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.BatteryType.Battery;
 import rst.homeautomation.state.BatteryStateType.BatteryState;
+import rst.homeautomation.unit.BatteryType.Battery;
 
 /**
  *
  * @author thuxohl
  */
-public class BatteryRemote extends DALRemoteService<Battery> implements BatteryInterface {
+public class BatteryRemote extends AbstractUnitRemote<Battery> implements BatteryInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Battery.getDefaultInstance()));

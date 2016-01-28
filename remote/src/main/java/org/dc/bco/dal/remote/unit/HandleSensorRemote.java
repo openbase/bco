@@ -16,7 +16,7 @@ import rst.homeautomation.unit.HandleSensorType.HandleSensor;
  *
  * @author thuxohl
  */
-public class HandleSensorRemote extends DALRemoteService<HandleSensor> implements HandleSensorInterface {
+public class HandleSensorRemote extends AbstractUnitRemote<HandleSensor> implements HandleSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleSensor.getDefaultInstance()));

@@ -6,6 +6,12 @@
 package org.dc.bco.dal.visual.unit;
 
 import com.google.protobuf.GeneratedMessage;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
 import org.dc.bco.dal.remote.unit.DALRemoteService;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.bco.dal.visual.util.RSBRemoteView;
@@ -16,11 +22,6 @@ import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
 import org.dc.jul.visual.layout.LayoutGenerator;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -31,7 +32,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class GenericUnitPanel<RS extends DALRemoteService> extends RSBRemoteView<RS> {
+public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteView<RS> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

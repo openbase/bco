@@ -5,12 +5,12 @@
  */
 package org.dc.bco.dal.remote.unit;
 
-import org.dc.bco.dal.lib.layer.unit.TemperatureControllerInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dc.bco.dal.lib.layer.unit.TemperatureControllerInterface;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.TemperatureControllerType.TemperatureController;
@@ -19,7 +19,7 @@ import rst.homeautomation.unit.TemperatureControllerType.TemperatureController;
  *
  * @author mpohling
  */
-public class TemperatureControllerRemote extends DALRemoteService<TemperatureController> implements TemperatureControllerInterface {
+public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureController> implements TemperatureControllerInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureController.getDefaultInstance()));

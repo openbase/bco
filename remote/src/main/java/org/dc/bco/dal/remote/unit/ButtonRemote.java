@@ -16,7 +16,7 @@ import rst.homeautomation.unit.ButtonType.Button;
  *
  * @author thuxohl
  */
-public class ButtonRemote extends DALRemoteService<Button> implements ButtonInterface {
+public class ButtonRemote extends AbstractUnitRemote<Button> implements ButtonInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));

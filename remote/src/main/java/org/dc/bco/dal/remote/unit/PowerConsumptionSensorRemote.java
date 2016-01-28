@@ -16,7 +16,7 @@ import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor
  *
  * @author thuxohl
  */
-public class PowerConsumptionSensorRemote extends DALRemoteService<PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
+public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensor.getDefaultInstance()));

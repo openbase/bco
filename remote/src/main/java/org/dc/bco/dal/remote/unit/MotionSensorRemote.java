@@ -16,7 +16,7 @@ import rst.homeautomation.unit.MotionSensorType.MotionSensor;
  *
  * @author thuxohl
  */
-public class MotionSensorRemote extends DALRemoteService<MotionSensor> implements MotionSensorInterface {
+public class MotionSensorRemote extends AbstractUnitRemote<MotionSensor> implements MotionSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionSensor.getDefaultInstance()));

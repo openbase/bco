@@ -16,8 +16,8 @@ import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
  *
  * @author thuxohl
  */
-public class TamperSwitchRemote extends DALRemoteService<TamperSwitch> implements TamperSwitchInterface {
-    
+public class TamperSwitchRemote extends AbstractUnitRemote<TamperSwitch> implements TamperSwitchInterface {
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitch.getDefaultInstance()));
     }
@@ -33,5 +33,5 @@ public class TamperSwitchRemote extends DALRemoteService<TamperSwitch> implement
     public TamperState getTamper() throws CouldNotPerformException {
         return getData().getTamperState();
     }
-    
+
 }

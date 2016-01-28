@@ -5,12 +5,12 @@
  */
 package org.dc.bco.dal.remote.unit;
 
-import org.dc.bco.dal.lib.layer.unit.DimmerInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dc.bco.dal.lib.layer.unit.DimmerInterface;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -20,7 +20,7 @@ import rst.homeautomation.unit.DimmerType.Dimmer;
  *
  * @author thuxohl
  */
-public class DimmerRemote extends DALRemoteService<Dimmer> implements DimmerInterface {
+public class DimmerRemote extends AbstractUnitRemote<Dimmer> implements DimmerInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Dimmer.getDefaultInstance()));
@@ -33,7 +33,7 @@ public class DimmerRemote extends DALRemoteService<Dimmer> implements DimmerInte
     @Override
     public void notifyUpdated(Dimmer data) {
     }
-    
+
     @Override
     public void setPower(PowerState.State value) throws CouldNotPerformException {
         try {

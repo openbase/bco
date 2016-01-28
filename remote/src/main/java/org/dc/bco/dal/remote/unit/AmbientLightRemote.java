@@ -12,6 +12,7 @@ import org.dc.bco.dal.lib.layer.unit.AmbientLightInterface;
 import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -23,7 +24,7 @@ import rst.vision.HSVColorType.HSVColor;
  *
  * @author mpohling
  */
-public class AmbientLightRemote extends DALRemoteService<AmbientLightType.AmbientLight> implements AmbientLightInterface {
+public class AmbientLightRemote extends AbstractUnitRemote<AmbientLightType.AmbientLight> implements AmbientLightInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AmbientLightType.AmbientLight.getDefaultInstance()));

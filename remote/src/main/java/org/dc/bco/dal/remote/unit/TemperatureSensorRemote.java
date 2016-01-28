@@ -16,7 +16,7 @@ import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
  *
  * @author thuxohl
  */
-public class TemperatureSensorRemote extends DALRemoteService<TemperatureSensor> implements TemperatureSensorInterface {
+public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensor> implements TemperatureSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensor.getDefaultInstance()));

@@ -5,13 +5,6 @@
  */
 package org.dc.bco.dal.visual.unit;
 
-import org.dc.bco.dal.remote.unit.DALRemoteService;
-import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InitializationException;
-import org.dc.jul.exception.MultiException;
-import org.dc.jul.schedule.SyncObject;
-import org.dc.jul.visual.layout.LayoutGenerator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +12,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
+import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
+import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.MultiException;
+import org.dc.jul.schedule.SyncObject;
+import org.dc.jul.visual.layout.LayoutGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -28,7 +28,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  * @param <RS> The unit remote service to use.
  */
-public class GenericUnitCollectionPanel<RS extends DALRemoteService> extends javax.swing.JPanel {
+public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(GenericUnitCollectionPanel.class);
 

@@ -5,12 +5,12 @@
  */
 package org.dc.bco.dal.remote.unit;
 
-import org.dc.bco.dal.lib.layer.unit.RollershutterInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dc.bco.dal.lib.layer.unit.RollershutterInterface;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
@@ -20,7 +20,7 @@ import rst.homeautomation.unit.RollershutterType.Rollershutter;
  *
  * @author thuxohl
  */
-public class RollershutterRemote extends DALRemoteService<Rollershutter> implements RollershutterInterface {
+public class RollershutterRemote extends AbstractUnitRemote<Rollershutter> implements RollershutterInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Rollershutter.getDefaultInstance()));

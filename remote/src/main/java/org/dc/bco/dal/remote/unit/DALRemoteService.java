@@ -15,7 +15,6 @@ import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.iface.Identifiable;
 import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -32,14 +31,6 @@ public abstract class DALRemoteService<M extends GeneratedMessage> extends RSBRe
     @Override
     public String getId() throws CouldNotPerformException {
         return (String) getField(FIELD_ID);
-    }
-
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException {
-        try {
-            super.init(ScopeTransformer.transform(config.getScope()));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
     }
 
     @Override

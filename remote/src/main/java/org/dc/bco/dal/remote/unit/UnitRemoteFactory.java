@@ -7,7 +7,7 @@ package org.dc.bco.dal.remote.unit;
 
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.processing.StringProcessor;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -38,7 +38,7 @@ public class UnitRemoteFactory implements UnitRemoteFactoryInterface {
      * @throws CouldNotPerformException
      */
     @Override
-    public DALRemoteService createUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException {
+    public AbstractUnitRemote createUnitRemote(final UnitConfig config) throws CouldNotPerformException {
         try {
             return instantiatUnitRemote(loadUnitRemoteClass(config));
         } catch (CouldNotPerformException ex) {
@@ -56,28 +56,28 @@ public class UnitRemoteFactory implements UnitRemoteFactoryInterface {
      * @throws CouldNotPerformException
      */
     @Override
-    public DALRemoteService createAndInitUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException {
-        DALRemoteService unitRemote = createUnitRemote(config);
+    public AbstractUnitRemote createAndInitUnitRemote(final UnitConfig config) throws CouldNotPerformException {
+        AbstractUnitRemote unitRemote = createUnitRemote(config);
         unitRemote.init(config);
         return unitRemote;
     }
 
-    public static Class<? extends DALRemoteService> loadUnitRemoteClass(final UnitConfigType.UnitConfig config) throws CouldNotPerformException {
+    public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitConfig config) throws CouldNotPerformException {
         return loadUnitRemoteClass(config.getType());
     }
-    
-    public static Class<? extends DALRemoteService> loadUnitRemoteClass(final UnitType unitType) throws CouldNotPerformException {
-        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+
+    public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitType unitType) throws CouldNotPerformException {
+        String remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
-            return (Class<? extends DALRemoteService>) UnitRemoteFactory.class.getClassLoader().loadClass(remoteClassName);
+            return (Class<? extends AbstractUnitRemote>) UnitRemoteFactory.class.getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not detect unit remote class for UnitType[" + unitType.name() + "]!", ex);
         }
     }
 
-    private static DALRemoteService instantiatUnitRemote(final Class<? extends DALRemoteService> unitRemoteClass) throws org.dc.jul.exception.InstantiationException {
+    private static AbstractUnitRemote instantiatUnitRemote(final Class<? extends AbstractUnitRemote> unitRemoteClass) throws org.dc.jul.exception.InstantiationException {
         try {
-            DALRemoteService instance = unitRemoteClass.newInstance();
+            AbstractUnitRemote instance = unitRemoteClass.newInstance();
             return instance;
         } catch (Exception ex) {
             throw new org.dc.jul.exception.InstantiationException("Could not instantiate unit remote out of Class[" + unitRemoteClass.getName() + "]", ex);
