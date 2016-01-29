@@ -9,7 +9,7 @@ import org.dc.bco.registry.user.remote.UserRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.dc.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
     private final UserFactory factory;
     private final RegistryImpl<String, UserController> userRegistry;
     private final UserRegistryRemote userRegistryRemote;
-    private final ActivatableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder> registrySynchronizer;
 
     public UserManagerController() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -37,10 +37,10 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
             this.userRegistry = new RegistryImpl<>();
             this.userRegistryRemote = new UserRegistryRemote();
 
-            this.registrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {
 
                 @Override
-                public boolean activationCondition(final UserConfigType.UserConfig config) {
+                public boolean enablingCondition(UserConfigType.UserConfig config) {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
