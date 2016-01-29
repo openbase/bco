@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Random;
 import org.dc.bco.dal.remote.service.ColorServiceRemote;
 import org.dc.bco.manager.agent.core.AbstractAgent;
-import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.manager.agent.core.AgentManagerController;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -130,19 +131,16 @@ public class AmbientColorAgent extends AbstractAgent {
         try {
             super.init(config);
 
-            DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
-            deviceRegistryRemote.init();
-            deviceRegistryRemote.activate();
-
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", config.getMetaConfig());
 
+            DeviceRegistry deviceRegistry = AgentManagerController.getInstance().getDeviceRegistry();
             int i = 1;
             String unitId;
             try {
                 while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
                     logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
                     ColorServiceRemote remote = new ColorServiceRemote();
-                    remote.init(deviceRegistryRemote.getUnitConfigById(unitId));
+                    remote.init(deviceRegistry.getUnitConfigById(unitId));
                     colorRemotes.add(remote);
                     i++;
                 }
@@ -171,7 +169,6 @@ public class AmbientColorAgent extends AbstractAgent {
 
             holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
             strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
-            deviceRegistryRemote.shutdown();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

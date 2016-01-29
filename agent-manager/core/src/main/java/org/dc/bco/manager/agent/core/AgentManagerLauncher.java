@@ -5,19 +5,13 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.dc.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
