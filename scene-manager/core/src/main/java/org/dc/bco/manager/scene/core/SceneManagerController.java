@@ -13,9 +13,11 @@ import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
 /**
  *
@@ -29,7 +31,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
     private final SceneFactory factory;
     private final RegistryImpl<String, SceneController> sceneRegistry;
     private final SceneRegistryRemote sceneRegistryRemote;
-//    private final EnableableEntryRegistrySynchronizer<String, SceneManagerController, SceneConfig, SceneConfig> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, SceneController, SceneConfig, SceneConfig.Builder> registrySynchronizer;
 
     public SceneManagerController() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -38,13 +40,14 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
             this.sceneRegistry = new RegistryImpl<>();
             this.sceneRegistryRemote = new SceneRegistryRemote();
 
-//            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder>(sceneRegistry, sceneRegistryRemote.getUserConfigRemoteRegistry(), factory) {
-//
-//                @Override
-//                public boolean enablingCondition(UserConfigType.UserConfig config) {
-//                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-//                }
-//            };
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, SceneConfig, SceneConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
+
+                @Override
+                public boolean enablingCondition(SceneConfig config) {
+                    //TODO: can be implemented as soon as the scene config gets a enablable state
+                    return true;
+                }
+            };
         } catch (CouldNotPerformException ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
@@ -74,8 +77,6 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
 
     @Override
     public org.dc.bco.registry.scene.lib.SceneRegistry getSceneRegistry() throws NotAvailableException {
-//        return ;
-        //TODO
-        return null;
+        return sceneRegistryRemote;
     }
 }

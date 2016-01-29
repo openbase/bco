@@ -6,8 +6,8 @@
 package org.dc.bco.manager.scene.lib;
 
 import org.dc.jul.exception.InitializationException;
-import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Configurable;
+import org.dc.jul.iface.Enableable;
 import org.dc.jul.iface.Identifiable;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
@@ -15,7 +15,7 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface SceneController extends Identifiable<String>, Configurable<String, SceneConfig>, Activatable, Scene {
+public interface SceneController extends Identifiable<String>, Configurable<String, SceneConfig>, Enableable, Scene {
 
     public void init(final SceneConfig config) throws InitializationException, InterruptedException;
 }
