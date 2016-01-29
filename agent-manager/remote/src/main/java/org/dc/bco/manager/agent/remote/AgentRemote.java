@@ -20,7 +20,8 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConfig> implements Agent {
 
@@ -31,7 +32,7 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
 
     @Override
     public void notifyUpdated(AgentData data) throws CouldNotPerformException {
-        
+
     }
 
     @Override

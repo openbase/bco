@@ -27,11 +27,22 @@ public class AgentManagerLauncher {
     public AgentManagerLauncher() throws InstantiationException, InterruptedException {
         try {
             this.agentManagerController = new AgentManagerController();
-            this.agentManagerController.init();
-            this.agentManagerController.activate();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    public void launch() throws org.dc.jul.exception.InstantiationException, InterruptedException {
+        try {
+            agentManagerController.init();
+        } catch (CouldNotPerformException ex) {
+            agentManagerController.shutdown();
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
+        }
+    }
+
+    public void shutdown() {
+        agentManagerController.shutdown();
     }
 
     /**
@@ -48,7 +59,7 @@ public class AgentManagerLauncher {
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
         try {
-            new AgentManagerLauncher();
+            new AgentManagerLauncher().launch();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
