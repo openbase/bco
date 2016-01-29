@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import org.dc.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
+import org.dc.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
+import org.dc.bco.registry.user.core.consistency.UserGroupConfigLabelConsistencyHandler;
+import org.dc.bco.registry.user.core.consistency.UserGroupConfigScopeConsistencyHandler;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import rsb.converter.DefaultConverterRepository;
@@ -59,8 +63,15 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getFieldDescriptor(UserRegistry.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             userRegistry.loadRegistry();
+            
+            userRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
+            userRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
+            
             userGroupRegistry.loadRegistry();
 
+            userGroupRegistry.registerConsistencyHandler(new UserGroupConfigLabelConsistencyHandler());
+            userGroupRegistry.registerConsistencyHandler(new UserGroupConfigScopeConsistencyHandler());
+            
             userRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UserConfig, UserConfig.Builder>>>() {
 
                 @Override

@@ -21,11 +21,11 @@ import rst.authorization.UserGroupConfigType.UserGroupConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UserGroupLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UserGroupConfig, UserGroupConfig.Builder> {
+public class UserGroupConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UserGroupConfig, UserGroupConfig.Builder> {
 
     private final Map<String, UserGroupConfig> userGroupMap;
 
-    public UserGroupLabelConsistencyHandler() {
+    public UserGroupConfigLabelConsistencyHandler() {
         this.userGroupMap = new HashMap<>();
     }
 

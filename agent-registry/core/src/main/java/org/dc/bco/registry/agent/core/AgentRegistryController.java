@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import org.dc.bco.registry.agent.core.consistency.LabelConsistencyHandler;
 import org.dc.bco.registry.agent.core.consistency.LocationIdConsistencyHandler;
 import org.dc.bco.registry.agent.core.consistency.ScopeConsistencyHandler;
+import org.dc.bco.registry.agent.core.dbconvert.AgentConfig_0_To_1_DBConverter;
 import org.dc.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.dc.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
@@ -59,6 +60,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfig.class, getBuilderSetup(), getFieldDescriptor(AgentRegistry.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
+            agentConfigRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
+            
             locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
 
                 @Override
@@ -66,6 +69,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
                     agentConfigRegistry.checkConsistency();
                 }
             };
+
+            
 
             locationRegistryRemote = new LocationRegistryRemote();
 
