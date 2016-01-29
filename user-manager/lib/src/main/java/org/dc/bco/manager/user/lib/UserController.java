@@ -6,8 +6,8 @@
 package org.dc.bco.manager.user.lib;
 
 import org.dc.jul.exception.InitializationException;
-import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Configurable;
+import org.dc.jul.iface.Enableable;
 import org.dc.jul.iface.Identifiable;
 import rst.authorization.UserConfigType.UserConfig;
 
@@ -15,7 +15,7 @@ import rst.authorization.UserConfigType.UserConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Activatable, User {
+public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Enableable, User {
 
     public void init(final UserConfig config) throws InitializationException, InterruptedException;
 

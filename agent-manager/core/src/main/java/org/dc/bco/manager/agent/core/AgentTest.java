@@ -5,9 +5,9 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import static org.dc.bco.manager.agent.core.AgentManagerLauncher.logger;
 import org.dc.bco.manager.agent.lib.jp.JPAgentId;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPVerbose;
@@ -40,7 +40,7 @@ public class AgentTest {
             AgentRegistryRemote agentRegistryRemote = new AgentRegistryRemote();
             agentRegistryRemote.init();
             agentRegistryRemote.activate();
-            AgentFactoryImpl.getInstance().newInstance(agentRegistryRemote.getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).activate();
+            AgentFactoryImpl.getInstance().newInstance(agentRegistryRemote.getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).enable();
             agentRegistryRemote.deactivate();
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
