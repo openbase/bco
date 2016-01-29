@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.agent.core;
+package org.dc.bco.manager.agent.lib;
 
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.InitializationException;

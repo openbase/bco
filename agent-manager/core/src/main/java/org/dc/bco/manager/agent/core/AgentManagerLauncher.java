@@ -5,6 +5,7 @@
  */
 package org.dc.bco.manager.agent.core;
 
+import org.dc.bco.manager.agent.lib.AgentManager;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -38,10 +39,10 @@ public class AgentManagerLauncher {
      * @throws java.lang.InterruptedException
      * @throws org.dc.jul.exception.CouldNotPerformException
      */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
+    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
 
         /* Setup JPService */
-        JPService.setApplicationName(AgentManagerLauncher.class);
+        JPService.setApplicationName(AgentManager.class);
         JPService.parseAndExitOnError(args);
 
         /* Start main app */

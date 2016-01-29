@@ -5,6 +5,7 @@
  */
 package org.dc.bco.manager.agent.core;
 
+import org.dc.bco.manager.agent.lib.AgentController;
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;

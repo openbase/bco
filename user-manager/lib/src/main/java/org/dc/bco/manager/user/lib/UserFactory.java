@@ -3,19 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.agent.core;
+package org.dc.bco.manager.user.lib;
 
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.pattern.Factory;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.authorization.UserConfigType.UserConfig;
 
 /**
  *
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface AgentFactory extends Factory<AgentController, AgentConfig> {
+public interface UserFactory extends Factory<UserController, UserConfig> {
 
     @Override
-    public AgentController newInstance(final AgentConfig config) throws InstantiationException;
+    public UserController newInstance(final UserConfig config) throws InstantiationException;
 
 }

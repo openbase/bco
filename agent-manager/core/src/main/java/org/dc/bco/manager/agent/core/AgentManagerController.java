@@ -1,5 +1,8 @@
 package org.dc.bco.manager.agent.core;
 
+import org.dc.bco.manager.agent.lib.AgentController;
+import org.dc.bco.manager.agent.lib.AgentFactory;
+import org.dc.bco.manager.agent.lib.AgentManager;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.lib.provider.DeviceRegistryProvider;
@@ -18,10 +21,9 @@ import rst.homeautomation.state.ActivationStateType;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class AgentManagerController implements DeviceRegistryProvider {
+public class AgentManagerController implements DeviceRegistryProvider, AgentManager {
 
     protected static final Logger logger = LoggerFactory.getLogger(AgentManagerController.class);
-
 
     private static AgentManagerController instance;
     private final AgentFactory factory;
@@ -52,7 +54,7 @@ public class AgentManagerController implements DeviceRegistryProvider {
     }
 
     public static AgentManagerController getInstance() throws NotAvailableException {
-        if(instance == null) {
+        if (instance == null) {
             throw new NotAvailableException(AgentManagerController.class);
         }
         return instance;
