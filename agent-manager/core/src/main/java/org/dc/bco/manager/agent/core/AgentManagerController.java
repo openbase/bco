@@ -19,7 +19,8 @@ import rst.homeautomation.state.ActivationStateType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
 public class AgentManagerController implements DeviceRegistryProvider, AgentManager {
 
@@ -61,14 +62,22 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
     }
 
     public void init() throws InitializationException, InterruptedException {
-        this.agentRegistryRemote.init();
-        this.deviceRegistryRemote.init();
+        try {
+            this.agentRegistryRemote.init();
+            this.agentRegistryRemote.activate();
+            this.deviceRegistryRemote.init();
+            this.deviceRegistryRemote.activate();
+            this.registrySynchronizer.init();
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        this.deviceRegistryRemote.activate();
-        this.agentRegistryRemote.activate();
-        this.registrySynchronizer.init();
+    public void shutdown() {
+        this.agentRegistryRemote.shutdown();
+        this.deviceRegistryRemote.shutdown();
+        this.deviceRegistryRemote.shutdown();
+        instance = null;
     }
 
     @Override

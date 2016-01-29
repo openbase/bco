@@ -50,8 +50,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
      * State that determines what the targets do if the source changes and vice
      * versa.
      *
-     * OFF when all targets are off.
-     * ON when at least one target is one.
+     * OFF when all targets are off. ON when at least one target is one.
      */
     private PowerState.State targetLatestPowerState;
     private List<DALRemoteService> targetRemotes = new ArrayList<>();
@@ -70,14 +69,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     public void init(AgentConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            logger.info("Creating PowerStateSynchroniserAgent["+config.getLabel()+"]");
+            logger.info("Creating PowerStateSynchroniserAgent[" + config.getLabel() + "]");
 
 //            final DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
 //            System.out.println("### init["+config.getLabel()+"]");
 //            deviceRegistryRemote.init();
 //            System.out.println("### activate["+config.getLabel()+"]");
 //            deviceRegistryRemote.activate();
-
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
             sourceRemote = factory.createAndInitUnitRemote(deviceRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
@@ -96,7 +94,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
             targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
 
-            System.out.println("### shutdown["+config.getLabel()+"]");
+            System.out.println("### shutdown[" + config.getLabel() + "]");
 
             logger.info("Initializing observers");
             initObserver();
@@ -241,6 +239,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
+        logger.info("Executing PowerStateSynchroniser agent");
         sourceRemote.activate();
         String targetIds = "";
         targetLatestPowerState = PowerState.State.UNKNOWN;
