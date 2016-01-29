@@ -124,4 +124,19 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
         this.config = config;
         return config;
     }
+    
+    @Override
+    public void enable() {
+        
+    }
+    
+    @Override
+    public void disable() {
+        
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
