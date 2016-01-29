@@ -9,6 +9,7 @@ import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Configurable;
+import org.dc.jul.iface.Enableable;
 import org.dc.jul.iface.Identifiable;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
