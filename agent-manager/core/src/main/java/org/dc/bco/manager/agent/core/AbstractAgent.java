@@ -5,8 +5,8 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import org.dc.bco.manager.agent.lib.AgentController;
 import org.dc.bco.manager.agent.lib.Agent;
+import org.dc.bco.manager.agent.lib.AgentController;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -49,7 +49,7 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
         this.config = config;
         this.executing = false;
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
-        super.init(config.getScope());
+        super.init(config);
     }
 
     @Override
@@ -75,20 +75,15 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
 
         try {
             if (activation.getValue().equals(ActivationState.State.ACTIVE)) {
-                if (executing) {
+                if (!executing) {
                     executing = true;
                     execute();
-                } else {
-                    executing = true;
                 }
             } else {
                 if (executing) {
                     executing = false;
                     stop();
-                } else {
-                    executing = false;
                 }
-
             }
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update execution state!", ex), logger);
