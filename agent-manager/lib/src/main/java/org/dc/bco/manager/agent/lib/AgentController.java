@@ -5,7 +5,6 @@
  */
 package org.dc.bco.manager.agent.lib;
 
-import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Configurable;
@@ -16,7 +15,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface AgentController extends Identifiable<String>, Configurable<String, AgentConfig, AgentController>, Activatable, Agent {
+public interface AgentController extends Identifiable<String>, Configurable<String, AgentConfig>, Activatable, Agent {
 
     public void init(final AgentConfig config) throws InitializationException, InterruptedException;
 

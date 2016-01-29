@@ -63,9 +63,9 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     @Override
-    public Device update(DeviceConfig config) throws CouldNotPerformException {
+    public DeviceConfig updateConfig(final DeviceConfig config) throws CouldNotPerformException {
         this.config = config;
-        return this;
+        return config;
     }
 
     @Override

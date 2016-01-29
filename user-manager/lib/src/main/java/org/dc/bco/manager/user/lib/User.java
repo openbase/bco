@@ -12,4 +12,8 @@ import org.dc.jul.iface.Identifiable;
  * @author mpohling
  */
 public interface User extends Identifiable<String> {
+
+    public static void wasIchAllesKann() {
+//        UserDataType.UserData.newBuilder().set
+    }
 }

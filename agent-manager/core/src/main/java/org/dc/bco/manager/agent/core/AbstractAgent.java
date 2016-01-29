@@ -49,7 +49,7 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
         this.config = config;
         this.executing = false;
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
-        super.init(config);
+        super.init(config.getScope());
     }
 
     @Override
@@ -112,16 +112,5 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
     @Override
     public String getId() throws NotAvailableException {
         return config.getId();
-    }
-
-    @Override
-    public AgentConfig getConfig() throws NotAvailableException {
-        return config;
-    }
-
-    @Override
-    public AbstractAgent update(AgentConfig config) throws CouldNotPerformException {
-        this.config = config;
-        return this;
     }
 }

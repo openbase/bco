@@ -10,6 +10,6 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface Location extends ScopeProvider, LabelProvider, Identifiable<String>, Configurable<String, LocationConfig, Location>{
+public interface Location extends ScopeProvider, LabelProvider, Identifiable<String>, Configurable<String, LocationConfig>{
 
 }

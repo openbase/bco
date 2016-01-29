@@ -9,11 +9,10 @@ import org.dc.bco.dal.remote.unit.AbstractConfigurableRemote;
 import org.dc.bco.manager.user.lib.User;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
-import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rsb.converter.UserData;
 import rst.authorization.UserConfigType.UserConfig;
+import rst.authorization.UserDataType.UserData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
@@ -24,15 +23,17 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
     @Override
-    public void notifyUpdated(UserData data) throws CouldNotPerformException {ca
+    public void notifyUpdated(final UserData data) throws CouldNotPerformException {
     }
 
     @Override
     public ScopeProvider getScopeProvider(final UserConfig config) {
-        return () -> ScopeTransformer.transform(config.getScope());
+        return null;
+//        return () -> ScopeTransformer.transform(config.getScope());
     }
 }

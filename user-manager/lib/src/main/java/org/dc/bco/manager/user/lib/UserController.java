@@ -15,7 +15,7 @@ import rst.authorization.UserConfigType.UserConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface UserController extends Identifiable<String>, Configurable<String, UserConfig, UserController>, Activatable, User {
+public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Activatable, User {
 
     public void init(final UserConfig config) throws InitializationException, InterruptedException;
 

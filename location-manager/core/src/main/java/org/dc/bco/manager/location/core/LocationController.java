@@ -1,8 +1,8 @@
 package org.dc.bco.manager.location.core;
 
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.manager.location.lib.Location;
 import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
+import org.dc.bco.manager.location.lib.Location;
 import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -23,9 +23,10 @@ public class LocationController extends AbstractUnitCollectionController<Generic
         this.config = config;
     }
 
-    public LocationController update(final LocationConfig config) {
+    @Override
+    public LocationConfig updateConfig(final LocationConfig config) {
         this.config = config;
-        return this;
+        return config;
     }
 
     @Override
