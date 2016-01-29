@@ -8,11 +8,14 @@ package org.dc.bco.manager.user.remote;
 import org.dc.bco.dal.remote.unit.AbstractConfigurableRemote;
 import org.dc.bco.manager.user.lib.User;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.authorization.UserActivityType;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserDataType.UserData;
+import rst.authorization.UserPresenceStateType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
@@ -35,5 +38,35 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
     public ScopeProvider getScopeProvider(final UserConfig config) {
         return null;
 //        return () -> ScopeTransformer.transform(config.getScope());
+    }
+
+    @Override
+    public String getUserName() throws NotAvailableException {
+        try {
+            if (config == null) {
+                throw new NotAvailableException("userconfig");
+            }
+            return config.getUserName();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("username", ex);
+        }
+    }
+
+    @Override
+    public UserActivityType.UserActivity getUserActivity() throws NotAvailableException {
+        try {
+            return getData().getUserActivity();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("user activity", ex);
+        }
+    }
+
+    @Override
+    public UserPresenceStateType.UserPresenceState getUserPresenceState() throws NotAvailableException {
+        try {
+            return getData().getUserPresenceState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("user presence state", ex);
+        }
     }
 }

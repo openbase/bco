@@ -36,6 +36,7 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
     }
 
     protected boolean executing;
+    private boolean enabled;
     protected AgentConfig config;
     private final boolean autostart;
 
@@ -90,20 +91,6 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
         }
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        if (autostart) {
-            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-        }
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        executing = false;
-        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
-        super.deactivate();
-    }
 
     protected abstract void execute() throws CouldNotPerformException, InterruptedException;
 
@@ -123,5 +110,27 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
     public AgentConfig updateConfig(final AgentConfig config) throws CouldNotPerformException {
         this.config = config;
         return config;
+    }
+
+    @Override
+    public void enable() throws CouldNotPerformException, InterruptedException {
+        enabled = true;
+        super.activate();
+        if (autostart) {
+            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+        }
+    }
+
+    @Override
+    public void disable() throws CouldNotPerformException, InterruptedException {
+        enabled = false;
+        executing = false;
+        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+        super.deactivate();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 }

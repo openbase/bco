@@ -5,7 +5,10 @@
  */
 package org.dc.bco.manager.user.lib;
 
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.iface.Identifiable;
+import rst.authorization.UserActivityType.UserActivity;
+import rst.authorization.UserPresenceStateType.UserPresenceState;
 
 /**
  *
@@ -13,7 +16,9 @@ import org.dc.jul.iface.Identifiable;
  */
 public interface User extends Identifiable<String> {
 
-    public static void wasIchAllesKann() {
-//        UserDataType.UserData.newBuilder().set
-    }
+    public String getUserName() throws NotAvailableException;
+
+    public UserActivity getUserActivity() throws NotAvailableException;
+
+    public UserPresenceState getUserPresenceState() throws NotAvailableException;
 }

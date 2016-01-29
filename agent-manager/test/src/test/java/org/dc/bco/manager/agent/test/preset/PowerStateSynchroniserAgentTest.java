@@ -10,8 +10,8 @@ import org.dc.bco.dal.remote.unit.AmbientLightRemote;
 import org.dc.bco.dal.remote.unit.DimmerRemote;
 import org.dc.bco.dal.remote.unit.PowerPlugRemote;
 import org.dc.bco.manager.agent.core.AgentManagerLauncher;
-import org.dc.bco.manager.agent.remote.AgentRemote;
 import org.dc.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
+import org.dc.bco.manager.agent.remote.AgentRemote;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -32,6 +32,7 @@ import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.state.EnablingStateType.EnablingState;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -147,7 +148,7 @@ public class PowerStateSynchroniserAgentTest {
         dimmerRemote.setPower(PowerState.State.OFF);
         Thread.sleep(50);
         dimmerRemote.requestStatus();
-        logger.info("\nDimmer state ["+dimmerRemote.getPower().getValue()+"]\n");
+        logger.info("\nDimmer state [" + dimmerRemote.getPower().getValue() + "]\n");
         ambientLightRemote.requestStatus();
         powerPlugRemote.requestStatus();
         assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPower().getValue());
@@ -226,8 +227,8 @@ public class PowerStateSynchroniserAgentTest {
                 .addEntry(target2)
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
-        ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
+        EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
         return agentRemote.registerAgentConfig(AgentConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setLocationId(locationRemote.getRootLocationConfig().getId()).setMetaConfig(metaConfig)
-                .setActivationState(activationState).setType(AgentConfig.AgentType.POWER_STATE_SYNCHRONISER).build());
+                .setEnablingState(enablingState).setType(AgentConfig.AgentType.POWER_STATE_SYNCHRONISER).build());
     }
 }
