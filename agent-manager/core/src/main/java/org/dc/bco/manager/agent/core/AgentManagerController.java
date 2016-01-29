@@ -15,7 +15,7 @@ import org.dc.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType;
-import rst.homeautomation.state.ActivationStateType;
+import rst.homeautomation.state.EnablingStateType.EnablingState;
 
 /**
  *
@@ -45,7 +45,7 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
 
                 @Override
                 public boolean enablingCondition(final AgentConfigType.AgentConfig config) {
-                    return config.getActivationState().getValue() == ActivationStateType.ActivationState.State.ACTIVE;
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
 
