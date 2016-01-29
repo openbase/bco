@@ -10,6 +10,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.iface.Configurable;
 
 /**
  *
@@ -17,7 +18,7 @@ import org.dc.jul.extension.rsb.scope.ScopeProvider;
  * @param <M>
  * @param <CONFIG>
  */
-public abstract class AbstractConfigurableRemote<M extends GeneratedMessage, CONFIG> extends DALRemoteService<M> {
+public abstract class AbstractConfigurableRemote<M extends GeneratedMessage, CONFIG> extends DALRemoteService<M> implements Configurable<String, CONFIG> {
 
     protected CONFIG config;
 
@@ -32,10 +33,17 @@ public abstract class AbstractConfigurableRemote<M extends GeneratedMessage, CON
 
     public abstract ScopeProvider getScopeProvider(final CONFIG config);
 
+    @Override
     public CONFIG getConfig() throws NotAvailableException {
         if (config == null) {
             throw new NotAvailableException("config");
         }
+        return config;
+    }
+
+    @Override
+    public CONFIG updateConfig(CONFIG config) throws CouldNotPerformException {
+        this.config = config;
         return config;
     }
 }
