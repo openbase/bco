@@ -138,42 +138,42 @@ public class SoundScapeAgent extends AbstractAgent {
             case BEACH:
                 logger.info("Case BEACH");
                 agentBathAmbientColorBeachBottomRemote.setActivationState(activate);
-            agentBathAmbientColorBeachCeiling.setActivationState(activate);
-            agentBathAmbientColorForest.setActivationState(deactive);
-            agentBathAmbientColorNight.setActivationState(deactive);
-            agentBathAmbientColorZen.setActivationState(deactive);
+                agentBathAmbientColorBeachCeiling.setActivationState(activate);
+                agentBathAmbientColorForest.setActivationState(deactive);
+                agentBathAmbientColorNight.setActivationState(deactive);
+                agentBathAmbientColorZen.setActivationState(deactive);
                 break;
             case FOREST:
                 logger.info("Case FOREST");
                 agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
-            agentBathAmbientColorBeachCeiling.setActivationState(deactive);
-            agentBathAmbientColorForest.setActivationState(activate);
-            agentBathAmbientColorNight.setActivationState(deactive);
-            agentBathAmbientColorZen.setActivationState(deactive);
+                agentBathAmbientColorBeachCeiling.setActivationState(deactive);
+                agentBathAmbientColorForest.setActivationState(activate);
+                agentBathAmbientColorNight.setActivationState(deactive);
+                agentBathAmbientColorZen.setActivationState(deactive);
                 break;
             case NIGHT:
                 logger.info("Case NIGHT");
                 agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
-            agentBathAmbientColorBeachCeiling.setActivationState(deactive);
-            agentBathAmbientColorForest.setActivationState(deactive);
-            agentBathAmbientColorNight.setActivationState(activate);
-            agentBathAmbientColorZen.setActivationState(deactive);
+                agentBathAmbientColorBeachCeiling.setActivationState(deactive);
+                agentBathAmbientColorForest.setActivationState(deactive);
+                agentBathAmbientColorNight.setActivationState(activate);
+                agentBathAmbientColorZen.setActivationState(deactive);
                 break;
             case ZEN:
                 logger.info("Case ZEN");
                 agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
-            agentBathAmbientColorBeachCeiling.setActivationState(deactive);
-            agentBathAmbientColorForest.setActivationState(deactive);
-            agentBathAmbientColorNight.setActivationState(deactive);
-            agentBathAmbientColorZen.setActivationState(activate);
+                agentBathAmbientColorBeachCeiling.setActivationState(deactive);
+                agentBathAmbientColorForest.setActivationState(deactive);
+                agentBathAmbientColorNight.setActivationState(deactive);
+                agentBathAmbientColorZen.setActivationState(activate);
                 break;
             case OFF:
                 logger.info("Case OFF");
                 agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
-            agentBathAmbientColorBeachCeiling.setActivationState(deactive);
-            agentBathAmbientColorForest.setActivationState(deactive);
-            agentBathAmbientColorNight.setActivationState(deactive);
-            agentBathAmbientColorZen.setActivationState(deactive);
+                agentBathAmbientColorBeachCeiling.setActivationState(deactive);
+                agentBathAmbientColorForest.setActivationState(deactive);
+                agentBathAmbientColorNight.setActivationState(deactive);
+                agentBathAmbientColorZen.setActivationState(deactive);
         }
     }
 

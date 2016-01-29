@@ -8,16 +8,19 @@ package org.dc.bco.manager.agent.remote;
 import org.dc.bco.dal.remote.unit.DALRemoteService;
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
 import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class AgentRemote extends DALRemoteService<AgentData> implements Agent {
 
@@ -28,7 +31,11 @@ public class AgentRemote extends DALRemoteService<AgentData> implements Agent {
 
     @Override
     public void notifyUpdated(AgentData data) throws CouldNotPerformException {
-        
+
+    }
+
+    public void init(AgentConfigType.AgentConfig config) throws InitializationException {
+        super.init(config.getScope());
     }
 
     @Override
