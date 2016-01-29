@@ -176,8 +176,4 @@ public class SoundScapeAgent extends AbstractAgent {
                 agentBathAmbientColorZen.setActivationState(deactive);
         }
     }
-
-    private AgentConfig setActivationState(AgentConfig config, ActivationState.State state) {
-        return config.toBuilder().setActivationState(ActivationState.newBuilder().setValue(state)).build();
-    }
 }

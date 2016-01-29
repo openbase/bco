@@ -113,4 +113,15 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
     public String getId() throws NotAvailableException {
         return config.getId();
     }
+
+    @Override
+    public AgentConfig getConfig() throws NotAvailableException {
+        return config;
+    }
+
+    @Override
+    public AgentConfig updateConfig(final AgentConfig config) throws CouldNotPerformException {
+        this.config = config;
+        return config;
+    }
 }
