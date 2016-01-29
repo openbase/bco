@@ -10,7 +10,7 @@ import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.dc.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
     private final AgentFactory factory;
     private final RegistryImpl<String, AgentController> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
-    private final ActivatableEntryRegistrySynchronizer<String, AgentController, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, AgentController, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder> registrySynchronizer;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
     public AgentManagerController() throws org.dc.jul.exception.InstantiationException, InterruptedException {
@@ -41,10 +41,10 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
 
-            this.registrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AgentController, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
 
                 @Override
-                public boolean activationCondition(final AgentConfigType.AgentConfig config) {
+                public boolean enablingCondition(final AgentConfigType.AgentConfig config) {
                     return config.getActivationState().getValue() == ActivationStateType.ActivationState.State.ACTIVE;
                 }
             };
