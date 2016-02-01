@@ -10,12 +10,14 @@
     <artifactId>registry</artifactId>
     <version>1.1-SNAPSHOT</version>
     <name>REM</name>
+    <inceptionYear>2014</inceptionYear>
     <description>Registry Manager Collection</description>
     
     <organization>
         <name>DivineCooperation</name>
         <url>https://github.com/divinecooperation</url>
     </organization>
+    
     <developers>
         <developer>
             <id>DivineThreepwood</id>
@@ -47,30 +49,11 @@
     </developers>
     
     <scm>
-        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</developerConnection>
-        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.device-manager.git</url>
+        <developerConnection>scm:git:https://github.com/DivineCooperation/bco.registry.git</developerConnection>
+        <url>https://github.com/DivineCooperation/bco.registry/wiki</url>
     </scm>
     
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <skipTests>false</skipTests>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>
-        <!--dependency.jul.version>[1.1,1.2-SNAPSHOT)</dependency.jul.version-->
-    </properties>
-    
     <packaging>pom</packaging>
-    
-    <modules>
-        <module>device-registry</module>
-        <module>location-registry</module>
-        <module>scene-registry</module>
-        <module>agent-registry</module>
-        <module>app-registry</module>
-        <module>user-registry</module>
-        <module>util</module>
-    </modules>
     
     <build>
         <plugins>
@@ -100,8 +83,43 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <verbose>false</verbose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>download-licenses</id>
+                        <goals>
+                            <goal>download-licenses</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    
+    <modules>
+        <module>device-registry</module>
+        <module>location-registry</module>
+        <module>scene-registry</module>
+        <module>agent-registry</module>
+        <module>app-registry</module>
+        <module>user-registry</module>
+        <module>util</module>
+    </modules>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipTests>false</skipTests>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>
+        <!--dependency.jul.version>[1.1,1.2-SNAPSHOT)</dependency.jul.version-->
+    </properties>
     
     <dependencies>
         <dependency>
