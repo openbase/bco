@@ -1,1 +1,1 @@
-# bco.core-manager
+# bco.manager
