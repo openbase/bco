@@ -10,12 +10,15 @@
     <artifactId>dal</artifactId>
     <version>1.1-SNAPSHOT</version>
     <name>DAL</name>
+    <inceptionYear>2014</inceptionYear>
+    
     <description>Domotic Abstraction Layer</description>
     
     <organization>
         <name>DivineCooperation</name>
         <url>https://github.com/divinecooperation</url>
     </organization>
+    
     <developers>
         <developer>
             <id>DivineThreepwood</id>
@@ -47,8 +50,8 @@
     </developers>
 
     <scm>
-        <developerConnection>scm:git:https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</developerConnection>
-        <url>https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.dal.git</url>
+        <developerConnection>scm:git:https://github.com/divinecooperation/bco.dal.git</developerConnection>
+        <url>https://github.com/divinecooperation/bco.dal/wiki</url>
     </scm>
     
     <packaging>pom</packaging>
@@ -59,6 +62,17 @@
         <module>visual</module>
         <module>example</module>
     </modules>
+    
+    <licenses>
+        <license>
+            <name>LGPLv3</name>
+            <url>http://www.gnu.org/licenses/lgpl.html</url>
+        </license>
+        <license>
+            <name>GPLv3</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+        </license>
+    </licenses>
     
     <build>
         <plugins>
@@ -84,6 +98,22 @@
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <verbose>false</verbose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>download-licenses</id>
+                        <goals>
+                            <goal>download-licenses</goal>
                         </goals>
                     </execution>
                 </executions>
