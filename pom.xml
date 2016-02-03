@@ -50,8 +50,8 @@
     </developers>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/DivineCooperation/bco.dal.git</developerConnection>
-        <url>https://github.com/DivineCooperation/bco.dal.git</url>
+        <developerConnection>scm:git:https://github.com/divinecooperation/bco.dal.git</developerConnection>
+        <url>https://github.com/divinecooperation/bco.dal/wiki</url>
     </scm>
     
     <packaging>pom</packaging>
