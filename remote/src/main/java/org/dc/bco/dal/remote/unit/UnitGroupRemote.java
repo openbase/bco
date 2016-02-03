@@ -5,6 +5,7 @@
  */
 package org.dc.bco.dal.remote.unit;
 
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.MultiService;
 import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
 import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ShutterService;
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
@@ -47,7 +48,7 @@ import rst.vision.HSVColorType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends DALRemoteService<UnitGroupConfig> implements BrightnessService, ColorService, DimService, MultiService, OpeningRatioService, PowerService, ShutterService, StandbyService, TargetTemperatureService {
+public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig> implements BrightnessService, ColorService, DimService, OpeningRatioService, PowerService, ShutterService, StandbyService, TargetTemperatureService {
 
     private final Map<ServiceTemplate.ServiceType, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
     private final ServiceRemoteFactory serviceRemoteFactory;

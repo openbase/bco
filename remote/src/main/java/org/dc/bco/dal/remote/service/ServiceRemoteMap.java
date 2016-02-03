@@ -6,13 +6,13 @@
 package org.dc.bco.dal.remote.service;
 
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import java.util.HashMap;
 
 /**
  *
  * @author mpohling
  */
-public class ServiceRemoteMap<S extends Service, SR extends DALRemoteService & Service> extends HashMap<String, SR> {
+public class ServiceRemoteMap<S extends Service, SR extends AbstractIdentifiableRemote & Service> extends HashMap<String, SR> {
     
 }

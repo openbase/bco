@@ -27,8 +27,8 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final PowerConsumptionSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, PowerConsumptionSensorController.class, unitHost, builder);
+    public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(PowerConsumptionSensorController.class, unitHost, builder);
     }
 
     public void updatePowerConsumption(final PowerConsumptionState state) throws CouldNotPerformException {

@@ -10,11 +10,9 @@ import com.google.protobuf.GeneratedMessage;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.dc.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.dc.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
-import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import java.util.Collection;
 import java.util.Collections;
 import org.dc.jul.exception.InstantiationException;
@@ -27,6 +25,7 @@ import org.dc.jul.processing.StringProcessor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
@@ -34,8 +33,9 @@ import rst.homeautomation.unit.UnitConfigType;
  * @author Divine Threepwood
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
+ * @param <CONFIG>
  */
-public abstract class AbstractUnitCollectionController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements Identifiable<String>, UnitHost {
+public abstract class AbstractUnitCollectionController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements Identifiable<String>, UnitHost {
 
     private final Map<String, AbstractUnitController> unitMap;
 
@@ -100,22 +100,24 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
         }
     }
 
+    //TODO mpohling: implement unit factory instead!
     public final void registerUnit(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
         try {
             GeneratedMessage.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
 
             Constructor<? extends AbstractUnitController> unitConstructor;
             try {
-                unitConstructor = UnitConfigToUnitClassTransformer.transform(unitConfig).getConstructor(UnitConfigType.UnitConfig.class, UnitHost.class, unitMessageBuilder.getClass());
+                unitConstructor = UnitConfigToUnitClassTransformer.transform(unitConfig).getConstructor(UnitHost.class, unitMessageBuilder.getClass());
             } catch (CouldNotTransformException | NoSuchMethodException | SecurityException | NullPointerException ex) {
                 throw new CouldNotPerformException("Could not instantiate Unit[" + unitConfig + "]!", ex);
             }
             AbstractUnitController unit;
             try {
-                unit = unitConstructor.newInstance(unitConfig, this, unitMessageBuilder);
+                unit = unitConstructor.newInstance(this, unitMessageBuilder);
             } catch (java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
                 throw new CouldNotPerformException("Could not instantiate Unit[" + unitConfig + "]!", ex);
             }
+            unit.init(unitConfig);
             registerUnit(unit);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register Unit[" + unitConfig + "]!", ex);

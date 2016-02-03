@@ -13,7 +13,6 @@ import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.TemperatureControllerType.TemperatureController;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -28,8 +27,8 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
     private final TargetTemperatureService targetTemperatureService;
 
 
-    public TemperatureControllerController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, TemperatureControllerController.class, unitHost, builder);
+    public TemperatureControllerController(final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(TemperatureControllerController.class, unitHost, builder);
         this.targetTemperatureService = getServiceFactory().newTargetTemperatureService(this);
     }
 

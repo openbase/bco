@@ -28,8 +28,8 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
 
-    public TamperSwitchController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final TamperSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, TamperSwitchController.class, unitHost, builder);
+    public TamperSwitchController(final UnitHost unitHost, final TamperSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(TamperSwitchController.class, unitHost, builder);
     }
 
     public void updateTamper(final TamperState state) throws CouldNotPerformException {

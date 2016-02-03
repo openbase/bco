@@ -27,8 +27,8 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
     }
 
-    public ReedSwitchController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, ReedSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, ReedSwitchController.class, unitHost, builder);
+    public ReedSwitchController(final UnitHost unitHost, ReedSwitch.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(ReedSwitchController.class, unitHost, builder);
     }
 
     public void updateReedSwitch(final ReedSwitchState.State value) throws CouldNotPerformException {

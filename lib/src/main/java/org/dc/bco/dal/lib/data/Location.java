@@ -15,6 +15,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author Divine Threepwood
  */
+@Deprecated
 public class Location implements ScopeProvider {
 
     private final LocationConfig config;

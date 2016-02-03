@@ -27,8 +27,8 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
 
-    public MotionSensorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final MotionSensor.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
-        super(config, MotionSensorController.class, unitHost, builder);
+    public MotionSensorController(final UnitHost unitHost, final MotionSensor.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
+        super(MotionSensorController.class, unitHost, builder);
     }
 
     public void updateMotion(MotionState state) throws CouldNotPerformException {

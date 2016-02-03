@@ -25,8 +25,8 @@ public class LightController extends AbstractUnitController<Light, Light.Builder
 
     private final PowerService powerService;
 
-    public LightController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final Light.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, LightController.class, unitHost, builder);
+    public LightController(final UnitHost unitHost, final Light.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(LightController.class, unitHost, builder);
         this.powerService = getServiceFactory().newPowerService(this);
     }
 

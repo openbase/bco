@@ -31,8 +31,8 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     private final PowerService powerService;
     private final DimService dimmService;
 
-    public DimmerController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
-        super(config, DimmerController.class, unitHost, builder);
+    public DimmerController(final UnitHost unitHost, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
+        super(DimmerController.class, unitHost, builder);
         this.powerService = getServiceFactory().newPowerService(this);
         this.dimmService = getServiceFactory().newDimmService(this);
     }

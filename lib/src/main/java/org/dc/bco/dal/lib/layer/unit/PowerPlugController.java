@@ -30,8 +30,8 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
 
     private final PowerService powerService;
 
-    public PowerPlugController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, PowerPlugController.class, unitHost, builder);
+    public PowerPlugController(final UnitHost unitHost, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(PowerPlugController.class, unitHost, builder);
         this.powerService = getServiceFactory().newPowerService(this);
     }
 

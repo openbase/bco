@@ -29,7 +29,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
     }
 
     public SmokeDetectorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, SmokeDetector.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
-        super(config, SmokeDetectorController.class, unitHost, builder);
+        super(SmokeDetectorController.class, unitHost, builder);
     }
 
     public void updateSmokeAlarmState(final AlarmState value) throws CouldNotPerformException {

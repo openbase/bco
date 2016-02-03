@@ -38,7 +38,6 @@ import rst.homeautomation.service.ServiceTemplateType;
 @Deprecated
 public enum ServiceType {
 
-    MULTI(MultiService.class, ServiceTemplateType.ServiceTemplate.ServiceType.UNKNOWN),
     BATTERY(BatteryProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_PROVIDER),
     BRIGHTNESS(BrightnessService.class, ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE),
     BUTTON(ButtonProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_PROVIDER),
@@ -164,7 +163,7 @@ public enum ServiceType {
         } catch (Exception ex) {
             throw new NotAvailableException(callbackName);
         }
-        throw new NotSupportedException(service.getServiceType().name(), service);
+        throw new NotSupportedException(service.toString(), service);
     }
 
     public static ServiceType valueOfByServiceName(String serviceName) throws NotSupportedException {

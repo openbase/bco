@@ -16,7 +16,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.AmbientLightType.AmbientLight;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
@@ -36,8 +35,8 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     private final BrightnessService brightnessService;
     private final PowerService powerService;
 
-    public AmbientLightController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, AmbientLightController.class, unitHost, builder);
+    public AmbientLightController(final UnitHost unitHost, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(AmbientLightController.class, unitHost, builder);
         this.powerService = getServiceFactory().newPowerService(this);
         this.colorService = getServiceFactory().newColorService(this);
         this.brightnessService = getServiceFactory().newBrightnessService(this);

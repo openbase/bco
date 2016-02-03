@@ -7,7 +7,7 @@ package org.dc.bco.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
 import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -27,7 +27,7 @@ import rst.rsb.ScopeType.Scope;
  * @author mpohling
  */
 public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
-//public abstract class RSBRemoteView<M extends GeneratedMessage, R extends DALRemoteService<M>> extends javax.swing.JPanel implements Observer<M> {
+//public abstract class RSBRemoteView<M extends GeneratedMessage, R extends AbstractIdentifiableRemote<M>> extends javax.swing.JPanel implements Observer<M> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -99,7 +99,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
     }
 
     private Class<? extends RS> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
-        String remoteClassName = DALRemoteService.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+        String remoteClassName = AbstractIdentifiableRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
             return (Class<? extends RS>) getClass().getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {

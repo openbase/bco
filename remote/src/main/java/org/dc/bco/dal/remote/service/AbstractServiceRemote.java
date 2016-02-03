@@ -6,7 +6,7 @@
 package org.dc.bco.dal.remote.service;
 
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -34,7 +34,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServiceType serviceType;
-    private final Map<String, DALRemoteService> unitRemoteMap;
+    private final Map<String, AbstractIdentifiableRemote> unitRemoteMap;
     private final Map<String, S> serviceMap;
     private UnitRemoteFactoryInterface factory = UnitRemoteFactory.getInstance();
 
@@ -50,7 +50,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
                 throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config.getId(), this);
             }
 
-            DALRemoteService remote = factory.createAndInitUnitRemote(config);
+            AbstractIdentifiableRemote remote = factory.createAndInitUnitRemote(config);
             try {
                 serviceMap.put(config.getId(), (S) remote);
             } catch (ClassCastException ex) {
@@ -87,7 +87,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     @Override
     public void activate() throws InterruptedException, MultiException {
         MultiException.ExceptionStack exceptionStack = null;
-        for (DALRemoteService remote : unitRemoteMap.values()) {
+        for (AbstractIdentifiableRemote remote : unitRemoteMap.values()) {
             try {
                 remote.activate();
             } catch (CouldNotPerformException ex) {
@@ -100,7 +100,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
-        for (DALRemoteService remote : unitRemoteMap.values()) {
+        for (AbstractIdentifiableRemote remote : unitRemoteMap.values()) {
             try {
                 remote.deactivate();
             } catch (CouldNotPerformException ex) {
@@ -112,7 +112,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
 
     @Override
     public boolean isActive() {
-        for (DALRemoteService remote : unitRemoteMap.values()) {
+        for (AbstractIdentifiableRemote remote : unitRemoteMap.values()) {
             if (!remote.isActive()) {
                 return false;
             }
@@ -128,7 +128,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         this.factory = factory;
     }
 
-    public Collection<DALRemoteService> getInternalUnits() {
+    public Collection<AbstractIdentifiableRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
 
@@ -136,14 +136,14 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         return Collections.unmodifiableCollection(serviceMap.values());
     }
 
-    @Override
-    public org.dc.bco.dal.lib.layer.service.ServiceType getServiceType() {
-        // TODO mpohling: implement service type transformer.
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ServiceConfigType.ServiceConfig getServiceConfig() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//    @Override
+//    public org.dc.bco.dal.lib.layer.service.ServiceType getServiceType() {
+//        // TODO mpohling: implement service type transformer.
+//        throw new UnsupportedOperationException("Not supported yet.");
+//    }
+//
+//    @Override
+//    public ServiceConfigType.ServiceConfig getServiceConfig() {
+//        throw new UnsupportedOperationException("Not supported yet.");
+//    }
 }

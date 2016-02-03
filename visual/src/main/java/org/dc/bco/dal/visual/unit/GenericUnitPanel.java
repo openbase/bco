@@ -12,7 +12,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.bco.dal.visual.util.RSBRemoteView;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -84,7 +84,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
             try {
                 servicePanel = new JPanel();
                 servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()) + ":" + unitConfig.getId()));
-                AbstractServicePanel abstractServicePanel = instantiatServicePanel(loadServicePanelClass(serviceConfig.getType()), getRemoteService());
+                AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getType()), getRemoteService());
                 abstractServicePanel.setUnitId(unitConfig.getId());
                 abstractServicePanel.setServiceType(serviceType);
                 servicePanel.add(abstractServicePanel);
@@ -120,10 +120,10 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
         }
     }
 
-    private AbstractServicePanel instantiatServicePanel(Class<? extends AbstractServicePanel> servicePanelClass, DALRemoteService remoteService) throws org.dc.jul.exception.InstantiationException {
+    private AbstractServicePanel instantiatServicePanel(final ServiceConfig serviceConfig, Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.dc.jul.exception.InstantiationException {
         try {
             AbstractServicePanel instance = servicePanelClass.newInstance();
-            instance.initService(remoteService, remoteService);
+            instance.initService(serviceConfig, unitRemote, unitRemote);
             return instance;
         } catch (NullPointerException | InstantiationException | IllegalAccessException ex) {
             throw new org.dc.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);

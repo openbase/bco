@@ -5,8 +5,6 @@
  */
 package org.dc.bco.dal.visual.service;
 
-import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.visual.DalVisualRemote;
 import org.dc.bco.dal.visual.util.StatusPanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -19,8 +17,10 @@ import org.dc.jul.schedule.SyncObject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import org.dc.bco.dal.lib.layer.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
@@ -33,6 +33,7 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private S service;
+    private ServiceConfig serviceConfig;
     private Observable observable;
     private final Observer observer;
     protected StatusPanel statusPanel;
@@ -85,7 +86,7 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         if (service == null) {
             return "---";
         }
-        return service.getServiceType().name();
+        return serviceConfig.getType().name();
     }
 
     private Callable<Void> lastCallable;
@@ -133,12 +134,13 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         this.serviceType = serviceType;
     }
     
-    public void initService(S service, Observable observable) {
+    public void initService(ServiceConfig serviceConfig, S service, Observable observable) {
         if (this.observable != null) {
             observable.removeObserver(observer);
         }
         this.observable = observable;
         this.service = service;
+        this.serviceConfig = serviceConfig;
         observable.addObserver(observer);
         updateDynamicComponents();
     }

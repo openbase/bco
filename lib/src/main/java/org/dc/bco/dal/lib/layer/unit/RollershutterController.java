@@ -32,8 +32,8 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     private final ShutterService shutterService;
     private final OpeningRatioService openingRatioService;
 
-    public RollershutterController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, final Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, RollershutterController.class, unitHost, builder);
+    public RollershutterController(final UnitHost unitHost, final Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(RollershutterController.class, unitHost, builder);
         this.shutterService = getServiceFactory().newShutterService(this);
         this.openingRatioService = getServiceFactory().newOpeningRatioService(this);
     }

@@ -13,7 +13,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.BatteryStateType.BatteryState;
 import rst.homeautomation.unit.BatteryType.Battery;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -26,8 +25,8 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
 
-    public BatteryController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, Battery.Builder builder) throws InstantiationException, CouldNotPerformException {
-        super(config, BatteryController.class, unitHost, builder);
+    public BatteryController(final UnitHost unitHost, Battery.Builder builder) throws InstantiationException, CouldNotPerformException {
+        super(BatteryController.class, unitHost, builder);
     }
 
     public void updateBattery(final BatteryState value) throws CouldNotPerformException {

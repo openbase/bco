@@ -5,6 +5,7 @@
  */
 package org.dc.bco.dal.remote.unit;
 
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -20,7 +21,7 @@ public interface UnitRemoteFactoryInterface {
      * @return the new created unit remote.
      * @throws CouldNotPerformException
      */
-    public DALRemoteService createAndInitUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException;
+    public AbstractIdentifiableRemote createAndInitUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException;
 
     /**
      * Creates an unit remote out of the given unit configuration.
@@ -28,6 +29,6 @@ public interface UnitRemoteFactoryInterface {
      * @return the new created unit remote.
      * @throws CouldNotPerformException
      */
-    public DALRemoteService createUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException;
+    public AbstractIdentifiableRemote createUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException;
     
 }

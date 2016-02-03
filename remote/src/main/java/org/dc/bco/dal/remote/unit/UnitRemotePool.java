@@ -1,5 +1,6 @@
 package org.dc.bco.dal.remote.unit;
 
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -13,7 +14,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class UnitRemotePool {
 
-    private Map<Class, Map<String, DALRemoteService>> pool;
+    private Map<Class, Map<String, AbstractIdentifiableRemote>> pool;
     private UnitRemoteFactoryInterface factory;
     private DeviceRegistryRemote deviceRegistryRemote;
 
@@ -43,7 +44,7 @@ public class UnitRemotePool {
 
     private void initAllUnitRemotes() throws CouldNotPerformException {
         for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
-            DALRemoteService unitRemote = factory.createAndInitUnitRemote(unitConfig);
+            AbstractIdentifiableRemote unitRemote = factory.createAndInitUnitRemote(unitConfig);
 
             if (!pool.containsKey(unitRemote.getClass())) {
                 pool.put(unitRemote.getClass(), new HashMap<>());
@@ -55,15 +56,15 @@ public class UnitRemotePool {
     }
 
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (Map<String, DALRemoteService> unitCollection : pool.values()) {
-            for (DALRemoteService remote : unitCollection.values()) {
+        for (Map<String, AbstractIdentifiableRemote> unitCollection : pool.values()) {
+            for (AbstractIdentifiableRemote remote : unitCollection.values()) {
                 remote.activate();
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    public <R extends DALRemoteService> R getUnitRemote(final String unitId, final Class<? extends R> remoteClass) {
+    public <R extends AbstractIdentifiableRemote> R getUnitRemote(final String unitId, final Class<? extends R> remoteClass) {
         return (R) pool.get(remoteClass).get(unitId);
     }
 }

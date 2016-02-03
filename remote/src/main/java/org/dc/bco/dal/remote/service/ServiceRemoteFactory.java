@@ -6,7 +6,7 @@
 package org.dc.bco.dal.remote.service;
 
 import java.util.Collection;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
