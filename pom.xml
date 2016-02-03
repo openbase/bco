@@ -48,8 +48,8 @@
     </developers>
     
     <scm>
-        <developerConnection>scm:git:https://github.com/DivineCooperation/bco.registry.git</developerConnection>
-        <url>https://github.com/DivineCooperation/bco.registry/wiki</url>
+        <developerConnection>scm:git:https://github.com/divinecooperation/bco.registry.git</developerConnection>
+        <url>https://github.com/divinecooperation/bco.registry/wiki</url>
     </scm>
     
     <packaging>pom</packaging>
