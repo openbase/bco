@@ -47,8 +47,8 @@
     </developers>
     
     <scm>
-        <developerConnection>scm:git:https://github.com/divinecooperation/bco.core-manager.git</developerConnection>
-        <url>https://github.com/divinecooperation/bco.core-manager.git</url>
+        <developerConnection>scm:git:https://github.com/divinecooperation/bco.manager.git</developerConnection>
+        <url>https://github.com/divinecooperation/bco.manager/wiki</url>
     </scm>
     
     <properties>
