@@ -138,14 +138,4 @@ public class BrightnessStateFutionProvider extends Observable<Double> implements
     public List<BrightnessSensorRemote> getBrightnessSensorList() {
         return brightnessSensorList;
     }
-
-    @Override
-    public ServiceType getServiceType() {
-        return ServiceType.BRIGHTNESS;
-    }
-
-    @Override
-    public ServiceConfigType.ServiceConfig getServiceConfig() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

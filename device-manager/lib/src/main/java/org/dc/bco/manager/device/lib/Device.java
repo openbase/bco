@@ -5,9 +5,6 @@
  */
 package org.dc.bco.manager.device.lib;
 
-import org.dc.bco.dal.lib.data.Location;
-import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Configurable;
@@ -21,9 +18,4 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  */
 public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable, Configurable<String, DeviceConfig> {
 
-    public DeviceConfig getConfig();
-
-    public Location getLocation();
-
-    public ServiceFactory getServiceFactory() throws NotAvailableException;
 }

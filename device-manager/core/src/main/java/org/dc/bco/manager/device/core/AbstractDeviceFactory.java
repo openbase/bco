@@ -55,7 +55,10 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
                 throw new NotAvailableException("deviceConfig.placement.locationId");
             }
 
-            return new GenericDeviceController(deviceConfig, serviceFactory);
+            final GenericDeviceController genericDeviceController = new GenericDeviceController(serviceFactory);
+            genericDeviceController.init(deviceConfig);
+            return new GenericDeviceController(serviceFactory);
+
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(Device.class, deviceConfig.getId(), ex);
         }

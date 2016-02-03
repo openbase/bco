@@ -136,14 +136,4 @@ public class MotionStateFutionProvider extends Observable<MotionState> implement
     public MotionState getMotion() throws CouldNotPerformException {
         return this.motionState.build();
     }
-
-    @Override
-    public ServiceType getServiceType() {
-        return ServiceType.MOTION;
-    }
-
-    @Override
-    public ServiceConfigType.ServiceConfig getServiceConfig() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

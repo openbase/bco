@@ -7,13 +7,11 @@ package org.dc.bco.manager.device.core;
 
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.registry.location.lib.LocationRegistry;
-import org.dc.jul.exception.CouldNotTransformException;
-import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 
 /**
@@ -29,13 +27,15 @@ public class GenericDeviceController extends AbstractDeviceController<GenericDev
 
     private final ServiceFactory serviceFactory;
 
-    public GenericDeviceController(final DeviceConfig config, final ServiceFactory serviceFactory) throws InstantiationException, CouldNotTransformException {
-        super(config, GenericDevice.newBuilder());
-        assert serviceFactory != null;
-        this.serviceFactory = serviceFactory;
+    public GenericDeviceController(final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+        super(GenericDevice.newBuilder());
+
         try {
-            init();
-        } catch (InitializationException ex) {
+            if (serviceFactory == null) {
+                throw new NotAvailableException("service factory");
+            }
+            this.serviceFactory = serviceFactory;
+        } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }

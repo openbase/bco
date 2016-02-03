@@ -61,10 +61,10 @@ public class UnitGroupRemoteTest {
         unitGroupRemote = new UnitGroupRemote();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceType(ServiceType.POWER_SERVICE).setLabel("testGroup");
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
-            for (ServiceConfig serviceConfig : unit.getUnitConfig().getServiceConfigList()) {
+            for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
                 if (serviceConfig.getType() == ServiceType.POWER_SERVICE) {
                     units.add(unit);
-                    unitGroupConfig.addMemberId(unit.getUnitConfig().getId());
+                    unitGroupConfig.addMemberId(unit.getConfig().getId());
                 }
             }
         }
@@ -109,13 +109,13 @@ public class UnitGroupRemoteTest {
         unitGroupRemote.setPower(state);
 
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getUnitConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower().getValue());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower().getValue());
         }
 
         state = PowerState.State.OFF;
         unitGroupRemote.setPower(state);
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getUnitConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower().getValue());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower().getValue());
         }
     }
 

@@ -5,7 +5,7 @@
  */
 package org.dc.bco.manager.agent.core;
 
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -22,7 +22,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 @Deprecated
-public class AgentRemote extends DALRemoteService<AgentData> implements Agent {
+public class AgentRemote extends AbstractIdentifiableRemote<AgentData> implements Agent {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));

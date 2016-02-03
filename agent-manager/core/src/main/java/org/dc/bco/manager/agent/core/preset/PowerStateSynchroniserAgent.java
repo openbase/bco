@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import org.dc.bco.dal.remote.unit.DALRemoteService;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
 import org.dc.bco.manager.agent.core.AbstractAgent;
@@ -53,8 +53,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
      * OFF when all targets are off. ON when at least one target is one.
      */
     private PowerState.State targetLatestPowerState;
-    private List<DALRemoteService> targetRemotes = new ArrayList<>();
-    private DALRemoteService sourceRemote;
+    private List<AbstractIdentifiableRemote> targetRemotes = new ArrayList<>();
+    private AbstractIdentifiableRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private final UnitRemoteFactoryInterface factory;
     private final DeviceRegistry deviceRegistry;
@@ -113,7 +113,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                 logger.info("Recieved new value [" + sourceLatestPowerState + "] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
-                        for (DALRemoteService targetRemote : targetRemotes) {
+                        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
                             invokeSetPower(targetRemote, PowerState.State.OFF);
                         }
                     }
@@ -121,14 +121,14 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                     switch (targetBehaviour) {
                         case OFF:
                             if (targetLatestPowerState != PowerState.State.OFF) {
-                                for (DALRemoteService targetRemote : targetRemotes) {
+                                for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
                                     invokeSetPower(targetRemote, PowerState.State.OFF);
                                 }
                             }
                             break;
                         case ON:
                             if (targetLatestPowerState != PowerState.State.ON) {
-                                for (DALRemoteService targetRemote : targetRemotes) {
+                                for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
                                     invokeSetPower(targetRemote, PowerState.State.ON);
                                 }
                             }
@@ -140,13 +140,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             }
         });
 
-        for (DALRemoteService targetRemote : targetRemotes) {
+        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
             targetRemote.addObserver(new Observer<GeneratedMessage>() {
 
                 @Override
                 public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                     PowerState.State newPowerState = invokeGetPowerState(data).getValue();
-                    logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + ((DALRemoteService) source).getId() + "]");
+                    logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + ((AbstractIdentifiableRemote) source).getId() + "]");
                     if (!updateLatestTargetPowerState(newPowerState)) {
                         return;
                     }
@@ -193,7 +193,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
         if (targetLatestPowerState == PowerState.State.ON && powerState == PowerState.State.OFF) {
             targetLatestPowerState = PowerState.State.OFF;
-            for (DALRemoteService targetRemote : targetRemotes) {
+            for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
                 if (invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
                     targetLatestPowerState = PowerState.State.ON;
                     break;
@@ -205,7 +205,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         return false;
     }
 
-    private void invokeSetPower(DALRemoteService remote, PowerState.State powerState) {
+    private void invokeSetPower(AbstractIdentifiableRemote remote, PowerState.State powerState) {
         try {
             Method method = remote.getClass().getMethod("setPower", PowerState.State.class);
             method.invoke(remote, powerState);
@@ -243,7 +243,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         sourceRemote.activate();
         String targetIds = "";
         targetLatestPowerState = PowerState.State.UNKNOWN;
-        for (DALRemoteService targetRemote : targetRemotes) {
+        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
             targetRemote.activate();
             targetIds += "[" + targetRemote.getId() + "]";
             if ((targetLatestPowerState == PowerState.State.OFF || targetLatestPowerState == PowerState.State.UNKNOWN) && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
@@ -260,16 +260,16 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         sourceRemote.deactivate();
-        for (DALRemoteService targetRemote : targetRemotes) {
+        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
             targetRemote.deactivate();
         }
     }
 
-    public DALRemoteService getSourceRemote() {
+    public AbstractIdentifiableRemote getSourceRemote() {
         return sourceRemote;
     }
 
-    public List<DALRemoteService> getTargetRemotes() {
+    public List<AbstractIdentifiableRemote> getTargetRemotes() {
         return targetRemotes;
     }
 

@@ -5,11 +5,10 @@
  */
 package org.dc.bco.manager.user.remote;
 
-import org.dc.bco.dal.remote.unit.AbstractConfigurableRemote;
+import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.dc.bco.manager.user.lib.User;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.UserActivityType;
@@ -32,12 +31,6 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
 
     @Override
     public void notifyUpdated(final UserData data) throws CouldNotPerformException {
-    }
-
-    @Override
-    public ScopeProvider getScopeProvider(final UserConfig config) {
-        return null;
-//        return () -> ScopeTransformer.transform(config.getScope());
     }
 
     @Override

@@ -11,6 +11,8 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.iface.Launchable;
+import org.dc.jul.pattern.Launcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +20,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class AgentManagerLauncher {
+public class AgentManagerLauncher implements Launcher{
 
     protected static final Logger logger = LoggerFactory.getLogger(AgentManagerLauncher.class);
 
