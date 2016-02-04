@@ -26,8 +26,8 @@ package org.dc.bco.registry.location.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -66,10 +66,14 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry) throws CouldNotPerformException {
-        this.registry = registry;
-        for (IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry : registry.getEntries()) {
-            publishTransformation(entry);
+    public void init(Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry) throws InitializationException, InterruptedException {
+        try {
+            this.registry = registry;
+            for (IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry : registry.getEntries()) {
+                publishTransformation(entry);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
         }
     }
 

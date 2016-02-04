@@ -26,25 +26,6 @@ package org.dc.bco.registry.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.registry.user.lib.jp.JPUserGroupConfigDatabaseDirectory;
-import org.dc.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
-import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InitializationException;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.extension.protobuf.IdentifiableMessage;
-import org.dc.jul.extension.rsb.com.RPCHelper;
-import org.dc.jul.extension.rsb.com.RSBCommunicationService;
-import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
-import org.dc.jul.pattern.Observable;
-import org.dc.jul.pattern.Observer;
-import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
-import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
-import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,19 +35,39 @@ import org.dc.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandl
 import org.dc.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
 import org.dc.bco.registry.user.core.consistency.UserGroupConfigLabelConsistencyHandler;
 import org.dc.bco.registry.user.core.consistency.UserGroupConfigScopeConsistencyHandler;
+import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
+import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
+import org.dc.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
+import org.dc.bco.registry.user.lib.jp.JPUserGroupConfigDatabaseDirectory;
+import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.protobuf.IdentifiableMessage;
+import org.dc.jul.extension.rsb.com.RPCHelper;
+import org.dc.jul.extension.rsb.com.RSBCommunicationService;
+import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.iface.Manageable;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
+import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
+import rst.authorization.UserGroupConfigType.UserGroupConfig;
 import rst.authorization.UserRegistryType.UserRegistry;
+import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class UserRegistryController extends RSBCommunicationService<UserRegistry, UserRegistry.Builder> implements org.dc.bco.registry.user.lib.UserRegistry {
+public class UserRegistryController extends RSBCommunicationService<UserRegistry, UserRegistry.Builder> implements org.dc.bco.registry.user.lib.UserRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));
@@ -85,15 +86,15 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getFieldDescriptor(UserRegistry.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             userRegistry.loadRegistry();
-            
+
             userRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
             userRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
-            
+
             userGroupRegistry.loadRegistry();
 
             userGroupRegistry.registerConsistencyHandler(new UserGroupConfigLabelConsistencyHandler());
             userGroupRegistry.registerConsistencyHandler(new UserGroupConfigScopeConsistencyHandler());
-            
+
             userRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UserConfig, UserConfig.Builder>>>() {
 
                 @Override
@@ -115,7 +116,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
         }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
         } catch (JPServiceException ex) {

@@ -26,7 +26,6 @@ package org.dc.bco.registry.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +70,7 @@ import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
@@ -82,6 +82,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType.LocationRegistry;
@@ -90,7 +91,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class LocationRegistryController extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements org.dc.bco.registry.location.lib.LocationRegistry {
+public class LocationRegistryController extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements org.dc.bco.registry.location.lib.LocationRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
@@ -134,7 +135,6 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
 
-
             locationConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationConfigRegistry));
 
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
@@ -158,7 +158,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
             deviceRegistryRemote.init();
@@ -488,8 +488,9 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         return CompletableFuture.completedFuture(locationConfigRegistry.isReadOnly());
     }
 
-     /**
+    /**
      * Returns the internal location config registry.
+     *
      * @return the location config registry.
      */
     public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRegistry() {
@@ -498,6 +499,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
 
     /**
      * Returns the internal connection config registry.
+     *
      * @return the connection config registry.
      */
     public ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> getConnectionConfigRegistry() {

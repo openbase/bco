@@ -41,13 +41,15 @@ import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPReadOnly;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
-import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -56,6 +58,7 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -65,7 +68,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  *
  * @author mpohling
  */
-public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> implements org.dc.bco.registry.location.lib.LocationRegistry {
+public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> implements org.dc.bco.registry.location.lib.LocationRegistry, Remote<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
@@ -77,7 +80,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     private final RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> connectionConfigRemoteRegistry;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
-    public LocationRegistryRemote() throws InstantiationException {
+    public LocationRegistryRemote() throws InstantiationException, InterruptedException {
         try {
             this.locationConfigRemoteRegistry = new RemoteRegistry<>(new LocationIDGenerator());
             this.connectionConfigRemoteRegistry = new RemoteRegistry<>(new ConnectionIDGenerator());
@@ -88,18 +91,20 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     }
 
     /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
      *
-     * @param label
-     * @param location
+     * @param scope
      * @throws InitializationException {@inheritDoc}
-     * @deprecated this method makes no sense in this context and should be
-     * removed within next release. TODO mpohling: remove within next release
-     * for registry remotes.
+     * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(final String label, final ScopeProvider location) throws InitializationException {
-        deviceRegistryRemote.init();
-        super.init(label, location);
+    public  void init(final Scope scope) throws InitializationException, InterruptedException {
+        try {
+            this.init(ScopeTransformer.transform(scope));
+        } catch (CouldNotTransformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     /**
@@ -108,19 +113,22 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      *
      * @param scope
      * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
      */
     @Override
-    public synchronized void init(final Scope scope) throws InitializationException {
+    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
         deviceRegistryRemote.init();
         super.init(scope);
     }
+
 
     /**
      * Method initializes the remote with the default registry connection scope.
      *
      * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             this.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
         } catch (JPServiceException ex) {
@@ -157,7 +165,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     /**
      * {@inheritDoc}
      *
-     * @param data
+     * @param data {@inheritDoc}
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override

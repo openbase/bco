@@ -26,13 +26,16 @@ package org.dc.bco.registry.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import org.dc.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPReadOnly;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -40,21 +43,22 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
+import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> implements org.dc.bco.registry.agent.lib.AgentRegistry {
+public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> implements org.dc.bco.registry.agent.lib.AgentRegistry, Remote<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistry.getDefaultInstance()));
@@ -63,7 +67,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> agentConfigRemoteRegistry;
 
-    public AgentRegistryRemote() throws InstantiationException {
+    public AgentRegistryRemote() throws InstantiationException, InterruptedException {
         try {
             agentConfigRemoteRegistry = new RemoteRegistry<>(new AgentConfigIdGenerator());
         } catch (CouldNotPerformException ex) {
@@ -71,9 +75,45 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
         }
     }
 
-    public void init() throws InitializationException {
+    /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     */
+    @Override
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
-            super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
+            this.init(ScopeTransformer.transform(scope));
+        } catch (CouldNotTransformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     */
+    @Override
+    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
+        super.init(scope);
+    }
+
+    /**
+     * Method initializes the remote with the default registry connection scope.
+     *
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
+     */
+    public void init() throws InitializationException, InterruptedException {
+        try {
+            this.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
         } catch (JPServiceException ex) {
             throw new InitializationException(this, ex);
         }

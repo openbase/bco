@@ -35,6 +35,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.rsb.ScopeType.Scope;
 
 /**
  *
@@ -109,33 +110,43 @@ public interface DeviceRegistry {
 
     public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    public UnitGroupConfig registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    public UnitGroupConfig registerUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    public Boolean containsUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException;
+    public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    public UnitGroupConfig updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    public UnitGroupConfig updateUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public UnitGroupConfig removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    public UnitGroupConfig removeUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
 
     public UnitGroupConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
     public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException;
+    public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(UnitType type) throws CouldNotPerformException;
+    public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(List<ServiceType> serviceTypes) throws CouldNotPerformException;
+    public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(UnitType type, List<ServiceType> serviceTypes) throws CouldNotPerformException;
+    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
+
+    /**
+     * Method return the unit config which is registerd for the given scope.
+     * A NotAvailableException is thrown if no unit config is registered for the given scope.
+     *
+     * @param scope
+     * @return the unit config matching the given scope.
+     * @throws CouldNotPerformException
+     */
+    public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
     public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    public List<UnitType> getSubUnitTypesOfUnitType(UnitType type) throws CouldNotPerformException;
+    public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
     public void shutdown();
 }

@@ -27,9 +27,16 @@ package org.dc.bco.registry.app.core;
  * #L%
  */
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import org.dc.bco.registry.app.core.consistency.LabelConsistencyHandler;
+import org.dc.bco.registry.app.core.consistency.ScopeConsistencyHandler;
 import org.dc.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.dc.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -40,29 +47,24 @@ import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import org.dc.bco.registry.app.core.consistency.LabelConsistencyHandler;
-import org.dc.bco.registry.app.core.consistency.ScopeConsistencyHandler;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
+import rst.rsb.ScopeType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
  *
  * @author mpohling
  */
-public class AppRegistryController extends RSBCommunicationService<AppRegistry, AppRegistry.Builder> implements org.dc.bco.registry.app.lib.AppRegistry {
+public class AppRegistryController extends RSBCommunicationService<AppRegistry, AppRegistry.Builder> implements org.dc.bco.registry.app.lib.AppRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));
@@ -107,7 +109,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
         }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
             locationRegistryRemote.init();

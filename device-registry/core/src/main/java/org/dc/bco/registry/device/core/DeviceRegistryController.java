@@ -21,7 +21,6 @@ package org.dc.bco.registry.device.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -78,6 +77,7 @@ import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
@@ -93,13 +93,14 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.rsb.ScopeType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
  *
  * @author mpohling
  */
-public class DeviceRegistryController extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements org.dc.bco.registry.device.lib.DeviceRegistry {
+public class DeviceRegistryController extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements org.dc.bco.registry.device.lib.DeviceRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
@@ -207,7 +208,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
             locationRegistryRemote.init();
@@ -216,6 +217,12 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException
+     * @throws CouldNotPerformException
+     */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         try {
@@ -259,12 +266,22 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException
+     * @throws CouldNotPerformException
+     */
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         locationRegistryRemote.removeObserver(locationRegistryUpdateObserver);
         super.deactivate();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     */
     @Override
     public void shutdown() {
         if (deviceClassRegistry != null) {
@@ -290,6 +307,11 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException
+     */
     @Override
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags
@@ -300,31 +322,72 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         super.notifyChange();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param server
+     * @throws CouldNotPerformException
+     */
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
         RPCHelper.registerInterface(org.dc.bco.registry.device.lib.DeviceRegistry.class, this, server);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceConfig registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.register(deviceConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitTemplateId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         return unitTemplateRegistry.get(unitTemplateId).getMessage();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceClassId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.get(deviceClassId).getMessage();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceConfigId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.get(deviceConfigId).getMessage();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitConfigId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRegistry.getEntries()) {
@@ -337,6 +400,14 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         throw new NotAvailableException(unitConfigId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitConfigLabel
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException
+     */
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
@@ -349,81 +420,189 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitConfigs;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceConfigId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfigId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitTemplateId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         return unitTemplateRegistry.contains(unitTemplateId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitTemplate
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
         return unitTemplateRegistry.contains(unitTemplate);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.contains(deviceConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitTemplate
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitTemplate updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
         return unitTemplateRegistry.update(unitTemplate);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceConfig updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.update(deviceConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceConfig removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
         return deviceConfigRegistry.remove(deviceConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceClass
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.register(deviceClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceClassId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
         return deviceClassRegistry.contains(deviceClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceClass
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.contains(deviceClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceClass
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceClass updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.update(deviceClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param deviceClass
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public DeviceClass removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return deviceClassRegistry.remove(deviceClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
         return unitTemplateRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
         return deviceClassRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException {
         return deviceConfigRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = new ArrayList<>();
@@ -433,6 +612,12 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitConfigs;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
@@ -442,6 +627,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return serviceConfigs;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
         for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
@@ -452,21 +644,46 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(unitTemplateRegistry.isReadOnly());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(deviceClassRegistry.isReadOnly());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(deviceConfigRegistry.isReadOnly());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = new ArrayList<>();
@@ -480,6 +697,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitConfigs;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceType
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
@@ -509,36 +733,84 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitGroupConfigRegistry;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitGroupConfig registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         return unitGroupConfigRegistry.register(groupConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         return unitGroupConfigRegistry.contains(groupConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfigId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         return unitGroupConfigRegistry.contains(groupConfigId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitGroupConfig updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         return unitGroupConfigRegistry.update(groupConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitGroupConfig removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         return unitGroupConfigRegistry.remove(groupConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfigId
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public UnitGroupConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         return unitGroupConfigRegistry.get(groupConfigId).getMessage();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException {
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
@@ -548,6 +820,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitGroups;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
@@ -559,6 +838,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitGroups;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(UnitType type) throws CouldNotPerformException {
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
@@ -570,6 +856,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitGroups;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceTypes
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(List<ServiceType> serviceTypes) throws CouldNotPerformException {
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
@@ -588,6 +881,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitGroups;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = new ArrayList<>();
@@ -597,11 +897,25 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitConfigs;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         return CompletableFuture.completedFuture(unitGroupConfigRegistry.isReadOnly());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @param serviceTypes
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
 
@@ -625,6 +939,30 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitConfigs;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param scope
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public UnitConfig getUnitConfigByScope(final ScopeType.Scope scope) throws CouldNotPerformException {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            if (unitConfig.getScope().equals(scope)) {
+                return unitConfig;
+            }
+        }
+        throw new NotAvailableException("No unit config available for given scope!");
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public List<UnitType> getSubUnitTypesOfUnitType(UnitType type) throws CouldNotPerformException {
         List<UnitType> unitTypes = new ArrayList<>();

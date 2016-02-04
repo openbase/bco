@@ -26,12 +26,14 @@ package org.dc.bco.registry.device.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.dc.jul.storage.registry.Registry;
 import org.dc.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -40,24 +42,24 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter {
+public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>> {
 
-    private ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> registry;
+    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> registry;
 
     public UnitTemplateCreatorRegistryPlugin(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry) {
         this.registry = unitTemplateRegistry;
     }
 
     @Override
-    public void init(Registry reg) throws CouldNotPerformException {
+    public void init(Registry<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>, ?> config) throws InitializationException, InterruptedException {
         try {
             String templateId;
             UnitTemplate template;
 
             // create missing unit template
-            if (registry.size() <= UnitTemplate.UnitType.values().length -1) {
+            if (registry.size() <= UnitTemplate.UnitType.values().length - 1) {
                 for (UnitType unitType : UnitType.values()) {
-                    if(unitType == UnitType.UNKNOWN) {
+                    if (unitType == UnitType.UNKNOWN) {
                         continue;
                     }
                     template = UnitTemplate.newBuilder().setType(unitType).build();
@@ -68,7 +70,7 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
                 }
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not init " + getClass().getSimpleName() + "!", ex);
+            throw new InitializationException("Could not init " + getClass().getSimpleName() + "!", ex);
         }
     }
 }

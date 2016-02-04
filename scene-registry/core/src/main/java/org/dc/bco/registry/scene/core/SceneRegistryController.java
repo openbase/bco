@@ -27,6 +27,16 @@ package org.dc.bco.registry.scene.core;
  * #L%
  */
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.bco.registry.scene.core.consistency.LabelConsistencyHandler;
+import org.dc.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
+import org.dc.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
+import org.dc.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
+import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -37,32 +47,24 @@ import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import org.dc.bco.registry.scene.core.consistency.LabelConsistencyHandler;
-import org.dc.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
-import org.dc.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
-import org.dc.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
-import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
+import rst.rsb.ScopeType;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
  *
  * @author mpohling
  */
-public class SceneRegistryController extends RSBCommunicationService<SceneRegistry, SceneRegistry.Builder> implements org.dc.bco.registry.scene.lib.SceneRegistry {
+public class SceneRegistryController extends RSBCommunicationService<SceneRegistry, SceneRegistry.Builder> implements org.dc.bco.registry.scene.lib.SceneRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));
@@ -107,7 +109,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
         }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPSceneRegistryScope.class).getValue());
             locationRegistryRemote.init();

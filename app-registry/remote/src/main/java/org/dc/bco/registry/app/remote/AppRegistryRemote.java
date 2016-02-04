@@ -27,12 +27,16 @@ package org.dc.bco.registry.app.remote;
  * #L%
  */
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import org.dc.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPReadOnly;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -40,21 +44,22 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
+import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
+import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements org.dc.bco.registry.app.lib.AppRegistry {
+public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements org.dc.bco.registry.app.lib.AppRegistry, Remote<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));
@@ -63,7 +68,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     private final RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> appConfigRemoteRegistry;
 
-    public AppRegistryRemote() throws InstantiationException {
+    public AppRegistryRemote() throws InstantiationException, InterruptedException {
         try {
             appConfigRemoteRegistry = new RemoteRegistry<>(new AppConfigIdGenerator());
         } catch (CouldNotPerformException ex) {
@@ -71,9 +76,46 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         }
     }
 
-    public void init() throws InitializationException {
+    /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     */
+    @Override
+    public  void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
-            super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
+            this.init(ScopeTransformer.transform(scope));
+        } catch (CouldNotTransformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     */
+    @Override
+    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
+        super.init(scope);
+    }
+
+
+    /**
+     * Method initializes the remote with the default registry connection scope.
+     *
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
+     */
+    public void init() throws InitializationException, InterruptedException {
+        try {
+            this.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
         } catch (JPServiceException ex) {
             throw new InitializationException(this, ex);
         }

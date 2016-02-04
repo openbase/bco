@@ -27,8 +27,18 @@ package org.dc.bco.registry.user.remote;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
+import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
 import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPReadOnly;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -37,27 +47,22 @@ import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
-import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
-import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import org.dc.jps.core.JPService;
-import org.dc.jps.exception.JPServiceException;
-import org.dc.jps.preset.JPReadOnly;
+import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
+import rst.authorization.UserGroupConfigType.UserGroupConfig;
 import rst.authorization.UserRegistryType.UserRegistry;
+import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements org.dc.bco.registry.user.lib.UserRegistry {
+public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements org.dc.bco.registry.user.lib.UserRegistry, Remote<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));
@@ -68,7 +73,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     private final RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> userConfigRemoteRegistry;
     private final RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistry.Builder> groupConfigRemoteRegistry;
 
-    public UserRegistryRemote() throws InstantiationException {
+    public UserRegistryRemote() throws InstantiationException, InterruptedException {
         try {
             userConfigRemoteRegistry = new RemoteRegistry<>(new UserConfigIdGenerator());
             groupConfigRemoteRegistry = new RemoteRegistry<>(new UserGroupConfigIdGenerator());
@@ -77,9 +82,46 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
         }
     }
 
-    public void init() throws InitializationException {
+    /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     */
+    @Override
+    public  void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
-            super.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
+            this.init(ScopeTransformer.transform(scope));
+        } catch (CouldNotTransformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    /**
+     * Method initializes the remote with the given scope for the server
+     * registry connection.
+     *
+     * @param scope
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     */
+    @Override
+    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
+        super.init(scope);
+    }
+
+
+    /**
+     * Method initializes the remote with the default registry connection scope.
+     *
+     * @throws InitializationException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
+     */
+    public void init() throws InitializationException, InterruptedException {
+        try {
+            this.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
         } catch (JPServiceException ex) {
             throw new InitializationException(this, ex);
         }

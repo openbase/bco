@@ -27,7 +27,7 @@ package org.dc.bco.registry.location.core.consistency;
  * #L%
  */
 
-import de.citec.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
+import org.dc.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;

@@ -83,7 +83,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfig.class, getBuilderSetup(), getFieldDescriptor(AgentRegistry.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             agentConfigRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
-            
+
             locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
 
                 @Override
@@ -92,7 +92,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
                 }
             };
 
-            
+
 
             locationRegistryRemote = new LocationRegistryRemote();
 
@@ -114,9 +114,9 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
         }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
-            super.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
+            init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
             locationRegistryRemote.init();
         } catch (JPServiceException ex) {
             throw new InitializationException(this, ex);
