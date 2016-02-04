@@ -10,12 +10,10 @@ import org.dc.jul.schedule.Timeout;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
 import org.dc.bco.dal.remote.unit.MotionSensorRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.state.MotionStateType;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
@@ -41,11 +39,11 @@ public class MotionStateFutionProvider extends Observable<MotionState> implement
     private final Timeout motionTimeout;
     private final List<MotionSensorRemote> motionSensorList;
 
-    public MotionStateFutionProvider(Collection<UnitConfig> motionUnitConfigs) throws InstantiationException {
+    public MotionStateFutionProvider(Collection<UnitConfig> motionUnitConfigs) throws InstantiationException, InterruptedException {
         this(motionUnitConfigs, MOTION_TIMEOUT);
     }
 
-    public MotionStateFutionProvider(final Collection<UnitConfig> motionUnitConfigs, final long motionTimeout) throws InstantiationException {
+    public MotionStateFutionProvider(final Collection<UnitConfig> motionUnitConfigs, final long motionTimeout) throws InstantiationException, InterruptedException {
         try {
             this.motionSensorList = new ArrayList<>();
             this.motionState = MotionState.newBuilder();

@@ -35,7 +35,7 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
     }
 
     @Override
-    public void init(final DeviceConfig config) throws InitializationException {
+    public void init(final DeviceConfig config) throws InitializationException, InterruptedException {
 
         try {
             if (config == null) {

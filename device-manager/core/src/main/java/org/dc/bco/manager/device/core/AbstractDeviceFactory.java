@@ -6,8 +6,8 @@
 package org.dc.bco.manager.device.core;
 
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.manager.device.lib.DeviceFactory;
 import org.dc.bco.manager.device.lib.Device;
+import org.dc.bco.manager.device.lib.DeviceFactory;
 import org.dc.bco.manager.device.lib.DeviceManager;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -24,7 +24,7 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
         super();
     }
 
-    public Device newInstance(final DeviceConfig deviceConfig, final DeviceManager deviceManager) throws InstantiationException {
+    public Device newInstance(final DeviceConfig deviceConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
         try {
             return newInstance(deviceConfig, deviceManager.getServiceFactory());
         } catch (CouldNotPerformException ex) {
@@ -33,7 +33,7 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
     }
 
     @Override
-    public Device newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException {
+    public Device newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException {
         try {
             if (deviceConfig == null) {
                 throw new NotAvailableException("deviceConfig");

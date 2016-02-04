@@ -6,8 +6,8 @@
 package org.dc.bco.manager.device.lib;
 
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.jul.pattern.Factory;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Factory;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
@@ -16,6 +16,6 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  */
 public interface DeviceFactory extends Factory<Device, DeviceConfig> {
 
-    public Device newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException;
-    
+    public Device newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
+
 }

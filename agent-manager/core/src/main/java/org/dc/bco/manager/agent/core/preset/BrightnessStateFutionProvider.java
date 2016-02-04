@@ -9,12 +9,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.bco.dal.lib.layer.service.provider.BrightnessProvider;
 import org.dc.bco.dal.remote.unit.BrightnessSensorRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.unit.BrightnessSensorType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -49,11 +47,11 @@ public class BrightnessStateFutionProvider extends Observable<Double> implements
 
     private final List<BrightnessSensorRemote> brightnessSensorList;
 
-    public BrightnessStateFutionProvider(Collection<UnitConfig> brightnessUnitConfigs) throws InstantiationException {
+    public BrightnessStateFutionProvider(Collection<UnitConfig> brightnessUnitConfigs) throws InstantiationException, InterruptedException {
         this(brightnessUnitConfigs, DEFAULT_MEASUREMENT_TIME_WINDOW);
     }
 
-    public BrightnessStateFutionProvider(final Collection<UnitConfig> brightnessUnitConfigs, final long measurementTimeWindow) throws InstantiationException {
+    public BrightnessStateFutionProvider(final Collection<UnitConfig> brightnessUnitConfigs, final long measurementTimeWindow) throws InstantiationException, InterruptedException {
         try {
             this.brightnessSensorList = new ArrayList<>();
             this.brightnessLastStates = new HashMap<>();

@@ -24,7 +24,7 @@ public class DeviceFactoryImpl extends AbstractDeviceFactory {
     }
 
     @Override
-    public Device newInstance(final DeviceConfig config) throws InstantiationException {
+    public Device newInstance(final DeviceConfig config) throws InstantiationException, InterruptedException {
         return newInstance(config, serviceFactory);
     }
 }

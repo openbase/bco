@@ -74,7 +74,7 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
 //        }
     }
 
-    public void init() throws InitializationException {
+    public void init() throws InitializationException, InterruptedException {
         try {
             this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerController.getDeviceManager().getUnitControllerRegistry());
 

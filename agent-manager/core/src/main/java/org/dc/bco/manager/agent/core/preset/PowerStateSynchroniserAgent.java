@@ -11,8 +11,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
-import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
 import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.manager.agent.core.AgentManagerController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
@@ -56,12 +56,12 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     private List<AbstractIdentifiableRemote> targetRemotes = new ArrayList<>();
     private AbstractIdentifiableRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
-    private final UnitRemoteFactoryInterface factory;
+    private final UnitRemoteFactory factory;
     private final DeviceRegistry deviceRegistry;
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
         super(true);
-        this.factory = UnitRemoteFactory.getInstance();
+        this.factory = UnitRemoteFactoryImpl.getInstance();
         this.deviceRegistry = AgentManagerController.getInstance().getDeviceRegistry();
     }
 

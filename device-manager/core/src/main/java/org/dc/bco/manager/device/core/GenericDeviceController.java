@@ -6,6 +6,7 @@
 package org.dc.bco.manager.device.core;
 
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -51,5 +52,10 @@ public class GenericDeviceController extends AbstractDeviceController<GenericDev
     @Override
     public LocationRegistry getLocationRegistry() throws NotAvailableException {
         return DeviceManagerController.getDeviceManager().getLocationRegistry();
+    }
+
+    @Override
+    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
+        return DeviceManagerController.getDeviceManager().getDeviceRegistry();
     }
 }

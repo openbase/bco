@@ -6,25 +6,25 @@
  */
 package org.dc.bco.manager.device.core;
 
-import org.dc.bco.manager.device.lib.Device;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.storage.registry.RegistryImpl;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.manager.device.lib.DeviceControllerRegistry;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.storage.registry.RegistryImpl;
 
 /**
  *
  * @author mpohling
  */
 public class DeviceControllerRegistryImpl extends RegistryImpl<String, Device> implements DeviceControllerRegistry {
-    
+
     private final ControllerManager controllerManager;
-    
-    public DeviceControllerRegistryImpl() throws InstantiationException {
+
+    public DeviceControllerRegistryImpl() throws InstantiationException, InterruptedException {
         try {
             this.controllerManager = new ControllerManager();
         } catch (Exception ex) {
@@ -32,7 +32,7 @@ public class DeviceControllerRegistryImpl extends RegistryImpl<String, Device> i
         }
     }
 
-    public DeviceControllerRegistryImpl(final HashMap<String, Device> entryMap) throws InstantiationException {
+    public DeviceControllerRegistryImpl(final HashMap<String, Device> entryMap) throws InstantiationException, InterruptedException {
         super(entryMap);
         try {
             this.controllerManager = new ControllerManager();
