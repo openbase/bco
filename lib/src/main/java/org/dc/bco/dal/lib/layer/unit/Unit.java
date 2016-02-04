@@ -22,11 +22,9 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.data.Location;
-import org.dc.bco.dal.lib.layer.service.MultiService;
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.jul.iface.Identifiable;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.iface.Identifiable;
 import org.dc.jul.iface.provider.ConfigProvider;
 import org.dc.jul.iface.provider.LabelProvider;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
