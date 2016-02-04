@@ -26,26 +26,28 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
-import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.dal.lib.layer.service.ServiceFactoryProvider;
-import org.dc.bco.dal.lib.layer.service.ServiceType;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.MultiException;
-import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.lib.layer.service.ServiceFactory;
+import org.dc.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.dc.bco.dal.lib.layer.service.ServiceType;
+import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.MultiException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
+import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import rsb.Scope;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.rsb.ScopeType;
 
 /**
  *
@@ -87,7 +89,25 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public void init(final UnitConfig config) throws InitializationException {
+    public void init(Scope scope) throws InitializationException, InterruptedException {
+        try {
+            init(ScopeTransformer.transform(scope));
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
+        try {
+            super.init(unitHost.getDeviceRegistry().getUnitConfigByScope(scope));
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
@@ -123,18 +143,22 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public final String getId() {
-        return config.getId();
+    public final String getId() throws NotAvailableException {
+        try {
+            return getConfig().getId();
+        } catch (CouldNotPerformException e) {
+            throw new NotAvailableException("id");
+        }
     }
 
     @Override
-    public String getLabel() {
-        return config.getLabel();
+    public String getLabel() throws NotAvailableException {
+        return getConfig().getLabel();
     }
 
     @Override
-    public UnitTemplate.UnitType getType() {
-        return config.getType();
+    public UnitTemplate.UnitType getType() throws NotAvailableException {
+        return getConfig().getType();
     }
 
     public UnitHost getUnitHost() {

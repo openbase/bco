@@ -21,8 +21,8 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.scope.ScopeProvider;
 import org.dc.jul.iface.Identifiable;
 import org.dc.jul.iface.provider.ConfigProvider;
@@ -36,6 +36,6 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiable<String>, ConfigProvider<UnitConfig> {
 
-    public UnitType getType();
+    public UnitType getType() throws NotAvailableException;
 
 }

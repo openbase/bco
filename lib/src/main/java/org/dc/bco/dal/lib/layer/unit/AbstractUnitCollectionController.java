@@ -26,28 +26,29 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
-import java.util.Collection;
-import java.util.Collections;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.VerificationFailedException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
+import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.dc.jul.iface.Identifiable;
 import org.dc.jul.processing.StringProcessor;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
@@ -70,11 +71,15 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
         return hardware.getSimpleName().replace("Controller", "");
     }
 
-    protected <U extends AbstractUnitController> void registerUnit(final U unit) throws VerificationFailedException {
-        if (unitMap.containsKey(unit.getId())) {
-            throw new VerificationFailedException("Could not register " + unit + "! Unit with same name already registered!");
+    protected <U extends AbstractUnitController> void registerUnit(final U unit) throws CouldNotPerformException {
+        try {
+            if (unitMap.containsKey(unit.getId())) {
+                throw new VerificationFailedException("Could not register " + unit + "! Unit with same name already registered!");
+            }
+            unitMap.put(unit.getId(), unit);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not registerUnit!", ex);
         }
-        unitMap.put(unit.getId(), unit);
     }
 
     public AbstractUnitController getUnit(final String id) throws NotAvailableException {
@@ -107,23 +112,14 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
         // dummy construct: For registering methods overwrite this method.
     }
 
-    @Override
-    public String toString() {
-        try {
-            return getClass().getSimpleName() + "[" + getId() + "]";
-        } catch (CouldNotPerformException ex) {
-            return getClass().getSimpleName() + "[?]";
-        }
-    }
-
-    public final void registerUnits(final Collection<UnitConfigType.UnitConfig> unitConfigs) throws CouldNotPerformException {
+    public final void registerUnits(final Collection<UnitConfigType.UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         for (UnitConfigType.UnitConfig unitConfig : unitConfigs) {
             registerUnit(unitConfig);
         }
     }
 
     //TODO mpohling: implement unit factory instead!
-    public final void registerUnit(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
+    public final void registerUnit(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InitializationException, InterruptedException {
         try {
             GeneratedMessage.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
 
@@ -209,5 +205,17 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
 
     public Collection<AbstractUnitController> getUnits() {
         return Collections.unmodifiableCollection(unitMap.values());
+    }
+
+    @Override
+    public String toString() {
+        try {
+            if (hasField(FIELD_ID)) {
+                return getClass().getSimpleName() + "[" + getId() + "]";
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not detect id!", ex), logger, LogLevel.DEBUG);
+        }
+        return getClass().getSimpleName() + "[?]";
     }
 }

@@ -15,12 +15,12 @@ package org.dc.bco.dal.visual.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -29,11 +29,11 @@ package org.dc.bco.dal.visual.util;
 
 import com.google.protobuf.GeneratedMessage;
 import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
@@ -137,7 +137,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
         }
     }
 
-    private void initUnitRemote(AbstractUnitRemote unitRemote, UnitConfig config) throws CouldNotPerformException {
+    private void initUnitRemote(AbstractUnitRemote unitRemote, UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try {
             unitRemote.init(config);
         } catch (InitializationException ex) {
@@ -145,7 +145,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
         }
     }
 
-    private void initUnitRemote(AbstractUnitRemote unitRemote, Scope scope) throws CouldNotPerformException {
+    private void initUnitRemote(AbstractUnitRemote unitRemote, Scope scope) throws CouldNotPerformException, InterruptedException {
         try {
             unitRemote.init(scope);
         } catch (InitializationException ex) {

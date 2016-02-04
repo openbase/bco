@@ -27,21 +27,20 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
-import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
-import org.dc.bco.dal.remote.unit.UnitRemoteFactoryInterface;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.MultiException;
-import org.dc.jul.exception.NotSupportedException;
-import org.dc.jul.iface.Activatable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.MultiException;
+import org.dc.jul.exception.NotSupportedException;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
+import org.dc.jul.iface.Activatable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -58,7 +57,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     private final ServiceType serviceType;
     private final Map<String, AbstractIdentifiableRemote> unitRemoteMap;
     private final Map<String, S> serviceMap;
-    private UnitRemoteFactoryInterface factory = UnitRemoteFactory.getInstance();
+    private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
 
     public AbstractServiceRemote(final ServiceType serviceType) {
         this.serviceType = serviceType;
@@ -66,7 +65,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         this.serviceMap = new HashMap<>();
     }
 
-    public void init(final UnitConfig config) throws CouldNotPerformException {
+    public void init(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try {
             if (!verifyServiceCompatibility(config, serviceType)) {
                 throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config.getId(), this);
@@ -85,7 +84,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         }
     }
 
-    public void init(final Collection<UnitConfig> configs) throws CouldNotPerformException {
+    public void init(final Collection<UnitConfig> configs) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         for (UnitConfig config : configs) {
             try {
@@ -96,7 +95,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         }
         MultiException.checkAndThrow("Could not activate all service units!", exceptionStack);
     }
-    
+
     private static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         for(ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
             if(serviceConfig.getType() == serviceType) {
@@ -142,11 +141,11 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         return true;
     }
 
-    public UnitRemoteFactoryInterface getFactory() {
+    public UnitRemoteFactory getFactory() {
         return factory;
     }
 
-    public void setFactory(UnitRemoteFactoryInterface factory) {
+    public void setFactory(UnitRemoteFactory factory) {
         this.factory = factory;
     }
 

@@ -27,9 +27,9 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import java.util.HashMap;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.storage.registry.RegistryImpl;
-import java.util.HashMap;
 
 /**
  *
@@ -37,10 +37,10 @@ import java.util.HashMap;
  */
 public class UnitControllerRegistryImpl extends RegistryImpl<String, Unit> implements UnitControllerRegistry {
 
-    public UnitControllerRegistryImpl() throws InstantiationException {
+    public UnitControllerRegistryImpl() throws InstantiationException, InterruptedException {
     }
 
-    public UnitControllerRegistryImpl(HashMap<String, Unit> entryMap) throws InstantiationException {
+    public UnitControllerRegistryImpl(HashMap<String, Unit> entryMap) throws InstantiationException, InterruptedException {
         super(entryMap);
     }
 }

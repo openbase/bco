@@ -27,30 +27,28 @@ package org.dc.bco.dal.remote.unit;
  * #L%
  */
 
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
+import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.lib.layer.unit.Unit;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.pattern.Remote;
+import rsb.Scope;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.rsb.ScopeType;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface UnitRemoteFactoryInterface {
+public interface UnitRemote extends Unit, Service, Remote<UnitConfigType.UnitConfig> {
 
-    /**
-     * Creates and initializes an unit remote out of the given unit configuration.
-     * @param config the unit configuration which defines the remote type and is used for the remote initialization.
-     * @return the new created unit remote.
-     * @throws CouldNotPerformException
-     */
-    public AbstractIdentifiableRemote createAndInitUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException;
+    void init(ScopeType.Scope scope) throws InitializationException, InterruptedException;
 
-    /**
-     * Creates an unit remote out of the given unit configuration.
-     * @param config the unit configuration which defines the remote type.
-     * @return the new created unit remote.
-     * @throws CouldNotPerformException
-     */
-    public AbstractIdentifiableRemote createUnitRemote(final UnitConfigType.UnitConfig config) throws CouldNotPerformException;
-    
+    void init(Scope scope) throws InitializationException, InterruptedException;
+
+    void init(String scope) throws InitializationException, InterruptedException;
+
+    void initById(final String id) throws InitializationException, InterruptedException;
+
+    void initByLabel(final String label) throws InitializationException, InterruptedException;
+
 }

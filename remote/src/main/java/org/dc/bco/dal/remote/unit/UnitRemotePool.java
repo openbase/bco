@@ -24,10 +24,10 @@ package org.dc.bco.dal.remote.unit;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
+import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -36,15 +36,15 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class UnitRemotePool {
 
-    private Map<Class, Map<String, AbstractIdentifiableRemote>> pool;
-    private UnitRemoteFactoryInterface factory;
+    private Map<Class, Map<String, UnitRemote>> pool;
+    private UnitRemoteFactory factory;
     private DeviceRegistryRemote deviceRegistryRemote;
 
     public UnitRemotePool() throws org.dc.jul.exception.InstantiationException, InterruptedException {
-        this(UnitRemoteFactory.getInstance());
+        this(UnitRemoteFactoryImpl.getInstance());
     }
 
-    public UnitRemotePool(UnitRemoteFactoryInterface factory) throws org.dc.jul.exception.InstantiationException, InterruptedException {
+    public UnitRemotePool(UnitRemoteFactory factory) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
             this.pool = new HashMap<>();
             this.factory = factory;
@@ -64,9 +64,9 @@ public class UnitRemotePool {
         }
     }
 
-    private void initAllUnitRemotes() throws CouldNotPerformException {
+    private void initAllUnitRemotes() throws CouldNotPerformException, InterruptedException {
         for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
-            AbstractIdentifiableRemote unitRemote = factory.createAndInitUnitRemote(unitConfig);
+            UnitRemote unitRemote = factory.newInitializedInstance(unitConfig);
 
             if (!pool.containsKey(unitRemote.getClass())) {
                 pool.put(unitRemote.getClass(), new HashMap<>());
@@ -78,8 +78,8 @@ public class UnitRemotePool {
     }
 
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (Map<String, AbstractIdentifiableRemote> unitCollection : pool.values()) {
-            for (AbstractIdentifiableRemote remote : unitCollection.values()) {
+        for (Map<String, UnitRemote> unitCollection : pool.values()) {
+            for (UnitRemote remote : unitCollection.values()) {
                 remote.activate();
             }
         }

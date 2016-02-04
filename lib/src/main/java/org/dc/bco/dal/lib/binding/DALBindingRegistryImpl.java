@@ -27,10 +27,10 @@ package org.dc.bco.dal.lib.binding;
  * #L%
  */
 
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.storage.registry.RegistryImpl;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.storage.registry.RegistryImpl;
 
 /**
  *
@@ -38,10 +38,10 @@ import java.util.HashMap;
  */
 public class DALBindingRegistryImpl extends RegistryImpl<Class<? extends Binding>, Binding> {
 
-    public DALBindingRegistryImpl() throws org.dc.jul.exception.InstantiationException {
+    public DALBindingRegistryImpl() throws org.dc.jul.exception.InstantiationException, InterruptedException {
     }
 
-    public DALBindingRegistryImpl(HashMap<Class<? extends Binding>, Binding> entryMap) throws org.dc.jul.exception.InstantiationException {
+    public DALBindingRegistryImpl(HashMap<Class<? extends Binding>, Binding> entryMap) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         super(entryMap);
     }
 
