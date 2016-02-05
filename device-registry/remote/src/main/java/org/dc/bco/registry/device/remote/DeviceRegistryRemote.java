@@ -78,7 +78,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRemoteRegistry;
     private final RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupRemoteRegistry;
 
-    public DeviceRegistryRemote() throws InstantiationException, InterruptedException {
+    public DeviceRegistryRemote() throws InstantiationException {
         try {
             unitTemplateRemoteRegistry = new RemoteRegistry<>(new UnitTemplateIdGenerator());
             deviceClassRemoteRegistry = new RemoteRegistry<>(new DeviceClassIdGenerator());
@@ -894,7 +894,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 return unitConfig;
             }
         }
-        throw new NotAvailableException("No unit config available for given scope!");
+        throw new NotAvailableException("No unit config available for given Scope["+scope+"]!");
     }
 
     /**

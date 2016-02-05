@@ -80,7 +80,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     private final RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> connectionConfigRemoteRegistry;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
-    public LocationRegistryRemote() throws InstantiationException, InterruptedException {
+    public LocationRegistryRemote() throws InstantiationException {
         try {
             this.locationConfigRemoteRegistry = new RemoteRegistry<>(new LocationIDGenerator());
             this.connectionConfigRemoteRegistry = new RemoteRegistry<>(new ConnectionIDGenerator());
