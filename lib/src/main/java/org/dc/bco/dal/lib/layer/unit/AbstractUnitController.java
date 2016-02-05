@@ -39,11 +39,14 @@ import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.extension.rst.iface.ScopeProvider;
 import rsb.Scope;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -135,25 +138,54 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         }
     }
 
+    public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
+        try {
+            init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
+        } catch (CouldNotPerformException | NullPointerException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
     @Override
-    public UnitConfig updateConfig(UnitConfig config) throws CouldNotPerformException {
-        setField(TYPE_FILED_ID, getId());
-        setField(TYPE_FILED_LABEL, getLabel());
+    public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException {
+        setField(TYPE_FILED_ID, config.getId());
+        setField(TYPE_FILED_LABEL, config.getLabel());
         return super.updateConfig(config);
     }
 
     @Override
     public final String getId() throws NotAvailableException {
         try {
-            return getConfig().getId();
-        } catch (CouldNotPerformException e) {
-            throw new NotAvailableException("id");
+            UnitConfig tmpConfig = getConfig();
+            if (!tmpConfig.hasId()) {
+                throw new NotAvailableException("unitconfig.id");
+            }
+
+            if (tmpConfig.getId().isEmpty()) {
+                throw new InvalidStateException("unitconfig.id is empty");
+            }
+
+            return tmpConfig.getId();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("id", ex);
         }
     }
 
     @Override
     public String getLabel() throws NotAvailableException {
-        return getConfig().getLabel();
+        try {
+            UnitConfig tmpConfig = getConfig();
+            if (!tmpConfig.hasId()) {
+                throw new NotAvailableException("unitconfig.label");
+            }
+
+            if (tmpConfig.getId().isEmpty()) {
+                throw new InvalidStateException("unitconfig.label is empty");
+            }
+            return getConfig().getLabel();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("label", ex);
+        }
     }
 
     @Override

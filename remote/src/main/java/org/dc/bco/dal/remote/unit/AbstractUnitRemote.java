@@ -10,12 +10,12 @@ package org.dc.bco.dal.remote.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -31,6 +31,7 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
+import org.dc.jul.extension.rst.iface.ScopeProvider;
 import rsb.Scope;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
@@ -98,11 +99,19 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
+        try {
+            init(ScopeGenerator.generateScope(label, detectMessageClass().getSimpleName(), location.getScope()));
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
     @Override
     public UnitTemplateType.UnitTemplate.UnitType getType() throws NotAvailableException {
         try {
             return getConfig().getType();
-        } catch(NullPointerException | NotAvailableException ex) {
+        } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit type", ex);
         }
     }
@@ -111,7 +120,16 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public String getLabel() throws NotAvailableException {
         try {
             return getConfig().getLabel();
-        } catch(NullPointerException | NotAvailableException ex) {
+        } catch (NullPointerException | NotAvailableException ex) {
+            throw new NotAvailableException("unit label", ex);
+        }
+    }
+
+    @Override
+    public ScopeType.Scope getScope() throws NotAvailableException {
+        try {
+            return getConfig().getScope();
+        } catch (NullPointerException | CouldNotPerformException ex) {
             throw new NotAvailableException("unit label", ex);
         }
     }

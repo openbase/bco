@@ -28,9 +28,9 @@ package org.dc.bco.dal.lib.data;
  */
 
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.extension.rsb.scope.ScopeProvider;
-import org.dc.jul.extension.rsb.scope.ScopeTransformer;
-import rsb.Scope;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.rst.iface.ScopeProvider;
+import rst.rsb.ScopeType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
@@ -55,8 +55,8 @@ public class Location implements ScopeProvider {
 	}
 
 	@Override
-	public Scope getScope() throws CouldNotPerformException{
-		return ScopeTransformer.transform(config.getScope());
+	public ScopeType.Scope getScope() throws NotAvailableException{
+		return config.getScope();
 	}
 
     public LocationConfig getConfig() {

@@ -22,13 +22,9 @@ package org.dc.bco.dal.lib.layer.service;
  * #L%
  */
 
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-
 /**
  *
  * @author Divine Threepwood
  */
 public interface Service {
-//	public ServiceTemplate.ServiceType getServiceType();
-//    public ServiceConfig getServiceConfig();
 }

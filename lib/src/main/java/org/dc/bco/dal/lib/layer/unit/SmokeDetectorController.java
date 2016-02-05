@@ -36,7 +36,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
 import rst.homeautomation.unit.SmokeDetectorType.SmokeDetector;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -50,7 +49,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
-    public SmokeDetectorController(final UnitConfigType.UnitConfig config, final UnitHost unitHost, SmokeDetector.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
+    public SmokeDetectorController(final UnitHost unitHost, SmokeDetector.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(SmokeDetectorController.class, unitHost, builder);
     }
 

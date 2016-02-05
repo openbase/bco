@@ -38,7 +38,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
 import rst.homeautomation.unit.RollershutterType.Rollershutter;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

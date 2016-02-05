@@ -39,7 +39,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.unit.ScreenType.Screen;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

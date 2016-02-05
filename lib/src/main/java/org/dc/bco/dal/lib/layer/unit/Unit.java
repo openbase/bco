@@ -23,7 +23,7 @@ package org.dc.bco.dal.lib.layer.unit;
  */
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Identifiable;
 import org.dc.jul.iface.provider.ConfigProvider;
 import org.dc.jul.iface.provider.LabelProvider;

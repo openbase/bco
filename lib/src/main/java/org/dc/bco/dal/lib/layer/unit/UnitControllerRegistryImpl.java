@@ -37,10 +37,10 @@ import org.dc.jul.storage.registry.RegistryImpl;
  */
 public class UnitControllerRegistryImpl extends RegistryImpl<String, Unit> implements UnitControllerRegistry {
 
-    public UnitControllerRegistryImpl() throws InstantiationException, InterruptedException {
+    public UnitControllerRegistryImpl() throws InstantiationException {
     }
 
-    public UnitControllerRegistryImpl(HashMap<String, Unit> entryMap) throws InstantiationException, InterruptedException {
+    public UnitControllerRegistryImpl(HashMap<String, Unit> entryMap) throws InstantiationException {
         super(entryMap);
     }
 }

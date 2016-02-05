@@ -36,7 +36,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 import rst.homeautomation.unit.ReedSwitchType.ReedSwitch;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

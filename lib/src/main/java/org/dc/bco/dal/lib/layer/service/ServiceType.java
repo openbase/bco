@@ -154,6 +154,7 @@ public enum ServiceType {
         return serviceClassList;
     }
 
+    @Deprecated
     public static void registerServiceMethods(final RSBLocalServerInterface server, final Service service) {
         for (ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
             for (Method method : serviceType.getDeclaredMethods()) {
