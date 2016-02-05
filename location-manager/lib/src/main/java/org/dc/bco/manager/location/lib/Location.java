@@ -1,6 +1,6 @@
 package org.dc.bco.manager.location.lib;
 
-import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.Identifiable;
 import org.dc.jul.iface.provider.LabelProvider;

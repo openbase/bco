@@ -5,7 +5,7 @@
  */
 package org.dc.bco.manager.device.lib;
 
-import org.dc.jul.extension.rsb.scope.ScopeProvider;
+import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.Identifiable;

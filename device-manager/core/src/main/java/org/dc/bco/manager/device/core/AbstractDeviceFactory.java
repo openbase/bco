@@ -57,7 +57,7 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
 
             final GenericDeviceController genericDeviceController = new GenericDeviceController(serviceFactory);
             genericDeviceController.init(deviceConfig);
-            return new GenericDeviceController(serviceFactory);
+            return genericDeviceController;
 
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(Device.class, deviceConfig.getId(), ex);

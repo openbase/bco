@@ -24,7 +24,7 @@ public class DeviceControllerRegistryImpl extends RegistryImpl<String, Device> i
 
     private final ControllerManager controllerManager;
 
-    public DeviceControllerRegistryImpl() throws InstantiationException, InterruptedException {
+    public DeviceControllerRegistryImpl() throws InstantiationException {
         try {
             this.controllerManager = new ControllerManager();
         } catch (Exception ex) {
@@ -32,7 +32,7 @@ public class DeviceControllerRegistryImpl extends RegistryImpl<String, Device> i
         }
     }
 
-    public DeviceControllerRegistryImpl(final HashMap<String, Device> entryMap) throws InstantiationException, InterruptedException {
+    public DeviceControllerRegistryImpl(final HashMap<String, Device> entryMap) throws InstantiationException {
         super(entryMap);
         try {
             this.controllerManager = new ControllerManager();
