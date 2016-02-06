@@ -26,7 +26,6 @@ package org.dc.bco.registry.device.core.dbconvert.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
@@ -44,9 +43,11 @@ import org.dc.jul.storage.registry.version.DBVersionControl;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.HashMap;
 import java.util.Map;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.LocationRegistryType.LocationRegistry;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -55,33 +56,30 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  */
 public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private final LocationRegistryRemote locationRegistryRemote;
+    private org.dc.bco.registry.location.lib.LocationRegistry locationRegistry;
     private final Map<String, String> locationLabelIdMap;
 
     public DeviceConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
-        System.out.println("Constructor call");
-        try {
-            this.locationRegistryRemote = new LocationRegistryRemote();
-            this.locationRegistryRemote.init();
-            this.locationLabelIdMap = new HashMap<>();
-
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        this.locationLabelIdMap = new HashMap<>();
+//        System.out.println("Constructor call");
+//        try {
+//        } catch (CouldNotPerformException ex) {
+//            throw new InstantiationException(this, ex);
+//        }
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
 
-        System.out.println("processData:" + entry.getId());
-        if (!locationRegistryRemote.isActive()) {
-            System.out.println("activate location registry");
+//        System.out.println("processData:" + entry.getId());
+        if (locationRegistry == null) {
+            logger.info("Connect to location registry....");
             try {
-                locationRegistryRemote.activate();
-                System.out.println("read location configs.");
+                locationRegistry = CachedLocationRegistryRemote.getLocationRegistry();
+                logger.info("Location registry connected.");
                 String oldID;
-                for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
+                for (LocationConfig locationConfig : locationRegistry.getLocationConfigs()) {
                     oldID = oldGenerateId(locationConfig);
                     if (!locationLabelIdMap.containsKey(oldID)) {
                         locationLabelIdMap.put(oldID, locationConfig.getId());
@@ -89,31 +87,25 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
                     }
                 }
             } catch (InterruptedException ex) {
-                System.out.println("read location configs interrupted.");
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-//                throw new RuntimeException();
             }
         }
 
         DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         if (!deviceConfig.hasPlacementConfig()) {
-            System.out.println("no placement avail");
             throw new NotAvailableException("deviceConfig.placementconfig");
         }
 
         if (!deviceConfig.getPlacementConfig().hasLocationId()) {
-            System.out.println("no location id avail");
             throw new NotAvailableException("deviceConfig.placementconfig.locationid");
         }
 
         boolean modification = false;
         if (locationLabelIdMap.containsKey(deviceConfig.getPlacementConfig().getLocationId())) {
-            System.out.println("Update Device[" + deviceConfig.getId() + "] Location id from [" + deviceConfig.getPlacementConfig().getLocationId() + "] to [" + locationLabelIdMap.get(deviceConfig.getPlacementConfig().getLocationId()) + "]");
+            logger.info("Update Device[" + deviceConfig.getId() + "] Location id from [" + deviceConfig.getPlacementConfig().getLocationId() + "] to [" + locationLabelIdMap.get(deviceConfig.getPlacementConfig().getLocationId()) + "]");
             deviceConfig.setPlacementConfig(PlacementConfig.newBuilder(deviceConfig.getPlacementConfig()).setLocationId(locationLabelIdMap.get(deviceConfig.getPlacementConfig().getLocationId())));
             modification = true;
-        } else {
-            System.out.println("Could not resolve device location id[" + deviceConfig.getPlacementConfig().getLocationId() + "]");
         }
 
         deviceConfig.clearUnitConfig();
@@ -129,11 +121,9 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
             }
 
             if (locationLabelIdMap.containsKey(unitConfig.getPlacementConfig().getLocationId())) {
-                System.out.println("Update Unit[" + unitConfig.getId() + "] Location id from [" + unitConfig.getPlacementConfig().getLocationId() + "] to [" + locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId()) + "]");
+                logger.info("Update Unit[" + unitConfig.getId() + "] Location id from [" + unitConfig.getPlacementConfig().getLocationId() + "] to [" + locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId()) + "]");
                 unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(locationLabelIdMap.get(unitConfig.getPlacementConfig().getLocationId())));
                 modification = true;
-            } else {
-                System.out.println("Could not resolve unit location id[" + unitConfig.getPlacementConfig().getLocationId() + "]");
             }
             deviceConfig.addUnitConfig(unitConfig);
         }

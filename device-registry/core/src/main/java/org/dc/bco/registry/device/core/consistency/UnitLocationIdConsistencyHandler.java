@@ -26,7 +26,6 @@ package org.dc.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
@@ -36,6 +35,9 @@ import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jul.storage.registry.jp.JPRecoverDB;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.spatial.PlacementConfigType;
@@ -83,7 +85,16 @@ public class UnitLocationIdConsistencyHandler extends AbstractProtoBufRegistryCo
 
             // verify if configured location exists.
             if (!locationRegistryRemote.containsLocationConfigById(unitConfig.getPlacementConfig().getLocationId())) {
-                throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + unitConfig.getId() + "] is unknown!");
+                try {
+                    if (!JPService.getProperty(JPRecoverDB.class).getValue()) {
+                        throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + unitConfig.getId() + "] is unknown!");
+                    }
+                } catch (JPServiceException ex) {
+                    throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + unitConfig.getId() + "] is unknown and can not be recovered!", ex);
+                }
+                // recover unit location with device location.
+                unitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(deviceConfig.getPlacementConfig().getLocationId()));
+                modification = true;
             }
 
             deviceConfig.addUnitConfig(unitConfig);

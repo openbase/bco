@@ -28,12 +28,16 @@ package org.dc.bco.registry.agent.core.consistency;
  */
 
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
+import org.dc.jul.storage.registry.jp.JPRecoverDB;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
@@ -53,6 +57,20 @@ public class LocationIdConsistencyHandler extends AbstractProtoBufRegistryConsis
         AgentConfig agentConfig = entry.getMessage();
 
         if (!agentConfig.hasLocationId() || agentConfig.getLocationId().isEmpty()) {
+            entry.setMessage(agentConfig.toBuilder().setLocationId(locationRegistryRemote.getRootLocationConfig().getId()));
+            throw new EntryModification(entry, this);
+        }
+
+        // verify if configured location exists.
+        if (!locationRegistryRemote.containsLocationConfigById(agentConfig.getLocationId())) {
+            try {
+                if (!JPService.getProperty(JPRecoverDB.class).getValue()) {
+                    throw new InvalidStateException("The configured Location[" + agentConfig.getLocationId() + "] of Device[" + agentConfig.getId() + "] is unknown!");
+                }
+            } catch (JPServiceException ex) {
+                throw new InvalidStateException("The configured Location[" + agentConfig.getLocationId() + "] of Device[" + agentConfig.getId() + "] is unknown and can not be recovered!", ex);
+            }
+            // recover agent location with root location.
             entry.setMessage(agentConfig.toBuilder().setLocationId(locationRegistryRemote.getRootLocationConfig().getId()));
             throw new EntryModification(entry, this);
         }

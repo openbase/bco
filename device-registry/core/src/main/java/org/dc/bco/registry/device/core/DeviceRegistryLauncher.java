@@ -27,6 +27,7 @@ package org.dc.bco.registry.device.core;
  * #L%
  */
 
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -46,6 +47,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.dc.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.dc.jul.storage.registry.jp.JPInitializeDB;
+import org.dc.jul.storage.registry.jp.JPRecoverDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +58,6 @@ import org.slf4j.LoggerFactory;
 public class DeviceRegistryLauncher {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryLauncher.class);
-
-    public static final String APP_NAME = DeviceRegistryLauncher.class.getSimpleName();
 
     private final DeviceRegistryController deviceRegistry;
 
@@ -82,15 +82,17 @@ public class DeviceRegistryLauncher {
     }
 
     public static void main(String args[]) throws Throwable {
-        logger.info("Start " + APP_NAME + "...");
 
         /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
+        JPService.setApplicationName(DeviceRegistry.class);
+
+        logger.info("Start " + JPService.getApplicationName() + "...");
 
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPRecoverDB.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
@@ -124,10 +126,10 @@ public class DeviceRegistryLauncher {
         }
 
         try {
-            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
+            MultiException.checkAndThrow(JPService.getApplicationName() + " started in fallback mode!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-        logger.info(APP_NAME + " successfully started.");
+        logger.info(JPService.getApplicationName() + " successfully started.");
     }
 }

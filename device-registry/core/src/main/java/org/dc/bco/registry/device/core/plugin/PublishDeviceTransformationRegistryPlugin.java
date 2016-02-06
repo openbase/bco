@@ -28,6 +28,7 @@ package org.dc.bco.registry.device.core.plugin;
  */
 import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
 import org.dc.bco.registry.location.lib.LocationRegistry;
+import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -62,7 +63,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(DeviceRegistryLauncher.APP_NAME);
+            this.transformPublisher = transformerFactory.createTransformPublisher(JPService.getApplicationName());
         } catch (Exception ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }

@@ -26,7 +26,6 @@ package org.dc.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
@@ -36,6 +35,9 @@ import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
+import org.dc.jul.storage.registry.jp.JPRecoverDB;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.spatial.PlacementConfigType;
 
@@ -68,7 +70,16 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
 
         // verify if configured location exists.
         if (!locationRegistryRemote.containsLocationConfigById(deviceConfig.getPlacementConfig().getLocationId())) {
-            throw new InvalidStateException("The configured Location[" + deviceConfig.getPlacementConfig().getLocationId() + "] of Device[" + deviceConfig.getId() + "] is unknown!");
+            try {
+                if (!JPService.getProperty(JPRecoverDB.class).getValue()) {
+                    throw new InvalidStateException("The configured Location[" + deviceConfig.getPlacementConfig().getLocationId() + "] of Device[" + deviceConfig.getId() + "] is unknown!");
+                }
+            } catch (JPServiceException ex) {
+                throw new InvalidStateException("The configured Location[" + deviceConfig.getPlacementConfig().getLocationId() + "] of Device[" + deviceConfig.getId() + "] is unknown and can not be recovered!", ex);
+            }
+            // recover device location with root location.
+            deviceConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(deviceConfig.getPlacementConfig()).setLocationId(locationRegistryRemote.getRootLocationConfig().getId()));
+            throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
 
