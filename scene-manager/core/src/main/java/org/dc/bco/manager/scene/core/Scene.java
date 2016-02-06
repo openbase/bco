@@ -14,7 +14,5 @@ public interface Scene extends ScopeProvider, Identifiable<String>, Activatable 
 
     public String getLabel();
 
-    public Location getLocation();
-
     public ServiceFactory getDefaultServiceFactory();
 }
