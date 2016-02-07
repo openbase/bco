@@ -5,11 +5,10 @@
  */
 package org.dc.bco.manager.scene.lib;
 
-import org.dc.jul.iface.Identifiable;
-
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface Scene extends Identifiable<String> {
+public interface SceneManager {
+    
 }

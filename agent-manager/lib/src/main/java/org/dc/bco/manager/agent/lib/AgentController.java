@@ -13,7 +13,8 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public interface AgentController extends Identifiable<String>, Configurable<String, AgentConfig>, Enableable, Agent {
 
