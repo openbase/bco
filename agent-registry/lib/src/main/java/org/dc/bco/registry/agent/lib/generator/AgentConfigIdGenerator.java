@@ -27,10 +27,9 @@ package org.dc.bco.registry.agent.lib.generator;
  * #L%
  */
 
+import java.util.UUID;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.extension.protobuf.IdGenerator;
-import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
@@ -41,19 +40,7 @@ public class AgentConfigIdGenerator implements IdGenerator<String, AgentConfig> 
 
     @Override
     public String generateId(AgentConfig message) throws CouldNotPerformException {
-        try {
-            if (!message.hasLabel()) {
-                throw new InvalidStateException("Field [Label] is missing!");
-            }
-
-            String id;
-
-            id = message.getLabel();
-            return StringProcessor.transformToIdString(id);
-
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
+        return UUID.randomUUID().toString();
     }
 
 }
