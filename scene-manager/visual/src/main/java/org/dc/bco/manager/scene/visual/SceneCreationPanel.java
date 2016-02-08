@@ -79,7 +79,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         for (ActionConfig actionConfig : actionConfigs) {
             boolean newAction = true;
             for (ActionConfig.Builder addedActionConfig : scene.getActionConfigBuilderList()) {
-                if (actionConfig.getUnitId().equals(addedActionConfig.getUnitId())
+                if (actionConfig.getServiceHolder().equals(addedActionConfig.getServiceHolder())
                         && actionConfig.getServiceType() == addedActionConfig.getServiceType()
                         && !actionConfig.getServiceAttribute().equals(addedActionConfig.getServiceAttribute())) {
                     addedActionConfig.setServiceAttribute(actionConfig.getServiceAttribute());

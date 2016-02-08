@@ -33,8 +33,6 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
     private final EnableableEntryRegistrySynchronizer<String, AgentController, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder> registrySynchronizer;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
-
-
     public AgentManagerController() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;

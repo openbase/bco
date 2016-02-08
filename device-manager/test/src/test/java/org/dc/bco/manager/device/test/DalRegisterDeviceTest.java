@@ -61,8 +61,9 @@ public class DalRegisterDeviceTest {
     public void tearDown() {
     }
 
-    @Test
+    @Test (timeout = 10000)
     public void testRegisterDeviceWhileRunning() throws Exception {
+        // TODO mpohling: Remove timeouts
         System.out.println("testRegisterDeviceWhileRunning");
         DeviceManagerLauncher instance = new DeviceManagerLauncher();
         instance.launch();

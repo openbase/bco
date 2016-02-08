@@ -118,7 +118,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
         for (JComponent component : componentList) {
             AbstractServicePanel panel = (AbstractServicePanel) component;
             //TODO: how to get the service attribute
-            actionConfigs.add(ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setUnitId(panel.getUnitId()).setServiceAttribute("").build());
+            actionConfigs.add(ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId()).setServiceAttribute("").build());
         }
         try {
             sceneCreationPanel.updateSceneConfig(actionConfigs);
