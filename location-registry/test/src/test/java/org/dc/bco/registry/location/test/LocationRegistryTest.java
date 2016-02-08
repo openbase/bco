@@ -26,13 +26,13 @@ package org.dc.bco.registry.location.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.io.IOException;
 import org.dc.bco.registry.device.core.DeviceRegistryController;
 import org.dc.bco.registry.location.core.LocationRegistryController;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
+import org.dc.jps.preset.JPDebugMode;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -68,7 +68,6 @@ public class LocationRegistryTest {
     private static LocationRegistryController locationRegistry;
     private static LocationConfigType.LocationConfig.Builder locationConfig;
 
-    private static LocationConfigType.LocationConfig.Builder locationConfigRemote;
     private static LocationRegistryRemote remote;
 
     public LocationRegistryTest() {
@@ -76,7 +75,7 @@ public class LocationRegistryTest {
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, JPServiceException, InterruptedException, CouldNotPerformException {
-//        JPService.registerProperty(JPInitializeDB.class, true);
+        JPService.registerProperty(JPDebugMode.class, true);
 //        JPService.registerProperty(JPLocationRegistryScope.class, new Scope("/test/registry/location"));
 //        JPService.registerProperty(JPDeviceRegistryScope.class, new Scope("/test/registry/device"));
 //        JPService.registerProperty(JPDatabaseDirectory.class, new File("/tmp/" + System.getProperty("user.name") + "/db/"));
@@ -121,8 +120,6 @@ public class LocationRegistryTest {
         locationConfig = LocationConfig.getDefaultInstance().newBuilderForType();
         locationConfig.setId("TestLocationConfigLabel");
         locationConfig.setLabel("TestLocationConfigLabel");
-
-        locationConfigRemote = LocationConfig.getDefaultInstance().newBuilderForType();
 
         remote = new LocationRegistryRemote();
         remote.init();
@@ -190,15 +187,59 @@ public class LocationRegistryTest {
         String label = "Test2Living";
         LocationConfig living = LocationConfig.newBuilder().setLabel(label).build();
         LocationConfig registeredLiving = remote.registerLocationConfig(living);
-        remote.requestStatus();
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getRoot());
         assertEquals("Label has not been set", label, registeredLiving.getLabel());
 
-        LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").addChildId(registeredLiving.getId()).build();
-        LocationConfig registeredHome = remote.registerLocationConfig(home);
+        String rootLocationConfigLabel = "Test3RootLocation";
+        LocationConfig.Builder rootLocationConfigBuilder = LocationConfig.newBuilder();
+        rootLocationConfigBuilder.setLabel(rootLocationConfigLabel);
+        LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build());
+        LocationConfig.Builder registeredLivingBuilder = remote.getLocationConfigById(registeredLiving.getId()).toBuilder();
+        registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
+        remote.updateLocationConfig(registeredLivingBuilder.build());
         remote.requestStatus();
-        assertTrue("The new location isn't registered as a root location.", registeredHome.getRoot());
-        assertFalse("Root hasn't become a child location after setting its parent.", remote.getLocationConfigById(registeredLiving.getId()).getRoot());
+        assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
+
+        LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").build();
+        LocationConfig registeredHome = remote.registerLocationConfig(home);
+        registeredLivingBuilder = remote.getLocationConfigById(registeredRootLocationConfig.getId()).toBuilder();
+        registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredHome.getId());
+        assertEquals("Parent was not updated!", registeredHome.getId(), remote.updateLocationConfig(registeredLivingBuilder.build()).getPlacementConfig().getLocationId());
+    }
+
+    /**
+     * Test if a root location becomes a child after it is set as a child of
+     * root locations.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void testParentIDUpdateConsistency() throws Exception {
+
+        String rootLocationConfigLabel = "Test3RootLocation";
+        LocationConfig.Builder rootLocationConfigBuilder = LocationConfig.newBuilder();
+        rootLocationConfigBuilder.setLabel(rootLocationConfigLabel);
+        LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build());
+
+        String childLocationConfigLabel = "Test3ChildLocation";
+        LocationConfig.Builder childLocationConfigBuilder = LocationConfig.newBuilder();
+        childLocationConfigBuilder.setLabel(childLocationConfigLabel);
+        childLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
+        LocationConfig registeredChildLocationConfig = remote.registerLocationConfig(childLocationConfigBuilder.build());
+
+        String parentLabel = "Test3ParentLocation";
+        LocationConfig.Builder parentLocationConfigBuilder = LocationConfig.newBuilder().setLabel(parentLabel);
+        LocationConfig registeredParentLocationConfig = remote.registerLocationConfig(parentLocationConfigBuilder.build());
+
+        assertEquals("The new location isn't registered as child of Location[" + rootLocationConfigLabel + "]!", registeredRootLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
+
+        LocationConfig.Builder registeredChildLocationConfigBuilder = registeredChildLocationConfig.toBuilder();
+        registeredChildLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredParentLocationConfig.getId());
+        registeredChildLocationConfig = remote.updateLocationConfig(registeredChildLocationConfigBuilder.build());
+
+        assertEquals("The parent location of child was not updated as new placement location id after update.", registeredParentLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
+        remote.requestStatus();
+        assertEquals("The parent location of child was not updated as new placement location id in global registry.", registeredParentLocationConfig.getId(), remote.getLocationConfigsByLabel(childLocationConfigLabel).get(0).getPlacementConfig().getLocationId());
     }
 
     @Test(timeout = 5000)
@@ -235,9 +276,15 @@ public class LocationRegistryTest {
         LocationConfig firstChild = LocationConfig.newBuilder().setLabel(firstChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         remote.registerLocationConfig(firstChild);
 
+        LocationConfig secondChild = LocationConfig.newBuilder().setLabel(SecondChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
+        secondChild = remote.registerLocationConfig(secondChild);
+
         try {
-            LocationConfig secondChild = LocationConfig.newBuilder().setLabel(SecondChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).addChildId(root.getId()).build();
-            secondChild = remote.registerLocationConfig(secondChild);
+            // register loop
+            root = remote.getLocationConfigById(root.getId());
+            LocationConfig.Builder rootBuilder = root.toBuilder();
+            rootBuilder.getPlacementConfigBuilder().setLocationId(secondChild.getId());
+            remote.registerLocationConfig(rootBuilder.build());
             Assert.fail("No exception when registering location with a loop [" + secondChild + "]");
         } catch (Exception ex) {
         }

@@ -75,7 +75,7 @@ public class LocationParentConsistencyHandler extends AbstractProtoBufRegistryCo
 
         // check if parents knows given child.
         IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfig.Builder> parent = registry.get(locationConfig.getPlacementConfig().getLocationId());
-        if (parent != null && !parentHasChild(parent.getMessage(), locationConfig.build())) {
+        if (parent != null && !parentHasChild(parent.getMessage(), locationConfig.build()) && !parent.getMessage().getPlacementConfig().getLocationId().equals(locationConfig.getId())) {
              logger.warn("Parent["+parent.getId()+"] does not know Child["+locationConfig.getId()+"]");
             parent.setMessage(parent.getMessage().toBuilder().addChildId(locationConfig.getId()));
             throw new EntryModification(parent, this);

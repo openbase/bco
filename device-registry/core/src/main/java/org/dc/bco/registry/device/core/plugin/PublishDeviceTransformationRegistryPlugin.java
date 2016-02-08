@@ -149,7 +149,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
                 }
             }
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish device transformation of " + entry + "!", ex), logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish device transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
 

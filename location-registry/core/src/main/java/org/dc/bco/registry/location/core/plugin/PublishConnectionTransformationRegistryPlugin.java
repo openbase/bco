@@ -113,7 +113,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
             }
         } catch (CouldNotPerformException | TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
 

@@ -114,7 +114,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             transformation.setAuthority(LocationRegistryLauncher.APP_NAME);
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (CouldNotPerformException | TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
 

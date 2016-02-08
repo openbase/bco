@@ -67,6 +67,14 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
                 throw new EntryModification(entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
             }
 
+            // check if given child is not parent location otherwise remove child.
+            if (locationConfig.getPlacementConfig().hasLocationId() && locationConfig.getPlacementConfig().getLocationId().equals(childLocationId)) {
+                List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
+                childIds.remove(childLocationId);
+                throw new EntryModification(entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
+            }
+
+
 //            // check if parent id is registered
 //            if (!childLocationConfig.hasPlacementConfig() || locationConfig.getPlacementConfig().hasLocationId()) {
 //                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()))), this);
@@ -76,8 +84,14 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
 
             // check if parent id is valid.
             if (!childLocationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId())) {
-                IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig.getId());
-                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(childLocationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()).build())), this);
+//                IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig.getId());
+//                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(childLocationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()).build())), this);
+
+                // remove child.
+                List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
+                childIds.remove(childLocationId);
+                throw new EntryModification(entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
+
             }
         }
     }

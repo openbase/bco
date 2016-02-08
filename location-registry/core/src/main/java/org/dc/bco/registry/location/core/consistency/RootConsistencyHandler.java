@@ -26,7 +26,8 @@ package org.dc.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import org.dc.bco.registry.location.lib.util.LocationUtils;
+import static org.dc.bco.registry.location.lib.util.LocationUtils.getRootLocation;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
@@ -52,20 +53,39 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
             throw new NotAvailableException("locationconfig.placementconfig");
         }
 
-        // check if root flag is set for child node.
-        if (locationConfig.getPlacementConfig().hasLocationId() && !locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && locationConfig.getRoot()) {
-            entry.setMessage(locationConfig.setRoot(false).build());
-            throw new EntryModification(entry, this);
-        }
-
         // check if root flag is missing for root node.
         if (locationConfig.getPlacementConfig().hasLocationId() && locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && !locationConfig.getRoot()) {
             entry.setMessage(locationConfig.setRoot(true).setPlacementConfig(locationConfig.getPlacementConfig().toBuilder()));
             throw new EntryModification(entry, this);
         }
-    }
 
-    @Override
-    public void reset() {
+        // check if root flag is set for child node.
+        if (locationConfig.getPlacementConfig().hasLocationId() && !locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && locationConfig.getRoot()) {
+            try {
+                // verify that global root node exists which is not this location.
+                LocationConfig globalRootLocation = LocationUtils.getRootLocation(entryMap);
+                if (globalRootLocation.getId().equals(locationConfig.getId())) {
+                    throw new NotAvailableException("valid root node");
+                }
+            } catch (NotAvailableException ex) {
+                // no parent node found or given one is invalid.
+                // setup location parent as new root location.
+                try {
+                    LocationUtils.validateRootLocation(entryMap.getMessage(locationConfig.getPlacementConfig().getLocationId()), entryMap, this);
+                } catch (EntryModification exx) {
+                    // parent updated
+                }
+            }
+
+            // delete invalid root flag for current location.
+            entry.setMessage(locationConfig.setRoot(false).build());
+            throw new EntryModification(entry, this);
+        }
+
+        // check if root field is avaible
+        if (!locationConfig.hasRoot()) {
+            entry.setMessage(locationConfig.setRoot(false));
+            throw new EntryModification(entry, this);
+        }
     }
 }

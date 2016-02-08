@@ -26,7 +26,6 @@ package org.dc.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
@@ -50,17 +49,42 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        loopTest(entry.getMessage(), registry);
+        loopTestBottomUp(entry.getMessage(), registry);
     }
 
-    private void loopTest(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
-        loopTest(locationConfig, registry, new ArrayList<String>());
+    private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
+        loopTestBottomUp(locationConfig, registry, new ArrayList<String>());
     }
-    private void loopTest(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
+
+    private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
+
+        if (!locationConfig.hasPlacementConfig()) {
+            return;
+        }
+
+        if (!locationConfig.getPlacementConfig().hasLocationId() && locationConfig.getPlacementConfig().getLocationId().isEmpty()) {
+            return;
+        }
+
+        markAsProcessed(locationConfig, processedLocations);
+
+        // ignore root notes
+        if (locationConfig.getRoot()) {
+            return;
+        }
+
+        loopTestBottomUp(registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage(), registry, processedLocations);
+    }
+
+    private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
+        loopTestTopDown(locationConfig, registry, new ArrayList<String>());
+    }
+
+    private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
         markAsProcessed(locationConfig, processedLocations);
 
         for (String locationId : locationConfig.getChildIdList()) {
-            loopTest(registry.get(locationId).getMessage(), registry, processedLocations);
+            loopTestTopDown(registry.get(locationId).getMessage(), registry, processedLocations);
         }
     }
 

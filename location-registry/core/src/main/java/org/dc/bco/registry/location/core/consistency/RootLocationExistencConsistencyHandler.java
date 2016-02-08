@@ -23,7 +23,6 @@ package org.dc.bco.registry.location.core.consistency;
  */
 import org.dc.bco.registry.location.lib.util.LocationUtils;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -36,25 +35,20 @@ import rst.spatial.LocationConfigType.LocationConfig;
  *
  * @author mpohling
  */
-public class LocationIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> {
+public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> {
+
+    private LocationConfig rootLocation;
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-
-        LocationConfig.Builder locationConfig = entry.getMessage().toBuilder();
-
-        if (!locationConfig.hasPlacementConfig()) {
-            throw new NotAvailableException("locationconfig.placementconfig");
+        if (rootLocation == null) {
+            rootLocation = LocationUtils.detectRootLocation(entry.getMessage(), entryMap, this);
+            logger.info("current RootLocation[" + rootLocation + "]");
         }
+    }
 
-        // check if location id is setuped.
-        if (!locationConfig.getPlacementConfig().hasLocationId()) {
-
-            // detect root location
-            LocationConfig.Builder setPlacementConfig = locationConfig.setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(LocationUtils.getRootLocation(entryMap).getId()));
-//            LocationConfig.Builder setPlacementConfig = locationConfig.setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(LocationUtils.getRootLocation(locationConfig.build(), entryMap).getId()));
-            entry.setMessage(setPlacementConfig);
-            throw new EntryModification(entry, this);
-        }
+    @Override
+    public void reset() {
+        rootLocation = null;
     }
 }

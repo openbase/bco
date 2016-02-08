@@ -50,6 +50,7 @@ import org.dc.bco.registry.location.core.consistency.LocationScopeConsistencyHan
 import org.dc.bco.registry.location.core.consistency.LocationTransformationFrameConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.LocationUnitIdConsistencyHandler;
 import org.dc.bco.registry.location.core.consistency.RootConsistencyHandler;
+import org.dc.bco.registry.location.core.consistency.RootLocationExistencConsistencyHandler;
 import org.dc.bco.registry.location.core.dbconvert.LocationConfig_0_To_1_DBConverter;
 import org.dc.bco.registry.location.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import org.dc.bco.registry.location.core.plugin.PublishLocationTransformationRegistryPlugin;
@@ -130,13 +131,12 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.registerConsistencyHandler(new LocationChildConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationParentConsistencyHandler());
+            locationConfigRegistry.registerConsistencyHandler(new RootLocationExistencConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
-
             locationConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationConfigRegistry));
-
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
 
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());
