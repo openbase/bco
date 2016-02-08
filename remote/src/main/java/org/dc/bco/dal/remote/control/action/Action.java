@@ -26,11 +26,8 @@ package org.dc.bco.dal.remote.control.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.service.ServiceConfigType;
 
 /**
  *
@@ -38,44 +35,11 @@ import rst.homeautomation.service.ServiceConfigType;
  */
 public class Action implements ActionService {
 
-    public enum ActionState {
-
-        INITIATED,
-        SCHEDULED,
-        INITIALIZING,
-        EXECUTING,
-        FINISHING,
-        FINISHED,
-        ABORTING,
-        ABORTED,
-        REJECTED,
-        FAILED
-    }
-
-    public enum ActionPriority {
-
-        USER_LOW,
-        USER_NORMAL,
-        USER_HIGHT,
-        SYSTEM_LOW,
-        SYSTEM_NORMAL,
-        SYSTEM_HIGH
-    };
-
-    // config
-    private ActionPriority priority;
-    private String origin;
-    private long executionDelay;
-    private long period;
-    private ActionState state;
-
     private ActionConfigType.ActionConfig config;
 
     public Action(final ActionConfigType.ActionConfig config) {
         this.config = config;
     }
-
-
 
     @Override
     public void execute() throws CouldNotPerformException {
@@ -91,5 +55,4 @@ public class Action implements ActionService {
 //    public ServiceConfigType.ServiceConfig getServiceConfig() {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
 }
