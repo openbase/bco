@@ -57,7 +57,6 @@ public class LauncherTest {
      */
     @Test
     public void testShutdown() throws InitializationException, org.dc.jul.exception.InstantiationException, CouldNotPerformException, Exception {
-        System.out.println("deactivate");
         DeviceManagerLauncher instance = new DeviceManagerLauncher();
         try {
             instance.launch();

@@ -7,10 +7,8 @@ package org.dc.bco.manager.agent.core;
 
 import org.dc.bco.manager.agent.lib.AgentController;
 import org.dc.bco.manager.agent.lib.AgentFactory;
-import java.util.logging.Level;
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.processing.StringProcessor;

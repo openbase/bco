@@ -14,21 +14,22 @@ import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
+import org.dc.jul.extension.rsb.com.AbstractEnableableConfigurableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
-import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentDataType;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
+import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public abstract class AbstractAgent extends RSBCommunicationService<AgentDataType.AgentData, AgentDataType.AgentData.Builder> implements AgentController {
+public abstract class AbstractAgent extends AbstractEnableableConfigurableController<AgentDataType.AgentData, AgentDataType.AgentData.Builder, AgentConfig> implements AgentController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
@@ -36,8 +37,7 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
     }
 
     protected boolean executing;
-    private boolean enabled;
-    protected AgentConfig config;
+
     private final boolean autostart;
 
     public AbstractAgent(boolean autostart) throws InstantiationException {
@@ -91,46 +91,22 @@ public abstract class AbstractAgent extends RSBCommunicationService<AgentDataTyp
         }
     }
 
-
     protected abstract void execute() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void stop() throws CouldNotPerformException, InterruptedException;
 
     @Override
-    public String getId() throws NotAvailableException {
-        return config.getId();
-    }
-
-    @Override
-    public AgentConfig getConfig() throws NotAvailableException {
-        return config;
-    }
-
-    @Override
-    public AgentConfig updateConfig(final AgentConfig config) throws CouldNotPerformException {
-        this.config = config;
-        return config;
-    }
-
-    @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
-        enabled = true;
-        super.activate();
+        super.enable();
         if (autostart) {
-            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+            setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build());
         }
     }
 
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
-        enabled = false;
         executing = false;
-        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
-        super.deactivate();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
+        setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build());
+        super.disable();
     }
 }
