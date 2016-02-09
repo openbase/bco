@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -59,9 +54,6 @@ import rst.rsb.ScopeType;
  * @param <MB> Message related builder.
  */
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractConfigurableController<M, MB, UnitConfig> implements Unit, ServiceFactoryProvider {
-
-    public final static String TYPE_FILED_ID = "id";
-    public final static String TYPE_FILED_LABEL = "label";
 
     private final UnitHost unitHost;
     private final List<Service> serviceList;
@@ -246,6 +238,10 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + config.getType() + "[" + config.getLabel() + "]]";
+        try {
+            return getClass().getSimpleName() + "[" + getConfig().getType() + "[" + getConfig().getLabel() + "]]";
+        } catch (NotAvailableException e) {
+            return getClass().getSimpleName() + "[?]";
+        }
     }
 }
