@@ -244,7 +244,7 @@ public class AmbientColorAgent extends AbstractAgent {
                     throw new InvalidStateException("No service remote available!");
                 }
                 final long delay = holdingTime / colorRemotes.size();
-                while (executing && Thread.interrupted()) {
+                while (isExecuting() && Thread.interrupted()) {
                     for (ColorServiceRemote colorRemote : colorRemotes) {
                         try {
                             colorRemote.setColor(choseDifferentElem(colors, colorRemote.getColor()));
@@ -270,7 +270,7 @@ public class AmbientColorAgent extends AbstractAgent {
                     throw new InvalidStateException("No service remote available!");
                 }
 
-                while (executing && Thread.interrupted()) {
+                while (isExecuting() && Thread.interrupted()) {
                     try {
                         choseDifferentElem(colorRemotes, remote).setColor(choseDifferentElem(colors, remote.getColor()));
                     } catch (CouldNotPerformException ex) {

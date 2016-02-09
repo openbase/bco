@@ -18,18 +18,6 @@ public class LocationController extends AbstractUnitCollectionController<Locatio
 
     public LocationController(final LocationConfig config) throws InstantiationException {
         super(LocationData.newBuilder());
-        this.config = config;
-    }
-
-    @Override
-    public LocationConfig updateConfig(final LocationConfig config) {
-        this.config = config;
-        return config;
-    }
-
-    @Override
-    public String getLabel() throws NotAvailableException {
-        return config.getLabel();
     }
 
     @Override
@@ -45,5 +33,10 @@ public class LocationController extends AbstractUnitCollectionController<Locatio
     @Override
     public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getLabel() throws NotAvailableException {
+        return getConfig().getLabel();
     }
 }

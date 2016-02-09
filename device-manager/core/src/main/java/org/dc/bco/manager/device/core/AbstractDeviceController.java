@@ -7,8 +7,6 @@ package org.dc.bco.manager.device.core;
 
 import com.google.protobuf.GeneratedMessage;
 import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
-import static org.dc.bco.dal.lib.layer.unit.AbstractUnitController.TYPE_FILED_ID;
-import static org.dc.bco.dal.lib.layer.unit.AbstractUnitController.TYPE_FILED_LABEL;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.bco.manager.device.lib.DeviceController;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -26,8 +24,6 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  * @param <MB>
  */
 public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitCollectionController<M, MB, DeviceConfig> implements DeviceController {
-
-    public final static String DEVICE_TYPE_FILED_CONFIG = "config";
 
     public AbstractDeviceController(final MB builder) throws InstantiationException, CouldNotTransformException {
         super(builder);
@@ -83,13 +79,6 @@ public abstract class AbstractDeviceController<M extends GeneratedMessage, MB ex
 ////        setField(DEVICE_TYPE_FILED_CONFIG, config);
 //        return super.updateConfig(config);
 //    }
-
-    @Override
-    public DeviceConfig updateConfig(final DeviceConfig config) throws CouldNotPerformException {
-        setField(TYPE_FILED_ID, config.getId());
-        setField(TYPE_FILED_LABEL, config.getLabel());
-        return super.updateConfig(config);
-    }
 
     @Override
     public final String getId() throws NotAvailableException {
