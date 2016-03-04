@@ -15,12 +15,12 @@ package org.dc.bco.dal.remote.control.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -89,6 +89,8 @@ public class Action implements ActionService, Initializable<ActionConfig> {
 
                 @Override
                 public Void call() throws Exception {
+
+                    // Initiate
                     updateActionState(ActionState.State.INITIATING);
                     try {
                         acquireService();
@@ -96,6 +98,8 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                         ExceptionPrinter.printHistory(e, logger);
                         updateActionState(ActionState.State.REJECTED);
                     }
+
+                    // Execute
                     updateActionState(ActionState.State.EXECUTING);
                     try {
                         serviceRemote.applyAction(getConfig());
@@ -122,13 +126,13 @@ public class Action implements ActionService, Initializable<ActionConfig> {
 
     private void acquireService() throws CouldNotPerformException {
         //TODO
-        logger.info(this + " acquire service...");
+        logger.info("Acquire service for execution of "+this);
     }
 
     private void releaseService() {
         try {
             // TODO
-            logger.info(this + " release service...");
+            logger.info("Release acquired services of "+ this);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("FatalExecutionError: Could not release service!", ex), logger);
         }
@@ -156,7 +160,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
 
     private void updateActionState(ActionState.State state) {
         config.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
-        logger.info("Stateupdate: " + this);
+        logger.info("Stateupdate["+state.name()+"] of " + this);
     }
 
     @Override
