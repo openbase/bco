@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.scene.core;
 
 /*
@@ -28,11 +23,7 @@ package org.dc.bco.manager.scene.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.FutureTask;
 import org.dc.bco.dal.remote.control.action.Action;
-import org.dc.bco.dal.remote.service.AbstractServiceRemote;
-import org.dc.bco.dal.remote.service.ServiceRemoteFactory;
-import org.dc.bco.dal.remote.service.ServiceRemoteFactoryImpl;
 import org.dc.bco.dal.remote.unit.ButtonRemote;
 import org.dc.bco.manager.scene.lib.Scene;
 import org.dc.bco.manager.scene.lib.SceneController;
@@ -72,14 +63,14 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     private final List<ButtonRemote> buttonRemoteList;
     private final List<Action> actionList;
     private final Observer<ButtonType.Button> buttonObserver;
-    
+
     private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.dc.jul.exception.InstantiationException {
         super(SceneData.newBuilder(), false);
         this.buttonRemoteList = new ArrayList<>();
         this.actionList = new ArrayList<>();
-        
+
         this.buttonObserver = new Observer<ButtonType.Button>() {
 
             @Override
@@ -98,7 +89,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             ButtonRemote buttonRemote;
             try {
                 for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(getConfig().getLabel())) {
-                    //TODO mpohling: implement deviceregistry method get unit by label and type.
+                    //TODO implement deviceregistry method get unit by label and type.
                     if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
                         continue;
                     }
@@ -107,7 +98,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                         buttonRemote.init(unitConfig);
                         buttonRemoteList.add(buttonRemote);
                     } catch (InitializationException ex) {
-
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button["+unitConfig.getLabel()+"]!"), logger);
                     }
                 }
             } catch (CouldNotPerformException ex) {
@@ -164,7 +155,12 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             public void run() {
                 try {
                     for (Action action : actionList) {
-                        action.waitForFinalization();
+                        try {
+                            action.waitForFinalization();
+                        } catch (InterruptedException ex) {
+                            ExceptionPrinter.printHistory(ex, logger);
+                            break;
+                        }
                     }
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 } catch (CouldNotPerformException ex) {
@@ -172,7 +168,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                 }
             }
         };
-        thread.run();
+        thread.start();
     }
 
     @Override
