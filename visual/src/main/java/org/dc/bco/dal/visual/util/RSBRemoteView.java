@@ -26,7 +26,6 @@ package org.dc.bco.dal.visual.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
 import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -94,6 +93,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
 //    public M getData() throws CouldNotPerformException {
 //        return getRemoteService().getData();
 //    }
+
     public void setUnitRemote(final UnitTemplateType.UnitTemplate.UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitType + ".");
         try {
@@ -121,7 +121,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
     }
 
     private Class<? extends RS> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
-        String remoteClassName = AbstractIdentifiableRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+        String remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
             return (Class<? extends RS>) getClass().getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {
