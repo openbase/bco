@@ -29,6 +29,8 @@ package org.dc.bco.dal.remote.service;
 
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.VerificationFailedException;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.state.StandbyStateType;
 
@@ -52,6 +54,18 @@ public class StandbyServiceRemote extends AbstractServiceRemote<StandbyService> 
     @Override
     public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
         throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (!actionConfig.getServiceType().equals(getServiceType())) {
+                throw new VerificationFailedException("Service type is not compatible to given action config!");
+            }
+            setStandby(StandbyStateType.StandbyState.State.valueOf(actionConfig.getServiceAttribute()));
+        } catch (NumberFormatException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
     }
 
 }

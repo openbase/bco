@@ -26,9 +26,11 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.VerificationFailedException;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
 import rst.vision.HSVColorType;
 
@@ -52,5 +54,17 @@ public class ColorServiceRemote extends AbstractServiceRemote<ColorService> impl
     @Override
     public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
         throw new CouldNotPerformException("Not supported yet.");
+    }
+
+    @Override
+    public void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (!actionConfig.getServiceType().equals(getServiceType())) {
+                throw new VerificationFailedException("Service type is not compatible to given action config!");
+            }
+            setColor(HSVColorType.HSVColor.parseFrom(actionConfig.getServiceAttributeBytes()));
+        } catch (InvalidProtocolBufferException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
     }
 }

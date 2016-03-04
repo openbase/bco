@@ -27,6 +27,9 @@ package org.dc.bco.dal.remote.control.action;
  * #L%
  */
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import org.dc.bco.dal.remote.service.AbstractServiceRemote;
@@ -36,10 +39,16 @@ import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.iface.Initializable;
 import org.dc.jul.schedule.SyncObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
+import rst.homeautomation.control.action.ActionStateType;
+import rst.homeautomation.control.action.ActionStateType.ActionState;
 
 /**
  *
@@ -47,10 +56,15 @@ import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
  */
 public class Action implements ActionService, Initializable<ActionConfig> {
 
-    private ActionConfig config;
+    private static final Logger logger = LoggerFactory.getLogger(Action.class);
+
+    private ActionConfig.Builder config;
     private ServiceRemoteFactory serviceRemoteFactory;
     private DeviceRegistry deviceRegistry;
     private AbstractServiceRemote serviceRemote;
+    private Future executionFuture;
+    private final SyncObject executionSync = new SyncObject(Action.class);
+    private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public Action() {
     }
@@ -58,7 +72,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     @Override
     public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
         try {
-            this.config = config;
+            this.config = config.toBuilder();
             this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
             this.serviceRemote = serviceRemoteFactory.createAndInitServiceRemote(config.getServiceType(), deviceRegistry.getUnitConfigById(config.getServiceHolder()));
@@ -68,27 +82,88 @@ public class Action implements ActionService, Initializable<ActionConfig> {
         }
     }
 
-    private Future executionFuture;
-    private final SyncObject executionSync = new SyncObject(Action.class);
-    
     @Override
     public void execute() throws CouldNotPerformException {
-        executionFuture = new FutureTask(new Callable<Void>() {
+        synchronized (executionSync) {
+            FutureTask task = new FutureTask(new Callable<Void>() {
 
-            @Override
-            public Void call() throws Exception {
-//                serviceRemote.applyAction(Action.this);
-                return null;
-            }
-        });
-        
+                @Override
+                public Void call() throws Exception {
+                    updateActionState(ActionState.State.INITIATING);
+                    try {
+                        acquireService();
+                    } catch (CouldNotPerformException e) {
+                        ExceptionPrinter.printHistory(e, logger);
+                        updateActionState(ActionState.State.REJECTED);
+                    }
+                    updateActionState(ActionState.State.EXECUTING);
+                    try {
+                        serviceRemote.applyAction(getConfig());
+                        updateActionState(ActionState.State.FINISHING);
+                        releaseService();
+                        updateActionState(ActionState.State.FINISHED);
+                    } catch (InterruptedException ex) {
+                        updateActionState(ActionState.State.ABORTING);
+                        releaseService();
+                        updateActionState(ActionState.State.ABORTED);
+                        throw ex;
+                    } catch (CouldNotPerformException | NullPointerException ex) {
+                        updateActionState(ActionState.State.EXECUTION_FAILED);
+                        releaseService();
+                        throw ex;
+                    }
+
+                    return null;
+                }
+            });
+            executionFuture = executorService.submit(task);
+        }
     }
 
-    public void waitForFinalization() {
+    private void acquireService() throws CouldNotPerformException {
         //TODO
+        logger.info(this + " acquire service...");
+    }
+
+    private void releaseService() {
+        try {
+            // TODO
+            logger.info(this + " release service...");
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("FatalExecutionError: Could not release service!", ex), logger);
+        }
+    }
+
+    public void waitForFinalization() throws CouldNotPerformException, InterruptedException {
+        Future currentExecution;
+        synchronized (executionSync) {
+            if (executionFuture == null) {
+                throw new InvalidStateException("No execution running!");
+            }
+            currentExecution = executionFuture;
+        }
+
+        try {
+            currentExecution.get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException("Could not wait for execution!", ex);
+        }
     }
 
     public ActionConfig getConfig() {
-        return config;
+        return config.build();
+    }
+
+    private void updateActionState(ActionState.State state) {
+        config.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
+        logger.info("Stateupdate: " + this);
+    }
+
+    @Override
+    public String toString() {
+        if (config == null) {
+            return getClass().getSimpleName() + "[?]";
+        }
+        return getClass().getSimpleName() + "[" + config.getOriginId() + "|" + config.getServiceHolder() + "|" + config.getServiceType() + "|" + config.getServiceAttribute() + "|" + config.getServiceHolder() + "]";
     }
 }
