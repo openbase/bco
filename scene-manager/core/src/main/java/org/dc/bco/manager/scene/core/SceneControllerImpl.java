@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.scene.core;
 
 /*
@@ -15,12 +10,12 @@ package org.dc.bco.manager.scene.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,12 +23,9 @@ package org.dc.bco.manager.scene.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.FutureTask;
 import org.dc.bco.dal.remote.control.action.Action;
-import org.dc.bco.dal.remote.service.AbstractServiceRemote;
-import org.dc.bco.dal.remote.service.ServiceRemoteFactory;
-import org.dc.bco.dal.remote.service.ServiceRemoteFactoryImpl;
 import org.dc.bco.dal.remote.unit.ButtonRemote;
+import org.dc.bco.dal.remote.unit.PowerPlugRemote;
 import org.dc.bco.manager.scene.lib.Scene;
 import org.dc.bco.manager.scene.lib.SceneController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
@@ -54,7 +46,9 @@ import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
+import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.unit.ButtonType;
+import rst.homeautomation.unit.PowerPlugType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
 
@@ -72,14 +66,14 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     private final List<ButtonRemote> buttonRemoteList;
     private final List<Action> actionList;
     private final Observer<ButtonType.Button> buttonObserver;
-    
+
     private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.dc.jul.exception.InstantiationException {
         super(SceneData.newBuilder(), false);
         this.buttonRemoteList = new ArrayList<>();
         this.actionList = new ArrayList<>();
-        
+
         this.buttonObserver = new Observer<ButtonType.Button>() {
 
             @Override
@@ -94,11 +88,12 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
+            logger.info("post init " + getConfig().getLabel());
             this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
             ButtonRemote buttonRemote;
             try {
                 for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(getConfig().getLabel())) {
-                    //TODO mpohling: implement deviceregistry method get unit by label and type.
+                    //TODO implement deviceregistry method get unit by label and type.
                     if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
                         continue;
                     }
@@ -107,7 +102,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                         buttonRemote.init(unitConfig);
                         buttonRemoteList.add(buttonRemote);
                     } catch (InitializationException ex) {
-
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!"), logger);
                     }
                 }
             } catch (CouldNotPerformException ex) {
@@ -120,6 +115,22 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                 action.init(actionConfig);
                 actionList.add(action);
             }
+
+            if (getConfig().getLabel().equals("Test3")) {
+                PowerPlugRemote testplug = new PowerPlugRemote();
+                testplug.init("/home/control/powerplug/a10c1");
+                testplug.activate();
+                testplug.addObserver(new Observer<PowerPlugType.PowerPlug>() {
+
+                    @Override
+                    public void update(Observable<PowerPlugType.PowerPlug> source, PowerPlugType.PowerPlug data) throws Exception {
+                        if(data.getPowerState().getValue().equals(PowerStateType.PowerState.State.ON)) {
+                            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+                        }
+                    }
+                });
+            }
+
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -129,6 +140,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
     @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
+        logger.info("enable " + getConfig().getLabel());
         super.enable();
         for (ButtonRemote button : buttonRemoteList) {
             button.activate();
@@ -138,6 +150,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
+        logger.info("disable " + getConfig().getLabel());
         for (ButtonRemote button : buttonRemoteList) {
             button.removeObserver(buttonObserver);
             button.deactivate();
@@ -164,7 +177,12 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             public void run() {
                 try {
                     for (Action action : actionList) {
-                        action.waitForFinalization();
+                        try {
+                            action.waitForFinalization();
+                        } catch (InterruptedException ex) {
+                            ExceptionPrinter.printHistory(ex, logger);
+                            break;
+                        }
                     }
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 } catch (CouldNotPerformException ex) {
@@ -172,7 +190,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                 }
             }
         };
-        thread.run();
+        thread.start();
     }
 
     @Override

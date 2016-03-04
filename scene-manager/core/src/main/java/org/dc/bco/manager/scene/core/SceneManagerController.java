@@ -26,7 +26,6 @@ package org.dc.bco.manager.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.scene.lib.SceneController;
 import org.dc.bco.manager.scene.lib.SceneFactory;
 import org.dc.bco.manager.scene.lib.SceneManager;
@@ -40,6 +39,7 @@ import org.dc.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.state.EnablingStateType;
 
 /**
  *
@@ -66,8 +66,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
 
                 @Override
                 public boolean enablingCondition(SceneConfig config) {
-                    //TODO: can be implemented as soon as the scene config gets a enablable state
-                    return true;
+                    return config.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
                 }
             };
         } catch (CouldNotPerformException ex) {
@@ -86,14 +85,15 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
         try {
             this.sceneRegistryRemote.init();
             this.sceneRegistryRemote.activate();
-//            this.registrySynchronizer.init();
+            this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     public void shutdown() {
-        this.sceneRegistryRemote.shutdown();
+        sceneRegistryRemote.shutdown();
+        registrySynchronizer.shutdown();
         instance = null;
     }
 
