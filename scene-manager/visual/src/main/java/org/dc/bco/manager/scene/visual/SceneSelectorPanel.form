@@ -264,6 +264,9 @@
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="unitConfigComboBoxActionPerformed"/>
                   </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="SceneSelectorPanel_unitConfigComboBox"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JComboBox" name="selectedServiceTypeComboBox">
                   <Properties>

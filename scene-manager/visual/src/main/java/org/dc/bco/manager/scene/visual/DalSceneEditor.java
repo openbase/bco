@@ -26,24 +26,39 @@ package org.dc.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
+import java.awt.Component;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.dc.bco.dal.visual.unit.GenericUnitPanel;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import org.dc.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.control.action.ActionAuthorityType.ActionAuthority;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
+import rst.homeautomation.control.action.ActionPriorityType.ActionPriority;
+import rst.homeautomation.state.PowerStateType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public class DalSceneEditor extends javax.swing.JFrame {
-
+    
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(DalSceneEditor.class);
 
     /**
@@ -52,12 +67,19 @@ public class DalSceneEditor extends javax.swing.JFrame {
      * @throws org.dc.jul.exception.InstantiationException
      */
     public DalSceneEditor() throws org.dc.jul.exception.InstantiationException {
+        
         try {
             initComponents();
-            genericUnitPanel.setAutoRemove(false);
+            sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
+                
+                @Override
+                public void update(Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
+                    genericUnitCollectionPanel1.add(data.getConfig(), data.getServiceType());
+                }
+            });
             sceneCreationPanel.init();
             Executors.newSingleThreadExecutor().execute(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     try {
@@ -81,13 +103,16 @@ public class DalSceneEditor extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
         sceneCreationPanel = new org.dc.bco.manager.scene.visual.SceneCreationPanel();
         sceneSelectorPanel = new org.dc.bco.manager.scene.visual.SceneSelectorPanel();
-        genericUnitPanel = new org.dc.bco.dal.visual.unit.GenericUnitPanel();
+        genericUnitCollectionPanel1 = new org.dc.bco.dal.visual.unit.GenericUnitCollectionPanel();
         saveButton = new javax.swing.JButton();
         statusPanel1 = new org.dc.bco.dal.visual.util.StatusPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Scene"));
 
         saveButton.setText("Save");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -96,38 +121,52 @@ public class DalSceneEditor extends javax.swing.JFrame {
             }
         });
 
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sceneCreationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(sceneSelectorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(genericUnitCollectionPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 103, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(statusPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(saveButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(sceneCreationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(sceneSelectorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(genericUnitCollectionPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(saveButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(statusPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(genericUnitPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sceneCreationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sceneSelectorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(statusPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(saveButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(sceneCreationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sceneSelectorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(genericUnitPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(saveButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -135,12 +174,52 @@ public class DalSceneEditor extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        List<JComponent> componentList = genericUnitPanel.getComponentList();
+        Collection<GenericUnitPanel> unitPanelList = genericUnitCollectionPanel1.getUnitPanelList();
         List<ActionConfig> actionConfigs = new ArrayList<>();
-        for (JComponent component : componentList) {
-            AbstractServicePanel panel = (AbstractServicePanel) component;
-            //TODO: how to get the service attribute
-            actionConfigs.add(ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId()).setServiceAttribute("").build());
+        for (GenericUnitPanel unitPanel : unitPanelList) {
+            List<JComponent> componentList = unitPanel.getComponentList();
+            for (JComponent component : componentList) {
+                AbstractServicePanel panel = null;
+                for (Component com : component.getComponents()) {
+                    if (com instanceof AbstractServicePanel) {
+                        panel = (AbstractServicePanel) com;
+                    }
+                }
+                if (panel == null) {
+                    logger.warn("Panel without service panel?");
+                    continue;
+                }
+                Object value = null;
+                try {
+                    String methodName = ("get" + StringProcessor.transformUpperCaseToCamelCase(panel.getServiceType().toString())).replaceAll("Service", "");
+                    logger.info("Testing method name [" + methodName + "] with class [" + panel.getService().getClass().getSimpleName() + "]");
+                    Method method = panel.getService().getClass().getMethod(methodName);
+                    value = method.invoke(panel.getService());
+                } catch (NotAvailableException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    Logger.getLogger(DalSceneEditor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (value == null) {
+                    logger.warn("Value null for unit service [" + panel.getUnitId() + " " + panel.getServiceType() + "] therefore continue!");
+                    continue;
+                }
+                logger.info("Got value [" + value + "]");
+                ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
+                if (value instanceof Message) {
+//                    if (((Message) value).getDescriptorForType()) {
+//                        logger.info("EnumValueDescriptor value received [" + ((Descriptors.EnumValueDescriptor) value).getName() + "] string [" + value.toString() + "]!");
+//                    }
+//                    PowerStateType.PowerState.State
+//                    logger.info("Message value with type [" + value.getClass().getSimpleName() + "]");
+                    actionConfig.setServiceAttributeBytes(((Message) value).toByteString());
+                } else {
+                    if (value instanceof Enum) {
+                        logger.info("Enum value received [" + ((Enum) value).name() + "] string [" + value.toString() + "]!");
+                    }
+                    actionConfig.setServiceAttribute(value.toString());
+                }
+                actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
+                actionConfigs.add(actionConfig.build());
+            }
         }
         try {
             sceneCreationPanel.updateSceneConfig(actionConfigs);
@@ -190,7 +269,8 @@ public class DalSceneEditor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.dc.bco.dal.visual.unit.GenericUnitPanel genericUnitPanel;
+    private org.dc.bco.dal.visual.unit.GenericUnitCollectionPanel genericUnitCollectionPanel1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton saveButton;
     private org.dc.bco.manager.scene.visual.SceneCreationPanel sceneCreationPanel;
     private org.dc.bco.manager.scene.visual.SceneSelectorPanel sceneSelectorPanel;
