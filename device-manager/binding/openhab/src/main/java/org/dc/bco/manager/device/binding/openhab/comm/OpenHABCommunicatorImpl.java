@@ -15,12 +15,12 @@ package org.dc.bco.manager.device.binding.openhab.comm;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -71,15 +71,15 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
     public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
     public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
-    public static final Scope SCOPE_DAL = new Scope("/openhab/in");
-    public static final Scope SCOPE_OPENHAB = new Scope("/openhab/out");
+    public static final Scope SCOPE_OPENHAB_IN = new Scope("/openhab/in");
+    public static final Scope SCOPE_OPENHAB_OUT = new Scope("/openhab/out");
 
     private static final Logger logger = LoggerFactory.getLogger(OpenHABCommunicatorImpl.class);
 
     private OpenHABCommandExecutor commandExecutor;
 
-    private RSBRemoteService<RSBBinding> openhabRemoteService;
-    private RSBCommunicationService<DALBinding, DALBinding.Builder> dalCommunicationService;
+    private RSBRemoteService<RSBBinding> openhabCommandExecutionRemote;
+    private RSBCommunicationService<DALBinding, DALBinding.Builder> openhabItemUpdateListener;
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(OpenhabCommandType.OpenhabCommand.getDefaultInstance()));
@@ -100,7 +100,7 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
         try {
             this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerController.getDeviceManager().getUnitControllerRegistry());
 
-            openhabRemoteService = new RSBRemoteService<RSBBinding>() {
+            openhabCommandExecutionRemote = new RSBRemoteService<RSBBinding>() {
 
                 @Override
                 public void notifyUpdated(final RSBBinding data) {
@@ -108,15 +108,15 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
                 }
             };
 
-            dalCommunicationService = new RSBCommunicationService<DALBinding, DALBinding.Builder>(DALBinding.newBuilder()) {
+            openhabItemUpdateListener = new RSBCommunicationService<DALBinding, DALBinding.Builder>(DALBinding.newBuilder()) {
 
                 @Override
                 public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
                     OpenHABCommunicatorImpl.this.registerMethods(server);
                 }
             };
-            openhabRemoteService.init(SCOPE_OPENHAB);
-            dalCommunicationService.init(SCOPE_DAL);
+            openhabCommandExecutionRemote.init(SCOPE_OPENHAB_IN);
+            openhabItemUpdateListener.init(SCOPE_OPENHAB_OUT);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -133,10 +133,10 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
             }
 
             // Init Openhab connection
-            openhabRemoteService.activate();
-            dalCommunicationService.activate();
+            openhabCommandExecutionRemote.activate();
+            openhabItemUpdateListener.activate();
 
-            try (ClosableDataBuilder<DALBinding.Builder> dataBuilder = dalCommunicationService.getDataBuilder(this)) {
+            try (ClosableDataBuilder<DALBinding.Builder> dataBuilder = openhabItemUpdateListener.getDataBuilder(this)) {
                 dataBuilder.getInternalBuilder().setState(ActiveDeactiveType.ActiveDeactive.newBuilder().setState(ActiveDeactiveType.ActiveDeactive.ActiveDeactiveState.ACTIVE));
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not setup dalCommunicationService as active.", ex);
@@ -211,11 +211,11 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
             }
 
-            if (!openhabRemoteService.isConnected()) {
+            if (!openhabCommandExecutionRemote.isConnected()) {
                 throw new InvalidStateException("Dal openhab binding could not reach openhab server! Please check if openhab is still running!");
             }
 
-            openhabRemoteService.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
+            openhabCommandExecutionRemote.callMethod(RPC_METHODE_EXECUTE_COMMAND, command);
             return null; // TODO: mpohling implement future handling.
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not execute " + command + "!", ex);
@@ -223,8 +223,8 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
     }
 
     public void shutdown() throws InterruptedException {
-        openhabRemoteService.shutdown();
-        dalCommunicationService.shutdown();
+        openhabCommandExecutionRemote.shutdown();
+        openhabItemUpdateListener.shutdown();
     }
 
     @Override
