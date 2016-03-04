@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.remote.control.action.Action;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -42,6 +41,7 @@ import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.iface.Activatable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -157,6 +157,12 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     public Collection<S> getServices() {
         return Collections.unmodifiableCollection(serviceMap.values());
     }
+
+    public ServiceType getServiceType() {
+        return serviceType;
+    }
+
+    public abstract void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException;
 
 //    @Override
 //    public org.dc.bco.dal.lib.layer.service.ServiceType getServiceType() {

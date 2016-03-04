@@ -29,6 +29,8 @@ package org.dc.bco.dal.remote.service;
 
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.VerificationFailedException;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -64,5 +66,17 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerService> impl
             }
         }
         return PowerStateType.PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+    }
+
+    @Override
+    public void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (!actionConfig.getServiceType().equals(getServiceType())) {
+                throw new VerificationFailedException("Service type is not compatible to given action config!");
+            }
+            setPower(PowerStateType.PowerState.State.valueOf(actionConfig.getServiceAttribute()));
+        } catch (NumberFormatException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
     }
 }
