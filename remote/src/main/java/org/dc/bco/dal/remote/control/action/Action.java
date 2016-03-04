@@ -26,33 +26,69 @@ package org.dc.bco.dal.remote.control.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import org.dc.bco.dal.remote.service.AbstractServiceRemote;
+import org.dc.bco.dal.remote.service.ServiceRemoteFactory;
+import org.dc.bco.dal.remote.service.ServiceRemoteFactoryImpl;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.iface.Initializable;
+import org.dc.jul.schedule.SyncObject;
 import rst.homeautomation.control.action.ActionConfigType;
+import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 
 /**
  *
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class Action implements ActionService {
+public class Action implements ActionService, Initializable<ActionConfig> {
 
-    private ActionConfigType.ActionConfig config;
+    private ActionConfig config;
+    private ServiceRemoteFactory serviceRemoteFactory;
+    private DeviceRegistry deviceRegistry;
+    private AbstractServiceRemote serviceRemote;
 
-    public Action(final ActionConfigType.ActionConfig config) {
-        this.config = config;
+    public Action() {
     }
 
     @Override
-    public void execute() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
+        try {
+            this.config = config;
+            this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+            this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
+            this.serviceRemote = serviceRemoteFactory.createAndInitServiceRemote(config.getServiceType(), deviceRegistry.getUnitConfigById(config.getServiceHolder()));
+            serviceRemote.activate();
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
-//    @Override
-//    public ServiceType getServiceType() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
-//
-//    @Override
-//    public ServiceConfigType.ServiceConfig getServiceConfig() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
+    private Future executionFuture;
+    private final SyncObject executionSync = new SyncObject(Action.class);
+    
+    @Override
+    public void execute() throws CouldNotPerformException {
+        executionFuture = new FutureTask(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+//                serviceRemote.applyAction(Action.this);
+                return null;
+            }
+        });
+        
+    }
+
+    public void waitForFinalization() {
+        //TODO
+    }
+
+    public ActionConfig getConfig() {
+        return config;
+    }
 }
