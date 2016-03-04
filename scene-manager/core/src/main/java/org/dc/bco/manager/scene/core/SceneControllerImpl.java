@@ -26,18 +26,37 @@ package org.dc.bco.manager.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.FutureTask;
+import org.dc.bco.dal.remote.control.action.Action;
+import org.dc.bco.dal.remote.service.AbstractServiceRemote;
+import org.dc.bco.dal.remote.service.ServiceRemoteFactory;
+import org.dc.bco.dal.remote.service.ServiceRemoteFactoryImpl;
+import org.dc.bco.dal.remote.unit.ButtonRemote;
 import org.dc.bco.manager.scene.lib.Scene;
 import org.dc.bco.manager.scene.lib.SceneController;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.com.AbstractExecutableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType;
+import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.state.ButtonStateType.ButtonState;
+import rst.homeautomation.unit.ButtonType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
@@ -50,8 +69,80 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationStateType.ActivationState.getDefaultInstance()));
     }
 
+    private final List<ButtonRemote> buttonRemoteList;
+    private final List<Action> actionList;
+    private final Observer<ButtonType.Button> buttonObserver;
+    
+    private DeviceRegistry deviceRegistry;
+
     public SceneControllerImpl() throws org.dc.jul.exception.InstantiationException {
         super(SceneData.newBuilder(), false);
+        this.buttonRemoteList = new ArrayList<>();
+        this.actionList = new ArrayList<>();
+        
+        this.buttonObserver = new Observer<ButtonType.Button>() {
+
+            @Override
+            public void update(Observable<ButtonType.Button> source, ButtonType.Button data) throws Exception {
+                if (data.getButtonState().getValue().equals(ButtonState.State.CLICKED)) {
+                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+                }
+            }
+        };
+    }
+
+    @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        try {
+            this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+            ButtonRemote buttonRemote;
+            try {
+                for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(getConfig().getLabel())) {
+                    //TODO mpohling: implement deviceregistry method get unit by label and type.
+                    if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
+                        continue;
+                    }
+                    try {
+                        buttonRemote = new ButtonRemote();
+                        buttonRemote.init(unitConfig);
+                        buttonRemoteList.add(buttonRemote);
+                    } catch (InitializationException ex) {
+
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
+            }
+
+            Action action;
+            for (ActionConfig actionConfig : getConfig().getActionConfigList()) {
+                action = new Action();
+                action.init(actionConfig);
+                actionList.add(action);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+
+        super.postInit();
+    }
+
+    @Override
+    public void enable() throws CouldNotPerformException, InterruptedException {
+        super.enable();
+        for (ButtonRemote button : buttonRemoteList) {
+            button.activate();
+            button.addObserver(buttonObserver);
+        }
+    }
+
+    @Override
+    public void disable() throws CouldNotPerformException, InterruptedException {
+        for (ButtonRemote button : buttonRemoteList) {
+            button.removeObserver(buttonObserver);
+            button.deactivate();
+        }
+        super.disable();
     }
 
     @Override
@@ -61,11 +152,31 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        logger.info("Activate scene: " + getConfig().getLabel());
+        for (Action action : actionList) {
+            action.execute();
+        }
+
+        // TODO mpohling: implement external execution service
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    for (Action action : actionList) {
+                        action.waitForFinalization();
+                    }
+                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not wait for actions!", ex), logger);
+                }
+            }
+        };
+        thread.run();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        logger.info("Finished scene: " + getConfig().getLabel());
     }
 }
