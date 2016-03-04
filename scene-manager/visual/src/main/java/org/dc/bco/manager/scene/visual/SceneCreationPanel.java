@@ -56,9 +56,9 @@ import rst.homeautomation.state.EnablingStateType;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public class SceneCreationPanel extends javax.swing.JPanel {
-    
+
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
-    
+
     private SceneRegistryRemote sceneRegistryRemote;
     private SceneConfig lastSelected = null;
     private LocationConfigHolder location = null;
@@ -71,7 +71,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     public SceneCreationPanel() {
         initComponents();
     }
-    
+
     public void init() throws CouldNotPerformException, InterruptedException {
         sceneRegistryRemote = new SceneRegistryRemote();
         sceneRegistryRemote.init();
@@ -79,17 +79,17 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         locationSelectorPanel1.init(false);
         initDynamicComponents();
     }
-    
+
     private void initDynamicComponents() throws CouldNotPerformException {
         sceneRegistryRemote.addObserver(new Observer<SceneRegistryType.SceneRegistry>() {
-            
+
             @Override
             public void update(Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
                 updateDynamicComponents();
             }
         });
         locationSelectorPanel1.addObserver(new Observer<LocationSelectorPanel.LocationConfigHolder>() {
-            
+
             @Override
             public void update(Observable<LocationSelectorPanel.LocationConfigHolder> source, LocationSelectorPanel.LocationConfigHolder data) throws Exception {
                 location = data;
@@ -97,7 +97,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         });
         updateDynamicComponents();
     }
-    
+
     private void updateDynamicComponents() throws CouldNotPerformException {
         ArrayList<SceneConfigHolder> sceneConfigHolderList = new ArrayList<>();
         for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
@@ -109,7 +109,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             sceneSelectionComboBox.setSelectedItem(new SceneConfigHolder(lastSelected));
         }
     }
-    
+
     public void updateSceneConfig(List<ActionConfig> actionConfigs) throws CouldNotPerformException {
         SceneConfig.Builder scene = ((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().toBuilder();
         for (ActionConfig actionConfig : actionConfigs) {
@@ -122,7 +122,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                     newAction = false;
                 }
             }
-            
+
             if (newAction) {
                 scene.addActionConfig(actionConfig);
             }
@@ -238,15 +238,23 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
-    
+
+    public void addObserver(Observer<List<ActionConfig>> observer) {
+        observable.addObserver(observer);
+    }
+
+    public void removeObserver(Observer<List<ActionConfig>> observer) {
+        observable.removeObserver(observer);
+    }
+
     private static class SceneConfigHolder implements Comparable<SceneConfigHolder> {
-        
+
         private final SceneConfig config;
-        
+
         public SceneConfigHolder(SceneConfig config) {
             this.config = config;
         }
-        
+
         @Override
         public String toString() {
             if (isNotSpecified()) {
@@ -254,15 +262,15 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             }
             return config.getLabel();
         }
-        
+
         public boolean isNotSpecified() {
             return config == null;
         }
-        
+
         public SceneConfig getConfig() {
             return config;
         }
-        
+
         public String getSceneId() throws CouldNotPerformException {
             try {
                 if (config == null) {
@@ -277,12 +285,12 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                 throw new CouldNotPerformException("Could not detect id.", ex);
             }
         }
-        
+
         @Override
         public int compareTo(SceneConfigHolder o) {
             return toString().compareTo(o.toString());
         }
-        
+
         @Override
         public boolean equals(final Object obj) {
             if (obj instanceof SceneConfigHolder) {
@@ -300,7 +308,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                 return false;
             }
         }
-        
+
         @Override
         public int hashCode() {
             try {

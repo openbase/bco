@@ -26,11 +26,7 @@ package org.dc.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.Message;
 import java.awt.Component;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -39,27 +35,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.visual.unit.GenericUnitPanel;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-import org.dc.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionAuthorityType.ActionAuthority;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.action.ActionPriorityType.ActionPriority;
-import rst.homeautomation.state.PowerStateType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public class DalSceneEditor extends javax.swing.JFrame {
-    
+
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(DalSceneEditor.class);
+    private final ServiceJSonProcessor serviceProcessor;
 
     /**
      * Creates new form DalSceneEditor
@@ -67,19 +60,26 @@ public class DalSceneEditor extends javax.swing.JFrame {
      * @throws org.dc.jul.exception.InstantiationException
      */
     public DalSceneEditor() throws org.dc.jul.exception.InstantiationException {
-        
+        serviceProcessor = new ServiceJSonProcessor();
         try {
             initComponents();
             sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
-                
+
                 @Override
                 public void update(Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
                     genericUnitCollectionPanel1.add(data.getConfig(), data.getServiceType());
                 }
             });
+//            sceneCreationPanel.addObserver(new Observer<List<ActionConfig>>() {
+//
+//                @Override
+//                public void update(Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
+//                    //TODO: clear genericUnitCollectionPanel and set according to the actions
+//                }
+//            });
             sceneCreationPanel.init();
             Executors.newSingleThreadExecutor().execute(new Runnable() {
-                
+
                 @Override
                 public void run() {
                     try {
@@ -189,36 +189,16 @@ public class DalSceneEditor extends javax.swing.JFrame {
                     logger.warn("Panel without service panel?");
                     continue;
                 }
-                Object value = null;
                 try {
-                    String methodName = ("get" + StringProcessor.transformUpperCaseToCamelCase(panel.getServiceType().toString())).replaceAll("Service", "");
-                    logger.info("Testing method name [" + methodName + "] with class [" + panel.getService().getClass().getSimpleName() + "]");
-                    Method method = panel.getService().getClass().getMethod(methodName);
-                    value = method.invoke(panel.getService());
-                } catch (NotAvailableException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    Logger.getLogger(DalSceneEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
+                    String serviceAttribute = serviceProcessor.serialize(panel.getService(), panel.getServiceType());
+                    logger.info("Service value [" + serviceAttribute + "]");
+                    actionConfig.setServiceAttribute(serviceAttribute);
+                    actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
+                    actionConfigs.add(actionConfig.build());
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
                 }
-                if (value == null) {
-                    logger.warn("Value null for unit service [" + panel.getUnitId() + " " + panel.getServiceType() + "] therefore continue!");
-                    continue;
-                }
-                logger.info("Got value [" + value + "]");
-                ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
-                if (value instanceof Message) {
-//                    if (((Message) value).getDescriptorForType()) {
-//                        logger.info("EnumValueDescriptor value received [" + ((Descriptors.EnumValueDescriptor) value).getName() + "] string [" + value.toString() + "]!");
-//                    }
-//                    PowerStateType.PowerState.State
-//                    logger.info("Message value with type [" + value.getClass().getSimpleName() + "]");
-                    actionConfig.setServiceAttributeBytes(((Message) value).toByteString());
-                } else {
-                    if (value instanceof Enum) {
-                        logger.info("Enum value received [" + ((Enum) value).name() + "] string [" + value.toString() + "]!");
-                    }
-                    actionConfig.setServiceAttribute(value.toString());
-                }
-                actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
-                actionConfigs.add(actionConfig.build());
             }
         }
         try {
