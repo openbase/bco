@@ -29,11 +29,20 @@ package org.dc.bco.dal.lib.layer.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.protobuf.Message;
+import com.googlecode.protobuf.format.JsonFormat;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.processing.StringProcessor;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class ServiceJSonProcessor {
 
@@ -45,21 +54,34 @@ public class ServiceJSonProcessor {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
     }
 
-//    public String serialize(final Service service, final ServiceTemplate.ServiceType type) throws CouldNotPerformException {
-//        try {
-//
-//            Object serviceAtribute; // TODO Tamino insert service atribute
-//
-//            String jsonStringRep = JsonFormat.printToString(serviceAtribute);
-//
-//            // format
-//            JsonElement el = parser.parse(jsonStringRep);
-//            return gson.toJson(el);
-//
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not serialize service argument to string!", ex);
-//        }
-//    }
+    public String serialize(final Service service, final ServiceTemplate.ServiceType type) throws CouldNotPerformException {
+        Object serviceAtribute = null;
+        try {
+            String methodName = ("get" + StringProcessor.transformUpperCaseToCamelCase(type.toString())).replaceAll("Service", "");
+            Method method = service.getClass().getMethod(methodName);
+            serviceAtribute = method.invoke(service);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new CouldNotPerformException(ex);
+        }
+        if (serviceAtribute == null) {
+            throw new CouldNotPerformException("Null value for service[" + service.toString() + "] and type [" + type + "]");
+        }
+        if (serviceAtribute instanceof Message) {
+            try {
+                String jsonStringRep = JsonFormat.printToString((Message) serviceAtribute);
+
+                // format
+                JsonElement el = parser.parse(jsonStringRep);
+                return gson.toJson(el);
+
+            } catch (Exception ex) {
+                throw new CouldNotPerformException("Could not serialize service argument to string!", ex);
+            }
+        } else {
+            return serviceAtribute.toString();
+        }
+    }
+    
 //
 //    public Object deserialize(String jsonStringRep) throws CouldNotPerformException {
 //        try {
