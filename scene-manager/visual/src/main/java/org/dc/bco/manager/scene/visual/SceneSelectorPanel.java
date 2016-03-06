@@ -26,16 +26,12 @@ package org.dc.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.dal.visual.DalVisualRemote;
 import org.dc.bco.dal.visual.util.RSBRemoteView;
 import org.dc.bco.dal.visual.util.StatusPanel;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InitializationException;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
@@ -47,10 +43,11 @@ import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
+import org.dc.jul.exception.MultiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -80,8 +77,9 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
     private LocationConfigHolder selectedLocationConfigHolder;
     private UnitConfigHolder selectedUnitConfigHolder;
+    private ServiceTypeHolder selectedServiceTypeHolder;
 
-    private Observable<UnitConfig> unitConfigObservable;
+    private Observable<UnitConfigServiceTypeHolder> unitConfigServiceTypeObservable;
 
     private boolean init = false;
 
@@ -93,7 +91,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
      */
     public SceneSelectorPanel() {
         this.serviceExecuterService = Executors.newSingleThreadExecutor();
-        this.unitConfigObservable = new Observable<>();
+        this.unitConfigServiceTypeObservable = new Observable<>();
         this.initComponents();
         this.setEnable(false);
         this.initDynamicComponents();
@@ -156,7 +154,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     }
 
     private void updateDynamicComponents() {
-
         if (!init) {
             return;
         }
@@ -171,7 +168,14 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         try {
             selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
         } catch (Exception ex) {
-            selectedUnitConfigHolder = null;
+            selectedUnitConfigHolder = ALL_UNIT;
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+        }
+
+        try {
+            selectedServiceTypeHolder = (ServiceTypeHolder) selectedServiceTypeComboBox.getSelectedItem();
+        } catch (Exception ex) {
+            selectedServiceTypeHolder = ALL_Service;
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
 
@@ -241,6 +245,27 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             unitConfigComboBox.setEnabled(false);
             ExceptionPrinter.printHistory(ex, logger);
         }
+
+        try {
+            ArrayList<ServiceTypeHolder> serviceTypeHolderList = new ArrayList<>();
+            UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
+            serviceTypeHolderList.add(ALL_Service);
+            for (ServiceType serviceType : deviceRegistryRemote.getUnitTemplateByType(selectedUnitType).getServiceTypeList()) {
+                serviceTypeHolderList.add(new ServiceTypeHolder(serviceType));
+            }
+            Collections.sort(serviceTypeHolderList);
+            selectedServiceTypeComboBox.setModel(new DefaultComboBoxModel(serviceTypeHolderList.toArray()));
+
+            int selectedLocationIndex = Collections.binarySearch(serviceTypeHolderList, selectedServiceTypeHolder);
+            if (selectedLocationIndex >= 0) {
+                selectedServiceTypeComboBox.setSelectedItem(serviceTypeHolderList.get(selectedLocationIndex));
+            }
+
+            selectedServiceTypeComboBox.setEnabled(serviceTypeHolderList.size() > 0);
+        } catch (CouldNotPerformException ex) {
+            selectedServiceTypeComboBox.setEnabled(false);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+        }
     }
 
     private UnitType detectUnitTypeOutOfScope(Scope scope) throws NotAvailableException {
@@ -254,12 +279,12 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         throw new NotAvailableException("Could not detect unit type for Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
     }
 
-    public void addObserver(Observer<UnitConfig> observer) {
-        unitConfigObservable.addObserver(observer);
+    public void addObserver(Observer<UnitConfigServiceTypeHolder> observer) {
+        unitConfigServiceTypeObservable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<UnitConfig> observer) {
-        unitConfigObservable.removeObserver(observer);
+    public void removeObserver(Observer<UnitConfigServiceTypeHolder> observer) {
+        unitConfigServiceTypeObservable.removeObserver(observer);
     }
 
     /**
@@ -536,12 +561,12 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_unitTypeComboBoxActionPerformed
 
     private void scopeCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeCancelButtonActionPerformed
-        try {
-            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
-        } catch (CouldNotPerformException | NullPointerException ex) {
-            scopeTextField.setText("");
-        }
-        updatenButtonStates();
+//        try {
+//            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigServiceTypeObservable.getLatestValue().getScope()));
+//        } catch (CouldNotPerformException | NullPointerException ex) {
+//            scopeTextField.setText("");
+//        }
+//        updatenButtonStates();
     }//GEN-LAST:event_scopeCancelButtonActionPerformed
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
@@ -622,40 +647,42 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
         final ServiceTypeHolder serviceTypeHolder = (ServiceTypeHolder) selectedServiceTypeComboBox.getSelectedItem();
         final ServiceType serviceType = serviceTypeHolder.getType();
+        try {
+            unitConfigServiceTypeObservable.notifyObservers(new UnitConfigServiceTypeHolder(selectedUnitConfig, serviceType));
+        } catch (MultiException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
     }//GEN-LAST:event_addButtonActionPerformed
 
     public void updatenButtonStates() {
 
-        boolean changes;
-        boolean validScope;
-
-        String text = scopeTextField.getText().toLowerCase();
-
-        try {
-            detectUnitTypeOutOfScope(ScopeTransformer.transform(new rsb.Scope(text)));
-            validScope = true;
-        } catch (Exception ex) {
-            validScope = false;
-        }
-
-        try {
-            changes = !ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()).equals(text);
-        } catch (NotAvailableException ex) {
-            changes = !scopeTextField.getText().isEmpty();
-        }
-
-        scopeApplyButton.setEnabled(validScope && changes);
-        scopeCancelButton.setEnabled(changes);
-
-        if (validScope) {
-            if (changes) {
-                scopeTextField.setForeground(Color.BLACK);
-            } else {
-                scopeTextField.setForeground(Color.BLUE.darker());
-            }
-        } else {
-            scopeTextField.setForeground(Color.RED.darker());
-        }
+//        boolean changes;
+//        boolean validScope;
+//
+//        String text = scopeTextField.getText().toLowerCase();
+//
+//        try {
+//            detectUnitTypeOutOfScope(ScopeTransformer.transform(new rsb.Scope(text)));
+//            validScope = true;
+//        } catch (Exception ex) {
+//            validScope = false;
+//        }
+//        try {
+////            changes = !ScopeGenerator.generateStringRep(unitConfigServiceTypeObservable.getLatestValue().getScope()).equals(text);
+//        } catch (NotAvailableException ex) {
+//            changes = !scopeTextField.getText().isEmpty();
+//        }
+//        scopeApplyButton.setEnabled(validScope && changes);
+//        scopeCancelButton.setEnabled(changes);
+//        if (validScope) {
+//            if (changes) {
+//                scopeTextField.setForeground(Color.BLACK);
+//            } else {
+//                scopeTextField.setForeground(Color.BLUE.darker());
+//            }
+//        } else {
+//            scopeTextField.setForeground(Color.RED.darker());
+//        }
     }
 
 
@@ -681,9 +708,10 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final static LocationConfigHolder ALL_LOCATION = new LocationConfigHolder(null);
-    private final static UnitConfigHolder ALL_UNIT = new UnitConfigHolder(null);
+    private final UnitConfigHolder ALL_UNIT = new UnitConfigHolder(null);
+    private final static ServiceTypeHolder ALL_Service = new ServiceTypeHolder(ServiceType.UNKNOWN);
 
-    private static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
+    public static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
 
         private LocationConfig config;
 
@@ -773,7 +801,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    private static class UnitConfigHolder implements Comparable<UnitConfigHolder> {
+    private class UnitConfigHolder implements Comparable<UnitConfigHolder> {
 
         private UnitConfig config;
 
@@ -786,9 +814,16 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "All";
             }
-            return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
-                    + "[" + config.getLabel() + "]"
-                    + " @ " + config.getPlacementConfig().getLocationId();
+            try {
+                return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
+                        + "[" + config.getLabel() + "]"
+                        + " @ " + locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId()).getLabel();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+                return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
+                        + "[" + config.getLabel() + "]"
+                        + " @ " + config.getPlacementConfig().getLocationId();
+            }
         }
 
         public boolean isNotSpecified() {
@@ -805,21 +840,26 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         }
     }
 
-//    private class LocationConfigHolder {
-//
-//        private LocationConfig config;
-//
-//        public LocationConfigHolder(LocationConfig config) {
-//            this.config = config;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return config.getLabel();
-//        }
-//
-//        public LocationConfig getConfig() {
-//            return config;
-//        }
-//    }
+    public static class UnitConfigServiceTypeHolder {
+
+        private final UnitConfig config;
+        private final ServiceType serviceType;
+
+        public UnitConfigServiceTypeHolder(UnitConfig config, ServiceType serviceType) {
+            this.config = config;
+            this.serviceType = serviceType;
+        }
+
+        public boolean isNotSpecified() {
+            return config == null;
+        }
+
+        public UnitConfig getConfig() {
+            return config;
+        }
+
+        public ServiceType getServiceType() {
+            return serviceType;
+        }
+    }
 }
