@@ -13,6 +13,8 @@
     
     <inceptionYear>2015</inceptionYear>
     <description>Core Manager Collection</description>
+
+    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
     
     <organization>
         <name>DivineCooperation</name>
@@ -47,10 +49,11 @@
             <timezone>+1</timezone>
         </developer>
     </developers>
-    
+
     <scm>
-        <developerConnection>scm:git:https://github.com/divinecooperation/bco.manager.git</developerConnection>
-        <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+        <connection>scm:git:git@github.com/divinecooperation/bco.manager.gitt</connection>
+        <developerConnection>scm:git:git@github.com/divinecooperation/bco.manager.git</developerConnection>
+        <url>git@github.com/divinecooperation/bco.manager.git</url>
     </scm>
     
     <properties>
