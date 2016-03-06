@@ -117,14 +117,17 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             }
 
             if (getConfig().getLabel().equals("Test3")) {
+                logger.info("### init test unit " + getConfig().getLabel());
                 PowerPlugRemote testplug = new PowerPlugRemote();
-                testplug.init("/home/control/powerplug/a10c1");
+                testplug.initByLabel("A10C1");
                 testplug.activate();
                 testplug.addObserver(new Observer<PowerPlugType.PowerPlug>() {
 
                     @Override
                     public void update(Observable<PowerPlugType.PowerPlug> source, PowerPlugType.PowerPlug data) throws Exception {
+                        logger.info("### got change!");
                         if(data.getPowerState().getValue().equals(PowerStateType.PowerState.State.ON)) {
+                            logger.info("### activate scene!");
                             setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                         }
                     }
