@@ -26,7 +26,6 @@ package org.dc.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -45,15 +44,15 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
  * Threepwood</a>
  */
 public class ServiceJSonProcessor {
-
+    
     private final JsonParser parser;
     private final Gson gson;
-
+    
     public ServiceJSonProcessor() {
         this.parser = new JsonParser();
         this.gson = new GsonBuilder().setPrettyPrinting().create();
     }
-
+    
     public String serialize(final Service service, final ServiceTemplate.ServiceType type) throws CouldNotPerformException {
         Object serviceAtribute = null;
         try {
@@ -70,10 +69,12 @@ public class ServiceJSonProcessor {
             try {
                 String jsonStringRep = JsonFormat.printToString((Message) serviceAtribute);
 
+                // formatting only adds empty lines
                 // format
-                JsonElement el = parser.parse(jsonStringRep);
-                return gson.toJson(el);
+                //JsonElement el = parser.parse(jsonStringRep);
 
+                return jsonStringRep;
+                
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not serialize service argument to string!", ex);
             }
@@ -81,7 +82,7 @@ public class ServiceJSonProcessor {
             return serviceAtribute.toString();
         }
     }
-    
+
 //
 //    public Object deserialize(String jsonStringRep) throws CouldNotPerformException {
 //        try {

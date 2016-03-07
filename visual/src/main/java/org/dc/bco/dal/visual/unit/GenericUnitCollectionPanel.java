@@ -167,14 +167,21 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         }
     }
 
+    public GenericUnitPanel add(final String unitId, final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitId);
+        return add(unitConfig, serviceType);
+    }
+
     private void updateDynamicComponents() {
-        System.out.println("update " + unitPanelMap.values().size() + " components.");
+        logger.info("update " + unitPanelMap.values().size() + " components.");
         synchronized (unitPanelMapLock) {
             contentPanel.removeAll();
-            for (JComponent component : unitPanelMap.values()) {
-                contentPanel.add(component);
+            if (unitPanelMap.values().size() > 0) {
+                for (JComponent component : unitPanelMap.values()) {
+                    contentPanel.add(component);
+                }
+                LayoutGenerator.designList(contentPanel, unitPanelMap.values());
             }
-            LayoutGenerator.designList(contentPanel, unitPanelMap.values());
         }
         contentPanel.validate();
         contentPanel.revalidate();
@@ -182,6 +189,11 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         contentScrollPane.revalidate();
         this.validate();
         this.revalidate();
+    }
+
+    public void clearUnitPanel() {
+        unitPanelMap.clear();
+        updateDynamicComponents();
     }
 
     public DeviceRegistryRemote getDeviceRegistryRemote() {
