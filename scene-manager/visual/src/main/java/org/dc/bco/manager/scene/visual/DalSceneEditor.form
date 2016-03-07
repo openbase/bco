@@ -57,7 +57,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="sceneCreationPanel" max="32767" attributes="0"/>
                       <Component id="sceneSelectorPanel" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="genericUnitCollectionPanel1" alignment="0" max="32767" attributes="0"/>
+                      <Component id="genericUnitCollectionPanel" alignment="0" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="103" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -78,7 +78,7 @@
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="sceneSelectorPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="genericUnitCollectionPanel1" pref="480" max="32767" attributes="0"/>
+                  <Component id="genericUnitCollectionPanel" pref="480" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="saveButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -93,7 +93,7 @@
         </Component>
         <Component class="org.dc.bco.manager.scene.visual.SceneSelectorPanel" name="sceneSelectorPanel">
         </Component>
-        <Component class="org.dc.bco.dal.visual.unit.GenericUnitCollectionPanel" name="genericUnitCollectionPanel1">
+        <Component class="org.dc.bco.dal.visual.unit.GenericUnitCollectionPanel" name="genericUnitCollectionPanel">
         </Component>
         <Component class="javax.swing.JButton" name="saveButton">
           <Properties>

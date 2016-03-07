@@ -34,6 +34,7 @@ import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
@@ -189,8 +190,13 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
+        //no change id the same location has been selected
+        if (selectedLocationConfigHolder == (LocationConfigHolder) locationComboBox.getSelectedItem()) {
+            return;
+        }
+
         try {
-            selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+            logger.info("Notify observer with new location");
             locationConfigHolderObservable.notifyObservers(selectedLocationConfigHolder);
         } catch (MultiException ex) {
             logger.warn("Could not notify observers about location config change!", ex);
@@ -223,7 +229,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         locationComboBox.setSelectedItem(select);
     }
 
-    private final static LocationConfigHolder ALL_LOCATION = new LocationConfigHolder(null);
+    public static final LocationConfigHolder ALL_LOCATION = new LocationConfigHolder(null);
 
     public static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
 

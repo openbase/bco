@@ -19,7 +19,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="locationSelectorPanel1" max="32767" attributes="0"/>
+                  <Component id="locationSelectorPanel" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="sceneSelectionComboBox" pref="314" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -42,7 +42,7 @@
                   <Component id="deleteButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="locationSelectorPanel1" max="32767" attributes="0"/>
+              <Component id="locationSelectorPanel" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -95,7 +95,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="org.dc.bco.manager.scene.visual.LocationSelectorPanel" name="locationSelectorPanel1">
+    <Component class="org.dc.bco.manager.scene.visual.LocationSelectorPanel" name="locationSelectorPanel">
     </Component>
   </SubComponents>
 </Form>

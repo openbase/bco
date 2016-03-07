@@ -37,8 +37,6 @@ import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -59,10 +57,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
 
+    private final Observable<List<ActionConfig>> observable;
     private SceneRegistryRemote sceneRegistryRemote;
     private SceneConfig lastSelected = null;
     private LocationConfigHolder location = null;
-    private Observable<List<ActionConfig>> observable;
 
     /**
      * Creates new form SceneCreationPanel
@@ -70,13 +68,14 @@ public class SceneCreationPanel extends javax.swing.JPanel {
      */
     public SceneCreationPanel() {
         initComponents();
+        observable = new Observable<>();
     }
 
     public void init() throws CouldNotPerformException, InterruptedException {
         sceneRegistryRemote = new SceneRegistryRemote();
         sceneRegistryRemote.init();
         sceneRegistryRemote.activate();
-        locationSelectorPanel1.init(false);
+        locationSelectorPanel.init(false);
         initDynamicComponents();
     }
 
@@ -88,7 +87,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                 updateDynamicComponents();
             }
         });
-        locationSelectorPanel1.addObserver(new Observer<LocationSelectorPanel.LocationConfigHolder>() {
+        locationSelectorPanel.addObserver(new Observer<LocationSelectorPanel.LocationConfigHolder>() {
 
             @Override
             public void update(Observable<LocationSelectorPanel.LocationConfigHolder> source, LocationSelectorPanel.LocationConfigHolder data) throws Exception {
@@ -146,7 +145,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneSelectionComboBox = new javax.swing.JComboBox();
         newButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
-        locationSelectorPanel1 = new org.dc.bco.manager.scene.visual.LocationSelectorPanel();
+        locationSelectorPanel = new org.dc.bco.manager.scene.visual.LocationSelectorPanel();
 
         sceneSelectionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         sceneSelectionComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -181,7 +180,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(locationSelectorPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(locationSelectorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(sceneSelectionComboBox, 0, 314, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -199,14 +198,19 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                     .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(locationSelectorPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(locationSelectorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void sceneSelectionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sceneSelectionComboBoxActionPerformed
+        //return if no new scene has been selected
+        if (lastSelected != null && lastSelected.getId().equals(((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().getId())) {
+            return;
+        }
+
         lastSelected = ((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig();
-        locationSelectorPanel1.updateSelection(lastSelected.getLocationId());
+        locationSelectorPanel.updateSelection(lastSelected.getLocationId());
         try {
             observable.notifyObservers(lastSelected.getActionConfigList());
         } catch (MultiException ex) {
@@ -325,7 +329,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton deleteButton;
-    private org.dc.bco.manager.scene.visual.LocationSelectorPanel locationSelectorPanel1;
+    private org.dc.bco.manager.scene.visual.LocationSelectorPanel locationSelectorPanel;
     private javax.swing.JButton newButton;
     private javax.swing.JComboBox sceneSelectionComboBox;
     // End of variables declaration//GEN-END:variables
