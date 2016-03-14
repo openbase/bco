@@ -53,6 +53,4 @@ public interface SceneRegistry {
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException;
 
     public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
-
-    public void shutdown();
 }

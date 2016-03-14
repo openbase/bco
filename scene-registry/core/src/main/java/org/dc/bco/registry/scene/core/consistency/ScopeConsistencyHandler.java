@@ -27,11 +27,8 @@ package org.dc.bco.registry.scene.core.consistency;
  * #L%
  */
 
-import java.util.Map;
-import java.util.TreeMap;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
