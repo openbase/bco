@@ -26,7 +26,6 @@ package org.dc.bco.dal.visual.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.bco.dal.visual.util.RSBRemoteView;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -108,7 +106,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
                 servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()) + ":" + unitConfig.getId()));
                 AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getType()), getRemoteService());
                 abstractServicePanel.setUnitId(unitConfig.getId());
-                abstractServicePanel.setServiceType(serviceType);
+                abstractServicePanel.setServiceType(serviceConfig.getType());
                 servicePanel.add(abstractServicePanel);
                 componentList.add(servicePanel);
             } catch (CouldNotPerformException ex) {

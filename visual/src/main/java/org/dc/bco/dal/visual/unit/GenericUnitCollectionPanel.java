@@ -38,6 +38,8 @@ import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
 import org.dc.jul.schedule.SyncObject;
 import org.dc.jul.visual.layout.LayoutGenerator;
 import org.slf4j.Logger;
@@ -58,6 +60,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     private DeviceRegistryRemote deviceRegistryRemote;
     private final Map<String, GenericUnitPanel<RS>> unitPanelMap;
     private final SyncObject unitPanelMapLock = new SyncObject("UnitPanelMapLock");
+    private final Observer<String> removedObserver;
 
     /**
      * Creates new form GenericUnitCollectionPanel
@@ -65,6 +68,18 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
      */
     public GenericUnitCollectionPanel() {
         unitPanelMap = new HashMap<>();
+        removedObserver = new Observer<String>() {
+
+            @Override
+            public void update(Observable<String> source, String data) throws Exception {
+                synchronized (unitPanelMapLock) {
+                    if (unitPanelMap.containsKey(data)) {
+                        unitPanelMap.remove(data);
+                    }
+                }
+                updateDynamicComponents();
+            }
+        };
         initComponents();
     }
 
@@ -151,14 +166,21 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         }
     }
 
-    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
+    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {
+                String mapId = unitConfig.getId() + serviceType.toString();
                 genericUnitPanel = new GenericUnitPanel<>();
+                if (removable) {
+                    RemovableGenericUnitPanel wrapperPanel = new RemovableGenericUnitPanel();
+                    wrapperPanel.init(mapId);
+                    wrapperPanel.addObserver(removedObserver);
+                    genericUnitPanel = wrapperPanel;
+                }
                 genericUnitPanel.updateUnitConfig(unitConfig, serviceType);
 
-                unitPanelMap.put(unitConfig.getId() + serviceType.toString(), genericUnitPanel);
+                unitPanelMap.put(mapId, genericUnitPanel);
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not add Unit[" + unitConfig.getId() + "]", ex);
             }
@@ -167,21 +189,19 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         }
     }
 
-    public GenericUnitPanel add(final String unitId, final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
+    public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitId);
-        return add(unitConfig, serviceType);
+        return add(unitConfig, serviceType, removable);
     }
 
     private void updateDynamicComponents() {
-        logger.info("update " + unitPanelMap.values().size() + " components.");
+        logger.debug("update " + unitPanelMap.values().size() + " components.");
         synchronized (unitPanelMapLock) {
             contentPanel.removeAll();
-            if (unitPanelMap.values().size() > 0) {
-                for (JComponent component : unitPanelMap.values()) {
-                    contentPanel.add(component);
-                }
-                LayoutGenerator.designList(contentPanel, unitPanelMap.values());
+            for (JComponent component : unitPanelMap.values()) {
+                contentPanel.add(component);
             }
+            LayoutGenerator.designList(contentPanel, unitPanelMap.values());
         }
         contentPanel.validate();
         contentPanel.revalidate();
