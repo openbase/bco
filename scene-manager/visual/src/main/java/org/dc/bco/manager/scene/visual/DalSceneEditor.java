@@ -77,6 +77,8 @@ public class DalSceneEditor extends javax.swing.JFrame {
                 public void update(Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
                     genericUnitCollectionPanel.clearUnitPanel();
                     for (ActionConfig action : data) {
+                        logger.info("Deserializing from action with attribute [" + action.getServiceAttribute() + "] type [" + action.getServiceAttributeType() + "]");
+                        serviceProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
                         logger.debug("Updating panel with [" + action.getServiceHolder() + ", " + action.getServiceType().name() + "]");
                         genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), true);
                     }
@@ -206,6 +208,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
                     String serviceAttribute = serviceProcessor.serialize(panel.getService(), panel.getServiceType());
                     actionConfig.setServiceAttribute(serviceAttribute);
                     actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.SYSTEM)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
+                    actionConfig.setServiceAttributeType(serviceProcessor.getServiceAttributeType(panel.getService(), panel.getServiceType()).getName());
                     actionConfigs.add(actionConfig.build());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
