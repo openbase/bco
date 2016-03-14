@@ -35,17 +35,14 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
-import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import org.dc.jul.exception.MultiException;
 import org.slf4j.Logger;
@@ -79,11 +76,11 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     private UnitConfigHolder selectedUnitConfigHolder;
     private ServiceTypeHolder selectedServiceTypeHolder;
 
-    private Observable<UnitConfigServiceTypeHolder> unitConfigServiceTypeObservable;
+    private final Observable<UnitConfigServiceTypeHolder> unitConfigServiceTypeObservable;
 
     private boolean init = false;
 
-    private ExecutorService serviceExecuterService;
+    private final ExecutorService serviceExecuterService;
 
     /**
      * Creates new form SceneSelectorPanel
@@ -151,6 +148,14 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         Collections.sort(serviceTypeHolderList);
         serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
         selectedServiceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
+
+//        locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
+//
+//            @Override
+//            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
+//                updateDynamicComponents();
+//            }
+//        });
     }
 
     private void updateDynamicComponents() {
@@ -159,23 +164,38 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         }
 
         try {
-            selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+            if (locationComboBox.getSelectedIndex() != -1) {
+                selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+            } else {
+                selectedLocationConfigHolder = ALL_LOCATION;
+            }
         } catch (Exception ex) {
             selectedLocationConfigHolder = ALL_LOCATION;
+            logger.info("Test");
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
 
         try {
-            selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
+            if (unitConfigComboBox.getSelectedIndex() != -1) {
+                selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
+            } else {
+                selectedUnitConfigHolder = ALL_UNIT;
+            }
         } catch (Exception ex) {
             selectedUnitConfigHolder = ALL_UNIT;
+            logger.info("Test2");
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
 
         try {
-            selectedServiceTypeHolder = (ServiceTypeHolder) selectedServiceTypeComboBox.getSelectedItem();
+            if (serviceTypeComboBox.getSelectedIndex() != -1) {
+                selectedServiceTypeHolder = (ServiceTypeHolder) selectedServiceTypeComboBox.getSelectedItem();
+            } else {
+                selectedServiceTypeHolder = ALL_Service;
+            }
         } catch (Exception ex) {
             selectedServiceTypeHolder = ALL_Service;
+            logger.info("Test3");
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
 
@@ -343,7 +363,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
         locationPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Location"));
 
-        locationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         locationComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 locationComboBoxActionPerformed(evt);
@@ -390,7 +409,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
         instancePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Selected Instance"));
 
-        unitConfigComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         unitConfigComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 unitConfigComboBoxActionPerformed(evt);

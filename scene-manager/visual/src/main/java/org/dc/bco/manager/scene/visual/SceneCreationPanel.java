@@ -42,6 +42,7 @@ import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.dc.bco.manager.scene.visual.LocationSelectorPanel.LocationConfigHolder;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
@@ -75,11 +76,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneRegistryRemote = new SceneRegistryRemote();
         sceneRegistryRemote.init();
         sceneRegistryRemote.activate();
-        locationSelectorPanel.init(false);
         initDynamicComponents();
     }
 
-    private void initDynamicComponents() throws CouldNotPerformException {
+    private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {
         sceneRegistryRemote.addObserver(new Observer<SceneRegistryType.SceneRegistry>() {
 
             @Override
@@ -94,6 +94,9 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                 location = data;
             }
         });
+        // init locationSelectorPanel after registering the observer so that the selected location is recieved from the start
+        locationSelectorPanel.init(false);
+
         updateDynamicComponents();
     }
 
@@ -104,29 +107,21 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         }
         Collections.sort(sceneConfigHolderList);
         sceneSelectionComboBox.setModel(new DefaultComboBoxModel(sceneConfigHolderList.toArray()));
-        if (lastSelected != null) {
+        if (lastSelected == null) {
+            sceneSelectionComboBox.setSelectedIndex(0);
+            lastSelected = ((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig();
+            observable.notifyObservers(lastSelected.getActionConfigList());
+        } else {
             sceneSelectionComboBox.setSelectedItem(new SceneConfigHolder(lastSelected));
         }
     }
 
     public void updateSceneConfig(List<ActionConfig> actionConfigs) throws CouldNotPerformException {
         SceneConfig.Builder scene = ((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().toBuilder();
-        for (ActionConfig actionConfig : actionConfigs) {
-            boolean newAction = true;
-            for (ActionConfig.Builder addedActionConfig : scene.getActionConfigBuilderList()) {
-                if (actionConfig.getServiceHolder().equals(addedActionConfig.getServiceHolder())
-                        && actionConfig.getServiceType() == addedActionConfig.getServiceType()
-                        && !actionConfig.getServiceAttribute().equals(addedActionConfig.getServiceAttribute())) {
-                    addedActionConfig.setServiceAttribute(actionConfig.getServiceAttribute());
-                    newAction = false;
-                }
-            }
-
-            if (newAction) {
-                scene.addActionConfig(actionConfig);
-            }
-        }
+        scene.clearActionConfig();
+        scene.addAllActionConfig(actionConfigs);
         if (!sceneRegistryRemote.containsSceneConfig(scene.build())) {
+            logger.debug("Registering scene from updateSceneConfig");
             lastSelected = sceneRegistryRemote.registerSceneConfig(scene.build());
         } else {
             lastSelected = sceneRegistryRemote.updateSceneConfig(scene.build());
@@ -205,7 +200,8 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     private void sceneSelectionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sceneSelectionComboBoxActionPerformed
         //return if no new scene has been selected
-        if (lastSelected != null && lastSelected.getId().equals(((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().getId())) {
+        if (sceneSelectionComboBox.getSelectedIndex() == -1
+                || (lastSelected != null && lastSelected.getId().equals(((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().getId()))) {
             return;
         }
 
@@ -224,7 +220,12 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             return;
         }
         String label = JOptionPane.showInputDialog(this, "Enter scene label");
+        //is null if cancel has been pressed
+        if (label == null) {
+            return;
+        }
         try {
+            logger.info("Registering scene from new button");
             lastSelected = sceneRegistryRemote.registerSceneConfig(SceneConfig.newBuilder().setLabel(label).setLocationId(location.getConfig().getId()).setEnablingState(EnablingStateType.EnablingState.newBuilder().setValue(EnablingStateType.EnablingState.State.ENABLED)).build());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);

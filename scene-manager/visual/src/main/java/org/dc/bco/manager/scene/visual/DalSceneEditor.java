@@ -38,6 +38,7 @@ import java.util.concurrent.Executors;
 import javax.swing.JComponent;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.visual.unit.GenericUnitPanel;
+import org.dc.bco.dal.visual.unit.RemovableGenericUnitPanel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
 
                 @Override
                 public void update(Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
-                    genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType());
+                    genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
                 }
             });
             sceneCreationPanel.addObserver(new Observer<List<ActionConfig>>() {
@@ -75,16 +76,15 @@ public class DalSceneEditor extends javax.swing.JFrame {
                 @Override
                 public void update(Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
                     genericUnitCollectionPanel.clearUnitPanel();
-                    logger.info("Cleared Generic unit panel");
                     for (ActionConfig action : data) {
-                        logger.info("Updating panel with [" + action.getServiceHolder() + ", " + action.getServiceType().name() + "]");
-                        genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType());
+                        logger.debug("Updating panel with [" + action.getServiceHolder() + ", " + action.getServiceType().name() + "]");
+                        genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), true);
                     }
                 }
             }
             );
-            sceneCreationPanel.init();
             genericUnitCollectionPanel.init();
+            sceneCreationPanel.init();
 
             Executors.newSingleThreadExecutor()
                     .execute(new Runnable() {
@@ -186,23 +186,24 @@ public class DalSceneEditor extends javax.swing.JFrame {
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         Collection<GenericUnitPanel> unitPanelList = genericUnitCollectionPanel.getUnitPanelList();
         List<ActionConfig> actionConfigs = new ArrayList<>();
-        for (GenericUnitPanel unitPanel : unitPanelList) {
+        // Generic unit panel means removable generic unit panel in this case
+        for (GenericUnitPanel genericUnitPanel : unitPanelList) {
+            GenericUnitPanel unitPanel = ((RemovableGenericUnitPanel) genericUnitPanel).getGenericUnitPanel();
             List<JComponent> componentList = unitPanel.getComponentList();
             for (JComponent component : componentList) {
                 AbstractServicePanel panel = null;
                 for (Component com : component.getComponents()) {
                     if (com instanceof AbstractServicePanel) {
                         panel = (AbstractServicePanel) com;
+                    } else {
                     }
                 }
                 if (panel == null) {
-                    logger.warn("Panel without service panel?");
                     continue;
                 }
                 try {
                     ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
                     String serviceAttribute = serviceProcessor.serialize(panel.getService(), panel.getServiceType());
-                    logger.info("Service value [" + serviceAttribute + "]");
                     actionConfig.setServiceAttribute(serviceAttribute);
                     actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.SYSTEM)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
                     actionConfigs.add(actionConfig.build());

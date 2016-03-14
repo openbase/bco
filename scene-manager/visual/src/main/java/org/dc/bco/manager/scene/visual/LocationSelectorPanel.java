@@ -191,12 +191,14 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
         //no change id the same location has been selected
-        if (selectedLocationConfigHolder == (LocationConfigHolder) locationComboBox.getSelectedItem()) {
+        if (locationComboBox.getSelectedIndex() == -1
+                || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
             return;
         }
 
+        selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
         try {
-            logger.info("Notify observer with new location");
+//            logger.info("Notify observer with new location");
             locationConfigHolderObservable.notifyObservers(selectedLocationConfigHolder);
         } catch (MultiException ex) {
             logger.warn("Could not notify observers about location config change!", ex);
