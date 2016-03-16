@@ -27,6 +27,8 @@ package org.dc.bco.manager.scene.visual;
  * #L%
  */
 import java.awt.Component;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -36,15 +38,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
 import javax.swing.JComponent;
+import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.visual.unit.GenericUnitPanel;
 import org.dc.bco.dal.visual.unit.RemovableGenericUnitPanel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
+import org.dc.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionAuthorityType.ActionAuthority;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.action.ActionPriorityType.ActionPriority;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -77,10 +82,8 @@ public class DalSceneEditor extends javax.swing.JFrame {
                 public void update(Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
                     genericUnitCollectionPanel.clearUnitPanel();
                     for (ActionConfig action : data) {
-                        logger.info("Deserializing from action with attribute [" + action.getServiceAttribute() + "] type [" + action.getServiceAttributeType() + "]");
-                        serviceProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
-                        logger.debug("Updating panel with [" + action.getServiceHolder() + ", " + action.getServiceType().name() + "]");
-                        genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), true);
+                        Object value = serviceProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
+                        genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
                     }
                 }
             }
@@ -205,10 +208,10 @@ public class DalSceneEditor extends javax.swing.JFrame {
                 }
                 try {
                     ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
-                    String serviceAttribute = serviceProcessor.serialize(panel.getService(), panel.getServiceType());
-                    actionConfig.setServiceAttribute(serviceAttribute);
-                    actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.SYSTEM)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
-                    actionConfig.setServiceAttributeType(serviceProcessor.getServiceAttributeType(panel.getService(), panel.getServiceType()).getName());
+                    Object value = getServiceValue(panel.getService(), panel.getServiceType());
+                    actionConfig.setServiceAttribute(serviceProcessor.serialize(value));
+                    actionConfig.setServiceAttributeType(serviceProcessor.getServiceAttributeType(value));
+                    actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
                     actionConfigs.add(actionConfig.build());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
@@ -221,6 +224,18 @@ public class DalSceneEditor extends javax.swing.JFrame {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_saveButtonActionPerformed
+
+    public Object getServiceValue(Service service, ServiceType serviceType) throws CouldNotPerformException {
+        Object value = null;
+        try {
+            String methodName = ("get" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name())).replaceAll("Service", "");
+            Method method = service.getClass().getMethod(methodName);
+            value = method.invoke(service);
+        } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new CouldNotPerformException("Could not invoke getter for type [" + serviceType + "] on service [" + service + "]", ex);
+        }
+        return value;
+    }
 
     /**
      * @param args the command line arguments
