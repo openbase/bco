@@ -37,7 +37,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.DimmerType.Dimmer;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -70,8 +69,8 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     }
 
     @Override
-    public void setPower(final PowerState.State state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + state.name() + "]");
+    public void setPower(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
         powerService.setPower(state);
     }
 

@@ -72,8 +72,8 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
     }
 
     @Override
-    public void setPower(final PowerState.State state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + state.name() + "]");
+    public void setPower(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
         powerService.setPower(state);
     }
 

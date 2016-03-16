@@ -75,8 +75,8 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     }
 
     @Override
-    public void setPower(final PowerState.State state) throws CouldNotPerformException {
-        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state.name() + "]");
+    public void setPower(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
         powerService.setPower(state);
     }
 

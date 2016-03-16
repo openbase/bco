@@ -21,7 +21,6 @@ package org.dc.bco.dal.lib.layer.service.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.bco.dal.lib.layer.service.DimService;
@@ -44,7 +43,8 @@ import rst.vision.HSVColorType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
 public class ServiceFactoryMock implements ServiceFactory {
 
@@ -72,7 +72,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                return null;
 //            }
-
             @Override
             public Double getBrightness() throws CouldNotPerformException {
                 return ((BrightnessService) unit).getBrightness();
@@ -111,7 +110,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new PowerService() {
 
             @Override
-            public void setPower(PowerStateType.PowerState.State state) throws CouldNotPerformException {
+            public void setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
                 update(state, unit);
             }
 
@@ -124,7 +123,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //            }
-
             @Override
             public PowerStateType.PowerState getPower() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -150,7 +148,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //            }
-
             @Override
             public Double getOpeningRatio() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -176,7 +173,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //            }
-
             @Override
             public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -202,7 +198,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //            }
-
             @Override
             public Double getDim() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -228,7 +223,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //            }
-
             @Override
             public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -254,7 +248,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 //            public ServiceConfig getServiceConfig() {
 //                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //            }
-
             @Override
             public Double getTargetTemperature() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

@@ -26,7 +26,6 @@ package org.dc.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.provider.PowerProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -43,7 +42,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  */
 public interface PowerService extends Service, PowerProvider {
 
-    public void setPower(final PowerState.State state) throws CouldNotPerformException;
+    public void setPower(final PowerState state) throws CouldNotPerformException;
 
     public class SetPowerCallback extends EventCallback {
 
@@ -58,7 +57,7 @@ public interface PowerService extends Service, PowerProvider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setPower(((PowerState) request.getData()).getValue());
+                service.setPower(((PowerState) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);

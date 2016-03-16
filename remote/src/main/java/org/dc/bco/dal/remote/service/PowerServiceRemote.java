@@ -26,7 +26,6 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.VerificationFailedException;
@@ -46,7 +45,7 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerService> impl
     }
 
     @Override
-    public void setPower(final PowerStateType.PowerState.State state) throws CouldNotPerformException {
+    public void setPower(final PowerStateType.PowerState state) throws CouldNotPerformException {
         for (PowerService service : getServices()) {
             service.setPower(state);
         }
@@ -74,7 +73,7 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerService> impl
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            setPower(PowerStateType.PowerState.State.valueOf(actionConfig.getServiceAttribute()));
+            setPower(PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.valueOf(actionConfig.getServiceAttribute())).build());
         } catch (NumberFormatException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

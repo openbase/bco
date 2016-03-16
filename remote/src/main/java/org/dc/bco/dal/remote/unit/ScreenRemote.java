@@ -26,7 +26,6 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,9 +67,9 @@ public class ScreenRemote extends AbstractUnitRemote<ScreenType.Screen> implemen
     }
 
     @Override
-    public void setPower(PowerState.State state) throws CouldNotPerformException {
+    public void setPower(PowerState state) throws CouldNotPerformException {
         try {
-            RPCHelper.callRemoteMethod(PowerState.newBuilder().setValue(state).build(), this).get();
+            RPCHelper.callRemoteMethod(state, this).get();
         } catch (InterruptedException ex) {
             Logger.getLogger(ScreenRemote.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {

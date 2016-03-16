@@ -21,8 +21,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -32,7 +30,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.LightType.Light;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -63,8 +60,8 @@ public class LightController extends AbstractUnitController<Light, Light.Builder
     }
 
     @Override
-    public void setPower(final PowerState.State state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + state.name() + "]");
+    public void setPower(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
         powerService.setPower(state);
     }
 

@@ -26,7 +26,6 @@ package org.dc.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -120,11 +119,11 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
                 try {
                     switch (getService().getPower().getValue()) {
                         case ON:
-                            getService().setPower(PowerStateType.PowerState.State.OFF);
+                            getService().setPower(PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.OFF).build());
                             break;
                         case OFF:
                         case UNKNOWN:
-                            getService().setPower(PowerStateType.PowerState.State.ON);
+                            getService().setPower(PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build());
                             break;
                         default:
                             throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");

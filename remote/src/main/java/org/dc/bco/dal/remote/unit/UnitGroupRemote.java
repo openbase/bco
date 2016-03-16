@@ -26,7 +26,6 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import java.util.HashMap;
@@ -133,7 +132,7 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     }
 
     @Override
-    public void setPower(PowerStateType.PowerState.State state) throws CouldNotPerformException {
+    public void setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
         testServiceAvailability(ServiceTemplate.ServiceType.POWER_SERVICE);
         ((PowerServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.POWER_SERVICE)).setPower(state);
     }

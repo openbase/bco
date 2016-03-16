@@ -26,7 +26,6 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,9 +56,9 @@ public class DimmerRemote extends AbstractUnitRemote<Dimmer> implements DimmerIn
     }
 
     @Override
-    public void setPower(PowerState.State value) throws CouldNotPerformException {
+    public void setPower(PowerState value) throws CouldNotPerformException {
         try {
-            RPCHelper.callRemoteMethod(PowerState.newBuilder().setValue(value).build(), this).get();
+            RPCHelper.callRemoteMethod(value, this).get();
         } catch (InterruptedException ex) {
             Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {
