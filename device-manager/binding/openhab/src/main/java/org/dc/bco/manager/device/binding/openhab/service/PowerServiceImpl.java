@@ -26,9 +26,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -52,7 +50,7 @@ public class PowerServiceImpl<ST extends PowerService & Unit> extends OpenHABSer
     }
 
     @Override
-    public void setPower(PowerState.State state) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newOnOffCommand(state));
+    public void setPower(PowerState state) throws CouldNotPerformException {
+        executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
     }
 }

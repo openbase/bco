@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -58,8 +57,6 @@ import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
  *
  * @author thuxohl
  */
-
-
 public class UnitGroupRemoteTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
@@ -127,17 +124,17 @@ public class UnitGroupRemoteTest {
     @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerState.State state = PowerState.State.ON;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         unitGroupRemote.setPower(state);
 
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower().getValue());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower());
         }
 
-        state = PowerState.State.OFF;
+        state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPower(state);
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower().getValue());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower());
         }
     }
 
@@ -150,10 +147,10 @@ public class UnitGroupRemoteTest {
     @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState.State state = PowerState.State.OFF;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPower(state);
 //        unitGroupRemote.requestStatus();
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPower().getValue());
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPower());
     }
 
     /**

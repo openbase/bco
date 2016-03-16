@@ -26,7 +26,6 @@ package org.dc.bco.manager.location.lib.util;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.remote.service.PowerServiceRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -53,11 +52,11 @@ public class PowerServiceControl {
 
     private final PowerServiceRemote powerServiceRemote;
     private final LocationRegistryRemote locationRegistryRemote;
-    private final PowerState.State powerState;
+    private final PowerState powerState;
 
     public PowerServiceControl(final String locationId, final PowerState.State powerState) throws InstantiationException, InterruptedException {
         try {
-            this.powerState = powerState;
+            this.powerState = PowerState.newBuilder().setValue(powerState).build();
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();

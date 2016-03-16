@@ -116,7 +116,7 @@ public class DimmerRemoteTest {
     @Test(timeout = 60000)
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
-        PowerState.State state = PowerState.State.ON;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         dimmerRemote.setPower(state);
         dimmerRemote.requestStatus();
         assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState().getValue());

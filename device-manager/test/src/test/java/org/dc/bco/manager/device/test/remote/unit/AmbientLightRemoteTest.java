@@ -178,10 +178,10 @@ public class AmbientLightRemoteTest {
     @Test
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
-        PowerState.State state = PowerState.State.ON;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         ambientLightRemote.setPower(state);
         ambientLightRemote.requestStatus();
-        assertEquals("Power state has not been set in time!", state, ambientLightRemote.getData().getPowerState().getValue());
+        assertEquals("Power state has not been set in time!", state, ambientLightRemote.getData().getPowerState());
     }
 
     /**
@@ -193,10 +193,10 @@ public class AmbientLightRemoteTest {
     @Test
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState.State state = PowerState.State.OFF;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ambientLightRemote.setPower(state);
         ambientLightRemote.requestStatus();
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, ambientLightRemote.getPower().getValue());
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, ambientLightRemote.getPower());
     }
 
     /**

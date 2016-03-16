@@ -26,7 +26,6 @@ package org.dc.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.remote.service.PowerServiceRemote;
 import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
@@ -36,7 +35,7 @@ import org.dc.jul.pattern.Observable;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
-import rst.homeautomation.state.PowerStateType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitTemplateType;
 
 /**
@@ -96,13 +95,11 @@ public class PersonLightProviderAgent extends AbstractAgent {
         powerServiceRemote.deactivate();
     }
 
-
-
     private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
         if (motionState.getValue() == MotionState.State.MOVEMENT) {
-            powerServiceRemote.setPower(PowerStateType.PowerState.State.ON);
+            powerServiceRemote.setPower(PowerState.newBuilder().setValue(PowerState.State.ON).build());
         } else {
-            powerServiceRemote.setPower(PowerStateType.PowerState.State.OFF);
+            powerServiceRemote.setPower(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
         }
 
         logger.info("detect: " + motionState.getValue());
