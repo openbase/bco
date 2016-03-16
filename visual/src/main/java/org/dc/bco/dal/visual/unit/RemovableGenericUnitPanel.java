@@ -124,6 +124,11 @@ public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemo
         genericUnitPanel.updateUnitConfig(unitConfig, serviceType);
     }
 
+    @Override
+    public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
+        genericUnitPanel.updateUnitConfig(unitConfig, serviceType, serviceAttribute);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.dc.bco.dal.visual.unit.GenericUnitPanel genericUnitPanel;
     private javax.swing.JButton removeButton;

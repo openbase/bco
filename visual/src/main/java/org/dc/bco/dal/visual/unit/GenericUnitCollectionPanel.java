@@ -54,9 +54,9 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  * @param <RS> The unit remote service to use.
  */
 public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends javax.swing.JPanel {
-
+    
     protected static final Logger logger = LoggerFactory.getLogger(GenericUnitCollectionPanel.class);
-
+    
     private DeviceRegistryRemote deviceRegistryRemote;
     private final Map<String, GenericUnitPanel<RS>> unitPanelMap;
     private final SyncObject unitPanelMapLock = new SyncObject("UnitPanelMapLock");
@@ -69,7 +69,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     public GenericUnitCollectionPanel() {
         unitPanelMap = new HashMap<>();
         removedObserver = new Observer<String>() {
-
+            
             @Override
             public void update(Observable<String> source, String data) throws Exception {
                 synchronized (unitPanelMapLock) {
@@ -99,16 +99,16 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
             throw new InitializationException(this, ex);
         }
     }
-
+    
     public Collection<GenericUnitPanel<RS>> add(final Collection<String> unitLabelList) throws InitializationException {
         final List<GenericUnitPanel<RS>> unitPanelList = new ArrayList<>();
-
+        
         MultiException.ExceptionStack exceptionStack = null;
-
+        
         try {
             // create and add unit panels.
             for (String unitLabel : unitLabelList) {
-
+                
                 try {
                     unitPanelList.addAll(add(unitLabel));
                 } catch (Exception ex) {
@@ -121,12 +121,12 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         }
         return unitPanelList;
     }
-
+    
     public Collection<GenericUnitPanel<RS>> add(final String unitLabel) throws CouldNotPerformException {
         try {
             final List<GenericUnitPanel<RS>> unitPanelList = new ArrayList<>();
             List<UnitConfig> unitConfigsByLabel = deviceRegistryRemote.getUnitConfigsByLabel(unitLabel);
-
+            
             MultiException.ExceptionStack exceptionStack = null;
 
             // process all units with given label.
@@ -149,14 +149,14 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
             throw new CouldNotPerformException("Could not add all matching units for Label[" + unitLabel + "]", ex);
         }
     }
-
+    
     public GenericUnitPanel add(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {
                 genericUnitPanel = new GenericUnitPanel<>();
                 genericUnitPanel.updateUnitConfig(unitConfig);
-
+                
                 unitPanelMap.put(unitConfig.getId(), genericUnitPanel);
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not add Unit[" + unitConfig.getId() + "]", ex);
@@ -165,8 +165,8 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
             return genericUnitPanel;
         }
     }
-
-    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {
+    
+    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {
@@ -178,8 +178,13 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                     wrapperPanel.addObserver(removedObserver);
                     genericUnitPanel = wrapperPanel;
                 }
-                genericUnitPanel.updateUnitConfig(unitConfig, serviceType);
-
+                if (serviceAttribute == null) {
+                    genericUnitPanel.updateUnitConfig(unitConfig, serviceType);
+                } else {
+                    logger.info("Creating unit panel with command to set a value!");
+                    genericUnitPanel.updateUnitConfig(unitConfig, serviceType, serviceAttribute);
+                }
+                
                 unitPanelMap.put(mapId, genericUnitPanel);
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not add Unit[" + unitConfig.getId() + "]", ex);
@@ -188,12 +193,20 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
             return genericUnitPanel;
         }
     }
-
-    public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitId);
-        return add(unitConfig, serviceType, removable);
+    
+    public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {
+        return add(unitConfig, serviceType, null, removable);
     }
-
+    
+    public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitId);
+        return add(unitConfig, serviceType, serviceAttribute, removable);
+    }
+    
+    public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final boolean removable) throws CouldNotPerformException, InterruptedException {
+        return add(unitId, serviceType, null, removable);
+    }
+    
     private void updateDynamicComponents() {
         logger.debug("update " + unitPanelMap.values().size() + " components.");
         synchronized (unitPanelMapLock) {
@@ -210,20 +223,20 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         this.validate();
         this.revalidate();
     }
-
+    
     public void clearUnitPanel() {
         unitPanelMap.clear();
         updateDynamicComponents();
     }
-
+    
     public DeviceRegistryRemote getDeviceRegistryRemote() {
         return deviceRegistryRemote;
     }
-
+    
     public Map<String, GenericUnitPanel<RS>> getUnitPanelMap() {
         return Collections.unmodifiableMap(unitPanelMap);
     }
-
+    
     public Collection<GenericUnitPanel<RS>> getUnitPanelList() {
         return Collections.unmodifiableCollection(unitPanelMap.values());
     }

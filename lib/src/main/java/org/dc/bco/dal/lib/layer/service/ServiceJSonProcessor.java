@@ -26,19 +26,15 @@ package org.dc.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.googlecode.protobuf.format.JsonFormat;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.processing.StringProcessor;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -47,29 +43,50 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
  */
 public class ServiceJSonProcessor {
 
-    private final JsonParser parser;
-    private final Gson gson;
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceJSonProcessor.class);
+    private static final String javaPrimitvePrefix = "java.lang.";
 
-    public ServiceJSonProcessor() {
-        this.parser = new JsonParser();
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
+    /**
+     * Enumeration that map from java primitives to proto field descriptor
+     * types.
+     */
+    public enum JavaTypeToProto {
+
+        BOOLEAN(Descriptors.FieldDescriptor.Type.BOOL),
+        INTEGER(Descriptors.FieldDescriptor.Type.INT32),
+        FLOAT(Descriptors.FieldDescriptor.Type.FLOAT),
+        DOUBLE(Descriptors.FieldDescriptor.Type.DOUBLE),
+        LONG(Descriptors.FieldDescriptor.Type.INT64),
+        STRING(Descriptors.FieldDescriptor.Type.STRING),
+        ENUM(Descriptors.FieldDescriptor.Type.ENUM);
+
+        private final Descriptors.FieldDescriptor.Type protoType;
+
+        private JavaTypeToProto(final Descriptors.FieldDescriptor.Type protoType) {
+            this.protoType = protoType;
+        }
+
+        public Descriptors.FieldDescriptor.Type getProtoType() {
+            return protoType;
+        }
     }
 
-    public String serialize(final Service service, final ServiceTemplate.ServiceType type) throws CouldNotPerformException {
-        Object serviceAtribute = null;
-        try {
-            String methodName = ("get" + StringProcessor.transformUpperCaseToCamelCase(type.toString())).replaceAll("Service", "");
-            Method method = service.getClass().getMethod(methodName);
-            serviceAtribute = method.invoke(service);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException(ex);
-        }
-        if (serviceAtribute == null) {
-            throw new CouldNotPerformException("Null value for service[" + service.toString() + "] and type [" + type + "]");
-        }
-        if (serviceAtribute instanceof Message) {
+    public ServiceJSonProcessor() {
+    }
+
+    /**
+     * Serialize a serviceAttribute which can be a proto message, enumeration or
+     * a java primitive to string. If its a primitive toString is called while
+     * messages or enumerations will be serialized into JSon
+     *
+     * @param serviceAttribute
+     * @return
+     * @throws CouldNotPerformException
+     */
+    public String serialize(final Object serviceAttribute) throws CouldNotPerformException {
+        if (serviceAttribute instanceof Message) {
             try {
-                String jsonStringRep = JsonFormat.printToString((Message) serviceAtribute);
+                String jsonStringRep = JsonFormat.printToString((Message) serviceAttribute);
 
                 // formatting only adds empty lines
                 // format
@@ -80,88 +97,104 @@ public class ServiceJSonProcessor {
                 throw new CouldNotPerformException("Could not serialize service argument to string!", ex);
             }
         } else {
-            Double d;
-            return serviceAtribute.toString();
+            return serviceAttribute.toString();
         }
-    }
-
-    public Class getServiceAttributeType(final Service service, final ServiceTemplate.ServiceType type) throws CouldNotPerformException {
-        Object serviceAtribute = null;
-        try {
-            String methodName = ("get" + StringProcessor.transformUpperCaseToCamelCase(type.toString())).replaceAll("Service", "");
-            Method method = service.getClass().getMethod(methodName);
-            serviceAtribute = method.invoke(service);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException(ex);
-        }
-        return serviceAtribute.getClass();
     }
 
     /**
-     * TODO: Write an enum to map from java primitve types to protobuf primitves
-     * and use these as service attribute types. When parsing use the
-     * FieldDescriptor.Type.valueOf on the service attribute type and get the
-     * according java type. The according class should be
-     * java.lang.(javaTypeToString). Then this primitive should have a
-     * constructor with a string as a parameter. Call this to get the java
-     * value. In the end write unit tests to serialize and deserialize alle java
-     * primitive and one example protobuf message. Serializing and deserialzing
-     * should not change the object at all.
+     * Get the string representation for a given serviceAttribute which can be a
+     * proto message, enumeration or a java primitive.
+     *
+     * @param serviceAttribute the serviceAttribute
+     * @return a string representation of the serviceAttribute type
+     * @throws CouldNotPerformException
      */
-    public Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
-        Object obj = null;
-        try {
-            Class attibuteClass = Class.forName(serviceAttributeType);
-            System.out.println("Found class [" + attibuteClass.getSimpleName() + "]");
-            System.out.println("Number of constructors [" + attibuteClass.getConstructors().length + "]");
-            System.out.println("Number of declared inner classes [" + attibuteClass.getClasses().length + "]");
-            for (int i = 0; i < attibuteClass.getClasses().length; i++) {
-                System.out.println("InnerClass [" + attibuteClass.getClasses()[i].getName() + "]");
-            }
-            if (attibuteClass.getClasses().length > 0) {
-                Class builderClass = attibuteClass.getClasses()[0];
-                try {
-                    Message.Builder builder = (Message.Builder) attibuteClass.getMethod("newBuilder").invoke(null);
-                    JsonFormat.merge(jsonStringRep, builder);
-                    obj = builder.build();
-                    System.out.println("Parsed builder [" + obj + "]");
-                } catch (NoSuchMethodException ex) {
-                    Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
-                    Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IllegalArgumentException ex) {
-                    Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InvocationTargetException ex) {
-                    Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (JsonFormat.ParseException ex) {
-                    Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            try {
-                // The simple types often offer a constructor by string
-                Constructor constructor = attibuteClass.getConstructor(jsonStringRep.getClass());
-                obj = constructor.newInstance(jsonStringRep);
-                System.out.println("Succesfully created instance of [" + obj.getClass().getSimpleName() + "] with value [" + obj + "]");
-            } catch (NoSuchMethodException ex) {
-                System.out.println("Class has no copy constructor");
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                Logger.getLogger(ServiceJSonProcessor.class.getName()).log(Level.SEVERE, null, ex);
-            }
-//            attibuteClass.getConstructor().
-
-//            attibuteClass.getConstructor().
-        } catch (ClassNotFoundException ex) {
-            throw new CouldNotPerformException("Could not find class from ServiceAttributeType [" + serviceAttributeType + "]", ex);
+    public String getServiceAttributeType(final Object serviceAttribute) throws CouldNotPerformException {
+        if (serviceAttribute.getClass().getName().startsWith("rst")) {
+            return serviceAttribute.getClass().getName();
         }
 
-//        try {
-//            JsonFormat.merge(jsonStringRep, builder);
-//            return transformer.transform((M) builder.build());
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not deserialize " + file + " into " + builder + "!", ex);
-//        }
-        return obj;
+        if (serviceAttribute.getClass().isEnum()) {
+            logger.info(serviceAttribute.getClass().getName());
+            return serviceAttribute.getClass().getName();
+        }
+
+        logger.debug("Simple class name of attribute to upper case [" + serviceAttribute.getClass().getSimpleName().toUpperCase() + "]");
+        JavaTypeToProto javaToProto;
+        try {
+            javaToProto = JavaTypeToProto.valueOf(serviceAttribute.getClass().getSimpleName().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new CouldNotPerformException("ServiceAttribute is not a supported java primitive nor a supported rst type", ex);
+        }
+        logger.debug("According proto type [" + javaToProto.getProtoType().name() + "]");
+        return javaToProto.getProtoType().name();
+    }
+
+    /**
+     * Deserialize a JSon string representation for an rst value given the class
+     * name for the value or the type if its a primitive.
+     *
+     * @param jsonStringRep the string representation of the rst value
+     * @param serviceAttributeType the class name or the type of the value
+     * @return the deserialized value
+     * @throws org.dc.jul.exception.CouldNotPerformException
+     */
+    public Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
+        if (serviceAttributeType.startsWith("rst")) {
+            try {
+                Class attibuteClass = Class.forName(serviceAttributeType);
+                if (attibuteClass.isEnum()) {
+                    return attibuteClass.getMethod("valueOf", String.class).invoke(null, jsonStringRep);
+                }
+                Message.Builder builder = (Message.Builder) attibuteClass.getMethod("newBuilder").invoke(null);
+                JsonFormat.merge(jsonStringRep, builder);
+                return builder.build();
+            } catch (ClassNotFoundException ex) {
+                throw new CouldNotPerformException("Could not find class for serviceAttributeType [" + serviceAttributeType + "]", ex);
+            } catch (JsonFormat.ParseException ex) {
+                throw new CouldNotPerformException("Could not merge [" + jsonStringRep + "] into builder", ex);
+            } catch (NoSuchMethodException | SecurityException ex) {
+                throw new CouldNotPerformException("Could not find or acces newBuilder method for rst type [" + serviceAttributeType + "]", ex);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                throw new CouldNotPerformException("Could not invoke newBuilder method for rst type [" + serviceAttributeType + "]", ex);
+            }
+        } else {
+            try {
+                if (serviceAttributeType.split("\\.").length > 1) {
+                    Class attibuteClass = Class.forName(serviceAttributeType);
+                    if (attibuteClass.isEnum()) {
+                        return attibuteClass.getMethod("valueOf", String.class).invoke(null, jsonStringRep);
+                    }
+                }
+            } catch (ClassNotFoundException ex) {
+                throw new CouldNotPerformException("Could not find class [" + serviceAttributeType + "]", ex);
+            } catch (NoSuchMethodException ex) {
+                throw new CouldNotPerformException("Java primitve [" + serviceAttributeType + "] has no valueofM method", ex);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                throw new CouldNotPerformException("Could not invoke valueOf method of class [" + serviceAttributeType + "] with [" + jsonStringRep + "] as the argument", ex);
+            }
+            String className = getJavaPrmitiveClassName(Descriptors.FieldDescriptor.Type.valueOf(serviceAttributeType));
+            try {
+                Class attibuteClass = Class.forName(className);
+                // The simple types often offer a constructor by string
+                Constructor constructor = attibuteClass.getConstructor(String.class);
+                return constructor.newInstance(jsonStringRep);
+            } catch (ClassNotFoundException ex) {
+                throw new CouldNotPerformException("Could not find class [" + className + "]", ex);
+            } catch (NoSuchMethodException ex) {
+                throw new CouldNotPerformException("Java primitve [" + className + "] has no string constructor", ex);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                throw new CouldNotPerformException("Could not invoke constructor of class [" + className + "] with [" + jsonStringRep + "] as the argument", ex);
+            }
+        }
+    }
+
+    private String getJavaPrmitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
+        switch (protoType.getJavaType()) {
+            case INT:
+                return javaPrimitvePrefix + "Integer";
+            default:
+                return javaPrimitvePrefix + StringProcessor.transformUpperCaseToCamelCase(protoType.getJavaType().name());
+        }
     }
 }

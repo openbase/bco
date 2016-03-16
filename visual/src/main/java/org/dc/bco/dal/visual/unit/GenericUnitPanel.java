@@ -131,6 +131,13 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
         revalidate();
     }
 
+    public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
+        updateUnitConfig(unitConfig, serviceType);
+        String methodName = "get" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", "");
+        logger.info("Calling method [" + methodName + "] on remote [" + getRemoteService().getId() + "]");
+        getRemoteService().callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""), serviceAttribute);
+    }
+
     private Class<? extends AbstractServicePanel> loadServicePanelClass(final ServiceType serviceType) throws CouldNotPerformException {
         String remoteClassName = AbstractServicePanel.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + "Panel";
         try {
