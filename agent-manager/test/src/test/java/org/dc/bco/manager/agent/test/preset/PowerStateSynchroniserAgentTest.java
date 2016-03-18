@@ -164,14 +164,14 @@ public class PowerStateSynchroniserAgentTest {
 
         Thread.sleep(2000);
 
-        logger.info("\nDimmer id [" + sourceId + "]");
+        logger.info("Dimmer id [" + sourceId + "]");
         logger.info("Ambient light id [" + ambientLightRemote.getId() + "]");
         logger.info("Power plug id [" + powerPlugRemote.getId() + "]");
 
         dimmerRemote.setPower(OFF);
         Thread.sleep(50);
         dimmerRemote.requestStatus();
-        logger.info("\nDimmer state [" + dimmerRemote.getPower().getValue() + "]\n");
+        logger.info("Dimmer state [" + dimmerRemote.getPower().getValue() + "]");
         ambientLightRemote.requestStatus();
         powerPlugRemote.requestStatus();
         assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPower().getValue());

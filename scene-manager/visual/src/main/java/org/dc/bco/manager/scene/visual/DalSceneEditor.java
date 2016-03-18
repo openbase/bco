@@ -80,8 +80,11 @@ public class DalSceneEditor extends javax.swing.JFrame {
 
                 @Override
                 public void update(Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
+//                    logger.info("Update through new scene selected!");
                     genericUnitCollectionPanel.clearUnitPanel();
+//                    logger.info("Cleared unit collection panel!");
                     for (ActionConfig action : data) {
+//                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
                         Object value = serviceProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
                         genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
                     }

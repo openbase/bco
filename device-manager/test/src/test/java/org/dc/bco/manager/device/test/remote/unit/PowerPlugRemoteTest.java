@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.PowerPlugController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -73,7 +72,6 @@ public class PowerPlugRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_PLUG_LABEL;
@@ -126,10 +124,10 @@ public class PowerPlugRemoteTest {
     @Test(timeout = 60000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState.State state = PowerState.State.OFF;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePower(state);
         powerPlugRemote.requestStatus();
-        assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower().getValue());
+        assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
     }
 
     /**

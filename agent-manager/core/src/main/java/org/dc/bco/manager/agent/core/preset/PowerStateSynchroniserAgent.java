@@ -38,7 +38,6 @@ import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.manager.agent.core.AgentManagerController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
-import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -59,6 +58,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     public static final String TARGET_KEY = "TARGET";
     public static final String SOURCE_BEHAVIOUR_KEY = "SOURCE_BEHAVIOUR";
     public static final String TARGET_BEHAVIOUR_KEY = "TARGET_BEHAVIOUR";
+    private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+    private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
     public enum PowerStateSyncBehaviour {
 
@@ -75,7 +76,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
      * OFF when all targets are off. ON when at least one target is one.
      */
     private PowerState.State targetLatestPowerState;
-    private List<AbstractIdentifiableRemote> targetRemotes = new ArrayList<>();
+    private final List<AbstractIdentifiableRemote> targetRemotes = new ArrayList<>();
     private AbstractIdentifiableRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private final UnitRemoteFactory factory;
@@ -136,7 +137,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
                         for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
-                            invokeSetPower(targetRemote, PowerState.State.OFF);
+                            invokeSetPower(targetRemote, OFF);
                         }
                     }
                 } else if (sourceLatestPowerState == PowerState.State.ON) {
@@ -144,14 +145,14 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                         case OFF:
                             if (targetLatestPowerState != PowerState.State.OFF) {
                                 for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
-                                    invokeSetPower(targetRemote, PowerState.State.OFF);
+                                    invokeSetPower(targetRemote, OFF);
                                 }
                             }
                             break;
                         case ON:
                             if (targetLatestPowerState != PowerState.State.ON) {
                                 for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
-                                    invokeSetPower(targetRemote, PowerState.State.ON);
+                                    invokeSetPower(targetRemote, ON);
                                 }
                             }
                             break;
@@ -174,18 +175,18 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                     }
                     if (targetLatestPowerState == PowerState.State.ON) {
                         if (sourceLatestPowerState != PowerState.State.ON) {
-                            invokeSetPower(sourceRemote, PowerState.State.ON);
+                            invokeSetPower(sourceRemote, ON);
                         }
                     } else if (targetLatestPowerState == PowerState.State.OFF) {
                         switch (sourceBehaviour) {
                             case OFF:
                                 if (sourceLatestPowerState != PowerState.State.OFF) {
-                                    invokeSetPower(sourceRemote, PowerState.State.OFF);
+                                    invokeSetPower(sourceRemote, OFF);
                                 }
                                 break;
                             case ON:
                                 if (sourceLatestPowerState != PowerState.State.ON) {
-                                    invokeSetPower(sourceRemote, PowerState.State.ON);
+                                    invokeSetPower(sourceRemote, ON);
                                 }
                                 break;
                             case LAST_STATE:
@@ -227,9 +228,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         return false;
     }
 
-    private void invokeSetPower(AbstractIdentifiableRemote remote, PowerState.State powerState) {
+    private void invokeSetPower(AbstractIdentifiableRemote remote, PowerState powerState) {
         try {
-            Method method = remote.getClass().getMethod("setPower", PowerState.State.class);
+            Method method = remote.getClass().getMethod("setPower", PowerState.class);
             method.invoke(remote, powerState);
         } catch (NoSuchMethodException ex) {
             logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method");

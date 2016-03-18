@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.dal.lib.layer.service.ShutterService;
@@ -47,8 +46,8 @@ public class ShutterServiceImpl<ST extends ShutterService & Unit> extends OpenHA
     }
 
     @Override
-    public void setShutter(ShutterState.State state) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
+    public void setShutter(ShutterState state) throws CouldNotPerformException {
+        executeCommand(OpenHABCommandFactory.newUpDownCommand(state.getValue()));
     }
 
     @Override

@@ -124,9 +124,9 @@ public class LightRemoteTest {
     @Test(timeout = 60000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
-        PowerState.State state = PowerState.State.OFF;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePower(state);
         lightRemote.requestStatus();
-        assertEquals("Light has not been set in time!", state, lightRemote.getPower().getValue());
+        assertEquals("Light has not been set in time!", state, lightRemote.getPower());
     }
 }

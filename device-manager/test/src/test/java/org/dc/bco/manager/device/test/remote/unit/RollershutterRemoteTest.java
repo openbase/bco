@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.RollershutterController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -72,7 +71,6 @@ public class RollershutterRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.ROLLERSHUTTER_LABEL;
@@ -111,10 +109,10 @@ public class RollershutterRemoteTest {
     @Test(timeout = 60000)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
-        ShutterState.State state = ShutterState.State.DOWN;
+        ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
         rollershutterRemote.setShutter(state);
         rollershutterRemote.requestStatus();
-        assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState().getValue());
+        assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState());
     }
 
     /**
@@ -125,10 +123,10 @@ public class RollershutterRemoteTest {
     @Test(timeout = 60000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
-        ShutterState.State state = ShutterState.State.STOP;
+        ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutter(state);
         rollershutterRemote.requestStatus();
-        assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter().getValue(), state);
+        assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
     }
 
     /**

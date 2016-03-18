@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.DimmerController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -71,7 +70,6 @@ public class DimmerRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         location = new Location(registry.getLocation());
 
@@ -119,7 +117,7 @@ public class DimmerRemoteTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         dimmerRemote.setPower(state);
         dimmerRemote.requestStatus();
-        assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState().getValue());
+        assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState());
     }
 
     /**
@@ -128,10 +126,10 @@ public class DimmerRemoteTest {
     @Test(timeout = 60000)
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
-        PowerState.State state = PowerState.State.OFF;
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePower(state);
         dimmerRemote.requestStatus();
-        assertEquals("Power has not been set in time!", state, dimmerRemote.getPower().getValue());
+        assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
     }
 
     /**
