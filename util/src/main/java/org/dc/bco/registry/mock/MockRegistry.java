@@ -26,7 +26,6 @@ package org.dc.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
 import org.dc.bco.registry.agent.core.AgentRegistryLauncher;
@@ -81,6 +80,7 @@ public class MockRegistry {
     public static final String ROLLERSHUTTER_LABEL = "Rollershutter_Unit_Test";
     public static final String TAMPER_SWITCH_LABEL = "Tamper_Switch_Unit_Test";
     public static final String TEMPERATURE_SENSOR_LABEL = "Temperature_Sensor_Unit_Test";
+    public static final String TEMPERATURE_CONTROLLER_LABEL = "Temperature_Controller_Unit_Test";
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
 
@@ -109,7 +109,7 @@ public class MockRegistry {
         REED_SWITCH(UnitType.REED_SWITCH, ServiceType.REED_SWITCH_PROVIDER),
         ROLLERSHUTTER(UnitType.ROLLERSHUTTER, ServiceType.SHUTTER_SERVICE, ServiceType.OPENING_RATIO_PROVIDER),
         TAMPER_SWITCH(UnitType.TAMPER_SWITCH, ServiceType.TAMPER_PROVIDER),
-        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TEMPERATURE_PROVIDER),
+        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TARGET_TEMPERATURE_SERVICE, ServiceType.TEMPERATURE_PROVIDER),
         SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, ServiceType.SMOKE_STATE_PROVIDER, ServiceType.SMOKE_ALARM_STATE_PROVIDER),
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, ServiceType.TEMPERATURE_PROVIDER), // TODO mpohling: whats about temperature service?
         BATTERY(UnitType.BATTERY, ServiceType.BATTERY_PROVIDER);
@@ -319,6 +319,12 @@ public class MockRegistry {
         DeviceClass smokeDetector = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro"));
         units.add(getUnitConfig(UnitTemplate.UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL));
         deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units));
+
+        units.clear();
+        // temperature controller
+        DeviceClass temperatureControllerClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira"));
+        units.add(getUnitConfig(UnitTemplate.UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass, units));
     }
 
     public static PlacementConfig getDefaultPlacement() {
