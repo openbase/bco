@@ -26,7 +26,6 @@ package org.dc.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -34,7 +33,7 @@ import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.processing.StringProcessor;
 import java.awt.Color;
 import java.util.concurrent.Callable;
-import rst.homeautomation.state.StandbyStateType;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
@@ -42,8 +41,12 @@ import rst.homeautomation.state.StandbyStateType;
  */
 public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
 
+    private static final StandbyState RUNNING = StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
+    private static final StandbyState STANDBY = StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
+
     /**
      * Creates new form BrightnessService
+     *
      * @throws org.dc.jul.exception.InstantiationException
      */
     public StandbyServicePanel() throws org.dc.jul.exception.InstantiationException {
@@ -121,11 +124,11 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
                 try {
                     switch (getService().getStandby().getValue()) {
                         case STANDBY:
-                            getService().setStandby(StandbyStateType.StandbyState.State.RUNNING);
+                            getService().setStandby(RUNNING);
                             break;
                         case RUNNING:
                         case UNKNOWN:
-                            getService().setStandby(StandbyStateType.StandbyState.State.STANDBY);
+                            getService().setStandby(STANDBY);
                             break;
                         default:
                             throw new InvalidStateException("State[" + getService().getStandby().getValue().name() + "] is unknown.");

@@ -44,7 +44,7 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  */
 public interface ShutterService extends Service, ShutterProvider {
 
-    public void setShutter(ShutterState.State state) throws CouldNotPerformException;
+    public void setShutter(ShutterState state) throws CouldNotPerformException;
 
     public class SetShutterCallback extends EventCallback {
 
@@ -59,7 +59,7 @@ public interface ShutterService extends Service, ShutterProvider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setShutter(((ShutterState) request.getData()).getValue());
+                service.setShutter(((ShutterState) request.getData()));
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
             }

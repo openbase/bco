@@ -58,11 +58,11 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         this.dimmService = getServiceFactory().newDimmService(this);
     }
 
-    public void updatePower(final PowerState.State value) throws CouldNotPerformException {
+    public void updatePower(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(value);
+            dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
         }

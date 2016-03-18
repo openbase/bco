@@ -26,8 +26,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -87,8 +85,8 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
     }
 
     @Override
-    public void setStandby(StandbyState.State state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + state.name() + "]");
+    public void setStandby(StandbyState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
         standbyService.setStandby(state);
     }
 

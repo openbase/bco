@@ -43,7 +43,7 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
  */
 public interface StandbyService extends Service, StandbyProvider {
 
-    public void setStandby(final StandbyState.State state) throws CouldNotPerformException;
+    public void setStandby(final StandbyState state) throws CouldNotPerformException;
 
     public class SetStandbyCallback extends EventCallback {
 
@@ -58,7 +58,7 @@ public interface StandbyService extends Service, StandbyProvider {
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
-                service.setStandby(((StandbyState) request.getData()).getValue());
+                service.setStandby(((StandbyState) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);

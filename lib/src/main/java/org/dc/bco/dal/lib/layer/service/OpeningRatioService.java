@@ -26,7 +26,6 @@ import org.dc.bco.dal.lib.layer.service.provider.OpeningRatioProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InvocationFailedException;
-import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Event;

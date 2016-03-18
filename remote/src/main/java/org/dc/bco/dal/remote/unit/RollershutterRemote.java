@@ -26,7 +26,6 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,9 +56,9 @@ public class RollershutterRemote extends AbstractUnitRemote<Rollershutter> imple
     }
 
     @Override
-    public void setShutter(ShutterState.State value) throws CouldNotPerformException {
+    public void setShutter(ShutterState value) throws CouldNotPerformException {
         try {
-            RPCHelper.callRemoteMethod(ShutterState.newBuilder().setValue(value).build(), this).get();
+            RPCHelper.callRemoteMethod(value, this).get();
         } catch (InterruptedException ex) {
             Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {

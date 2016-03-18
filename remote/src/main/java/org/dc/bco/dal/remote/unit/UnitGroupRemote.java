@@ -144,7 +144,7 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     }
 
     @Override
-    public void setShutter(ShutterStateType.ShutterState.State state) throws CouldNotPerformException {
+    public void setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
         testServiceAvailability(ServiceTemplate.ServiceType.SHUTTER_SERVICE);
         ((ShutterServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.SHUTTER_SERVICE)).setShutter(state);
     }
@@ -156,7 +156,7 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     }
 
     @Override
-    public void setStandby(StandbyStateType.StandbyState.State state) throws CouldNotPerformException {
+    public void setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
         testServiceAvailability(ServiceTemplate.ServiceType.STANDBY_SERVICE);
         ((StandbyServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.STANDBY_SERVICE)).setStandby(state);
     }

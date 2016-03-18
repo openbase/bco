@@ -26,13 +26,12 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.ShutterService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.VerificationFailedException;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.state.ShutterStateType;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
  *
@@ -45,14 +44,14 @@ public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> 
     }
 
     @Override
-    public void setShutter(ShutterStateType.ShutterState.State state) throws CouldNotPerformException {
+    public void setShutter(ShutterState state) throws CouldNotPerformException {
         for (ShutterService service : getServices()) {
             service.setShutter(state);
         }
     }
 
     @Override
-    public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
+    public ShutterState getShutter() throws CouldNotPerformException {
         throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -62,7 +61,7 @@ public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> 
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            setShutter(ShutterStateType.ShutterState.State.valueOf(actionConfig.getServiceAttribute()));
+            setShutter(ShutterState.newBuilder().setValue(ShutterState.State.valueOf(actionConfig.getServiceAttribute())).build());
         } catch (NumberFormatException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

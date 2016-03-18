@@ -33,13 +33,16 @@ import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.processing.StringProcessor;
 import java.awt.Color;
 import java.util.concurrent.Callable;
-import rst.homeautomation.state.PowerStateType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author mpohling
  */
 public class PowerServicePanel extends AbstractServicePanel<PowerService> {
+
+    private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+    private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
     /**
      * Creates new form BrightnessService
@@ -119,11 +122,11 @@ public class PowerServicePanel extends AbstractServicePanel<PowerService> {
                 try {
                     switch (getService().getPower().getValue()) {
                         case ON:
-                            getService().setPower(PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.OFF).build());
+                            getService().setPower(OFF);
                             break;
                         case OFF:
                         case UNKNOWN:
-                            getService().setPower(PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build());
+                            getService().setPower(ON);
                             break;
                         default:
                             throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");

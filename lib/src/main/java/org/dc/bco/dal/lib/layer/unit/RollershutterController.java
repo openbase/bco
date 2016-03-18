@@ -26,8 +26,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
 import org.dc.bco.dal.lib.layer.service.ShutterService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -44,37 +42,37 @@ import rst.homeautomation.unit.RollershutterType.Rollershutter;
  * @author thuxohl
  */
 public class RollershutterController extends AbstractUnitController<Rollershutter, Rollershutter.Builder> implements RollershutterInterface {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Rollershutter.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterState.getDefaultInstance()));
     }
-
+    
     private final ShutterService shutterService;
     private final OpeningRatioService openingRatioService;
-
+    
     public RollershutterController(final UnitHost unitHost, final Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(RollershutterController.class, unitHost, builder);
         this.shutterService = getServiceFactory().newShutterService(this);
         this.openingRatioService = getServiceFactory().newOpeningRatioService(this);
     }
-
-    public void updateShutter(final ShutterState.State value) throws CouldNotPerformException {
+    
+    public void updateShutter(final ShutterState value) throws CouldNotPerformException {
         logger.debug("Apply shutter Update[" + value + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getShutterStateBuilder().setValue(value);
+            dataBuilder.getInternalBuilder().setShutterState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply shutter Update[" + value + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
-    public void setShutter(final ShutterState.State state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to ShutterState [" + state.name() + "]");
+    public void setShutter(final ShutterState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to ShutterState [" + state + "]");
         this.shutterService.setShutter(state);
     }
-
+    
     @Override
     public ShutterState getShutter() throws NotAvailableException {
         try {
@@ -83,23 +81,23 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
             throw new NotAvailableException("shutter", ex);
         }
     }
-
+    
     public void updateOpeningRatio(final Double value) throws CouldNotPerformException {
         logger.debug("Apply opening ratio Update[" + value + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setOpeningRatio(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply opening ratio Update[" + value + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to OpeningRatio [" + openingRatio + "]");
         this.openingRatioService.setOpeningRatio(openingRatio);
     }
-
+    
     @Override
     public Double getOpeningRatio() throws NotAvailableException {
         try {

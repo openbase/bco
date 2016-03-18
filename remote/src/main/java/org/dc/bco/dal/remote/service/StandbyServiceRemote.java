@@ -26,13 +26,12 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.VerificationFailedException;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.state.StandbyStateType;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
@@ -45,14 +44,14 @@ public class StandbyServiceRemote extends AbstractServiceRemote<StandbyService> 
     }
 
     @Override
-    public void setStandby(StandbyStateType.StandbyState.State state) throws CouldNotPerformException {
-        for(StandbyService service : getServices()) {
+    public void setStandby(StandbyState state) throws CouldNotPerformException {
+        for (StandbyService service : getServices()) {
             service.setStandby(state);
         }
     }
 
     @Override
-    public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
+    public StandbyState getStandby() throws CouldNotPerformException {
         throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -62,7 +61,7 @@ public class StandbyServiceRemote extends AbstractServiceRemote<StandbyService> 
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            setStandby(StandbyStateType.StandbyState.State.valueOf(actionConfig.getServiceAttribute()));
+            setStandby(StandbyState.newBuilder().setValue(StandbyState.State.valueOf(actionConfig.getServiceAttribute())).build());
         } catch (NumberFormatException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

@@ -83,9 +83,9 @@ public class ScreenRemote extends AbstractUnitRemote<ScreenType.Screen> implemen
     }
 
     @Override
-    public void setStandby(StandbyStateType.StandbyState.State value) throws CouldNotPerformException {
+    public void setStandby(StandbyStateType.StandbyState value) throws CouldNotPerformException {
         try {
-            RPCHelper.callRemoteMethod(StandbyState.newBuilder().setValue(value).build(), this).get();
+            RPCHelper.callRemoteMethod(value, this).get();
         } catch (InterruptedException ex) {
             Logger.getLogger(ScreenRemote.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ExecutionException ex) {

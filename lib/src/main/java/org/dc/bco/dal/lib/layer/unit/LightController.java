@@ -49,11 +49,11 @@ public class LightController extends AbstractUnitController<Light, Light.Builder
         this.powerService = getServiceFactory().newPowerService(this);
     }
 
-    public void updatePower(final PowerState.State value) throws CouldNotPerformException {
+    public void updatePower(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Light.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(value);
+            dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
         }

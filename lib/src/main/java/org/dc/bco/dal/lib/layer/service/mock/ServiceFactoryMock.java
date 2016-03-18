@@ -160,7 +160,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new ShutterService() {
 
             @Override
-            public void setShutter(ShutterStateType.ShutterState.State state) throws CouldNotPerformException {
+            public void setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
                 update(state, unit);
             }
 
@@ -210,7 +210,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new StandbyService() {
 
             @Override
-            public void setStandby(StandbyStateType.StandbyState.State state) throws CouldNotPerformException {
+            public void setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
                 update(state, unit);
             }
 

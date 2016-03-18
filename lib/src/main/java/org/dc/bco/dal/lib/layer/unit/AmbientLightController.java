@@ -26,7 +26,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.bco.dal.lib.layer.service.PowerService;
@@ -64,11 +63,11 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         this.brightnessService = getServiceFactory().newBrightnessService(this);
     }
 
-    public void updatePower(final PowerState.State value) throws CouldNotPerformException {
+    public void updatePower(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(value);
+            dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
         }
@@ -121,7 +120,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColor(dataBuilder.getInternalBuilder().getColor().toBuilder().setValue(value).build());
-            if(value == 0) {
+            if (value == 0) {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
             } else {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
