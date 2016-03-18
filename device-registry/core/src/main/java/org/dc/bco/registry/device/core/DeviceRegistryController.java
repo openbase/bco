@@ -32,6 +32,7 @@ import org.dc.bco.registry.device.core.consistency.DeviceConfigDeviceClassUnitCo
 import org.dc.bco.registry.device.core.consistency.DeviceIdConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.DeviceLabelConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.DeviceLocationIdConsistencyHandler;
+import org.dc.bco.registry.device.core.consistency.DeviceOwnerConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.DeviceScopeConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.DeviceTransformationFrameConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.OpenhabServiceConfigItemIdConsistencyHandler;
@@ -65,6 +66,7 @@ import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.bco.registry.device.lib.jp.JPUnitGroupDatabaseDirectory;
 import org.dc.bco.registry.device.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.bco.registry.user.remote.UserRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -84,6 +86,7 @@ import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.authorization.UserRegistryType.UserRegistry;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
@@ -116,7 +119,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     private ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
+    private final UserRegistryRemote userRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
+    private Observer<UserRegistry> userRegistryUpdateObserver;
 
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
         super(DeviceRegistry.newBuilder());
@@ -130,6 +135,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.activateVersionControl(DeviceConfig_0_To_1_DBConverter.class.getPackage());
 
             locationRegistryRemote = new LocationRegistryRemote();
+            userRegistryRemote = new UserRegistryRemote();
 
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
@@ -143,6 +149,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationRegistryRemote));
+            deviceConfigRegistry.registerConsistencyHandler(new DeviceOwnerConsistencyHandler(userRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationRegistryRemote.getLocationConfigRemoteRegistry()));
 
@@ -187,6 +194,10 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
+            
+            userRegistryUpdateObserver = (Observable<UserRegistry> source, UserRegistry data) -> {
+                deviceConfigRegistry.checkConsistency();
+            };
 
             // Check the device configs if the device classes have changed.
             deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
@@ -212,6 +223,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         try {
             super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
             locationRegistryRemote.init();
+            userRegistryRemote.init();
         } catch (JPServiceException ex) {
             throw new InitializationException(this, ex);
         }
@@ -228,7 +240,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         try {
             super.activate();
             locationRegistryRemote.activate();
+            userRegistryRemote.activate();
             locationRegistryRemote.addObserver(locationRegistryUpdateObserver);
+            userRegistryRemote.addObserver(userRegistryUpdateObserver);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
@@ -275,6 +289,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         locationRegistryRemote.removeObserver(locationRegistryUpdateObserver);
+        userRegistryRemote.removeObserver(userRegistryUpdateObserver);
         super.deactivate();
     }
 

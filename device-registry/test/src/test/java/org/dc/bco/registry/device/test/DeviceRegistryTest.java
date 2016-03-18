@@ -26,14 +26,9 @@ package org.dc.bco.registry.device.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.registry.device.core.consistency.OpenhabServiceConfigItemIdConsistencyHandler;
 import org.dc.bco.registry.device.core.DeviceRegistryController;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
-import org.dc.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
-import org.dc.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
-import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -45,15 +40,13 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-import org.dc.jul.storage.registry.jp.JPDatabaseDirectory;
-import org.dc.jul.storage.registry.jp.JPInitializeDB;
 import org.dc.bco.registry.location.core.LocationRegistryController;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import org.dc.bco.registry.user.core.UserRegistryController;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -61,7 +54,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
+import rst.authorization.UserConfigType.UserConfig;
 import rst.configuration.EntryType;
 import rst.configuration.MetaConfigType;
 import rst.geometry.PoseType;
@@ -76,6 +69,8 @@ import rst.homeautomation.service.BindingServiceConfigType.BindingServiceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.EnablingStateType.EnablingState;
+import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -100,6 +95,7 @@ public class DeviceRegistryTest {
     private static DeviceConfig.Builder deviceConfig;
 
     private static LocationRegistryController locationRegistry;
+    private static UserRegistryController userRegistry;
 
     private static DeviceClass.Builder deviceClassRemoteMessage;
     private static DeviceClass.Builder returnValue;
@@ -121,9 +117,11 @@ public class DeviceRegistryTest {
 
         deviceRegistry = new DeviceRegistryController();
         locationRegistry = new LocationRegistryController();
+        userRegistry = new UserRegistryController();
 
         deviceRegistry.init();
         locationRegistry.init();
+        userRegistry.init();
 
         Thread deviceRegistryThread = new Thread(new Runnable() {
 
@@ -149,11 +147,25 @@ public class DeviceRegistryTest {
             }
         });
 
+        Thread userRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    userRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+
         deviceRegistryThread.start();
         locationRegistryThread.start();
+        userRegistryThread.start();
 
         deviceRegistryThread.join();
         locationRegistryThread.join();
+        userRegistryThread.join();
 
         deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClass.setLabel("TestDeviceClassLabel");
@@ -183,6 +195,9 @@ public class DeviceRegistryTest {
 
         if (locationRegistry != null) {
             locationRegistry.shutdown();
+        }
+        if (userRegistry != null) {
+            userRegistry.shutdown();
         }
         if (deviceRegistry != null) {
             deviceRegistry.shutdown();
@@ -432,6 +447,30 @@ public class DeviceRegistryTest {
         String itemId = OpenhabServiceConfigItemIdConsistencyHandler.generateItemName(deviceConfig, clazz.getLabel(), unitConfig, serviceConfig, LOCATION);
 
 //        assertTrue("OpenHAB item id is not set.", itemId.equals(deviceConfig.getUnitConfig(0).getServiceConfig(0).getBindingServiceConfig().getMetaConfig().getEntry(0).getValue()));
+    }
+
+    /**
+     * Test if the owner of a device is updated correctly.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testOwnerRemoval() throws Exception {
+        UserConfig owner = userRegistry.registerUserConfig(UserConfig.newBuilder().setUserName("owner").setFirstName("Max").setLastName("Mustermann").setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build());
+
+        ArrayList<UnitConfig> units = new ArrayList<>();
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("OwnerRemovalTest", "194872639127319823", "ServiceGMBH"));
+        DeviceConfig ownerRemovalDeviceConfig = getDeviceConfig("OwnerRemovalTestDevice", "1249726918723918723", clazz, units);
+        ownerRemovalDeviceConfig = ownerRemovalDeviceConfig.toBuilder().setInventoryState(InventoryStateType.InventoryState.newBuilder().setOwnerId(owner.getId()).setValue(InventoryStateType.InventoryState.State.IN_STOCK)).build();
+        ownerRemovalDeviceConfig = deviceRegistry.registerDeviceConfig(ownerRemovalDeviceConfig);
+
+        assertEquals("The device does not have the correct owner id!", owner.getId(), ownerRemovalDeviceConfig.getInventoryState().getOwnerId());
+
+        userRegistry.removeUserConfig(owner);
+        assertTrue("The owner did not get removed!", !userRegistry.containsUserConfig(owner));
+
+        ownerRemovalDeviceConfig = deviceRegistry.getDeviceConfigById(ownerRemovalDeviceConfig.getId());
+        assertTrue("The owner id did not get removed even though the user got removed!", ownerRemovalDeviceConfig.getInventoryState().getOwnerId().isEmpty());
     }
 
     /**

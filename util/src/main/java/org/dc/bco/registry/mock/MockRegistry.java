@@ -35,6 +35,7 @@ import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.bco.registry.location.core.LocationRegistryLauncher;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
+import org.dc.bco.registry.user.core.UserRegistryLauncher;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -89,6 +90,7 @@ public class MockRegistry {
     private static AgentRegistryLauncher agentRegistry;
     private static AppRegistryLauncher appRegistry;
     private static SceneRegistryLauncher sceneRegistry;
+    private static UserRegistryLauncher userRegistry;
 
     private final DeviceRegistryRemote deviceRemote;
     private final LocationRegistryRemote locationRemote;
@@ -204,18 +206,32 @@ public class MockRegistry {
                     }
                 }
             });
+            
+            Thread userRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        userRegistry = new UserRegistryLauncher();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
+                    }
+                }
+            });
 
             deviceRegistryThread.start();
             locationRegistryThread.start();
             agentRegistryThread.start();
             appRegistryThread.start();
             sceneRegistryThread.start();
+            userRegistryThread.start();
 
             deviceRegistryThread.join();
             locationRegistryThread.join();
             agentRegistryThread.join();
             appRegistryThread.join();
             sceneRegistryThread.join();
+            userRegistryThread.join();
 
             deviceRemote = new DeviceRegistryRemote();
             locationRemote = new LocationRegistryRemote();
@@ -247,6 +263,7 @@ public class MockRegistry {
         agentRegistry.shutdown();
         appRegistry.shutdown();
         sceneRegistry.shutdown();
+        userRegistry.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException {

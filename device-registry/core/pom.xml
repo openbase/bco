@@ -99,6 +99,11 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
+            <artifactId>registry.user.remote</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
             <artifactId>registry.device.lib</artifactId>
             <version>${project.version}</version>
         </dependency>

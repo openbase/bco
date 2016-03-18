@@ -34,7 +34,7 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-             <plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <version>1.8</version>
@@ -92,6 +92,13 @@
         <dependency>
             <groupId>org.dc.bco</groupId>
             <artifactId>registry.location.core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.user.core</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
             <type>jar</type>
