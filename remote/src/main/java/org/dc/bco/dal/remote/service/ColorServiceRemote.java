@@ -53,6 +53,9 @@ public class ColorServiceRemote extends AbstractServiceRemote<ColorService> impl
 
     @Override
     public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
+        for (ColorService service : getServices()) {
+            return service.getColor();
+        }
         throw new CouldNotPerformException("Not supported yet.");
     }
 

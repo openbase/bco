@@ -26,7 +26,6 @@ package org.dc.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.lang.reflect.Method;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
