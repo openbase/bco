@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.user.test.remote.user;
+package org.dc.bco.manager.app.test.remote.app;
 
 /*
  * #%L
@@ -26,66 +26,72 @@ package org.dc.bco.manager.user.test.remote.user;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
-import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.dc.bco.manager.app.core.AppManagerLauncher;
+import org.dc.bco.manager.app.remote.AppRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
-import org.dc.bco.manager.user.core.UserManagerLauncher;
-import org.dc.bco.manager.user.remote.UserRemote;
 import org.dc.bco.registry.mock.MockRegistry;
-import org.dc.bco.registry.mock.MockRegistryHolder;
+import org.dc.jul.extension.rsb.com.RSBCommunicationService;
+import org.dc.jul.extension.rsb.com.RSBFactory;
+import org.dc.jul.extension.rsb.com.RSBSharedConnectionConfig;
+import org.dc.jul.extension.rsb.iface.RSBInformerInterface;
+import org.dc.jul.extension.rsb.iface.RSBListenerInterface;
+import org.dc.jul.schedule.WatchDog;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import rst.authorization.UserConfigType.UserConfig;
+import rsb.Factory;
+import rsb.Informer;
+import rsb.Scope;
+import rsb.config.ParticipantConfig;
+import rsb.config.TransportConfig;
 
 /**
  *
  * @author thuxohl
  */
-public class UserRemoteTest {
+public class AppRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UserRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AppRemoteTest.class);
 
-    private static UserManagerLauncher userManagerLauncher;
-    private static UserRemote userRemote;
+    private static AppManagerLauncher appManagerLauncher;
+    private static AppRemote appRemote;
     private static MockRegistry registry;
 
-    public UserRemoteTest() {
+    public AppRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+//        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+//        registry = MockRegistryHolder.newMockRegistry();
+//
+//        appManagerLauncher = new UserManagerLauncher();
+//        appManagerLauncher.launch();
 
-        userManagerLauncher = new UserManagerLauncher();
-        userManagerLauncher.launch();
-
-        UserConfig userConfig = MockRegistry.testUser;
-        userRemote = new UserRemote();
-        userRemote.init(userConfig);
-        userRemote.activate();
+//        AppConfig appConfig = AppConfig.getDefaultInstance();
+//        appRemote = new UserRemote();
+//        appRemote.init(appConfig);
+//        appRemote.activate();
     }
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (userManagerLauncher != null) {
-            userManagerLauncher.shutdown();
-        }
-        if (userRemote != null) {
-            userRemote.shutdown();
-        }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+//        if (appManagerLauncher != null) {
+//            appManagerLauncher.shutdown();
+//        }
+//        if (appRemote != null) {
+//            appRemote.shutdown();
+//        }
+//        if (registry != null) {
+//            MockRegistryHolder.shutdownMockRegistry();
+//        }
     }
 
     @Before
@@ -99,14 +105,16 @@ public class UserRemoteTest {
     }
 
     /**
-     * Test of getUsername method, of class UserRemote.
      *
      * @throws java.lang.Exception
      */
     @Test
-    public void testGetUserName() throws Exception {
-        assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getUserName());
-        logger.info("User activity [" + userRemote.getUserActivity() + "]");
-        logger.info("User presence [" + userRemote.getUserPresenceState() + "]");
+    public void testSoundScapeApp() throws Exception {
+        ParticipantConfig config = Factory.getInstance().getDefaultParticipantConfig();
+        final String scope = "/app/soundscape/theme/";
+
+        Informer<Object> informer = Factory.getInstance().createInformer(scope, config);
+        informer.activate();
+        informer.send("Beach");
     }
 }

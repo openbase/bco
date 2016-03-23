@@ -5,9 +5,6 @@
  */
 package org.dc.bco.manager.app.lib;
 
-import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-
 /*
  * #%L
  * COMA AppManager Library
@@ -29,11 +26,19 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.iface.Configurable;
+import org.dc.jul.iface.Enableable;
+import org.dc.jul.iface.Identifiable;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
+
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface App {
+public interface AppController extends Identifiable<String>, Configurable<String, AppConfig>, Enableable, App {
 
-    public void setActivationState(ActivationState activation) throws CouldNotPerformException;
+    public void init(final AppConfig config) throws InitializationException, InterruptedException;
+
 }

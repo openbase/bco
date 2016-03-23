@@ -5,6 +5,14 @@
  */
 package org.dc.bco.manager.app.core;
 
+import org.dc.bco.manager.app.lib.AppManager;
+import org.dc.jps.core.JPService;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * COMA AppManager Core
@@ -26,19 +34,56 @@ package org.dc.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class AppManagerLauncher {
 
+    protected static final Logger logger = LoggerFactory.getLogger(AppManagerLauncher.class);
+
+    private final AppManagerController appManagerController;
+
+    public AppManagerLauncher() throws org.dc.jul.exception.InstantiationException, InterruptedException {
+        try {
+            this.appManagerController = new AppManagerController();
+        } catch (CouldNotPerformException ex) {
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
+        }
+    }
+
+    public void launch() throws org.dc.jul.exception.InstantiationException, InterruptedException {
+        try {
+            appManagerController.init();
+        } catch (CouldNotPerformException ex) {
+            appManagerController.shutdown();
+            throw new org.dc.jul.exception.InstantiationException(this, ex);
+        }
+    }
+
+    public void shutdown() {
+        appManagerController.shutdown();
+    }
+
     /**
      * @param args the command line arguments
+     * @throws java.lang.InterruptedException
+     * @throws org.dc.jul.exception.CouldNotPerformException
      */
-    public static void main(String[] args) throws InterruptedException {
-        while(!Thread.interrupted()) {
-            Thread.sleep(10000);
+    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+
+        /* Setup JPService */
+        JPService.setApplicationName(AppManager.class);
+        JPService.parseAndExitOnError(args);
+
+        /* Start main app */
+        logger.info("Start " + JPService.getApplicationName() + "...");
+        try {
+            new AppManagerLauncher().launch();
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
+        logger.info(JPService.getApplicationName() + " successfully started.");
     }
 }

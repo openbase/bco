@@ -3,32 +3,31 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.agent.core.preset;
+package org.dc.bco.manager.app.core.preset;
 
 /*
  * #%L
- * COMA AgentManager Core
+ * COMA AppManager Core
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
+ * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Lesser Public License for more details.
  * 
- * You should have received a copy of the GNU General Public
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.manager.agent.core.AbstractAgent;
-import org.dc.bco.manager.agent.core.AgentRemote;
+import org.dc.bco.manager.agent.remote.AgentRemote;
+import org.dc.bco.manager.app.core.AbstractApp;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -41,14 +40,14 @@ import org.dc.jul.schedule.WatchDog;
 import rsb.Event;
 import rsb.Handler;
 import rsb.Scope;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.state.ActivationStateType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class SoundScapeAgent extends AbstractAgent {
+public class SoundScapeApp extends AbstractApp {
 
     private enum SoundScape {
 
@@ -63,25 +62,25 @@ public class SoundScapeAgent extends AbstractAgent {
     private final WatchDog listenerWatchDog;
     private final Scope scope = new Scope("/app/soundscape/theme/");
     private final AgentRegistryRemote agentRegistryRemote;
-    private final ActivationState activate = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-    private final ActivationState deactive = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
+    private final ActivationStateType.ActivationState activate = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
+    private final ActivationStateType.ActivationState deactive = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
 
-    final AgentRemote agentBathAmbientColorBeachBottomRemote;
+//    final AgentRemote agentBathAmbientColorBeachBottomRemote;
     final AgentRemote agentBathAmbientColorBeachCeiling;
     final AgentRemote agentBathAmbientColorForest;
     final AgentRemote agentBathAmbientColorNight;
     final AgentRemote agentBathAmbientColorZen;
 
-    public SoundScapeAgent() throws CouldNotPerformException, InterruptedException {
+    public SoundScapeApp() throws CouldNotPerformException, InterruptedException {
         super(true);
 
-        agentBathAmbientColorBeachBottomRemote = new AgentRemote();
+//        agentBathAmbientColorBeachBottomRemote = new AgentRemote();
         agentBathAmbientColorBeachCeiling = new AgentRemote();
         agentBathAmbientColorForest = new AgentRemote();
         agentBathAmbientColorNight = new AgentRemote();
         agentBathAmbientColorZen = new AgentRemote();
 
-        logger.info("Creating sound scape agent with scope [" + scope.toString() + "]!");
+        logger.info("Creating sound scape app with scope [" + scope.toString() + "]!");
         this.listener = RSBFactory.getInstance().createSynchronizedListener(scope, RSBSharedConnectionConfig.getParticipantConfig());
         this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + scope.concat(RSBCommunicationService.SCOPE_SUFFIX_STATUS) + "]");
         listener.addHandler(new Handler() {
@@ -105,17 +104,21 @@ public class SoundScapeAgent extends AbstractAgent {
     }
 
     @Override
-    public void init(final AgentConfig config) throws InitializationException, InterruptedException {
+    public void init(final AppConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             agentRegistryRemote.activate();
             listenerWatchDog.activate();
-            agentBathAmbientColorBeachBottomRemote.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorBeachBottom"));
+//            agentBathAmbientColorBeachBottomRemote.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorBeachBottom"));
             agentBathAmbientColorBeachCeiling.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorBeachCeiling"));
             agentBathAmbientColorForest.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorForest"));
             agentBathAmbientColorNight.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorNight"));
             agentBathAmbientColorZen.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorZen"));
-            agentBathAmbientColorBeachBottomRemote.activate();
+//            agentBathAmbientColorBeachBottomRemote.activate();
+            agentBathAmbientColorBeachCeiling.activate();
+//            agentBathAmbientColorForest.activate();
+//            agentBathAmbientColorNight.activate();
+//            agentBathAmbientColorZen.activate();
         } catch (CouldNotPerformException | InterruptedException ex) {
             throw new InitializationException(this, ex);
         }
@@ -128,7 +131,7 @@ public class SoundScapeAgent extends AbstractAgent {
             agentBathAmbientColorForest.activate();
             agentBathAmbientColorNight.activate();
             agentBathAmbientColorZen.activate();
-            agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
+//            agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
             agentBathAmbientColorBeachCeiling.setActivationState(deactive);
             agentBathAmbientColorForest.setActivationState(deactive);
             agentBathAmbientColorNight.setActivationState(deactive);
@@ -142,7 +145,7 @@ public class SoundScapeAgent extends AbstractAgent {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         try {
-            agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
+//            agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
             agentBathAmbientColorBeachCeiling.setActivationState(deactive);
             agentBathAmbientColorForest.setActivationState(deactive);
             agentBathAmbientColorNight.setActivationState(deactive);
@@ -159,7 +162,7 @@ public class SoundScapeAgent extends AbstractAgent {
         switch (soundScape) {
             case BEACH:
                 logger.info("Case BEACH");
-                agentBathAmbientColorBeachBottomRemote.setActivationState(activate);
+//                agentBathAmbientColorBeachBottomRemote.setActivationState(activate);
                 agentBathAmbientColorBeachCeiling.setActivationState(activate);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(deactive);
@@ -167,7 +170,7 @@ public class SoundScapeAgent extends AbstractAgent {
                 break;
             case FOREST:
                 logger.info("Case FOREST");
-                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
+//                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(activate);
                 agentBathAmbientColorNight.setActivationState(deactive);
@@ -175,7 +178,7 @@ public class SoundScapeAgent extends AbstractAgent {
                 break;
             case NIGHT:
                 logger.info("Case NIGHT");
-                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
+//                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(activate);
@@ -183,7 +186,7 @@ public class SoundScapeAgent extends AbstractAgent {
                 break;
             case ZEN:
                 logger.info("Case ZEN");
-                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
+//                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(deactive);
@@ -191,7 +194,7 @@ public class SoundScapeAgent extends AbstractAgent {
                 break;
             case OFF:
                 logger.info("Case OFF");
-                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
+//                agentBathAmbientColorBeachBottomRemote.setActivationState(deactive);
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(deactive);

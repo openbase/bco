@@ -48,7 +48,7 @@ public class JPAgentId extends AbstractJPString {
 
     @Override
     public String getDescription() {
-        return "Agent id to resolv the agent configuration.";
+        return "Agent id to resolve the agent configuration.";
     }
     
 }

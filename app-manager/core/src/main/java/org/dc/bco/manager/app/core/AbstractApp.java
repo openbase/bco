@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.agent.remote;
+package org.dc.bco.manager.app.core;
 
 /*
  * #%L
- * COMA AgentManager Remote
+ * COMA AppManager Core
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -26,36 +26,43 @@ package org.dc.bco.manager.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
-import org.dc.bco.manager.agent.lib.Agent;
+
+import org.dc.bco.manager.app.lib.App;
+import org.dc.bco.manager.app.lib.AppController;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.extension.rsb.com.AbstractExecutableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
+import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentDataType.AgentData;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.control.app.AppDataType.AppData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConfig> implements Agent {
+public abstract class AbstractApp extends AbstractExecutableController<AppData, AppData.Builder, AppConfig> implements AppController {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    @Override
-    public void notifyUpdated(AgentData data) throws CouldNotPerformException {
-
+    public AbstractApp(boolean autostart) throws org.dc.jul.exception.InstantiationException {
+        super(AppData.newBuilder(), autostart);
     }
 
     @Override
-    public void setActivationState(ActivationState activation) throws CouldNotPerformException {
-        logger.info("Calling remote setActivationState to [" + activation + "] for agent");
-        RPCHelper.callRemoteMethod(activation, this);
+    public void init(final AppConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
+    }
+
+    @Override
+    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
+        RPCHelper.registerInterface(App.class, this, server);
     }
 }

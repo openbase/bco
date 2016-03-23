@@ -26,7 +26,6 @@ package org.dc.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -233,14 +232,14 @@ public class AmbientColorAgent extends AbstractAgent {
 
     private void setExecutionThread() {
         switch (strategy) {
-        case ALL:
-            thread = new AllStrategyThread();
-            break;
-        case ONE:
-            thread = new OneStrategyThread();
-            break;
-        default:
-            thread = new OneStrategyThread();
+            case ALL:
+                thread = new AllStrategyThread();
+                break;
+            case ONE:
+                thread = new OneStrategyThread();
+                break;
+            default:
+                thread = new OneStrategyThread();
         }
     }
 
@@ -266,7 +265,7 @@ public class AmbientColorAgent extends AbstractAgent {
                     throw new InvalidStateException("No service remote available!");
                 }
                 final long delay = holdingTime / colorRemotes.size();
-                while (isExecuting() && Thread.interrupted()) {
+                while (isExecuting() && !Thread.interrupted()) {
                     for (ColorServiceRemote colorRemote : colorRemotes) {
                         try {
                             colorRemote.setColor(choseDifferentElem(colors, colorRemote.getColor()));
@@ -292,9 +291,10 @@ public class AmbientColorAgent extends AbstractAgent {
                     throw new InvalidStateException("No service remote available!");
                 }
 
-                while (isExecuting() && Thread.interrupted()) {
+                while (isExecuting() && !Thread.interrupted()) {
                     try {
-                        choseDifferentElem(colorRemotes, remote).setColor(choseDifferentElem(colors, remote.getColor()));
+                        remote = choseDifferentElem(colorRemotes, remote);
+                        remote.setColor(choseDifferentElem(colors, remote.getColor()));
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set/get color of [" + remote + "]", ex), logger);
                     }
@@ -335,16 +335,3 @@ public class AmbientColorAgent extends AbstractAgent {
         return list.get(newIndex);
     }
 }
-
-//TODO Tamino: hierüber müssen wir unbedingt mal reden :D
-//                    if (lastModification + holdingTime < System.currentTimeMillis()) {
-//                        for (ColorServiceRemote colorRemote : colorRemotes) {
-//                            try {
-//                                colorRemote.setColor(choseDifferentElem(colors, colorRemote.getColor()));
-//                            } catch (CouldNotPerformException ex) {
-//                                logger.warn("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex);
-//                            }
-//                        }
-//                        lastModification = System.currentTimeMillis();
-//                    }
-//                    Thread.yield();

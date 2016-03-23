@@ -33,7 +33,6 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.iface.Launchable;
 import org.dc.jul.pattern.Launcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

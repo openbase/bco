@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.app.core;
+package org.dc.bco.manager.app.lib;
 
 /*
  * #%L
- * COMA AppManager Core
+ * COMA AppManager Library
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -27,12 +27,16 @@ package org.dc.bco.manager.app.core;
  * #L%
  */
 
-import org.dc.bco.manager.app.lib.App;
+import org.dc.jul.pattern.Factory;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class AppController implements App {
-    
+public interface AppFactory extends Factory<AppController, AppConfig> {
+
+    @Override
+    public AppController newInstance(final AppConfig config) throws org.dc.jul.exception.InstantiationException;
+
 }

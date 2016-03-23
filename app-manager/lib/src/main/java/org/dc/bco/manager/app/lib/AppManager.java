@@ -5,9 +5,6 @@
  */
 package org.dc.bco.manager.app.lib;
 
-import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-
 /*
  * #%L
  * COMA AppManager Library
@@ -29,11 +26,11 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface App {
-
-    public void setActivationState(ActivationState activation) throws CouldNotPerformException;
+public interface AppManager {
+    
 }

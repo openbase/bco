@@ -21,7 +21,6 @@ package org.dc.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.agent.lib.Agent;
 import org.dc.bco.manager.agent.lib.AgentController;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -39,7 +38,8 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public abstract class AbstractAgent extends AbstractExecutableController<AgentDataType.AgentData, AgentDataType.AgentData.Builder, AgentConfig> implements AgentController {
 

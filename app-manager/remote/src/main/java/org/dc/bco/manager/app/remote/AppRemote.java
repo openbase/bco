@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.agent.remote;
+package org.dc.bco.manager.app.remote;
 
 /*
  * #%L
@@ -27,13 +27,13 @@ package org.dc.bco.manager.agent.remote;
  * #L%
  */
 import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
-import org.dc.bco.manager.agent.lib.Agent;
+import org.dc.bco.manager.app.lib.App;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentDataType.AgentData;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.control.app.AppDataType.AppData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
@@ -41,21 +41,20 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
  * Threepwood</a>
  */
-public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConfig> implements Agent {
+public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> implements App {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
     @Override
-    public void notifyUpdated(AgentData data) throws CouldNotPerformException {
+    public void notifyUpdated(AppData data) throws CouldNotPerformException {
 
     }
 
     @Override
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
-        logger.info("Calling remote setActivationState to [" + activation + "] for agent");
         RPCHelper.callRemoteMethod(activation, this);
     }
 }
