@@ -36,11 +36,13 @@ import org.dc.bco.registry.location.core.LocationRegistryLauncher;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
 import org.dc.bco.registry.user.core.UserRegistryLauncher;
+import org.dc.bco.registry.user.remote.UserRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
+import rst.authorization.UserConfigType.UserConfig;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
@@ -52,6 +54,7 @@ import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.EnablingStateType.EnablingState;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -66,6 +69,9 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
 public class MockRegistry {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MockRegistry.class);
+
+    public static final String USER_NAME = "uSeRnAmE";
+    public static UserConfig testUser;
 
     public static final String AMBIENT_LIGHT_LABEL = "Ambient_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
@@ -94,6 +100,7 @@ public class MockRegistry {
 
     private final DeviceRegistryRemote deviceRemote;
     private final LocationRegistryRemote locationRemote;
+    private final UserRegistryRemote userRemote;
 
     private static LocationConfig paradise;
 
@@ -206,7 +213,7 @@ public class MockRegistry {
                     }
                 }
             });
-            
+
             Thread userRegistryThread = new Thread(new Runnable() {
 
                 @Override
@@ -235,19 +242,24 @@ public class MockRegistry {
 
             deviceRemote = new DeviceRegistryRemote();
             locationRemote = new LocationRegistryRemote();
+            userRemote = new UserRegistryRemote();
 
             deviceRemote.init();
             locationRemote.init();
+            userRemote.init();
 
             deviceRemote.activate();
             locationRemote.activate();
+            userRemote.activate();
 
             deviceRemote.requestStatus();
             locationRemote.requestStatus();
+            userRemote.requestStatus();
 
             for (MockUnitTemplate template : MockUnitTemplate.values()) {
                 deviceRemote.updateUnitTemplate(template.getTemplate());
             }
+            registerUser();
             registerLocations();
             registerDevices();
         } catch (Exception ex) {
@@ -258,6 +270,7 @@ public class MockRegistry {
     public void shutdown() {
         deviceRemote.shutdown();
         locationRemote.shutdown();
+        userRemote.shutdown();
         deviceRegistry.shutdown();
         locationRegistry.shutdown();
         agentRegistry.shutdown();
@@ -268,6 +281,12 @@ public class MockRegistry {
 
     private void registerLocations() throws CouldNotPerformException {
         paradise = locationRemote.registerLocationConfig(LocationConfig.newBuilder().setLabel("Paradise").build());
+    }
+
+    private void registerUser() throws CouldNotPerformException {
+        UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
+        config.setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
+        testUser = userRemote.registerUserConfig(config.build());
     }
 
     private void registerDevices() throws CouldNotPerformException {
