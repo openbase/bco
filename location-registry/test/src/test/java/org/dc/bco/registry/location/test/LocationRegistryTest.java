@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.dc.bco.registry.device.core.DeviceRegistryController;
 import org.dc.bco.registry.location.core.LocationRegistryController;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
+import org.dc.bco.registry.user.core.UserRegistryController;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jps.preset.JPDebugMode;
@@ -64,6 +65,7 @@ public class LocationRegistryTest {
     private static final Logger logger = LoggerFactory.getLogger(LocationRegistryTest.class);
 
     private static DeviceRegistryController deviceRegistry;
+    private static UserRegistryController userRegistry;
 
     private static LocationRegistryController locationRegistry;
     private static LocationConfigType.LocationConfig.Builder locationConfig;
@@ -82,9 +84,11 @@ public class LocationRegistryTest {
         JPService.setupJUnitTestMode();
 
         deviceRegistry = new DeviceRegistryController();
+        userRegistry = new UserRegistryController();
         locationRegistry = new LocationRegistryController();
 
         deviceRegistry.init();
+        userRegistry.init();
         locationRegistry.init();
 
         Thread deviceRegistryThread = new Thread(new Runnable() {
@@ -93,6 +97,18 @@ public class LocationRegistryTest {
             public void run() {
                 try {
                     deviceRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+
+        Thread userRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    userRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, logger);
                 }
@@ -113,9 +129,11 @@ public class LocationRegistryTest {
 
         deviceRegistryThread.start();
         locationRegistryThread.start();
+        userRegistryThread.start();
 
         deviceRegistryThread.join();
         locationRegistryThread.join();
+        userRegistryThread.join();
 
         locationConfig = LocationConfig.getDefaultInstance().newBuilderForType();
         locationConfig.setId("TestLocationConfigLabel");
@@ -132,6 +150,9 @@ public class LocationRegistryTest {
         if (locationRegistry != null) {
             locationRegistry.shutdown();
         }
+        if (userRegistry != null) {
+            userRegistry.shutdown();
+        }
         if (deviceRegistry != null) {
             deviceRegistry.shutdown();
         }
@@ -143,6 +164,7 @@ public class LocationRegistryTest {
         deviceRegistry.getUnitGroupRegistry().clear();
         locationRegistry.getLocationConfigRegistry().clear();
         locationRegistry.getConnectionConfigRegistry().clear();
+        userRegistry.getUserRegistry().clear();
     }
 
     @After

@@ -94,5 +94,10 @@
             <artifactId>registry.location.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>registry.user.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
