@@ -65,9 +65,9 @@ public class AppFactoryImpl implements AppFactory {
                 throw new NotAvailableException("appconfig");
             }
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AppConfigTypeProvider", config.getMetaConfig());
-            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(configVariableProvider.getValue("APP_TYPE")));
-            logger.info("Creating app of type [" + agentClass.getSimpleName() + "]");
-            app = (AppController) agentClass.newInstance();
+            final Class appClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(configVariableProvider.getValue("APP_TYPE")));
+            logger.info("Creating app of type [" + appClass.getSimpleName() + "]");
+            app = (AppController) appClass.newInstance();
             app.init(config);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
             throw new org.dc.jul.exception.InstantiationException(App.class, config.getId(), ex);

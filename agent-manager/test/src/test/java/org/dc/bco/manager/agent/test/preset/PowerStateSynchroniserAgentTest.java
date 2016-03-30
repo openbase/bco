@@ -42,6 +42,8 @@ import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.extension.rsb.com.RPCHelper;
+import org.dc.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -84,6 +86,7 @@ public class PowerStateSynchroniserAgentTest {
     @BeforeClass
     public static void setUpClass() throws CouldNotPerformException, InstantiationException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+//        JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.DEFAULT);
         registry = MockRegistryHolder.newMockRegistry();
 
         deviceManagerLauncher = new DeviceManagerLauncher();
@@ -147,10 +150,14 @@ public class PowerStateSynchroniserAgentTest {
         System.out.println("testPowerStateSyncAgent");
 
         AgentConfig config = registerAgent();
+        System.out.println("Agent scope [" + config.getScope() + "]");
         agent = new AgentRemote();
         agent.init(config);
         agent.activate();
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+        agent.callMethod("requestStatus");
+//        agent.requestStatus();
+        int i = 0;
 
         DimmerRemote dimmerRemote = new DimmerRemote();
         AmbientLightRemote ambientLightRemote = new AmbientLightRemote();

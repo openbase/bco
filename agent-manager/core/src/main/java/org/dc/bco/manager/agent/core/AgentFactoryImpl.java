@@ -26,7 +26,6 @@ package org.dc.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.agent.lib.AgentController;
 import org.dc.bco.manager.agent.lib.AgentFactory;
 import org.dc.bco.manager.agent.lib.Agent;
@@ -70,8 +69,11 @@ public class AgentFactoryImpl implements AgentFactory {
             if (!config.hasType()) {
                 throw new NotAvailableException("agentype");
             }
+            if(!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
+                throw new NotAvailableException("scope");
+            }
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(config));
-            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "]");
+            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + config.getScope() + "]");
             agent = (AgentController) agentClass.newInstance();
             agent.init(config);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {

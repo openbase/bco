@@ -38,6 +38,8 @@ import rst.authorization.UserPresenceStateType.UserPresenceState;
  */
 public interface User extends Identifiable<String> {
 
+    public final static String TYPE_FIELD_USER_NAME = "user_name";
+    
     public String getUserName() throws NotAvailableException;
 
     public UserActivity getUserActivity() throws NotAvailableException;

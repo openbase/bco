@@ -26,14 +26,13 @@ package org.dc.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.user.lib.User;
 import org.dc.bco.manager.user.lib.UserController;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
-import org.dc.jul.extension.rsb.com.RSBCommunicationService;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -45,9 +44,10 @@ import rst.authorization.UserPresenceStateType;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
-public class UserControllerImpl extends RSBCommunicationService<UserDataType.UserData, UserDataType.UserData.Builder> implements UserController {
+public class UserControllerImpl extends AbstractConfigurableController<UserDataType.UserData, UserDataType.UserData.Builder, UserConfig> implements UserController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -64,8 +64,8 @@ public class UserControllerImpl extends RSBCommunicationService<UserDataType.Use
     @Override
     public void init(final UserConfig config) throws InitializationException, InterruptedException {
         this.config = config;
-        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
-        super.init(config.getScope());
+        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] with scope [" + config.getScope().toString() + "]");
+        super.init(config);
     }
 
     @Override
@@ -85,8 +85,8 @@ public class UserControllerImpl extends RSBCommunicationService<UserDataType.Use
 
     @Override
     public UserConfig updateConfig(UserConfig config) throws CouldNotPerformException {
-        this.config = config;
-        return config;
+        setField(TYPE_FIELD_USER_NAME, config.getUserName());
+        return super.updateConfig(config);
     }
 
     @Override

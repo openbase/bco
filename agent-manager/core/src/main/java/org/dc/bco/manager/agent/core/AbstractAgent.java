@@ -55,7 +55,7 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
     @Override
     public void init(final AgentConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
+        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] on scope [" + config.getScope() + "]");
     }
 
     @Override

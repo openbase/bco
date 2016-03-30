@@ -34,12 +34,6 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.bco.registry.mock.MockRegistry;
-import org.dc.jul.extension.rsb.com.RSBCommunicationService;
-import org.dc.jul.extension.rsb.com.RSBFactory;
-import org.dc.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.dc.jul.extension.rsb.iface.RSBInformerInterface;
-import org.dc.jul.extension.rsb.iface.RSBListenerInterface;
-import org.dc.jul.schedule.WatchDog;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -48,9 +42,7 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import rsb.Factory;
 import rsb.Informer;
-import rsb.Scope;
 import rsb.config.ParticipantConfig;
-import rsb.config.TransportConfig;
 
 /**
  *

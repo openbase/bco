@@ -107,7 +107,7 @@ public class UserRemoteTest {
     public void testGetUserName() throws Exception {
         userRemote.requestStatus();
         //TODO: fails with get data
-        assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getUserName());
+        assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
         logger.info("User activity [" + userRemote.getUserActivity() + "]");
         logger.info("User presence [" + userRemote.getUserPresenceState() + "]");
     }
