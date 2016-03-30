@@ -10,12 +10,12 @@ package org.dc.bco.manager.scene.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.dc.bco.dal.remote.control.action.Action;
 import org.dc.bco.dal.remote.unit.ButtonRemote;
-import org.dc.bco.dal.remote.unit.PowerPlugRemote;
 import org.dc.bco.manager.scene.lib.Scene;
 import org.dc.bco.manager.scene.lib.SceneController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
@@ -46,9 +45,7 @@ import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.unit.ButtonType;
-import rst.homeautomation.unit.PowerPlugType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
 
@@ -116,23 +113,23 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                 actionList.add(action);
             }
 
-            if (getConfig().getLabel().equals("Test3")) {
-                logger.info("### init test unit " + getConfig().getLabel());
-                PowerPlugRemote testplug = new PowerPlugRemote();
-                testplug.initByLabel("A10C1");
-                testplug.activate();
-                testplug.addObserver(new Observer<PowerPlugType.PowerPlug>() {
-
-                    @Override
-                    public void update(Observable<PowerPlugType.PowerPlug> source, PowerPlugType.PowerPlug data) throws Exception {
-                        logger.info("### got change!");
-                        if(data.getPowerState().getValue().equals(PowerStateType.PowerState.State.ON)) {
-                            logger.info("### activate scene!");
-                            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-                        }
-                    }
-                });
-            }
+//            if (getConfig().getLabel().equals("Test3")) {
+//                logger.info("### init test unit " + getConfig().getLabel());
+//                PowerPlugRemote testplug = new PowerPlugRemote();
+//                testplug.initByLabel("A10C1");
+//                testplug.activate();
+//                testplug.addObserver(new Observer<PowerPlugType.PowerPlug>() {
+//
+//                    @Override
+//                    public void update(Observable<PowerPlugType.PowerPlug> source, PowerPlugType.PowerPlug data) throws Exception {
+//                        logger.info("### got change!");
+//                        if(data.getPowerState().getValue().equals(PowerStateType.PowerState.State.ON)) {
+//                            logger.info("### activate scene!");
+//                            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+//                        }
+//                    }
+//                });
+//            }
 
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
