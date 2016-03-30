@@ -15,12 +15,12 @@ package org.dc.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,7 +28,6 @@ package org.dc.bco.dal.lib.layer.service;
  */
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import com.google.protobuf.ProtocolMessageEnum;
 import com.googlecode.protobuf.format.JsonFormat;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -130,6 +129,10 @@ public class ServiceJSonProcessor {
         return javaToProto.getProtoType().name();
     }
 
+    public<SAT> SAT deserialize(String jsonStringRep, Class<SAT> serviceAttributeTypeClass) throws CouldNotPerformException {
+        return (SAT) deserialize(jsonStringRep, serviceAttributeTypeClass.getSimpleName());
+    }
+
     /**
      * Deserialize a JSon string representation for an rst value given the class
      * name for the value or the type if its a primitive.
@@ -173,7 +176,7 @@ public class ServiceJSonProcessor {
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 throw new CouldNotPerformException("Could not invoke valueOf method of class [" + serviceAttributeType + "] with [" + jsonStringRep + "] as the argument", ex);
             }
-            String className = getJavaPrmitiveClassName(Descriptors.FieldDescriptor.Type.valueOf(serviceAttributeType));
+            String className = getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type.valueOf(serviceAttributeType));
             try {
                 Class attibuteClass = Class.forName(className);
                 // The simple types often offer a constructor by string
@@ -189,7 +192,7 @@ public class ServiceJSonProcessor {
         }
     }
 
-    private String getJavaPrmitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
+    private String getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
         switch (protoType.getJavaType()) {
             case INT:
                 return javaPrimitvePrefix + "Integer";

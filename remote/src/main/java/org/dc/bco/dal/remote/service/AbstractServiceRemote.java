@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -15,12 +10,12 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -32,11 +27,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotSupportedException;
+import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.iface.Activatable;
 import org.slf4j.Logger;
@@ -52,6 +49,8 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  * @param <S> generic definition of the overall service type for this remote.
  */
 public abstract class AbstractServiceRemote<S extends Service> implements Service, Activatable {
+
+    protected static ServiceJSonProcessor serviceProcessor = new ServiceJSonProcessor();
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -162,16 +161,15 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         return serviceType;
     }
 
-    public abstract void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException;
-
-//    @Override
-//    public org.dc.bco.dal.lib.layer.service.ServiceType getServiceType() {
-//        // TODO mpohling: implement service type transformer.
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-//
-//    @Override
-//    public ServiceConfigType.ServiceConfig getServiceConfig() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (!actionConfig.getServiceType().equals(getServiceType())) {
+                throw new VerificationFailedException("Service type is not compatible to given action config!");
+            }
+            //TODO Tamino: Generic implementation
+//            setColor(serviceProcessor.deserialize(actionConfig.getServiceAttribute(), serviceProcessor.HSVColorType.HSVColor.class));
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
+    }
 }
