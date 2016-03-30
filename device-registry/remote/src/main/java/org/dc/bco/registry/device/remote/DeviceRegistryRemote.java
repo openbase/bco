@@ -80,10 +80,10 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     public DeviceRegistryRemote() throws InstantiationException {
         try {
-            unitTemplateRemoteRegistry = new RemoteRegistry<>(new UnitTemplateIdGenerator());
-            deviceClassRemoteRegistry = new RemoteRegistry<>(new DeviceClassIdGenerator());
-            deviceConfigRemoteRegistry = new RemoteRegistry<>(new DeviceConfigIdGenerator());
-            unitGroupRemoteRegistry = new RemoteRegistry<>(new UnitGroupIdGenerator());
+            unitTemplateRemoteRegistry = new RemoteRegistry<>();
+            deviceClassRemoteRegistry = new RemoteRegistry<>();
+            deviceConfigRemoteRegistry = new RemoteRegistry<>();
+            unitGroupRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

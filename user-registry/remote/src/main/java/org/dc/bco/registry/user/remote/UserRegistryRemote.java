@@ -75,8 +75,8 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         try {
-            userConfigRemoteRegistry = new RemoteRegistry<>(new UserConfigIdGenerator());
-            groupConfigRemoteRegistry = new RemoteRegistry<>(new UserGroupConfigIdGenerator());
+            userConfigRemoteRegistry = new RemoteRegistry<>();
+            groupConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

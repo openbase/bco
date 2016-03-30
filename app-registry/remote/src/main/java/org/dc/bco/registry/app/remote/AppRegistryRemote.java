@@ -70,7 +70,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
         try {
-            appConfigRemoteRegistry = new RemoteRegistry<>(new AppConfigIdGenerator());
+            appConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

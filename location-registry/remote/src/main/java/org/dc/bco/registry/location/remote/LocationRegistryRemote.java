@@ -82,8 +82,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
 
     public LocationRegistryRemote() throws InstantiationException {
         try {
-            this.locationConfigRemoteRegistry = new RemoteRegistry<>(new LocationIDGenerator());
-            this.connectionConfigRemoteRegistry = new RemoteRegistry<>(new ConnectionIDGenerator());
+            this.locationConfigRemoteRegistry = new RemoteRegistry<>();
+            this.connectionConfigRemoteRegistry = new RemoteRegistry<>();
             deviceRegistryRemote = new DeviceRegistryRemote();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);

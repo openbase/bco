@@ -69,7 +69,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
         try {
-            sceneConfigRemoteRegistry = new RemoteRegistry<>(new SceneConfigIdGenerator());
+            sceneConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
