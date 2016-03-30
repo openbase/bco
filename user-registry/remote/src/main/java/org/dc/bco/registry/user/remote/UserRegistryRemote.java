@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.dc.bco.registry.user.lib.generator.UserConfigIdGenerator;
-import org.dc.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
 import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -75,8 +73,8 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         try {
-            userConfigRemoteRegistry = new RemoteRegistry<>(new UserConfigIdGenerator());
-            groupConfigRemoteRegistry = new RemoteRegistry<>(new UserGroupConfigIdGenerator());
+            userConfigRemoteRegistry = new RemoteRegistry<>();
+            groupConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

@@ -29,7 +29,6 @@ package org.dc.bco.registry.agent.remote;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.dc.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -69,7 +68,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     public AgentRegistryRemote() throws InstantiationException, InterruptedException {
         try {
-            agentConfigRemoteRegistry = new RemoteRegistry<>(new AgentConfigIdGenerator());
+            agentConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

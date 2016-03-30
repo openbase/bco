@@ -25,10 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.dc.bco.registry.device.lib.generator.DeviceClassIdGenerator;
-import org.dc.bco.registry.device.lib.generator.DeviceConfigIdGenerator;
-import org.dc.bco.registry.device.lib.generator.UnitGroupIdGenerator;
-import org.dc.bco.registry.device.lib.generator.UnitTemplateIdGenerator;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -80,10 +76,10 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     public DeviceRegistryRemote() throws InstantiationException {
         try {
-            unitTemplateRemoteRegistry = new RemoteRegistry<>(new UnitTemplateIdGenerator());
-            deviceClassRemoteRegistry = new RemoteRegistry<>(new DeviceClassIdGenerator());
-            deviceConfigRemoteRegistry = new RemoteRegistry<>(new DeviceConfigIdGenerator());
-            unitGroupRemoteRegistry = new RemoteRegistry<>(new UnitGroupIdGenerator());
+            unitTemplateRemoteRegistry = new RemoteRegistry<>();
+            deviceClassRemoteRegistry = new RemoteRegistry<>();
+            deviceConfigRemoteRegistry = new RemoteRegistry<>();
+            unitGroupRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

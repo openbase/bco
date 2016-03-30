@@ -30,7 +30,6 @@ package org.dc.bco.registry.app.remote;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.dc.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -70,7 +69,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
         try {
-            appConfigRemoteRegistry = new RemoteRegistry<>(new AppConfigIdGenerator());
+            appConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

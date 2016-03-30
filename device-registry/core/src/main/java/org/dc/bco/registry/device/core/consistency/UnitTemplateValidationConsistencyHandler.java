@@ -26,27 +26,36 @@ package org.dc.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.dc.jul.storage.registry.EntryModification;
+import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
+import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class UnitTemplateValidationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitTemplate, UnitTemplate.Builder> {
+
+    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry;
+
+    public UnitTemplateValidationConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry) {
+        this.unitTemplateRegistry = unitTemplateRegistry;
+    }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder> entry, ProtoBufMessageMapInterface<String, UnitTemplate, UnitTemplate.Builder> entryMap, ProtoBufRegistryInterface<String, UnitTemplate, UnitTemplate.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitTemplate.Builder unitTemplate = entry.getMessage().toBuilder();
-        
+
         // remove invalid unit template
-        if(!unitTemplate.getId().equals(registry.getIdGenerator().generateId(unitTemplate.build()))) {
+        if (!unitTemplate.getId().equals(unitTemplateRegistry.getIdGenerator().generateId(unitTemplate.build()))) {
             registry.remove(entry);
             throw new EntryModification(entry, this);
         }
