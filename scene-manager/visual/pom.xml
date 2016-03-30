@@ -133,6 +133,11 @@
             <artifactId>dal.visual</artifactId>
             <version>${dependency.bco.dal.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.dc.bco</groupId>
+            <artifactId>manager.scene.remote</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -41,6 +41,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.dc.bco.manager.scene.remote.SceneRemote;
 import org.dc.bco.manager.scene.visual.LocationSelectorPanel.LocationConfigHolder;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType;
+import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.EnablingStateType;
 
 /**
@@ -141,6 +143,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         newButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         locationSelectorPanel = new org.dc.bco.manager.scene.visual.LocationSelectorPanel();
+        applyUpdateButton = new javax.swing.JButton();
 
         sceneSelectionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         sceneSelectionComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -168,20 +171,29 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             }
         });
 
+        applyUpdateButton.setText("Apply Scene");
+        applyUpdateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyUpdateButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(locationSelectorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(locationSelectorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(sceneSelectionComboBox, 0, 394, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(sceneSelectionComboBox, 0, 314, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(applyUpdateButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -192,8 +204,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                     .addComponent(sceneSelectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(locationSelectorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(locationSelectorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(applyUpdateButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -243,6 +257,25 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void applyUpdateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyUpdateButtonActionPerformed
+        if (lastSelected == null) {
+            return;
+        }
+
+        logger.info("Apply update...");
+        SceneRemote sceneRemote = new SceneRemote();
+        try {
+            sceneRemote.init(lastSelected);
+            sceneRemote.activate();
+            sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+            Thread.sleep(200);
+            sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+            sceneRemote.shutdown();
+        } catch (InterruptedException | CouldNotPerformException ex) {
+            logger.warn("Could not apply update. Initialization and activation of scene remote failed!");
+        }
+    }//GEN-LAST:event_applyUpdateButtonActionPerformed
 
     public void addObserver(Observer<List<ActionConfig>> observer) {
         observable.addObserver(observer);
@@ -329,6 +362,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton applyUpdateButton;
     private javax.swing.JButton deleteButton;
     private org.dc.bco.manager.scene.visual.LocationSelectorPanel locationSelectorPanel;
     private javax.swing.JButton newButton;
