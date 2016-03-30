@@ -140,8 +140,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException {
-        setField(TYPE_FILED_ID, config.getId());
-        setField(TYPE_FILED_LABEL, config.getLabel());
+//        setField(TYPE_FIELD_ID, config.getId());
+//        setField(TYPE_FIELD_LABEL, config.getLabel());
         return super.updateConfig(config);
     }
 
