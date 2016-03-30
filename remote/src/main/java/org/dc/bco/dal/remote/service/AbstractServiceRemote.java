@@ -10,18 +10,17 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +35,7 @@ import org.dc.jul.exception.NotSupportedException;
 import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.iface.Activatable;
+import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType;
@@ -97,8 +97,8 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     }
 
     private static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
-        for(ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-            if(serviceConfig.getType() == serviceType) {
+        for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            if (serviceConfig.getType() == serviceType) {
                 return true;
             }
         }
@@ -166,8 +166,10 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            //TODO Tamino: Generic implementation
-//            setColor(serviceProcessor.deserialize(actionConfig.getServiceAttribute(), serviceProcessor.HSVColorType.HSVColor.class));
+            for (AbstractIdentifiableRemote remote : getInternalUnits()) {
+                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
+                        serviceProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType()));
+            }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

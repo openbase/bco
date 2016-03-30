@@ -15,12 +15,12 @@ package org.dc.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -129,7 +129,7 @@ public class ServiceJSonProcessor {
         return javaToProto.getProtoType().name();
     }
 
-    public<SAT> SAT deserialize(String jsonStringRep, Class<SAT> serviceAttributeTypeClass) throws CouldNotPerformException {
+    public <SAT> SAT deserialize(String jsonStringRep, Class<SAT> serviceAttributeTypeClass) throws CouldNotPerformException {
         return (SAT) deserialize(jsonStringRep, serviceAttributeTypeClass.getSimpleName());
     }
 
@@ -143,52 +143,56 @@ public class ServiceJSonProcessor {
      * @throws org.dc.jul.exception.CouldNotPerformException
      */
     public Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
-        if (serviceAttributeType.startsWith("rst")) {
-            try {
-                Class attibuteClass = Class.forName(serviceAttributeType);
-                if (attibuteClass.isEnum()) {
-                    return attibuteClass.getMethod("valueOf", String.class).invoke(null, jsonStringRep);
-                }
-                Message.Builder builder = (Message.Builder) attibuteClass.getMethod("newBuilder").invoke(null);
-                JsonFormat.merge(jsonStringRep, builder);
-                return builder.build();
-            } catch (ClassNotFoundException ex) {
-                throw new CouldNotPerformException("Could not find class for serviceAttributeType [" + serviceAttributeType + "]", ex);
-            } catch (JsonFormat.ParseException ex) {
-                throw new CouldNotPerformException("Could not merge [" + jsonStringRep + "] into builder", ex);
-            } catch (NoSuchMethodException | SecurityException ex) {
-                throw new CouldNotPerformException("Could not find or acces newBuilder method for rst type [" + serviceAttributeType + "]", ex);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new CouldNotPerformException("Could not invoke newBuilder method for rst type [" + serviceAttributeType + "]", ex);
-            }
-        } else {
-            try {
-                if (serviceAttributeType.split("\\.").length > 1) {
+        try {
+            if (serviceAttributeType.startsWith("rst")) {
+                try {
                     Class attibuteClass = Class.forName(serviceAttributeType);
                     if (attibuteClass.isEnum()) {
                         return attibuteClass.getMethod("valueOf", String.class).invoke(null, jsonStringRep);
                     }
+                    Message.Builder builder = (Message.Builder) attibuteClass.getMethod("newBuilder").invoke(null);
+                    JsonFormat.merge(jsonStringRep, builder);
+                    return builder.build();
+                } catch (ClassNotFoundException ex) {
+                    throw new CouldNotPerformException("Could not find class for serviceAttributeType [" + serviceAttributeType + "]", ex);
+                } catch (JsonFormat.ParseException ex) {
+                    throw new CouldNotPerformException("Could not merge [" + jsonStringRep + "] into builder", ex);
+                } catch (NoSuchMethodException | SecurityException ex) {
+                    throw new CouldNotPerformException("Could not find or acces newBuilder method for rst type [" + serviceAttributeType + "]", ex);
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    throw new CouldNotPerformException("Could not invoke newBuilder method for rst type [" + serviceAttributeType + "]", ex);
                 }
-            } catch (ClassNotFoundException ex) {
-                throw new CouldNotPerformException("Could not find class [" + serviceAttributeType + "]", ex);
-            } catch (NoSuchMethodException ex) {
-                throw new CouldNotPerformException("Java primitve [" + serviceAttributeType + "] has no valueofM method", ex);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new CouldNotPerformException("Could not invoke valueOf method of class [" + serviceAttributeType + "] with [" + jsonStringRep + "] as the argument", ex);
+            } else {
+                try {
+                    if (serviceAttributeType.split("\\.").length > 1) {
+                        Class attibuteClass = Class.forName(serviceAttributeType);
+                        if (attibuteClass.isEnum()) {
+                            return attibuteClass.getMethod("valueOf", String.class).invoke(null, jsonStringRep);
+                        }
+                    }
+                } catch (ClassNotFoundException ex) {
+                    throw new CouldNotPerformException("Could not find class [" + serviceAttributeType + "]", ex);
+                } catch (NoSuchMethodException ex) {
+                    throw new CouldNotPerformException("Java primitive [" + serviceAttributeType + "] has no valueOf method", ex);
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    throw new CouldNotPerformException("Could not invoke valueOf method of class [" + serviceAttributeType + "] with [" + jsonStringRep + "] as the argument", ex);
+                }
+                String className = getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type.valueOf(serviceAttributeType));
+                try {
+                    Class attibuteClass = Class.forName(className);
+                    // The simple types often offer a constructor by string
+                    Constructor constructor = attibuteClass.getConstructor(String.class);
+                    return constructor.newInstance(jsonStringRep);
+                } catch (ClassNotFoundException ex) {
+                    throw new CouldNotPerformException("Could not find class [" + className + "]", ex);
+                } catch (NoSuchMethodException ex) {
+                    throw new CouldNotPerformException("Java primitive [" + className + "] has no string constructor", ex);
+                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    throw new CouldNotPerformException("Could not invoke constructor of class [" + className + "] with [" + jsonStringRep + "] as the argument", ex);
+                }
             }
-            String className = getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type.valueOf(serviceAttributeType));
-            try {
-                Class attibuteClass = Class.forName(className);
-                // The simple types often offer a constructor by string
-                Constructor constructor = attibuteClass.getConstructor(String.class);
-                return constructor.newInstance(jsonStringRep);
-            } catch (ClassNotFoundException ex) {
-                throw new CouldNotPerformException("Could not find class [" + className + "]", ex);
-            } catch (NoSuchMethodException ex) {
-                throw new CouldNotPerformException("Java primitve [" + className + "] has no string constructor", ex);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                throw new CouldNotPerformException("Could not invoke constructor of class [" + className + "] with [" + jsonStringRep + "] as the argument", ex);
-            }
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not deserialize json String[" + jsonStringRep + "] into ServiceAttributeType[" + serviceAttributeType + "]!", ex);
         }
     }
 

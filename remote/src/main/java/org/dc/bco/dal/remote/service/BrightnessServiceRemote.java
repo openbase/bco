@@ -29,8 +29,6 @@ package org.dc.bco.dal.remote.service;
 
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.VerificationFailedException;
-import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
@@ -66,17 +64,4 @@ public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessSer
         average /= getServices().size();
         return average;
     }
-
-    @Override
-    public void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        try {
-            if (!actionConfig.getServiceType().equals(getServiceType())) {
-                throw new VerificationFailedException("Service type is not compatible to given action config!");
-            }
-            setBrightness(Double.parseDouble(actionConfig.getServiceAttribute()));
-        } catch (NumberFormatException | CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
-        }
-    }
-
 }

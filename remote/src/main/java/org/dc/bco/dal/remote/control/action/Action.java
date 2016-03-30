@@ -15,12 +15,12 @@ package org.dc.bco.dal.remote.control.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -41,6 +41,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.iface.Initializable;
 import org.dc.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -55,9 +56,9 @@ import rst.homeautomation.control.action.ActionStateType.ActionState;
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class Action implements ActionService, Initializable<ActionConfig> {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(Action.class);
-
+    
     private ActionConfig.Builder config;
     private ServiceRemoteFactory serviceRemoteFactory;
     private DeviceRegistry deviceRegistry;
@@ -65,10 +66,10 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     private Future executionFuture;
     private final SyncObject executionSync = new SyncObject(Action.class);
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
-
+    
     public Action() {
     }
-
+    
     @Override
     public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
         try {
@@ -81,63 +82,67 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             throw new InitializationException(this, ex);
         }
     }
-
+    
     @Override
     public void execute() throws CouldNotPerformException {
         synchronized (executionSync) {
             FutureTask task = new FutureTask(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
-
-                    // Initiate
-                    updateActionState(ActionState.State.INITIATING);
                     try {
-                        acquireService();
-                    } catch (CouldNotPerformException e) {
-                        ExceptionPrinter.printHistory(e, logger);
-                        updateActionState(ActionState.State.REJECTED);
-                    }
 
-                    // Execute
-                    updateActionState(ActionState.State.EXECUTING);
-                    try {
-                        serviceRemote.applyAction(getConfig());
-                        updateActionState(ActionState.State.FINISHING);
-                        releaseService();
-                        updateActionState(ActionState.State.FINISHED);
-                    } catch (InterruptedException ex) {
-                        updateActionState(ActionState.State.ABORTING);
-                        releaseService();
-                        updateActionState(ActionState.State.ABORTED);
-                        throw ex;
-                    } catch (CouldNotPerformException | NullPointerException ex) {
-                        updateActionState(ActionState.State.EXECUTION_FAILED);
-                        releaseService();
-                        throw ex;
-                    }
+                        // Initiate
+                        updateActionState(ActionState.State.INITIATING);
+                        try {
+                            acquireService();
+                        } catch (CouldNotPerformException e) {
+                            ExceptionPrinter.printHistory(e, logger);
+                            updateActionState(ActionState.State.REJECTED);
+                        }
 
+                        // Execute
+                        updateActionState(ActionState.State.EXECUTING);
+                        try {
+                            serviceRemote.applyAction(getConfig());
+                            updateActionState(ActionState.State.FINISHING);
+                            releaseService();
+                            updateActionState(ActionState.State.FINISHED);
+                        } catch (InterruptedException ex) {
+                            updateActionState(ActionState.State.ABORTING);
+                            releaseService();
+                            updateActionState(ActionState.State.ABORTED);
+                            throw ex;
+                        } catch (CouldNotPerformException | NullPointerException ex) {
+                            updateActionState(ActionState.State.EXECUTION_FAILED);
+                            releaseService();
+                            throw ex;
+                        }
+                    } catch (Exception ex) {
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + config.getActionState().getValue() + "!", ex), logger, LogLevel.WARN);
+                    }
+                    
                     return null;
                 }
             });
             executionFuture = executorService.submit(task);
         }
     }
-
+    
     private void acquireService() throws CouldNotPerformException {
         //TODO
-        logger.info("Acquire service for execution of "+this);
+        logger.info("Acquire service for execution of " + this);
     }
-
+    
     private void releaseService() {
         try {
             // TODO
-            logger.info("Release acquired services of "+ this);
+            logger.info("Release acquired services of " + this);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("FatalExecutionError: Could not release service!", ex), logger);
         }
     }
-
+    
     public void waitForFinalization() throws CouldNotPerformException, InterruptedException {
         Future currentExecution;
         synchronized (executionSync) {
@@ -146,23 +151,23 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             }
             currentExecution = executionFuture;
         }
-
+        
         try {
             currentExecution.get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not wait for execution!", ex);
         }
     }
-
+    
     public ActionConfig getConfig() {
         return config.build();
     }
-
+    
     private void updateActionState(ActionState.State state) {
         config.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
-        logger.info("Stateupdate["+state.name()+"] of " + this);
+        logger.info("Stateupdate[" + state.name() + "] of " + this);
     }
-
+    
     @Override
     public String toString() {
         if (config == null) {
