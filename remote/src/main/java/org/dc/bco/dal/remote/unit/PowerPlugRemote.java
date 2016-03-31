@@ -55,6 +55,10 @@ public class PowerPlugRemote extends AbstractUnitRemote<PowerPlug> implements Po
     public void notifyUpdated(PowerPlug data) {
     }
 
+    public void setPower(final PowerState.State value) throws CouldNotPerformException {
+        setPower(PowerState.newBuilder().setValue(value).build());
+    }
+
     @Override
     public void setPower(PowerState value) throws CouldNotPerformException {
         try {

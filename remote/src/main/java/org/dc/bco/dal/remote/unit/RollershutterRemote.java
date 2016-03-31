@@ -55,6 +55,10 @@ public class RollershutterRemote extends AbstractUnitRemote<Rollershutter> imple
     public void notifyUpdated(Rollershutter data) {
     }
 
+    public void setShutter(ShutterState.State value) throws CouldNotPerformException {
+        setShutter(ShutterState.newBuilder().setValue(value).build());
+    }
+
     @Override
     public void setShutter(ShutterState value) throws CouldNotPerformException {
         try {

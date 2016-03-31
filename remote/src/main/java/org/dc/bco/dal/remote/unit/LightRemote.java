@@ -55,6 +55,10 @@ public class LightRemote extends AbstractUnitRemote<Light> implements LightInter
     public void notifyUpdated(Light data) {
     }
 
+    public void setPower(final PowerState.State value) throws CouldNotPerformException {
+        setPower(PowerState.newBuilder().setValue(value).build());
+    }
+
     @Override
     public void setPower(PowerState value) throws CouldNotPerformException {
         try {

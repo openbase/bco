@@ -55,8 +55,12 @@ public class DimmerRemote extends AbstractUnitRemote<Dimmer> implements DimmerIn
     public void notifyUpdated(Dimmer data) {
     }
 
+    public void setPower(final PowerState.State value) throws CouldNotPerformException {
+        setPower(PowerState.newBuilder().setValue(value).build());
+    }
+
     @Override
-    public void setPower(PowerState value) throws CouldNotPerformException {
+    public void setPower(final PowerState value) throws CouldNotPerformException {
         try {
             RPCHelper.callRemoteMethod(value, this).get();
         } catch (InterruptedException ex) {
