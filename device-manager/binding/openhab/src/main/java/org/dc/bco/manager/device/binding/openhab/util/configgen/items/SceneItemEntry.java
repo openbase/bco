@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -41,6 +40,7 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 public class SceneItemEntry extends AbstractItemEntry {
 
     public static String SCENE_GROUP_LABEL = "Scenes";
+
     public SceneItemEntry(final SceneConfig sceneConfig, final LocationRegistryRemote locationRegistryRemote) throws org.dc.jul.exception.InstantiationException {
         super();
         try {
@@ -48,7 +48,7 @@ public class SceneItemEntry extends AbstractItemEntry {
             this.icon = "";
             this.commandType = "Switch";
             this.label = sceneConfig.getLabel();
-            this.itemHardwareConfig = "bco.manager.scene=\"" + sceneConfig.getId() + "\"";
+            this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + sceneConfig.getId() + "\"";
             groups.add(SCENE_GROUP_LABEL);
             groups.add(GroupEntry.generateGroupID(sceneConfig.getLocationId(), locationRegistryRemote));
             calculateGaps();
