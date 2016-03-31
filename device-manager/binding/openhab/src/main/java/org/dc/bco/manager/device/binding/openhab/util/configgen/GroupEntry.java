@@ -28,7 +28,7 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen;
  * #L%
  */
 
-import static org.dc.bco.manager.device.binding.openhab.util.configgen.ItemEntry.SERVICE_TEMPLATE_BINDING_ICON;
+import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.SERVICE_TEMPLATE_BINDING_ICON;
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;

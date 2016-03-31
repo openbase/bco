@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.device.binding.openhab.util.configgen;
+package org.dc.bco.manager.device.binding.openhab.util.configgen.items;
 
 /*
  * #%L
@@ -41,6 +41,7 @@ import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -73,9 +74,9 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author mpohling
  */
-public class ItemEntry {
+public class ServiceItemEntry extends AbstractItemEntry {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ItemEntry.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceItemEntry.class);
 
     public static final String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
     public static final String SERVICE_TEMPLATE_BINDING_ICON = "OPENHAB_BINDING_ICON";
@@ -85,26 +86,12 @@ public class ItemEntry {
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
     public static final String UNIT_VISIBLE_IN_GUI = "UNIT_VISIBLE_IN_GUI";
     public static final String OPENHAB_BINDING_DEVICE_ID = "OPENHAB_BINDING_DEVICE_ID";
-
-    private String commandType;
-    private final String itemId;
-    private String label;
-    private String icon;
-    private final List<String> groups;
-    private String itemHardwareConfig;
+    
     private final MetaConfigPool configPool;
 
-    private static int maxCommandTypeSize = 0;
-    private static int maxItemIdSize = 0;
-    private static int maxLabelSize = 0;
-    private static int maxIconSize = 0;
-    private static int maxGroupSize = 0;
-    private static int maxBindingConfigSize = 0;
-
-    public ItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
+    public ServiceItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
+        super();
         try {
-            this.groups = new ArrayList<>();
-
             configPool = new MetaConfigPool();
             configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingServiceConfig().getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
@@ -219,117 +206,6 @@ public class ItemEntry {
             }
         }
         throw new NotAvailableException("unit template config for UnitType[" + unitType.name() + "]");
-    }
-
-    private void calculateGaps() {
-        maxCommandTypeSize = Math.max(maxCommandTypeSize, getCommandTypeStringRep().length());
-        maxItemIdSize = Math.max(maxItemIdSize, getItemIdStringRep().length());
-        maxLabelSize = Math.max(maxLabelSize, getLabelStringRep().length());
-        maxIconSize = Math.max(maxIconSize, getIconStringRep().length());
-        maxGroupSize = Math.max(maxGroupSize, getGroupsStringRep().length());
-        maxBindingConfigSize = Math.max(maxBindingConfigSize, getBindingConfigStringRep().length());
-    }
-
-    public static void reset() {
-        maxCommandTypeSize = 0;
-        maxItemIdSize = 0;
-        maxLabelSize = 0;
-        maxIconSize = 0;
-        maxGroupSize = 0;
-        maxBindingConfigSize = 0;
-    }
-
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public String getItemId() {
-        return itemId;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public List<String> getGroups() {
-        return Collections.unmodifiableList(groups);
-    }
-
-    public String getItemHardwareConfig() {
-        return itemHardwareConfig;
-    }
-
-    public String getCommandTypeStringRep() {
-        return commandType;
-    }
-
-    public String getItemIdStringRep() {
-        return itemId;
-    }
-
-    public String getLabelStringRep() {
-        if (label.isEmpty()) {
-            return "";
-        }
-        return "\"" + label + "\"";
-    }
-
-    public String getIconStringRep() {
-        if (icon.isEmpty()) {
-            return "";
-        }
-        return "<" + icon + ">";
-    }
-
-    public String getGroupsStringRep() {
-        if (groups.isEmpty()) {
-            return "";
-        }
-        String stringRep = "(";
-        boolean firstIteration = true;
-        for (String group : groups) {
-            if (!firstIteration) {
-                stringRep += ",";
-            } else {
-                firstIteration = false;
-            }
-            stringRep += group;
-        }
-        stringRep += ")";
-        return stringRep;
-    }
-
-    public String getBindingConfigStringRep() {
-        return "{ " + itemHardwareConfig + " }";
-    }
-
-    public String buildStringRep() {
-
-        String stringRep = "";
-
-        // command type
-        stringRep += StringProcessor.fillWithSpaces(getCommandTypeStringRep(), maxCommandTypeSize + TAB_SIZE);
-
-        // unit id
-        stringRep += StringProcessor.fillWithSpaces(getItemIdStringRep(), maxItemIdSize + TAB_SIZE);
-
-        // label
-        stringRep += StringProcessor.fillWithSpaces(getLabelStringRep(), maxLabelSize + TAB_SIZE);
-
-        // icon
-        stringRep += StringProcessor.fillWithSpaces(getIconStringRep(), maxIconSize + TAB_SIZE);
-
-        // groups
-        stringRep += StringProcessor.fillWithSpaces(getGroupsStringRep(), maxGroupSize + TAB_SIZE);
-
-        // binding config
-        stringRep += StringProcessor.fillWithSpaces(getBindingConfigStringRep(), maxBindingConfigSize + TAB_SIZE);
-
-        return stringRep;
     }
 
     private String getDefaultCommand(ServiceType type) {

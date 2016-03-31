@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABConfiguration;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
@@ -45,9 +44,11 @@ import java.io.File;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.device.DeviceRegistryType;
-import rst.spatial.LocationRegistryType;
+import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
+import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
  *
@@ -62,13 +63,15 @@ public class OpenHABConfigGenerator {
     private final OpenHABItemConfigGenerator itemConfigGenerator;
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
+    private final SceneRegistryRemote sceneRegistryRemote;
     private final RecurrenceEventFilter recurrenceGenerationFilter;
 
     public OpenHABConfigGenerator() throws InstantiationException {
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
-            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote);
+            this.sceneRegistryRemote = new SceneRegistryRemote();
+            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote, sceneRegistryRemote);
             this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
                 @Override
@@ -78,7 +81,7 @@ public class OpenHABConfigGenerator {
 
             };
 
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | InterruptedException ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -89,12 +92,17 @@ public class OpenHABConfigGenerator {
         deviceRegistryRemote.activate();
         locationRegistryRemote.init();
         locationRegistryRemote.activate();
+        sceneRegistryRemote.init();
+        sceneRegistryRemote.activate();
         itemConfigGenerator.init();
 
-        this.deviceRegistryRemote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
+        this.deviceRegistryRemote.addObserver((Observable<DeviceRegistry> source, DeviceRegistry data) -> {
             generate();
         });
-        this.locationRegistryRemote.addObserver((Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) -> {
+        this.locationRegistryRemote.addObserver((Observable<LocationRegistry> source, LocationRegistry data) -> {
+            generate();
+        });
+        this.sceneRegistryRemote.addObserver((Observable<SceneRegistry> source, SceneRegistry data) -> {
             generate();
         });
     }
@@ -121,6 +129,7 @@ public class OpenHABConfigGenerator {
         itemConfigGenerator.shutdown();
         deviceRegistryRemote.shutdown();
         locationRegistryRemote.shutdown();
+        sceneRegistryRemote.shutdown();
     }
 
     /**

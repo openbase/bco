@@ -26,7 +26,9 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import org.dc.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.jps.core.JPService;
@@ -39,22 +41,21 @@ import org.dc.jul.processing.StringProcessor;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry.SCENE_GROUP_LABEL;
+import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.InventoryStateType;
+import rst.homeautomation.state.InventoryStateType.InventoryState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
@@ -67,17 +68,19 @@ public class OpenHABItemConfigGenerator {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(OpenHABItemConfigGenerator.class);
 
-    private final List<ItemEntry> itemEntryList;
+    private final List<AbstractItemEntry> itemEntryList;
     private final List<GroupEntry> groupEntryList;
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
+    private final SceneRegistryRemote sceneRegistryRemote;
 
-    public OpenHABItemConfigGenerator(final DeviceRegistryRemote deviceRegistryRemote, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
+    public OpenHABItemConfigGenerator(final DeviceRegistryRemote deviceRegistryRemote, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote) throws InstantiationException {
         try {
             this.itemEntryList = new ArrayList<>();
             this.groupEntryList = new ArrayList<>();
             this.deviceRegistryRemote = deviceRegistryRemote;
             this.locationRegistryRemote = locationRegistryRemote;
+            this.sceneRegistryRemote = sceneRegistryRemote;
         } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
@@ -91,7 +94,7 @@ public class OpenHABItemConfigGenerator {
         try {
             itemEntryList.clear();
             groupEntryList.clear();
-            ItemEntry.reset();
+            ServiceItemEntry.reset();
             GroupEntry.reset();
             generateGroupEntries();
             generateItemEntries();
@@ -105,7 +108,7 @@ public class OpenHABItemConfigGenerator {
         try {
             // generate location groups
             GroupEntry groupEntry, rootEntry = null;
-            List<LocationConfigType.LocationConfig> locationConfigList = locationRegistryRemote.getData().getLocationConfigList();
+            List<LocationConfig> locationConfigList = locationRegistryRemote.getData().getLocationConfigList();
             for (LocationConfig locationConfig : locationConfigList) {
                 groupEntry = new GroupEntry(locationConfig, locationRegistryRemote);
                 groupEntryList.add(new GroupEntry(locationConfig, locationRegistryRemote));
@@ -127,12 +130,14 @@ public class OpenHABItemConfigGenerator {
         groupEntryList.add(overviewGroupEntry);
 
         for (UnitType unitType : UnitType.values()) {
-            if(unitType.equals(UnitType.UNKNOWN)) {
+            if (unitType.equals(UnitType.UNKNOWN)) {
                 continue;
             }
-            String unitLabel = "Unit"+StringProcessor.transformUpperCaseToCamelCase(unitType.name());
+            String unitLabel = "Unit" + StringProcessor.transformUpperCaseToCamelCase(unitType.name());
             groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
         }
+
+        groupEntryList.add(new GroupEntry(SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, overviewGroupEntry));
 
 //        for (ServiceType serviceType : ServiceType.values()) {
 //            groupEntryList.add(new GroupEntry(serviceType.name(), serviceType.name(), "", rootGroupEntry));
@@ -141,7 +146,7 @@ public class OpenHABItemConfigGenerator {
 
     private void generateItemEntries() throws CouldNotPerformException {
         try {
-            List<DeviceConfigType.DeviceConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceConfigList();
+            List<DeviceConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceConfigList();
 
             for (DeviceConfig deviceConfig : deviceConfigList) {
 
@@ -154,14 +159,14 @@ public class OpenHABItemConfigGenerator {
                 }
 
                 // ignore non installed items
-                if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                if (deviceConfig.getInventoryState().getValue() != InventoryState.State.INSTALLED) {
                     continue;
                 }
 
                 for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
-                            itemEntryList.add(new ItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig, locationRegistryRemote));
+                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
@@ -169,11 +174,18 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
+            List<SceneConfig> sceneConfigList = sceneRegistryRemote.getSceneConfigs();
+
+            for (SceneConfig sceneConfig : sceneConfigList) {
+                itemEntryList.add(new SceneItemEntry(sceneConfig, locationRegistryRemote));
+                logger.info("Generated Scene ItemEntry[" + itemEntryList.get(itemEntryList.size() - 1).buildStringRep() + "]");
+            }
+
             // sort items by command type and label
-            Collections.sort(itemEntryList, new Comparator<ItemEntry>() {
+            Collections.sort(itemEntryList, new Comparator<AbstractItemEntry>() {
 
                 @Override
-                public int compare(ItemEntry o1, ItemEntry o2) {
+                public int compare(AbstractItemEntry o1, AbstractItemEntry o2) {
                     int typeComparation = o1.getCommandType().compareTo(o2.getCommandType());
                     if (typeComparation != 0) {
                         return typeComparation;
@@ -207,7 +219,7 @@ public class OpenHABItemConfigGenerator {
             configAsString += "/* === DAL AUTO GENERATED ITEM ENTRIES =============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += System.lineSeparator();
-            for (ItemEntry entry : itemEntryList) {
+            for (AbstractItemEntry entry : itemEntryList) {
                 configAsString += entry.buildStringRep() + System.lineSeparator();
             }
             configAsString += System.lineSeparator();

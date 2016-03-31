@@ -27,8 +27,8 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen;
  * #L%
  */
 
-import static org.dc.bco.manager.device.binding.openhab.util.configgen.ItemEntry.OPENHAB_BINDING_DEVICE_ID;
-import static org.dc.bco.manager.device.binding.openhab.util.configgen.ItemEntry.SERVICE_TEMPLATE_BINDING_TYPE;
+import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.OPENHAB_BINDING_DEVICE_ID;
+import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.SERVICE_TEMPLATE_BINDING_TYPE;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABminZwaveConfig;

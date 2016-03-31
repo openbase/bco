@@ -1,0 +1,930 @@
+[main] INFO org.dc.jps.core.JPService - [command line value modification]
+	 -v
+
+[main] INFO org.dc.jps.preset.JPVerbose - Verbose is enabled!
+[main] INFO org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher - Start openhabbinding...
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Perform registry sync...
+Mar 31, 2016 3:27:42 PM rsb.converter.DefaultConverterRepository addConverter
+WARNING: Converter with signature ConverterSignature [schema=.rst.homeautomation.state.PowerState, datatype=class rst.homeautomation.state.PowerStateType$PowerState] already registered in DefaultConverterRepository. Existing entry will be overwritten!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[BorrowdUnit-1] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[SLampRight1] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[SLamp1] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[SLampLeft1] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[PathwayButtons1] because it is currently not installed!
+Mar 31, 2016 3:27:44 PM rsb.converter.DefaultConverterRepository addConverter
+WARNING: Converter with signature ConverterSignature [schema=.rst.homeautomation.state.PowerState, datatype=class rst.homeautomation.state.PowerStateType$PowerState] already registered in DefaultConverterRepository. Existing entry will be overwritten!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp5] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp1] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp3] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp4] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp2] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp1] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp3] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[StudTestLamp] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp2] because it is currently not installed!
+[main] INFO org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - 131 registry changes applied. 50 are skipped.
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - ═╦═ Initial sync failed!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -  ╚╦═ Entry registry sync failed!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -   ╚╦═ Could not sync all entries!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -    ╚╦═ Could not register 50 entries!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -     ╚╦═ Could not instantiate Device[Hager_TYA606E_397289089690000]!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -      ╚╦═ Could not initialize class org.dc.bco.manager.device.core.GenericDeviceController!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -       ╚╦═ Could not instantiate GenericDeviceController!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -        ╚╦═ Could not register Unit[id: "/home/kitchen/powerplug/a4c1/"unit_template_config_id: "Hager_TYA606E_POWER_PLUG_0"label: "A4C1"device_id: "Hager_TYA606E_397289089690000"type: POWER_PLUGplacement_config {  location_id: "f0a71f71-1463-41e3-9c9a-25a02a536001"  transformation_frame_id: "A4C1"  position {    translation {      x: 0.0      y: 0.0      z: 0.0    }    rotation {      qw: 1.0      qx: 0.0      qy: 0.0      qz: 0.0    }  }}scope {  component: "home"  component: "kitchen"  component: "powerplug"  component: "a4c1"}bound_to_device: falseservice_config {  binding_service_config {    type: OPENHAB    meta_config {      entry {        key: "OPENHAB_BINDING_CONFIG"        value: "5/1/37+5/1/43"      }      entry {        key: "OPENHAB_BINDING_ITEM_ID"        value: "Hager_TYA606E__home_kitchen__PowerPlug__A4C1__PowerService"      }    }  }  unit_id: "/home/kitchen/powerplug/a4c1/"  type: POWER_SERVICE  meta_config {  }}meta_config {}]!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -         ╚╦═ Could not instantiate Unit[id: "/home/kitchen/powerplug/a4c1/"unit_template_config_id: "Hager_TYA606E_POWER_PLUG_0"label: "A4C1"device_id: "Hager_TYA606E_397289089690000"type: POWER_PLUGplacement_config {  location_id: "f0a71f71-1463-41e3-9c9a-25a02a536001"  transformation_frame_id: "A4C1"  position {    translation {      x: 0.0      y: 0.0      z: 0.0    }    rotation {      qw: 1.0      qx: 0.0      qy: 0.0      qz: 0.0    }  }}scope {  component: "home"  component: "kitchen"  component: "powerplug"  component: "a4c1"}bound_to_device: falseservice_config {  binding_service_config {    type: OPENHAB    meta_config {      entry {        key: "OPENHAB_BINDING_CONFIG"        value: "5/1/37+5/1/43"      }      entry {        key: "OPENHAB_BINDING_ITEM_ID"        value: "Hager_TYA606E__home_kitchen__PowerPlug__A4C1__PowerService"      }    }  }  unit_id: "/home/kitchen/powerplug/a4c1/"  type: POWER_SERVICE  meta_config {  }}meta_config {}]!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -          ╚╦═ InvocationTargetException
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -           ╚╦═ Could not instantiate PowerServiceImpl!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer -            ╚══ Context[config] is not available!
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - =====================================
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - Initial sync failed!
+org.dc.jul.exception.CouldNotPerformException: Initial sync failed!
+	at org.dc.jul.storage.registry.RegistrySynchronizer.init(RegistrySynchronizer.java:99)
+	at org.dc.bco.manager.device.core.DeviceManagerController.init(DeviceManagerController.java:89)
+	at org.dc.bco.manager.device.binding.openhab.OpenHABBindingImpl.init(OpenHABBindingImpl.java:94)
+	at org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher.launch(OpenHABBindingLauncher.java:48)
+	at org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher.main(OpenHABBindingLauncher.java:80)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Entry registry sync failed!
+	at org.dc.jul.storage.registry.RegistrySynchronizer.internalSync(RegistrySynchronizer.java:205)
+	at org.dc.jul.storage.registry.RegistrySynchronizer.init(RegistrySynchronizer.java:97)
+	... 4 more
+Caused by: org.dc.jul.exception.MultiException: Could not sync all entries!
+	at org.dc.jul.exception.MultiException.checkAndThrow(MultiException.java:70)
+	at org.dc.jul.storage.registry.RegistrySynchronizer.internalSync(RegistrySynchronizer.java:202)
+	... 5 more
+Caused by: org.dc.jul.exception.MultiException: Could not register 50 entries!
+	at org.dc.jul.exception.MultiException.checkAndThrow(MultiException.java:70)
+	at org.dc.jul.storage.registry.RegistrySynchronizer.internalSync(RegistrySynchronizer.java:198)
+	... 5 more
+Caused by: org.dc.jul.exception.InstantiationException: Could not instantiate Device[Hager_TYA606E_397289089690000]!
+	at org.dc.bco.manager.device.core.AbstractDeviceFactory.newInstance(AbstractDeviceFactory.java:85)
+	at org.dc.bco.manager.device.core.DeviceFactoryImpl.newInstance(DeviceFactoryImpl.java:50)
+	at org.dc.bco.manager.device.core.DeviceFactoryImpl.newInstance(DeviceFactoryImpl.java:39)
+	at org.dc.jul.storage.registry.RegistrySynchronizer.register(RegistrySynchronizer.java:210)
+	at org.dc.jul.storage.registry.RegistrySynchronizer.internalSync(RegistrySynchronizer.java:152)
+	... 5 more
+Caused by: org.dc.jul.exception.InitializationException: Could not initialize class org.dc.bco.manager.device.core.GenericDeviceController!
+	at org.dc.bco.manager.device.core.AbstractDeviceController.init(AbstractDeviceController.java:95)
+	at org.dc.bco.manager.device.core.AbstractDeviceFactory.newInstance(AbstractDeviceFactory.java:81)
+	... 9 more
+Caused by: org.dc.jul.exception.InstantiationException: Could not instantiate GenericDeviceController!
+	at org.dc.bco.manager.device.core.AbstractDeviceController.init(AbstractDeviceController.java:91)
+	... 10 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Could not register Unit[id: "/home/kitchen/powerplug/a4c1/"
+unit_template_config_id: "Hager_TYA606E_POWER_PLUG_0"
+label: "A4C1"
+device_id: "Hager_TYA606E_397289089690000"
+type: POWER_PLUG
+placement_config {
+  location_id: "f0a71f71-1463-41e3-9c9a-25a02a536001"
+  transformation_frame_id: "A4C1"
+  position {
+    translation {
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    }
+    rotation {
+      qw: 1.0
+      qx: 0.0
+      qy: 0.0
+      qz: 0.0
+    }
+  }
+}
+scope {
+  component: "home"
+  component: "kitchen"
+  component: "powerplug"
+  component: "a4c1"
+}
+bound_to_device: false
+service_config {
+  binding_service_config {
+    type: OPENHAB
+    meta_config {
+      entry {
+        key: "OPENHAB_BINDING_CONFIG"
+        value: "5/1/37+5/1/43"
+      }
+      entry {
+        key: "OPENHAB_BINDING_ITEM_ID"
+        value: "Hager_TYA606E__home_kitchen__PowerPlug__A4C1__PowerService"
+      }
+    }
+  }
+  unit_id: "/home/kitchen/powerplug/a4c1/"
+  type: POWER_SERVICE
+  meta_config {
+  }
+}
+meta_config {
+}
+]!
+	at org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController.registerUnit(AbstractUnitCollectionController.java:141)
+	at org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController.registerUnits(AbstractUnitCollectionController.java:117)
+	at org.dc.bco.manager.device.core.AbstractDeviceController.init(AbstractDeviceController.java:85)
+	... 10 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Could not instantiate Unit[id: "/home/kitchen/powerplug/a4c1/"
+unit_template_config_id: "Hager_TYA606E_POWER_PLUG_0"
+label: "A4C1"
+device_id: "Hager_TYA606E_397289089690000"
+type: POWER_PLUG
+placement_config {
+  location_id: "f0a71f71-1463-41e3-9c9a-25a02a536001"
+  transformation_frame_id: "A4C1"
+  position {
+    translation {
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    }
+    rotation {
+      qw: 1.0
+      qx: 0.0
+      qy: 0.0
+      qz: 0.0
+    }
+  }
+}
+scope {
+  component: "home"
+  component: "kitchen"
+  component: "powerplug"
+  component: "a4c1"
+}
+bound_to_device: false
+service_config {
+  binding_service_config {
+    type: OPENHAB
+    meta_config {
+      entry {
+        key: "OPENHAB_BINDING_CONFIG"
+        value: "5/1/37+5/1/43"
+      }
+      entry {
+        key: "OPENHAB_BINDING_ITEM_ID"
+        value: "Hager_TYA606E__home_kitchen__PowerPlug__A4C1__PowerService"
+      }
+    }
+  }
+  unit_id: "/home/kitchen/powerplug/a4c1/"
+  type: POWER_SERVICE
+  meta_config {
+  }
+}
+meta_config {
+}
+]!
+	at org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController.registerUnit(AbstractUnitCollectionController.java:136)
+	... 12 more
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:422)
+	at org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController.registerUnit(AbstractUnitCollectionController.java:134)
+	... 12 more
+Caused by: org.dc.jul.exception.InstantiationException: Could not instantiate PowerServiceImpl!
+	at org.dc.bco.manager.device.binding.openhab.service.OpenHABService.<init>(OpenHABService.java:72)
+	at org.dc.bco.manager.device.binding.openhab.service.PowerServiceImpl.<init>(PowerServiceImpl.java:44)
+	at org.dc.bco.manager.device.binding.openhab.service.OpenhabServiceFactory.newPowerService(OpenhabServiceFactory.java:67)
+	at org.dc.bco.dal.lib.layer.unit.PowerPlugController.<init>(PowerPlugController.java:54)
+	... 17 more
+Caused by: org.dc.jul.exception.NotAvailableException: Context[config] is not available!
+	at org.dc.jul.extension.rsb.com.AbstractConfigurableController.getConfig(AbstractConfigurableController.java:132)
+	at org.dc.jul.extension.rsb.com.AbstractConfigurableController.getConfig(AbstractConfigurableController.java:42)
+	at org.dc.bco.manager.device.binding.openhab.service.OpenHABService.loadServiceConfig(OpenHABService.java:77)
+	at org.dc.bco.manager.device.binding.openhab.service.OpenHABService.<init>(OpenHABService.java:68)
+	... 20 more
+[main] ERROR org.dc.bco.manager.device.core.DeviceRegistrySynchronizer - =====================================
+[main] INFO org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher - openhabbinding successfully started.
+[pool-23-thread-2] INFO org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Active dal binding state!
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A4C1Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A4C1Consumption__PowerConsumptionProvider = 240.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/kitchen/powerconsumptionsensor/a4c1consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A4C1Consumption__PowerConsumptionProvider = 240.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/kitchen/powerconsumptionsensor/a4c1consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:46 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Gira_5142__home_living_dining__TemperatureController__TemperatureControllerLiving__TargetTemperatureService=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Gira_5142__home_living_dining__TemperatureController__TemperatureControllerLiving__TargetTemperatureService = 21.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/dining/temperaturecontroller/temperaturecontrollerliving/]] is not available! Nearest neighbor is [/home/living/dining/button/radioon/] or [/home/living/handlesensor/leftwindowhandlesensor/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Gira_5142__home_living_dining__TemperatureController__TemperatureControllerLiving__TargetTemperatureService = 21.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/dining/temperaturecontroller/temperaturecontrollerliving/]] is not available! Nearest neighbor is [/home/living/dining/button/radioon/] or [/home/living/handlesensor/leftwindowhandlesensor/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living_dining__PowerConsumptionSensor__A5C1Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living_dining__PowerConsumptionSensor__A5C1Consumption__PowerConsumptionProvider = 339.84000000000003]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/dining/powerconsumptionsensor/a5c1consumption/]] is not available! Nearest neighbor is [/home/living/dining/button/radioon/] or [/home/living/handlesensor/leftwindowhandlesensor/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living_dining__PowerConsumptionSensor__A5C1Consumption__PowerConsumptionProvider = 339.84000000000003]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/dining/powerconsumptionsensor/a5c1consumption/]] is not available! Nearest neighbor is [/home/living/dining/button/radioon/] or [/home/living/handlesensor/leftwindowhandlesensor/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 449.92]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 449.92]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living_hometheater__PowerConsumptionSensor__A5C4Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living_hometheater__PowerConsumptionSensor__A5C4Consumption__PowerConsumptionProvider = 409.92]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/hometheater/powerconsumptionsensor/a5c4consumption/]] is not available! Nearest neighbor is [/home/living/handlesensor/rightwindowhandlesensor/] or [/home/living/motionsensor/control/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living_hometheater__PowerConsumptionSensor__A5C4Consumption__PowerConsumptionProvider = 409.92]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/hometheater/powerconsumptionsensor/a5c4consumption/]] is not available! Nearest neighbor is [/home/living/handlesensor/rightwindowhandlesensor/] or [/home/living/motionsensor/control/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C2Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C2Consumption__PowerConsumptionProvider = 220.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a8c2consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C2Consumption__PowerConsumptionProvider = 220.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a8c2consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 220.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 220.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_wardrobe__PowerConsumptionSensor__A8C4Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_wardrobe__PowerConsumptionSensor__A8C4Consumption__PowerConsumptionProvider = 220.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/wardrobe/powerconsumptionsensor/a8c4consumption/]] is not available! Nearest neighbor is [/home/wardrobe/motionsensor/hallway/] or [/home/wardrobe/reedswitch/entrancedoorreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_wardrobe__PowerConsumptionSensor__A8C4Consumption__PowerConsumptionProvider = 220.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/wardrobe/powerconsumptionsensor/a8c4consumption/]] is not available! Nearest neighbor is [/home/wardrobe/motionsensor/hallway/] or [/home/wardrobe/reedswitch/entrancedoorreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_wardrobe__PowerConsumptionSensor__A8C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_wardrobe__PowerConsumptionSensor__A8C5Consumption__PowerConsumptionProvider = 300.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/wardrobe/powerconsumptionsensor/a8c5consumption/]] is not available! Nearest neighbor is [/home/wardrobe/motionsensor/hallway/] or [/home/wardrobe/reedswitch/entrancedoorreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_wardrobe__PowerConsumptionSensor__A8C5Consumption__PowerConsumptionProvider = 300.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/wardrobe/powerconsumptionsensor/a8c5consumption/]] is not available! Nearest neighbor is [/home/wardrobe/motionsensor/hallway/] or [/home/wardrobe/reedswitch/entrancedoorreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 7.1000000000000005]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 7.1000000000000005]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 260.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 260.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:47 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_control__PowerConsumptionSensor__A10C6Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_control__PowerConsumptionSensor__A10C6Consumption__PowerConsumptionProvider = 140.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/control/powerconsumptionsensor/a10c6consumption/]] is not available! Nearest neighbor is [/home/control/motionsensor/testunit_1/] or [/home/control/reedswitch/controldoorreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_control__PowerConsumptionSensor__A10C6Consumption__PowerConsumptionProvider = 140.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/control/powerconsumptionsensor/a10c6consumption/]] is not available! Nearest neighbor is [/home/control/motionsensor/testunit_1/] or [/home/control/reedswitch/controldoorreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:48 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 429.76]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 429.76]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:48 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 6.9]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 6.9]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:48 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 440.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 440.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:49 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 229.92000000000002]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 229.92000000000002]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:49 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 7.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 7.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:49 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 269.92]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 269.92]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:49 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 429.76]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A3C2Consumption__PowerConsumptionProvider = 429.76]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/kitchen/powerconsumptionsensor/a3c2consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:50 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 220.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 220.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:50 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_sports__PowerConsumptionSensor__A6C3Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_sports__PowerConsumptionSensor__A6C3Consumption__PowerConsumptionProvider = 1.9000000000000001]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/sports/powerconsumptionsensor/a6c3consumption/]] is not available! Nearest neighbor is [/home/sports/motionsensor/pathway/] or [/home/sports/reedswitch/sportstocontrolreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_sports__PowerConsumptionSensor__A6C3Consumption__PowerConsumptionProvider = 1.9000000000000001]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/sports/powerconsumptionsensor/a6c3consumption/]] is not available! Nearest neighbor is [/home/sports/motionsensor/pathway/] or [/home/sports/reedswitch/sportstocontrolreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:50 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 6.9]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A6C5Consumption__PowerConsumptionProvider = 6.9]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a6c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:50 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 260.0]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 260.0]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:50 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 229.92000000000002]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A8C3Consumption__PowerConsumptionProvider = 229.92000000000002]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a8c3consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:51 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_sports__PowerConsumptionSensor__A6C3Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_sports__PowerConsumptionSensor__A6C3Consumption__PowerConsumptionProvider = 1.8]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/sports/powerconsumptionsensor/a6c3consumption/]] is not available! Nearest neighbor is [/home/sports/motionsensor/pathway/] or [/home/sports/reedswitch/sportstocontrolreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_sports__PowerConsumptionSensor__A6C3Consumption__PowerConsumptionProvider = 1.8]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/sports/powerconsumptionsensor/a6c3consumption/]] is not available! Nearest neighbor is [/home/sports/motionsensor/pathway/] or [/home/sports/reedswitch/sportstocontrolreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:51 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 269.92]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_living__PowerConsumptionSensor__A9C5Consumption__PowerConsumptionProvider = 269.92]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/living/powerconsumptionsensor/a9c5consumption/]] is not available! Nearest neighbor is [/home/living/motionsensor/table/] or [/home/living/reedswitch/leftwindowreedswitch/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:51 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] INFO org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor - receiveUpdate [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A4C1Consumption__PowerConsumptionProvider=DECIMAL]
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - ═╦═ Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -  ╚╦═ Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A4C1Consumption__PowerConsumptionProvider = 229.92000000000002]!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -   ╚╦═ Unit not compatible!
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl -    ╚══ Entry[/home/kitchen/powerconsumptionsensor/a4c1consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:187)
+	at rsb.patterns.EventCallback.internalInvoke(EventCallback.java:42)
+	at rsb.patterns.LocalMethod.internalNotify(LocalMethod.java:95)
+	at rsb.eventprocessing.SingleThreadEventReceivingStrategy$DispatchThread.run(SingleThreadEventReceivingStrategy.java:98)
+Caused by: org.dc.jul.exception.CouldNotPerformException: Skip item update [Hager_TYA606E__home_kitchen__PowerConsumptionSensor__A4C1Consumption__PowerConsumptionProvider = 229.92000000000002]!
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:176)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl$InternalReceiveUpdateCallback.invoke(OpenHABCommunicatorImpl.java:185)
+	... 3 more
+Caused by: org.dc.jul.exception.CouldNotPerformException: Unit not compatible!
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:138)
+	at org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.internalReceiveUpdate(OpenHABCommunicatorImpl.java:174)
+	... 4 more
+Caused by: org.dc.jul.exception.NotAvailableException: Entry[/home/kitchen/powerconsumptionsensor/a4c1consumption/]] is not available! Nearest neighbor is [/home/kitchen/motionsensor/global/] or [/home/kitchen/reedswitch/doorclosed/].
+	at org.dc.jul.storage.registry.AbstractRegistry.get(AbstractRegistry.java:267)
+	at org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor.receiveUpdate(OpenHABCommandExecutor.java:126)
+	... 5 more
+[Thread-1091] ERROR org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl - =====================================
+Mar 31, 2016 3:27:51 PM rsb.patterns.LocalMethod internalNotify
+WARNING: Exception during method invocation in participant: /openhab/out/ctrl/internalReceiveUpdate/. Exception message: org.dc.jul.exception.InvocationFailedException: Could not invoke InternalReceiveUpdateCallback on org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl.

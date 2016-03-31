@@ -269,9 +269,6 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             sceneRemote.init(lastSelected);
             sceneRemote.activate();
             sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-            Thread.sleep(200);
-            sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
-            sceneRemote.shutdown();
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.warn("Could not apply update. Initialization and activation of scene remote failed!");
         }
