@@ -32,6 +32,7 @@
         <module>remote</module>
         <module>test</module>
         <module>visual</module>
+        <module>binding</module>
     </modules>
     
     <dependencies>

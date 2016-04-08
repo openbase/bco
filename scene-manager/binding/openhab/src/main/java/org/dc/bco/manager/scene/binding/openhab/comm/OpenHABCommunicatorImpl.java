@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.device.binding.openhab.comm;
+package org.dc.bco.manager.scene.binding.openhab.comm;
 
 /*
  * #%L
@@ -29,9 +29,9 @@ package org.dc.bco.manager.device.binding.openhab.comm;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.binding.AbstractDALBinding;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor;
-import org.dc.bco.manager.device.binding.openhab.transform.OpenhabCommandTransformer;
-import org.dc.bco.manager.device.core.DeviceManagerController;
+import org.dc.bco.manager.scene.binding.openhab.execution.OpenHABCommandExecutor;
+import org.dc.bco.manager.scene.binding.openhab.transform.OpenhabCommandTransformer;
+import org.dc.bco.manager.scene.core.SceneManagerController;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -87,17 +87,11 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
     }
 
     public OpenHABCommunicatorImpl() throws InstantiationException {
-//        try {
-//
-//
-//        } catch (CouldNotPerformException ex) {
-//            throw new org.dc.jul.exception.InstantiationException(this, ex);
-//        }
     }
 
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerController.getDeviceManager().getUnitControllerRegistry());
+            this.commandExecutor = new OpenHABCommandExecutor(SceneManagerController.getInstance().getSceneRegistry());
 
             openhabCommandExecutionRemote = new RSBRemoteService<RSBBinding>() {
 
@@ -170,7 +164,10 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
     @Override
     public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
         try {
-            //Ignore commands that are not for the device manager but for example for the scene registry
+            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
+                throw new CouldNotPerformException("Command does not have an onOff value required for scenes");
+            }
+            //TODO: ignore commands that do not have a valid item config for the scene manager
             commandExecutor.receiveUpdate(command);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + OpenhabCommandTransformer.getCommandData(command) + "]!", ex);
@@ -192,6 +189,7 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
 
     @Override
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
+        //TODO: wann wird das aufgerufen? theoretisch immer wenn eine Szene ihren ActivationState ändert...
         try {
 
             if (!command.hasItem() || command.getItem().isEmpty()) {
