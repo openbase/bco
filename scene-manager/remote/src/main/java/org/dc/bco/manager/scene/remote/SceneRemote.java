@@ -42,17 +42,17 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  * Threepwood</a>
  */
 public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConfig> implements Scene {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
-
+    
     @Override
     public void notifyUpdated(SceneData data) throws CouldNotPerformException {
-
+       
     }
-
+    
     @Override
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(activation, this);

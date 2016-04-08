@@ -101,4 +101,8 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
     public org.dc.bco.registry.scene.lib.SceneRegistry getSceneRegistry() throws NotAvailableException {
         return sceneRegistryRemote;
     }
+
+    public RegistryImpl<String, SceneController> getSceneControllerRegistry() {
+        return sceneRegistry;
+    }
 }

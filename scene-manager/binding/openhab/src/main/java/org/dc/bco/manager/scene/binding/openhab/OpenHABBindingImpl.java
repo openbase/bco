@@ -41,7 +41,7 @@ public class OpenHABBindingImpl implements OpenHABBinding {
     private static final Logger logger = LoggerFactory.getLogger(OpenHABBindingImpl.class);
 
     private static OpenHABBinding instance;
-    private SceneManagerController sceneManagerController;
+//    private SceneManagerController sceneManagerController;
     private OpenHABCommunicatorImpl busCommunicator;
 
     public OpenHABBindingImpl() throws InstantiationException {
@@ -62,9 +62,9 @@ public class OpenHABBindingImpl implements OpenHABBinding {
 
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.sceneManagerController = new SceneManagerController();
+//            this.sceneManagerController = new SceneManagerController();
             this.busCommunicator.init();
-            this.sceneManagerController.init();
+//            this.sceneManagerController.init();
             this.busCommunicator.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -72,9 +72,9 @@ public class OpenHABBindingImpl implements OpenHABBinding {
     }
 
     public void shutdown() throws InterruptedException {
-        if (sceneManagerController != null) {
-            sceneManagerController.shutdown();
-        }
+//        if (sceneManagerController != null) {
+//            sceneManagerController.shutdown();
+//        }
 
         if (busCommunicator != null) {
             busCommunicator.shutdown();

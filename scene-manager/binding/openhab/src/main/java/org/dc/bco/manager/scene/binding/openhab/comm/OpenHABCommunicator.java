@@ -39,5 +39,7 @@ public interface OpenHABCommunicator {
             
     void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException;
     
+    void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException;
+    
     Future executeCommand(OpenhabCommand command) throws CouldNotPerformException;
 }

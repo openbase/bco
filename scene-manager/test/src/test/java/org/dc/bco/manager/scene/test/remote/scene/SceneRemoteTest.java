@@ -78,7 +78,7 @@ public class SceneRemoteTest {
      *  Used to test the activation of a scene via a button
      * @throws java.lang.Exception
      */
-//    @Test
+    @Test
     public void testScene() throws Exception {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));

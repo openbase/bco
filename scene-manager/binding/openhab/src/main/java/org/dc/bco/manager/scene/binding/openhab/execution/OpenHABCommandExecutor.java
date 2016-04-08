@@ -27,10 +27,10 @@ package org.dc.bco.manager.scene.binding.openhab.execution;
  * #L%
  */
 //import org.dc.bco.manager.device.binding.openhab.transform.OpenhabCommandTransformer;
+import java.util.Map;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.bco.manager.scene.binding.openhab.transform.ActivationStateTransformer;
 import org.dc.bco.manager.scene.remote.SceneRemote;
-import org.dc.bco.registry.scene.lib.SceneRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -44,10 +44,10 @@ public class OpenHABCommandExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenHABCommandExecutor.class);
 
-    private final SceneRegistry sceneRegistry;
+    private final Map<String, SceneRemote> sceneRemoteMap;
 
-    public OpenHABCommandExecutor(SceneRegistry sceneRegistry) {
-        this.sceneRegistry = sceneRegistry;
+    public OpenHABCommandExecutor(final Map<String, SceneRemote> sceneRemoteMap) {
+        this.sceneRemoteMap = sceneRemoteMap;
     }
 
     private class OpenhabCommandMetaData {
@@ -58,7 +58,7 @@ public class OpenHABCommandExecutor {
         public OpenhabCommandMetaData(OpenhabCommand command) throws CouldNotPerformException {
             this.command = command;
             try {
-                sceneId = command.getItem().split(":")[1];
+                sceneId = command.getItemBindingConfig().split(":")[1];
             } catch (ArrayIndexOutOfBoundsException ex) {
                 throw new CouldNotPerformException("Could not extract sceneId from command item config!", ex);
             }
@@ -77,16 +77,6 @@ public class OpenHABCommandExecutor {
         logger.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
 
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
-        SceneRemote sceneRemote = new SceneRemote();
-
-        try {
-            sceneRemote.init(sceneRegistry.getSceneConfigById(metaData.getSceneId()));
-            sceneRemote.activate();
-            sceneRemote.setActivationState(ActivationStateTransformer.transform(command.getOnOff().getState()));
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Could not init/activate scene remote", ex);
-        }
-
-        //TODO: shutdown sceneRemote? or use a map for every sceneId a remote?
+        sceneRemoteMap.get(metaData.getSceneId()).setActivationState(ActivationStateTransformer.transform(command.getOnOff().getState()));
     }
 }

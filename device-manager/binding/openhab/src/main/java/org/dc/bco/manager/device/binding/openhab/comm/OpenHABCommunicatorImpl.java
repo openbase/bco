@@ -68,6 +68,7 @@ import rst.homeautomation.state.ActiveDeactiveType;
 public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenHABCommunicator {
 
     public static final String RPC_METHODE_INTERNAL_RECEIVE_UPDATE = "internalReceiveUpdate";
+    public static final String RPC_METHODE_INTERNAL_RECEIVE_COMMAND = "internalReceiveCommand";
     public static final String RPC_METHODE_EXECUTE_COMMAND = "executeCommand";
 
     public static final Scope SCOPE_OPENHAB_IN = new Scope("/openhab/in");
@@ -162,6 +163,7 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
     public final void registerMethods(final RSBLocalServerInterface server) {
         try {
             server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_UPDATE, new InternalReceiveUpdateCallback());
+            server.addMethod(RPC_METHODE_INTERNAL_RECEIVE_COMMAND, new InternalReceiveCommandCallback());
         } catch (CouldNotPerformException ex) {
             logger.warn("Could not add methods to local server in [" + getClass().getSimpleName() + "]", ex);
         }
@@ -177,12 +179,30 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
         }
     }
 
+    @Override
+    public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
+        internalReceiveUpdate(command);
+    }
+
     public class InternalReceiveUpdateCallback extends EventCallback {
 
         @Override
         public Event invoke(final Event request) throws Throwable {
             try {
                 OpenHABCommunicatorImpl.this.internalReceiveUpdate((OpenhabCommand) request.getData());
+            } catch (Throwable cause) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, OpenHABCommunicatorImpl.this, cause), logger, LogLevel.ERROR);
+            }
+            return new Event(Void.class);
+        }
+    }
+
+    public class InternalReceiveCommandCallback extends EventCallback {
+
+        @Override
+        public Event invoke(final Event request) throws Throwable {
+            try {
+                OpenHABCommunicatorImpl.this.internalReceiveCommand((OpenhabCommand) request.getData());
             } catch (Throwable cause) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, OpenHABCommunicatorImpl.this, cause), logger, LogLevel.ERROR);
             }

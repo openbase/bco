@@ -130,7 +130,6 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 //                    }
 //                });
 //            }
-
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -176,14 +175,17 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             @Override
             public void run() {
                 try {
+                    logger.info("Waiting for action finalisation...");
                     for (Action action : actionList) {
                         try {
+                            logger.info("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
                             action.waitForFinalization();
                         } catch (InterruptedException ex) {
                             ExceptionPrinter.printHistory(ex, logger);
                             break;
                         }
                     }
+                    logger.info("All Actions finishes. Deactivation scene...");
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not wait for actions!", ex), logger);

@@ -23,8 +23,7 @@ package org.dc.bco.manager.scene.binding.openhab;
  */
 
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
+import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -70,8 +69,7 @@ public class OpenHABBindingLauncher {
         /* Setup JPService */
         JPService.setApplicationName(OpenHABBinding.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPLocationRegistryScope.class);
-        JPService.registerProperty(JPDeviceRegistryScope.class);
+        JPService.registerProperty(JPSceneRegistryScope.class);
         JPService.parseAndExitOnError(args);
 
         /* Start main app */
