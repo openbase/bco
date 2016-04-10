@@ -26,17 +26,17 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.dc.bco.dal.lib.layer.service.DimService;
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.DimmerType.Dimmer;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -49,13 +49,22 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
-    private final PowerService powerService;
-    private final DimService dimmService;
+    private PowerService powerService;
+    private DimService dimmService;
 
     public DimmerController(final UnitHost unitHost, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(DimmerController.class, unitHost, builder);
-        this.powerService = getServiceFactory().newPowerService(this);
-        this.dimmService = getServiceFactory().newDimmService(this);
+    }
+
+    @Override
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            this.powerService = getServiceFactory().newPowerService(this);
+            this.dimmService = getServiceFactory().newDimmService(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     public void updatePower(final PowerState value) throws CouldNotPerformException {
@@ -88,7 +97,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setValue(value);
-            if(value == 0) {
+            if (value == 0) {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
             } else {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);

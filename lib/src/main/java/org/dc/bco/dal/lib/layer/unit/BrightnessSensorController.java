@@ -35,7 +35,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BrightnessSensorType;
 import rst.homeautomation.unit.BrightnessSensorType.BrightnessSensor;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

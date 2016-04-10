@@ -30,11 +30,13 @@ package org.dc.bco.dal.lib.layer.unit;
 
 import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.TemperatureControllerType.TemperatureController;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -46,13 +48,23 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureController.getDefaultInstance()));
     }
 
-    private final TargetTemperatureService targetTemperatureService;
+    private TargetTemperatureService targetTemperatureService;
 
 
     public TemperatureControllerController(final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureControllerController.class, unitHost, builder);
-        this.targetTemperatureService = getServiceFactory().newTargetTemperatureService(this);
     }
+
+    @Override
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            this.targetTemperatureService = getServiceFactory().newTargetTemperatureService(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
 
     @Override
     public void setTargetTemperature(final Double value) throws CouldNotPerformException {

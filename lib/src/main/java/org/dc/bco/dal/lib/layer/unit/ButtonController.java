@@ -36,7 +36,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonType.Button;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
 
 /**

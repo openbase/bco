@@ -29,6 +29,7 @@ package org.dc.bco.dal.lib.layer.unit;
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
@@ -37,6 +38,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.unit.ScreenType.Screen;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -50,13 +52,22 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
     }
 
-    private final PowerService powerService;
-    private final StandbyService standbyService;
+    private PowerService powerService;
+    private StandbyService standbyService;
 
     public ScreenController(final UnitHost unitHost, final Screen.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ScreenController.class, unitHost, builder);
-        this.powerService = getServiceFactory().newPowerService(this);
-        this.standbyService = getServiceFactory().newStandbyService(this);
+    }
+
+    @Override
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            this.powerService = getServiceFactory().newPowerService(this);
+            this.standbyService = getServiceFactory().newStandbyService(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     public void updatePower(final PowerState.State value) throws CouldNotPerformException {

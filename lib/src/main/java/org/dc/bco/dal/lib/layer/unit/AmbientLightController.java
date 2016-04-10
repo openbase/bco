@@ -30,6 +30,7 @@ import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.ClosableDataBuilder;
@@ -37,6 +38,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.AmbientLightType.AmbientLight;
+import rst.homeautomation.unit.UnitConfigType;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
@@ -52,15 +54,24 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
-    private final ColorService colorService;
-    private final BrightnessService brightnessService;
-    private final PowerService powerService;
+    private ColorService colorService;
+    private BrightnessService brightnessService;
+    private PowerService powerService;
 
     public AmbientLightController(final UnitHost unitHost, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(AmbientLightController.class, unitHost, builder);
-        this.powerService = getServiceFactory().newPowerService(this);
-        this.colorService = getServiceFactory().newColorService(this);
-        this.brightnessService = getServiceFactory().newBrightnessService(this);
+    }
+
+    @Override
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            this.powerService = getServiceFactory().newPowerService(this);
+            this.colorService = getServiceFactory().newColorService(this);
+            this.brightnessService = getServiceFactory().newBrightnessService(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     public void updatePower(final PowerState value) throws CouldNotPerformException {
