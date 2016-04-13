@@ -44,9 +44,11 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import org.dc.jul.exception.MultiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -54,6 +56,7 @@ import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.LocationRegistryType;
 
 /**
  *
@@ -125,6 +128,32 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
+        locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
+
+            @Override
+            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateDynamicComponents();
+                    }
+                });
+            }
+        });
+
+        deviceRegistryRemote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
+
+            @Override
+            public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateDynamicComponents();
+                    }
+                });
+            }
+        });
+
         init = true;
 
         updateDynamicComponents();
@@ -138,24 +167,26 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             unitTypeHolderList.add(new UnitTypeHolder(type));
         }
         Collections.sort(unitTypeHolderList);
-        unitTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitTypeHolderList.toArray()));
-
+        SwingUtilities.invokeLater(() -> {
+            unitTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitTypeHolderList.toArray()));
+        });
         // init service types
         ArrayList<ServiceTypeHolder> serviceTypeHolderList = new ArrayList<>();
         for (ServiceType type : ServiceType.values()) {
             serviceTypeHolderList.add(new ServiceTypeHolder(type));
         }
         Collections.sort(serviceTypeHolderList);
-        serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
-        selectedServiceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
-
-//        locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
-//
-//            @Override
-//            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
-//                updateDynamicComponents();
-//            }
-//        });
+        SwingUtilities.invokeLater(() -> {
+            serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
+            selectedServiceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
+        });
+        //        locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
+        //
+        //            @Override
+        //            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
+        //                updateDynamicComponents();
+        //            }
+        //        });
     }
 
     private void updateDynamicComponents() {

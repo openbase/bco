@@ -181,7 +181,7 @@ public class OpenHABCommunicatorImpl extends AbstractDALBinding implements OpenH
 
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
-        internalReceiveUpdate(command);
+//        internalReceiveUpdate(command);
     }
 
     public class InternalReceiveUpdateCallback extends EventCallback {
