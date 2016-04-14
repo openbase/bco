@@ -77,7 +77,8 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
                     @Override
                     public void update(Observable<AgentData> source, AgentData data) throws Exception {
                         String itemName = generateItemId(agentRegistryRemote.getAgentConfigById(data.getId()));
-                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).build());
+                        logger.info("Received update through agent remote for agent ["+data.getLabel()+"]. Executing openhab command...");
+                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).setItem(itemName).build());
                     }
                 });
                 agentRemote.init(agentConfig);

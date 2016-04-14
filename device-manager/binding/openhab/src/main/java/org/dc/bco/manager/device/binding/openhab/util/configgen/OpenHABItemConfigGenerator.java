@@ -61,6 +61,7 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.state.EnablingStateType;
 import rst.homeautomation.state.InventoryStateType.InventoryState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -189,15 +190,24 @@ public class OpenHABItemConfigGenerator {
             }
 
             for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
-                itemEntryList.add(new SceneItemEntry(sceneConfig, locationRegistryRemote));
+                // Skip disabled scenes
+                if (sceneConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
+                    itemEntryList.add(new SceneItemEntry(sceneConfig, locationRegistryRemote));
+                }
             }
 
             for (AgentConfig agentConfig : agentRegistryRemote.getAgentConfigs()) {
-                itemEntryList.add(new AgentItemEntry(agentConfig, locationRegistryRemote));
+                // Skip disabled agents
+                if (agentConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
+                    itemEntryList.add(new AgentItemEntry(agentConfig, locationRegistryRemote));
+                }
             }
 
             for (AppConfig appConfig : appRegistryRemote.getAppConfigs()) {
-                itemEntryList.add(new AppItemEntry(appConfig, locationRegistryRemote));
+                // Skip disabled apps
+                if (appConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
+                    itemEntryList.add(new AppItemEntry(appConfig, locationRegistryRemote));
+                }
             }
 
             // sort items by command type and label

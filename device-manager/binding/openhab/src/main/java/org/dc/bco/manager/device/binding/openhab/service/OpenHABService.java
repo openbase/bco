@@ -107,7 +107,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
         if (itemName == null) {
             throw new NotAvailableException("itemID");
         }
-        return executeCommand(itemName, command, OpenhabCommandType.OpenhabCommand.ExecutionType.SYNCHRONOUS);
+        return executeCommand(itemName, command, OpenhabCommandType.OpenhabCommand.ExecutionType.UPDATE);
     }
 
     public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder command, final OpenhabCommandType.OpenhabCommand.ExecutionType type) throws CouldNotPerformException {
