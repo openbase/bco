@@ -21,52 +21,35 @@ package org.dc.bco.manager.device.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicator;
 import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl;
 import org.dc.bco.manager.device.binding.openhab.service.OpenhabServiceFactory;
 import org.dc.bco.manager.device.core.DeviceManagerController;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import rst.homeautomation.binding.BindingTypeHolderType.BindingTypeHolder.BindingType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public class OpenHABBindingImpl implements OpenHABBinding {
+public class OpenHABBindingImpl extends AbstractOpenHABBinding {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenHABBindingImpl.class);
-
-    private static OpenHABBinding instance;
     private DeviceManagerController deviceManagerController;
-    private OpenHABCommunicatorImpl busCommunicator;
     private DeviceRegistryRemote deviceRegistryRemote;
 
-    public OpenHABBindingImpl() throws InstantiationException {
-        try {
-            instance = this;
-            this.busCommunicator = new OpenHABCommunicatorImpl();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+    public OpenHABBindingImpl() throws InstantiationException, JPNotAvailableException {
+        super(new OpenHABCommunicatorImpl());
     }
 
-    public static OpenHABBinding getInstance() throws NotAvailableException {
-        if (instance == null) {
-            throw new NotAvailableException(OpenHABBinding.class);
-        }
-        return instance;
-    }
-
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
@@ -90,27 +73,18 @@ public class OpenHABBindingImpl implements OpenHABBinding {
                 }
             };
 
-            this.busCommunicator.init();
             this.deviceManagerController.init();
-            this.busCommunicator.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+        super.init();
     }
 
+    @Override
     public void shutdown() throws InterruptedException {
         if (deviceManagerController != null) {
             deviceManagerController.shutdown();
         }
-
-        if (busCommunicator != null) {
-            busCommunicator.shutdown();
-        }
-        instance = null;
-    }
-
-    @Override
-    public OpenHABCommunicator getBusCommunicator() throws NotAvailableException {
-        return busCommunicator;
+        super.shutdown();
     }
 }

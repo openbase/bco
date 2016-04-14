@@ -156,6 +156,12 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <!-- for openhab binding -->
+            <groupId>org.dc</groupId>
+            <artifactId>jul.extension.openhab</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
-
 </project>

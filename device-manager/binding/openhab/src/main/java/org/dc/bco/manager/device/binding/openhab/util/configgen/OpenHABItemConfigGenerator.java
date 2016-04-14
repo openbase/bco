@@ -45,10 +45,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry;
+import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry.AGENT_GROUP_LABEL;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry;
+import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry.APP_GROUP_LABEL;
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry.SCENE_GROUP_LABEL;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
+import org.dc.bco.registry.app.remote.AppRegistryRemote;
 import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
+import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -73,14 +81,18 @@ public class OpenHABItemConfigGenerator {
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
     private final SceneRegistryRemote sceneRegistryRemote;
+    private final AgentRegistryRemote agentRegistryRemote;
+    private final AppRegistryRemote appRegistryRemote;
 
-    public OpenHABItemConfigGenerator(final DeviceRegistryRemote deviceRegistryRemote, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote) throws InstantiationException {
+    public OpenHABItemConfigGenerator(final DeviceRegistryRemote deviceRegistryRemote, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote, final AgentRegistryRemote agentRegistryRemote, final AppRegistryRemote appRegistryRemote) throws InstantiationException {
         try {
             this.itemEntryList = new ArrayList<>();
             this.groupEntryList = new ArrayList<>();
             this.deviceRegistryRemote = deviceRegistryRemote;
             this.locationRegistryRemote = locationRegistryRemote;
             this.sceneRegistryRemote = sceneRegistryRemote;
+            this.agentRegistryRemote = agentRegistryRemote;
+            this.appRegistryRemote = appRegistryRemote;
         } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
@@ -94,7 +106,7 @@ public class OpenHABItemConfigGenerator {
         try {
             itemEntryList.clear();
             groupEntryList.clear();
-            ServiceItemEntry.reset();
+            AbstractItemEntry.reset();
             GroupEntry.reset();
             generateGroupEntries();
             generateItemEntries();
@@ -138,6 +150,8 @@ public class OpenHABItemConfigGenerator {
         }
 
         groupEntryList.add(new GroupEntry(SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, overviewGroupEntry));
+        groupEntryList.add(new GroupEntry(AGENT_GROUP_LABEL, AGENT_GROUP_LABEL, AGENT_GROUP_LABEL, overviewGroupEntry));
+        groupEntryList.add(new GroupEntry(APP_GROUP_LABEL, APP_GROUP_LABEL, APP_GROUP_LABEL, overviewGroupEntry));
 
 //        for (ServiceType serviceType : ServiceType.values()) {
 //            groupEntryList.add(new GroupEntry(serviceType.name(), serviceType.name(), "", rootGroupEntry));
@@ -174,11 +188,16 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
-            List<SceneConfig> sceneConfigList = sceneRegistryRemote.getSceneConfigs();
-
-            for (SceneConfig sceneConfig : sceneConfigList) {
+            for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
                 itemEntryList.add(new SceneItemEntry(sceneConfig, locationRegistryRemote));
-                logger.info("Generated Scene ItemEntry[" + itemEntryList.get(itemEntryList.size() - 1).buildStringRep() + "]");
+            }
+
+            for (AgentConfig agentConfig : agentRegistryRemote.getAgentConfigs()) {
+                itemEntryList.add(new AgentItemEntry(agentConfig, locationRegistryRemote));
+            }
+
+            for (AppConfig appConfig : appRegistryRemote.getAppConfigs()) {
+                itemEntryList.add(new AppItemEntry(appConfig, locationRegistryRemote));
             }
 
             // sort items by command type and label

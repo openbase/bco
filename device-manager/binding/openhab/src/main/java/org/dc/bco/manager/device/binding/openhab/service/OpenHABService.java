@@ -27,7 +27,6 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
-import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicator;
 import org.dc.bco.manager.device.binding.openhab.transform.ItemNameLoader;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.unit.Unit;
@@ -37,6 +36,7 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.NotSupportedException;
 import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.OpenHABBindingImpl;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABCommunicator;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

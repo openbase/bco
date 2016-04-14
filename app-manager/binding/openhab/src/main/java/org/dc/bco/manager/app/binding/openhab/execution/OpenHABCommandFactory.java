@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.scene.binding.openhab.execution;
+package org.dc.bco.manager.app.binding.openhab.execution;
 
 /*
  * #%L
@@ -26,7 +26,7 @@ package org.dc.bco.manager.scene.binding.openhab.execution;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.manager.scene.binding.openhab.transform.ActivationStateTransformer;
+import org.dc.bco.manager.app.binding.openhab.transform.ActivationStateTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory;
 import rst.homeautomation.openhab.OnOffHolderType;

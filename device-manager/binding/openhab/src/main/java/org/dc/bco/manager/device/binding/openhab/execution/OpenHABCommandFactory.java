@@ -32,8 +32,7 @@ import org.dc.bco.manager.device.binding.openhab.transform.PowerStateTransformer
 import org.dc.bco.manager.device.binding.openhab.transform.StopMoveStateTransformer;
 import org.dc.bco.manager.device.binding.openhab.transform.UpDownStateTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dc.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory;
 import rst.homeautomation.openhab.HSBType;
 import rst.homeautomation.openhab.OnOffHolderType;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -49,13 +48,7 @@ import rst.vision.HSVColorType;
  *
  * @author mpohling
  */
-public class OpenHABCommandFactory {
-
-    private final Logger logger = LoggerFactory.getLogger(OpenHABCommandFactory.class);
-
-    public static OpenhabCommandType.OpenhabCommand.Builder getCommandBuilder() {
-        return OpenhabCommandType.OpenhabCommand.newBuilder();
-    }
+public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
 
     public static OpenhabCommandType.OpenhabCommand.Builder newHSBCommand(final HSVColorType.HSVColor color) throws CouldNotPerformException {
         return newHSBCommand(HSVColorTransformer.transform(color));

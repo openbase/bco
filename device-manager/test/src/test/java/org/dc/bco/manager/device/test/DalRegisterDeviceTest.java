@@ -127,4 +127,9 @@ public class DalRegisterDeviceTest {
 //        remote.shutdown();
 //        instance.shutdown();
 //    }
+    
+//    @Test
+//    public void test() throws Exception {
+//        assertTrue(true);
+//    }
 }

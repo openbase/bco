@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.dc.bco.manager.scene.binding.openhab.comm;
+package org.dc.bco.manager.app.binding.openhab;
 
 /*
  * #%L
@@ -26,20 +21,19 @@ package org.dc.bco.manager.scene.binding.openhab.comm;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.jul.exception.CouldNotPerformException;
-import java.util.concurrent.Future;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
+import org.dc.bco.manager.app.binding.openhab.comm.OpenHABCommunicatorImpl;
+import org.dc.jps.exception.JPNotAvailableException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 
 /**
  *
- * @author thuxohl
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public interface OpenHABCommunicator {
-            
-    void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException;
-    
-    void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException;
-    
-    Future executeCommand(OpenhabCommand command) throws CouldNotPerformException;
+public class OpenHABBindingImpl extends AbstractOpenHABBinding {
+
+    public OpenHABBindingImpl() throws InstantiationException, JPNotAvailableException {
+        super(new OpenHABCommunicatorImpl());
+    }
 }

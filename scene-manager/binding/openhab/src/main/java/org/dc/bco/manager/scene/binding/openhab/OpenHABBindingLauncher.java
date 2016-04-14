@@ -21,19 +21,21 @@ package org.dc.bco.manager.scene.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
 public class OpenHABBindingLauncher {
 
@@ -45,7 +47,7 @@ public class OpenHABBindingLauncher {
         try {
             openHABBinding = new OpenHABBindingImpl();
             openHABBinding.init();
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | JPServiceException ex) {
             openHABBinding.shutdown();
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }

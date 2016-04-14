@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.manager.scene.binding.openhab.comm;
+package org.dc.bco.manager.app.binding.openhab.comm;
 
 /*
  * #%L
@@ -29,10 +29,10 @@ package org.dc.bco.manager.scene.binding.openhab.comm;
 import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.dc.bco.manager.scene.binding.openhab.execution.OpenHABCommandExecutor;
-import org.dc.bco.manager.scene.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.scene.remote.SceneRemote;
-import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
+import org.dc.bco.manager.app.binding.openhab.execution.OpenHABCommandExecutor;
+import org.dc.bco.manager.app.binding.openhab.execution.OpenHABCommandFactory;
+import org.dc.bco.manager.app.remote.AppRemote;
+import org.dc.bco.registry.app.remote.AppRegistryRemote;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -43,8 +43,8 @@ import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneDataType;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.control.app.AppDataType.AppData;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
@@ -54,8 +54,8 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
 
     private OpenHABCommandExecutor commandExecutor;
-    private SceneRegistryRemote sceneRegistryRemote;
-    private Map<String, SceneRemote> sceneRemoteMap;
+    private AppRegistryRemote appRegistryRemote;
+    private Map<String, AppRemote> appRemoteMap;
 
     public OpenHABCommunicatorImpl() throws InstantiationException, JPNotAvailableException {
         super(JPService.getProperty(JPHardwareSimulationMode.class).getValue());
@@ -64,55 +64,54 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.sceneRemoteMap = new HashMap<>();
+            this.appRemoteMap = new HashMap<>();
 
-            this.sceneRegistryRemote = new SceneRegistryRemote();
-            sceneRegistryRemote.init();
-            sceneRegistryRemote.activate();
+            this.appRegistryRemote = new AppRegistryRemote();
+            appRegistryRemote.init();
+            appRegistryRemote.activate();
 
-            for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
-                SceneRemote sceneRemote = new SceneRemote();
-                sceneRemote.addObserver(new Observer<SceneDataType.SceneData>() {
+            for (AppConfig appConfig : appRegistryRemote.getAppConfigs()) {
+                AppRemote appRemote = new AppRemote();
+                appRemote.addObserver(new Observer<AppData>() {
 
                     @Override
-                    public void update(Observable<SceneDataType.SceneData> source, SceneDataType.SceneData data) throws Exception {
-                        logger.info("Got new data for scene [" + data.getLabel() + "]");
-                        String itemName = generateItemId(sceneRegistryRemote.getSceneConfigById(data.getId()));
+                    public void update(Observable<AppData> source, AppData data) throws Exception {
+                        String itemName = generateItemId(appRegistryRemote.getAppConfigById(data.getId()));
                         executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).build());
                     }
                 });
-                sceneRemote.init(sceneConfig);
-                sceneRemote.activate();
-                sceneRemoteMap.put(sceneConfig.getId(), sceneRemote);
+                appRemote.init(appConfig);
+                appRemote.activate();
+                appRemoteMap.put(appConfig.getId(), appRemote);
             }
-            this.commandExecutor = new OpenHABCommandExecutor(sceneRemoteMap);
+            this.commandExecutor = new OpenHABCommandExecutor(appRemoteMap);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
         super.init();
     }
 
-    private String generateItemId(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return StringProcessor.transformToIdString("Scene")
+    private String generateItemId(AppConfig appConfig) throws CouldNotPerformException {
+        return StringProcessor.transformToIdString("App")
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(sceneConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(appConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
 
     @Override
     public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
-        logger.info("Skip received update for scene [" + command.getItem() + "]");
+        logger.info("Skip received update for app [" + command.getItem() + "]");
     }
 
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
         try {
             if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-                throw new CouldNotPerformException("Command does not have an onOff value required for scenes");
+                throw new CouldNotPerformException("Command does not have an onOff value required for apps");
             }
-            if (!command.hasItemBindingConfig() || !command.getItemBindingConfig().startsWith("bco.manager.scene")) {
+            if (!command.hasItemBindingConfig() || !command.getItemBindingConfig().startsWith("bco.manager.app")) {
                 return; // updated item isn't a scene
             }
-            logger.info("Received command for scene [" + command.getItem() + "] from openhab");
+            logger.info("Received command for app [" + command.getItem() + "] from openhab");
             commandExecutor.receiveUpdate(command);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + command.getOnOff() + "]!", ex);

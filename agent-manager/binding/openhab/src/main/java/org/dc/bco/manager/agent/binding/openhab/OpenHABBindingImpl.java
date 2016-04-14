@@ -1,4 +1,4 @@
-package org.dc.bco.manager.device.binding.openhab;
+package org.dc.bco.manager.agent.binding.openhab;
 
 /*
  * #%L
@@ -21,14 +21,19 @@ package org.dc.bco.manager.device.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicator;
-import org.dc.jul.exception.NotAvailableException;
+import org.dc.bco.manager.agent.binding.openhab.comm.OpenHABCommunicatorImpl;
+import org.dc.jps.exception.JPNotAvailableException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public interface OpenHABBinding {
-    public OpenHABCommunicator getBusCommunicator() throws NotAvailableException;
+public class OpenHABBindingImpl extends AbstractOpenHABBinding {
+
+    public OpenHABBindingImpl() throws InstantiationException, JPNotAvailableException {
+        super(new OpenHABCommunicatorImpl());
+    }
 }
