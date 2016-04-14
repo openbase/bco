@@ -52,7 +52,11 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
     public void notifyUpdated(SceneData data) throws CouldNotPerformException {
        
     }
-    
+
+    public void setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
+        setActivationState(ActivationState.newBuilder().setValue(activationState).build());
+    }
+
     @Override
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(activation, this);

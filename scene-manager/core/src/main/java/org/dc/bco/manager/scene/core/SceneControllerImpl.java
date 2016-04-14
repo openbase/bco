@@ -185,7 +185,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                             break;
                         }
                     }
-                    logger.info("All Actions finishes. Deactivation scene...");
+                    logger.info("All Actions are finished. Deactivate scene...");
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not wait for actions!", ex), logger);
