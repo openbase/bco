@@ -77,7 +77,7 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
                     @Override
                     public void update(Observable<AppData> source, AppData data) throws Exception {
                         String itemName = generateItemId(appRegistryRemote.getAppConfigById(data.getId()));
-                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).build());
+                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).build());
                     }
                 });
                 appRemote.init(appConfig);

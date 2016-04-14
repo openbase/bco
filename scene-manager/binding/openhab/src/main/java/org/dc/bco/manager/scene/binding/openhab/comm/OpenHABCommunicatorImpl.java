@@ -78,7 +78,7 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
                     public void update(Observable<SceneDataType.SceneData> source, SceneDataType.SceneData data) throws Exception {
                         logger.info("Got new data for scene [" + data.getLabel() + "]");
                         String itemName = generateItemId(sceneRegistryRemote.getSceneConfigById(data.getId()));
-                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).build());
+                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).build());
                     }
                 });
                 sceneRemote.init(sceneConfig);
