@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.dc.bco.manager.scene.remote.SceneRemote;
@@ -86,7 +87,9 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
             @Override
             public void update(Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
+
                 updateDynamicComponents();
+
             }
         });
         locationSelectorPanel.addObserver(new Observer<LocationSelectorPanel.LocationConfigHolder>() {
@@ -241,6 +244,8 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         try {
             logger.info("Registering scene from new button");
             lastSelected = sceneRegistryRemote.registerSceneConfig(SceneConfig.newBuilder().setLabel(label).setLocationId(location.getConfig().getId()).setEnablingState(EnablingStateType.EnablingState.newBuilder().setValue(EnablingStateType.EnablingState.State.ENABLED)).build());
+            updateDynamicComponents();
+            observable.notifyObservers(lastSelected.getActionConfigList());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
@@ -250,8 +255,8 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         SceneConfig sceneConfig = ((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig();
         if (sceneConfig.hasId() && !sceneConfig.getId().isEmpty()) {
             try {
-                sceneRegistryRemote.removeSceneConfig(sceneConfig);
                 lastSelected = null;
+                sceneRegistryRemote.removeSceneConfig(sceneConfig);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
