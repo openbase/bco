@@ -10,12 +10,12 @@ package org.dc.bco.registry.device.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -178,7 +178,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceConfig registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public DeviceConfig registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException, InterruptedException {
         try {
             return (DeviceConfig) callMethod("registerDeviceConfig", deviceConfig);
         } catch (CouldNotPerformException ex) {
@@ -195,7 +195,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws NotAvailableException
      */
     @Override
-    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException {
+    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException, InterruptedException {
         getData();
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
