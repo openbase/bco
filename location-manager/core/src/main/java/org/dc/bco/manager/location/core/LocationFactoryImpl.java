@@ -22,7 +22,8 @@ package org.dc.bco.manager.location.core;
  * #L%
  */
 
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.manager.location.lib.LocationController;
+import org.dc.bco.manager.location.lib.LocationFactory;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.InstantiationException;
 import org.slf4j.Logger;
@@ -43,9 +44,9 @@ public class LocationFactoryImpl implements LocationFactory {
             if (config == null) {
                 throw new NotAvailableException("locationconfig");
             }
-            return new LocationController(config);
+            return new LocationControllerImpl(config);
         } catch (Exception ex) {
-            throw new InstantiationException(LocationController.class, config.getId(), ex);
+            throw new InstantiationException(LocationControllerImpl.class, config.getId(), ex);
         }
     }
 }

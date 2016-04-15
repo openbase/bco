@@ -13,4 +13,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public interface LocationFactory extends Factory<Location, LocationConfig> {
+
+    @Override
+    public LocationController newInstance(final LocationConfig config) throws org.dc.jul.exception.InstantiationException;
 }

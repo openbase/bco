@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import org.dc.bco.manager.location.lib.Location;
+import org.dc.bco.manager.location.lib.LocationFactory;
 
 /**
  *

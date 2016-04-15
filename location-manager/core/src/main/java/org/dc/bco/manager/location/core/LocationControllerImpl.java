@@ -24,7 +24,7 @@ package org.dc.bco.manager.location.core;
 
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
-import org.dc.bco.manager.location.lib.Location;
+import org.dc.bco.manager.location.lib.LocationController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.InstantiationException;
@@ -36,9 +36,9 @@ import rst.spatial.LocationDataType.LocationData;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class LocationController extends AbstractUnitCollectionController<LocationData, LocationData.Builder, LocationConfig> implements Location {
+public class LocationControllerImpl extends AbstractUnitCollectionController<LocationData, LocationData.Builder, LocationConfig> implements LocationController {
 
-    public LocationController(final LocationConfig config) throws InstantiationException {
+    public LocationControllerImpl(final LocationConfig config) throws InstantiationException {
         super(LocationData.newBuilder());
     }
 
