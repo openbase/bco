@@ -168,7 +168,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         for (Action action : actionList) {
             action.execute();
         }
-
+        int i = 0;
         // TODO mpohling: implement external execution service
         Thread thread = new Thread() {
 
@@ -193,6 +193,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             }
         };
         thread.start();
+        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
     }
 
     @Override

@@ -1,5 +1,11 @@
 package org.dc.bco.manager.location.remote;
 
+import org.dc.bco.manager.location.lib.Location;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import rst.rsb.ScopeType;
+import rst.spatial.LocationConfigType;
+
 /*
  * #%L
  * COMA LocationManager Remote
@@ -26,6 +32,31 @@ package org.dc.bco.manager.location.remote;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class LocationRemote {
+public class LocationRemote implements Location {
+
+    @Override
+    public ScopeType.Scope getScope() throws NotAvailableException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getLabel() throws NotAvailableException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public String getId() throws NotAvailableException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public LocationConfigType.LocationConfig updateConfig(LocationConfigType.LocationConfig config) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public LocationConfigType.LocationConfig getConfig() throws NotAvailableException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }
