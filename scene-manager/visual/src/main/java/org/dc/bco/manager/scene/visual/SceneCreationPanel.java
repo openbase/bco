@@ -15,37 +15,37 @@ package org.dc.bco.manager.scene.visual;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.dc.bco.manager.scene.remote.SceneRemote;
+import org.dc.bco.manager.scene.visual.LocationSelectorPanel.LocationConfigHolder;
+import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.dc.bco.manager.scene.remote.SceneRemote;
-import org.dc.bco.manager.scene.visual.LocationSelectorPanel.LocationConfigHolder;
-import org.dc.jul.exception.InitializationException;
-import org.dc.jul.exception.MultiException;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
@@ -272,8 +272,33 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         SceneRemote sceneRemote = new SceneRemote();
         try {
             sceneRemote.init(lastSelected);
+            applyUpdateButton.setBackground(Color.GRAY);
             sceneRemote.activate();
+            switch(sceneRemote.getData().getActivationState().getValue()) {
+                case ACTIVE:
+                    applyUpdateButton.setBackground(Color.GREEN.darker().darker());
+                    break;
+                case DEACTIVE:
+                    applyUpdateButton.setBackground(Color.BLUE.darker().darker());
+                    break;
+                case UNKNOWN:
+                    applyUpdateButton.setBackground(Color.YELLOW.darker());
+                    break;
+
+            }
             sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
+            switch(sceneRemote.getData().getActivationState().getValue()) {
+                case ACTIVE:
+                    applyUpdateButton.setBackground(Color.GREEN.darker().darker());
+                    break;
+                case DEACTIVE:
+                    applyUpdateButton.setBackground(Color.BLUE.darker().darker());
+                    break;
+                case UNKNOWN:
+                    applyUpdateButton.setBackground(Color.YELLOW.darker());
+                    break;
+
+            }
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.warn("Could not apply update. Initialization and activation of scene remote failed!");
         }
