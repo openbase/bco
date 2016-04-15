@@ -43,7 +43,7 @@ import rst.homeautomation.state.StandbyStateType;
  */
 public interface StandbyProvider extends Provider {
 
-    public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException;
+    public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException, InterruptedException;
     
     public class GetStandbyCallback extends EventCallback {
 

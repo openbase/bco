@@ -42,7 +42,7 @@ import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
  */
 public interface PowerConsumptionProvider extends Provider {
 
-    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException;
+    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException, InterruptedException;
 
     public class GetPowerConsumptionCallback extends EventCallback {
 

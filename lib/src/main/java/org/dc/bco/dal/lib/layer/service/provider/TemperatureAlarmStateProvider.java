@@ -42,7 +42,7 @@ import rst.homeautomation.state.AlarmStateType.AlarmState;
  */
 public interface TemperatureAlarmStateProvider extends Provider {
     
-    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException;
+    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException, InterruptedException;
 
     public class GetTemperatureAlarmStateCallback extends EventCallback {
 

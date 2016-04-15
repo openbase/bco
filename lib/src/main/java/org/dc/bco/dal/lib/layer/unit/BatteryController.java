@@ -15,18 +15,19 @@ package org.dc.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.GlobalExecutorService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -62,11 +63,13 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     }
 
     @Override
-    public BatteryState getBattery() throws NotAvailableException {
-        try {
-            return getData().getBatteryState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("battery", ex);
-        }
+    public Future<BatteryState> getBattery() {
+        return GlobalExecutorService.submit(() -> {
+            try {
+                return getData().getBatteryState();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("battery", ex);
+            }
+        });
     }
 }

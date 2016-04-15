@@ -42,7 +42,7 @@ import rst.homeautomation.state.HandleStateType.HandleState;
  */
 public interface HandleProvider extends Provider {
 
-    public HandleState getHandle() throws CouldNotPerformException;
+    public HandleState getHandle() throws CouldNotPerformException, InterruptedException;
 
     public class GetHandleCallback extends EventCallback {
 

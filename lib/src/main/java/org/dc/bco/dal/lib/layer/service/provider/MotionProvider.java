@@ -42,7 +42,7 @@ import rst.homeautomation.state.MotionStateType.MotionState;
  */
 public interface MotionProvider extends Provider {
 
-    public MotionState getMotion() throws CouldNotPerformException;
+    public MotionState getMotion() throws CouldNotPerformException, InterruptedException;
 
     public class GetMotionCallback extends EventCallback {
 

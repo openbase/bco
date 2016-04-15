@@ -42,7 +42,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  */
 public interface PowerProvider extends Provider {
 
-    public PowerState getPower() throws CouldNotPerformException;
+    public PowerState getPower() throws CouldNotPerformException, InterruptedException;
     
     public class GetPowerCallback extends EventCallback {
 

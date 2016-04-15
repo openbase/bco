@@ -42,7 +42,7 @@ import rst.homeautomation.state.TamperStateType.TamperState;
  */
 public interface TamperProvider extends Provider {
 
-    public TamperState getTamper() throws CouldNotPerformException;
+    public TamperState getTamper() throws CouldNotPerformException, InterruptedException;
 
     public class GetTamperCallback extends EventCallback {
 

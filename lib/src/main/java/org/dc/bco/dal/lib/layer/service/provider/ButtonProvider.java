@@ -42,7 +42,7 @@ import rst.homeautomation.state.ButtonStateType.ButtonState;
  */
 public interface ButtonProvider extends Provider {
 
-    public ButtonState getButton() throws CouldNotPerformException;
+    public ButtonState getButton() throws CouldNotPerformException, InterruptedException;
 
     public class GetButtonCallback extends EventCallback {
 

@@ -41,7 +41,7 @@ import rsb.patterns.EventCallback;
  */
 public interface TargetTemperatureProvider extends Provider {
 
-    public Double getTargetTemperature() throws CouldNotPerformException;
+    public Double getTargetTemperature() throws CouldNotPerformException, InterruptedException;
 
     public class GetTargetTemperatureCallback extends EventCallback {
 

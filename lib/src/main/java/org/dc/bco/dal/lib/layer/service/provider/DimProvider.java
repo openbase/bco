@@ -41,7 +41,7 @@ import rsb.patterns.EventCallback;
  */
 public interface DimProvider extends Provider {
 
-    public Double getDim() throws CouldNotPerformException;
+    public Double getDim() throws CouldNotPerformException, InterruptedException;
 
     public class GetDimCallback extends EventCallback {
 

@@ -15,19 +15,18 @@ package org.dc.bco.dal.visual.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.dc.jul.exception.NotAvailableException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.Timer;
+import org.dc.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +94,7 @@ public class StatusPanel extends javax.swing.JPanel {
     public void setWarning(final String message) {
         setStatus(message, StatusType.WARN, 5);
     }
-    
+
     public void setError(Exception ex) {
         setStatus(ex.getLocalizedMessage(), StatusType.ERROR, 5);
     }
@@ -128,20 +128,16 @@ public class StatusPanel extends javax.swing.JPanel {
         cancelButton.setEnabled(true);
         progressBar.setIndeterminate(true);
         setText(text, type);
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    future.get();
-                    reset();
-                } catch (CancellationException ex) {
-                    setStatus("Canceled by user!", StatusType.WARN, 1);
-                } catch (ExecutionException | InterruptedException ex) {
-                    setError(ex);
-                }
-                cancelButton.setEnabled(false);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                future.get();
+                reset();
+            } catch (CancellationException ex) {
+                setStatus("Canceled by user!", StatusType.WARN, 1);
+            } catch (ExecutionException | InterruptedException ex) {
+                setError(ex);
             }
+            cancelButton.setEnabled(false);
         });
 
     }

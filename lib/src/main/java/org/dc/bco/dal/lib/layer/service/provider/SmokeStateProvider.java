@@ -42,7 +42,7 @@ import rst.homeautomation.state.SmokeStateType.SmokeState;
  */
 public interface SmokeStateProvider extends Provider {
 
-    public SmokeState getSmokeState() throws CouldNotPerformException;
+    public SmokeState getSmokeState() throws CouldNotPerformException, InterruptedException;
 
     public class GetSmokeStateCallback extends EventCallback {
 

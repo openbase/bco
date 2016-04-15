@@ -10,24 +10,24 @@ package org.dc.bco.dal.lib.layer.service.mock;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.bco.dal.lib.layer.service.DimService;
 import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
 import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.bco.dal.lib.layer.service.ShutterService;
 import org.dc.bco.dal.lib.layer.service.StandbyService;
 import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
@@ -35,7 +35,6 @@ import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.state.ShutterStateType;
 import rst.homeautomation.state.StandbyStateType;
@@ -73,7 +72,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 //                return null;
 //            }
             @Override
-            public Double getBrightness() throws CouldNotPerformException {
+            public Double getBrightness() throws CouldNotPerformException, InterruptedException {
                 return ((BrightnessService) unit).getBrightness();
             }
         };
@@ -89,7 +88,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
+            public Future<HSVColorType.HSVColor> getColor() throws CouldNotPerformException, InterruptedException {
                 return ((ColorService) unit).getColor();
             }
 

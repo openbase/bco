@@ -41,7 +41,7 @@ import rsb.patterns.EventCallback;
  */
 public interface OpeningRatioProvider extends Provider {
 
-    public Double getOpeningRatio() throws CouldNotPerformException;
+    public Double getOpeningRatio() throws CouldNotPerformException, InterruptedException;
 
     public class GetOpeningRatioCallback extends EventCallback {
 

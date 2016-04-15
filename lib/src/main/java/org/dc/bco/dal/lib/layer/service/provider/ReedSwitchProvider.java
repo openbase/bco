@@ -42,7 +42,7 @@ import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
  */
 public interface ReedSwitchProvider extends Provider {
 
-    public ReedSwitchState getReedSwitch() throws CouldNotPerformException;
+    public ReedSwitchState getReedSwitch() throws CouldNotPerformException, InterruptedException;
 
     public class GetReedSwitchCallback extends EventCallback {
 

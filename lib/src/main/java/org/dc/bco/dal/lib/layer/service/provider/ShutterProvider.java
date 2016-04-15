@@ -42,7 +42,7 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  */
 public interface ShutterProvider extends Provider {
 
-    public ShutterState getShutter() throws CouldNotPerformException;
+    public ShutterState getShutter() throws CouldNotPerformException, InterruptedException;
 
     public class GetShutterCallback extends EventCallback {
 
