@@ -38,7 +38,7 @@ import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.extension.openhab.binding.AbstractOpenHABCommunicator;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
@@ -51,7 +51,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  * @author thuxohl
  * @author mpohling
  */
-public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
+public class OpenHABCommunicatorImpl extends AbstractOpenHABRemote {
 
     private OpenHABCommandExecutor commandExecutor;
     private AppRegistryRemote appRegistryRemote;
@@ -77,7 +77,7 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
                     @Override
                     public void update(Observable<AppData> source, AppData data) throws Exception {
                         String itemName = generateItemId(appRegistryRemote.getAppConfigById(data.getId()));
-                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).build());
+                        postCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).build());
                     }
                 });
                 appRemote.init(appConfig);
@@ -105,12 +105,14 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
         try {
-            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-                throw new CouldNotPerformException("Command does not have an onOff value required for apps");
-            }
             if (!command.hasItemBindingConfig() || !command.getItemBindingConfig().startsWith("bco.manager.app")) {
-                return; // updated item isn't a scene
+                return; // updated item isn't a app
             }
+
+            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
+                throw new CouldNotPerformException("Command does not have an onOff value required for apps.");
+            }
+            
             logger.info("Received command for app [" + command.getItem() + "] from openhab");
             commandExecutor.receiveUpdate(command);
         } catch (Exception ex) {

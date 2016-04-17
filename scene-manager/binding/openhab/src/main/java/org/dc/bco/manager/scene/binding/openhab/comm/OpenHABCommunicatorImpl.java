@@ -38,7 +38,7 @@ import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.extension.openhab.binding.AbstractOpenHABCommunicator;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
@@ -51,7 +51,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  * @author thuxohl
  * @author mpohling
  */
-public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
+public class OpenHABCommunicatorImpl extends AbstractOpenHABRemote {
 
     private OpenHABCommandExecutor commandExecutor;
     private SceneRegistryRemote sceneRegistryRemote;
@@ -78,7 +78,7 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
                     public void update(Observable<SceneDataType.SceneData> source, SceneDataType.SceneData data) throws Exception {
                         logger.info("Got new data for scene [" + data.getLabel() + "]");
                         String itemName = generateItemId(sceneRegistryRemote.getSceneConfigById(data.getId()));
-                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).build());
+                        postCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(itemName).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).build());
                     }
                 });
                 sceneRemote.init(sceneConfig);
@@ -106,11 +106,11 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
         try {
-            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-                throw new CouldNotPerformException("Command does not have an onOff value required for scenes");
-            }
             if (!command.hasItemBindingConfig() || !command.getItemBindingConfig().startsWith("bco.manager.scene")) {
                 return; // updated item isn't a scene
+            }
+            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
+                throw new CouldNotPerformException("Command does not have an onOff value required for scenes");
             }
             logger.info("Received command for scene [" + command.getItem() + "] from openhab");
             commandExecutor.receiveUpdate(command);

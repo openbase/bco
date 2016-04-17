@@ -36,7 +36,7 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.NotSupportedException;
 import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.OpenHABBindingImpl;
-import org.dc.jul.extension.openhab.binding.interfaces.OpenHABCommunicator;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
  */
 public abstract class OpenHABService<ST extends Service & Unit> implements Service {
 
-    private OpenHABCommunicator openHABCommunicator;
+    private OpenHABRemote openHABRemote;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -67,7 +67,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
             this.serviceType = detectServiceType();
             this.config = loadServiceConfig();
             this.itemName = ItemNameLoader.getItemName(this, config);
-            this.openHABCommunicator = OpenHABBindingImpl.getInstance().getBusCommunicator();
+            this.openHABRemote = OpenHABBindingImpl.getInstance().getOpenHABRemote();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -93,33 +93,24 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
     public String getItemID() {
         return itemName;
     }
-
-//    @Override
-//    public ServiceConfigType.ServiceConfig getServiceConfig() {
-//        return config;
-//    }
-//
-//	@Override
-//	public ServiceType getServiceType() {
-//		return serviceType;
-//	}
+    
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand.Builder command) throws CouldNotPerformException {
         if (itemName == null) {
             throw new NotAvailableException("itemID");
         }
-        return executeCommand(itemName, command, OpenhabCommandType.OpenhabCommand.ExecutionType.UPDATE);
+        return executeCommand(itemName, command);
     }
 
-    public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder command, final OpenhabCommandType.OpenhabCommand.ExecutionType type) throws CouldNotPerformException {
+    public Future executeCommand(final String itemName, final OpenhabCommandType.OpenhabCommand.Builder command) throws CouldNotPerformException {
         if (command == null) {
             throw new CouldNotPerformException("Skip sending empty command!", new NullPointerException("Argument command is null!"));
         }
 
-        if (openHABCommunicator == null) {
+        if (openHABRemote == null) {
             throw new CouldNotPerformException("Skip sending command, binding not ready!", new NullPointerException("Argument rsbBinding is null!"));
         }
 
         logger.debug("Execute command: Setting item [" + this.itemName + "] to [" + command.getType().toString() + "]");
-        return openHABCommunicator.executeCommand(command.setItem(itemName).setExecutionType(type).build());
+        return openHABRemote.postCommand(command.setItem(itemName).build());
     }
 }

@@ -38,7 +38,7 @@ import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.extension.openhab.binding.AbstractOpenHABCommunicator;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
@@ -51,7 +51,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
  * @author thuxohl
  * @author mpohling
  */
-public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
+public class OpenHABCommunicatorImpl extends AbstractOpenHABRemote {
 
     private OpenHABCommandExecutor commandExecutor;
     private AgentRegistryRemote agentRegistryRemote;
@@ -77,8 +77,8 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
                     @Override
                     public void update(Observable<AgentData> source, AgentData data) throws Exception {
                         String itemName = generateItemId(agentRegistryRemote.getAgentConfigById(data.getId()));
-                        logger.info("Received update through agent remote for agent ["+data.getLabel()+"]. Executing openhab command...");
-                        executeCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).setItem(itemName).build());
+                        logger.info("Received update through agent remote for agent [" + data.getLabel() + "]. Executing openhab command...");
+                        postCommand(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setExecutionType(OpenhabCommand.ExecutionType.UPDATE).setItem(itemName).build());
                     }
                 });
                 agentRemote.init(agentConfig);
@@ -106,11 +106,12 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
         try {
-            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-                throw new CouldNotPerformException("Command does not have an onOff value required for agents");
-            }
             if (!command.hasItemBindingConfig() || !command.getItemBindingConfig().startsWith("bco.manager.agent")) {
                 return; // updated item isn't a scene
+            }
+
+            if (!command.hasOnOff() || !command.getOnOff().hasState()) {
+                throw new CouldNotPerformException("Command does not have an onOff value required for agents");
             }
             logger.info("Received command for agent [" + command.getItem() + "] from openhab");
             commandExecutor.receiveUpdate(command);

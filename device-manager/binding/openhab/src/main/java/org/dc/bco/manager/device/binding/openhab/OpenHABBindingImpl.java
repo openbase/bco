@@ -21,7 +21,7 @@ package org.dc.bco.manager.device.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl;
+import org.dc.bco.manager.device.binding.openhab.comm.OpenHABRemoteImpl;
 import org.dc.bco.manager.device.binding.openhab.service.OpenhabServiceFactory;
 import org.dc.bco.manager.device.core.DeviceManagerController;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -46,7 +46,7 @@ public class OpenHABBindingImpl extends AbstractOpenHABBinding {
     private DeviceRegistryRemote deviceRegistryRemote;
 
     public OpenHABBindingImpl() throws InstantiationException, JPNotAvailableException {
-        super(new OpenHABCommunicatorImpl());
+        super(new OpenHABRemoteImpl());
     }
 
     @Override

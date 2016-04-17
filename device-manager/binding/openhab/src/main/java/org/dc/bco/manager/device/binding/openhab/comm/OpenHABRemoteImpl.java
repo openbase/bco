@@ -35,18 +35,18 @@ import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.extension.openhab.binding.AbstractOpenHABCommunicator;
+import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
  * @author thuxohl
  * @author mpohling
  */
-public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
+public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
 
     private OpenHABCommandExecutor commandExecutor;
 
-    public OpenHABCommunicatorImpl() throws InstantiationException, JPNotAvailableException {
+    public OpenHABRemoteImpl() throws InstantiationException, JPNotAvailableException {
         super(JPService.getProperty(JPHardwareSimulationMode.class).getValue());
     }
 
@@ -72,6 +72,6 @@ public class OpenHABCommunicatorImpl extends AbstractOpenHABCommunicator {
 
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
-        logger.debug("Skip internalReceiveCommand! Only internalReceiveUpdate is supported!");
+        // do nothing...
     }
 }
