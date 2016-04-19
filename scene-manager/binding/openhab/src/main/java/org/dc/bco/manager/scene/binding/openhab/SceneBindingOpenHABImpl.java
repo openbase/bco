@@ -63,16 +63,6 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
     public SceneBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         sceneRegistryRemote = new SceneRegistryRemote();
-        sceneRegistryRemote.addObserver(new Observer<SceneRegistryType.SceneRegistry>() {
-
-            @Override
-            public void update(Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
-                logger.info("Observer for scene registry received an update");
-                for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
-                    logger.info(elem.toString());
-                }
-            }
-        });
         registry = new RegistryImpl<>();
         factory = new SceneRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
