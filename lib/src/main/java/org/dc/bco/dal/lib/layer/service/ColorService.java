@@ -52,12 +52,12 @@ public interface ColorService extends ColorProvider {
 		}
 
         @Override
-        public Event invoke(final Event request) throws Throwable {
+        public Event invoke(final Event request) throws UserCodeException {
             try {
                 service.setColor(((HSVColorType.HSVColor) request.getData())).get();
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
             }
         }
     }

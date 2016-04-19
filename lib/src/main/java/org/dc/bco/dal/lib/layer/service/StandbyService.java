@@ -56,12 +56,12 @@ public interface StandbyService extends Service, StandbyProvider {
         }
 
         @Override
-        public Event invoke(final Event request) throws Throwable {
+        public Event invoke(final Event request) throws UserCodeException {
             try {
                 service.setStandby(((StandbyState) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
             }
         }
     }

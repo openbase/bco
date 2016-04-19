@@ -56,11 +56,11 @@ public interface BrightnessService extends Service, BrightnessProvider {
         }
 
         @Override
-        public Event invoke(final Event request) throws Throwable {
+        public Event invoke(final Event request) throws UserCodeException {
             try {
                 service.setBrightness(((double) request.getData())).get();
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
             }
             return new Event(Void.class);
         }

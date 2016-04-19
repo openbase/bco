@@ -50,12 +50,12 @@ public interface OpeningRatioService extends Service, OpeningRatioProvider {
         }
 
         @Override
-        public Event invoke(final Event request) throws Throwable {
+        public Event invoke(final Event request) throws UserCodeException {
             try {
                 service.setOpeningRatio(((double) request.getData()));
                 return new Event(Void.class);
             } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new InvocationFailedException(this, service, ex), logger);
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
             }
         }
     }
