@@ -62,7 +62,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.app.binding.openhab.OpenHABBindingLauncher</mainClass>
+                            <mainClass>org.dc.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher</mainClass>
                             <id>binding-openhab-app-manager</id>
                             <platforms>
                                 <platform>unix</platform>

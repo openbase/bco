@@ -37,15 +37,15 @@ import org.slf4j.LoggerFactory;
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public class OpenHABBindingLauncher {
+public class SceneBindingOpenHABLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenHABBindingLauncher.class);
+    private static final Logger logger = LoggerFactory.getLogger(SceneBindingOpenHABLauncher.class);
 
-    private OpenHABBindingImpl openHABBinding;
+    private SceneBindingOpenHABImpl openHABBinding;
 
     public void launch() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
-            openHABBinding = new OpenHABBindingImpl();
+            openHABBinding = new SceneBindingOpenHABImpl();
             openHABBinding.init();
         } catch (CouldNotPerformException | JPServiceException ex) {
             openHABBinding.shutdown();
@@ -57,7 +57,7 @@ public class OpenHABBindingLauncher {
         openHABBinding.shutdown();
     }
 
-    public OpenHABBindingImpl getOpenHABBinding() {
+    public SceneBindingOpenHABImpl getOpenHABBinding() {
         return openHABBinding;
     }
 
@@ -77,7 +77,7 @@ public class OpenHABBindingLauncher {
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
         try {
-            new OpenHABBindingLauncher().launch();
+            new SceneBindingOpenHABLauncher().launch();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }

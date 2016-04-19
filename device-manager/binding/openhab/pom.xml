@@ -76,7 +76,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher</mainClass>
+                            <mainClass>org.dc.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher</mainClass>
                             <id>binding-openhab-device-manager</id>
                             <platforms>
                                 <platform>unix</platform>

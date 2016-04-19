@@ -35,7 +35,7 @@ import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.NotSupportedException;
 import java.util.concurrent.Future;
-import org.dc.bco.manager.device.binding.openhab.OpenHABBindingImpl;
+import org.dc.bco.manager.device.binding.openhab.DeviceBindingOpenHABImpl;
 import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
             this.serviceType = detectServiceType();
             this.config = loadServiceConfig();
             this.itemName = ItemNameLoader.getItemName(this, config);
-            this.openHABRemote = OpenHABBindingImpl.getInstance().getOpenHABRemote();
+            this.openHABRemote = DeviceBindingOpenHABImpl.getInstance().getOpenHABRemote();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

@@ -31,6 +31,7 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import rst.homeautomation.binding.BindingTypeHolderType.BindingTypeHolder.BindingType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
@@ -40,17 +41,28 @@ import rst.homeautomation.device.DeviceConfigType;
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public class OpenHABBindingImpl extends AbstractOpenHABBinding {
+public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
+
+    //TODO: Should be declared in the openhab config generator and used from there
+    public static final String AGENT_MANAGER_ITEM_FILTER = "";
 
     private DeviceManagerController deviceManagerController;
     private DeviceRegistryRemote deviceRegistryRemote;
 
-    public OpenHABBindingImpl() throws InstantiationException, JPNotAvailableException {
-        super(new OpenHABRemoteImpl());
+    public DeviceBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException {
+    }
+
+    public void init() throws InitializationException, InterruptedException {
+        try {
+            init(AGENT_MANAGER_ITEM_FILTER, new OpenHABRemoteImpl());
+        } catch (InstantiationException | JPNotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
+        super.init(itemFilter, openHABRemote);
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.deviceRegistryRemote.init();
@@ -77,7 +89,6 @@ public class OpenHABBindingImpl extends AbstractOpenHABBinding {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-        super.init();
     }
 
     @Override

@@ -51,13 +51,13 @@ public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public void init(String itemFilter) throws InitializationException, InterruptedException {
         try {
             this.commandExecutor = new OpenHABCommandExecutor(DeviceManagerController.getDeviceManager().getUnitControllerRegistry());
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-        super.init();
+        super.init(itemFilter);
     }
 
     @Override
