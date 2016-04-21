@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface PowerPlugInterface extends PowerService {
+public interface PowerPlugInterface extends PowerOperationService {
     
 }

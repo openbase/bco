@@ -27,7 +27,7 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 
@@ -35,7 +35,7 @@ import rst.homeautomation.service.ServiceTemplateType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessService> implements BrightnessService {
+public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessOperationService> implements BrightnessOperationService {
 
     public BrightnessServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
@@ -43,7 +43,7 @@ public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessSer
 
     @Override
     public void setBrightness(Double brightness) throws CouldNotPerformException {
-        for (BrightnessService service : getServices()) {
+        for (BrightnessOperationService service : getServices()) {
             service.setBrightness(brightness);
         }
     }
@@ -58,7 +58,7 @@ public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessSer
     @Override
     public Double getBrightness() throws CouldNotPerformException {
         Double average = 0d;
-        for (BrightnessService service : getServices()) {
+        for (BrightnessOperationService service : getServices()) {
             average += service.getBrightness();
         }
         average /= getServices().size();

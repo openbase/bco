@@ -26,7 +26,7 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 
@@ -34,7 +34,7 @@ import rst.homeautomation.service.ServiceTemplateType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureService> implements TargetTemperatureService {
+public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureOperationService> implements TargetTemperatureOperationService {
 
     public TargetTemperatureServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         super(serviceType);
@@ -42,7 +42,7 @@ public class TargetTemperatureServiceRemote extends AbstractServiceRemote<Target
 
     @Override
     public void setTargetTemperature(Double value) throws CouldNotPerformException {
-        for (TargetTemperatureService service : getServices()) {
+        for (TargetTemperatureOperationService service : getServices()) {
             service.setTargetTemperature(value);
         }
     }

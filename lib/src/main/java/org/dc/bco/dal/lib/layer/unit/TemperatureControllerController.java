@@ -28,7 +28,7 @@ package org.dc.bco.dal.lib.layer.unit;
  */
 
 
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -48,7 +48,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureController.getDefaultInstance()));
     }
 
-    private TargetTemperatureService targetTemperatureService;
+    private TargetTemperatureOperationService targetTemperatureService;
 
 
     public TemperatureControllerController(final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {

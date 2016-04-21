@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.BatteryProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BatteryProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface BatteryInterface extends BatteryProvider {
+public interface BatteryInterface extends BatteryProviderService {
     
 }

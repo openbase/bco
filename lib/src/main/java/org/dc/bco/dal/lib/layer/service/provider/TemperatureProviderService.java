@@ -15,12 +15,12 @@ package org.dc.bco.dal.lib.layer.service.provider;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,38 +28,32 @@ package org.dc.bco.dal.lib.layer.service.provider;
  */
 
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.InvocationFailedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rsb.Event;
-import rsb.patterns.EventCallback;
 
 /**
  *
  * @author thuxohl
  */
-public interface TemperatureProvider extends Provider {
+public interface TemperatureProviderService extends ProviderService {
 
     public Double getTemperature() throws CouldNotPerformException, InterruptedException;
 
-    public class GetTemperatureCallback extends EventCallback {
-
-        private static final Logger logger = LoggerFactory.getLogger(GetTemperatureCallback.class);
-
-        private final TemperatureProvider provider;
-
-        public GetTemperatureCallback(final TemperatureProvider provider) {
-            this.provider = provider;
-        }
-
-        @Override
-        public Event invoke(final Event request) throws UserCodeException {
-            try {
-                return new Event(Double.class, provider.getTemperature());
-            } catch (Exception ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
-            }
-        }
-    }
+//    public class GetTemperatureCallback extends EventCallback {
+//
+//        private static final Logger logger = LoggerFactory.getLogger(GetTemperatureCallback.class);
+//
+//        private final TemperatureProviderService provider;
+//
+//        public GetTemperatureCallback(final TemperatureProviderService provider) {
+//            this.provider = provider;
+//        }
+//
+//        @Override
+//        public Event invoke(final Event request) throws UserCodeException {
+//            try {
+//                return new Event(Double.class, provider.getTemperature());
+//            } catch (Exception ex) {
+//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
+//            }
+//        }
+//    }
 }

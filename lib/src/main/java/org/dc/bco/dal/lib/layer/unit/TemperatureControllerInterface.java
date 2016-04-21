@@ -27,13 +27,13 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface TemperatureControllerInterface extends TemperatureProvider, TargetTemperatureService {
+public interface TemperatureControllerInterface extends TemperatureProviderService, TargetTemperatureOperationService {
     
 }

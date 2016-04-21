@@ -28,38 +28,33 @@ package org.dc.bco.dal.lib.layer.service.provider;
  */
 
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InvocationFailedException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rsb.Event;
-import rsb.patterns.EventCallback;
+import rst.homeautomation.state.BatteryStateType.BatteryState;
 
 /**
  *
  * @author thuxohl
  */
-public interface BrightnessProvider extends Provider {
+public interface BatteryProviderService extends ProviderService {
 
-    public Double getBrightness() throws CouldNotPerformException, InterruptedException;
+    public BatteryState getBattery() throws CouldNotPerformException, InterruptedException;
 
-    public class GetBrightnessCallback extends EventCallback {
-
-		private static final Logger logger = LoggerFactory.getLogger(GetBrightnessCallback.class);
-
-		private final BrightnessProvider provider;
-
-		public GetBrightnessCallback(final BrightnessProvider provider) {
-			this.provider = provider;
-		}
-
-		@Override
-		public Event invoke(final Event request) throws UserCodeException {
-			try {
-				return new Event(Double.class, provider.getBrightness());
-			} catch (Exception ex) {
-				throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
-			}
-		}
-	}
+//    public class GetBatteryCallback extends EventCallback {
+//
+//        private static final Logger logger = LoggerFactory.getLogger(GetBatteryCallback.class);
+//
+//        private final BatteryProviderService provider;
+//
+//        public GetBatteryCallback(final BatteryProviderService provider) {
+//            this.provider = provider;
+//        }
+//
+//        @Override
+//        public Event invoke(final Event request) throws UserCodeException {
+//            try {
+//                return new Event(BatteryState.class, provider.getBattery().get());
+//            } catch (Exception ex) {
+//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
+//            }
+//        }
+//    }
 }

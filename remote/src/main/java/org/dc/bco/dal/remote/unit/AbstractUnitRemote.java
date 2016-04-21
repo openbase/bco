@@ -10,12 +10,12 @@ package org.dc.bco.dal.remote.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -43,6 +43,8 @@ import rst.rsb.ScopeType;
  * @param <M>
  */
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote {
+
+    private UnitTemplateType.UnitTemplate unitTemplate;
 
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
@@ -108,12 +110,26 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     @Override
+    public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        unitTemplate = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
+        return super.updateConfig(config);
+    }
+
+    @Override
     public UnitTemplateType.UnitTemplate.UnitType getType() throws NotAvailableException {
         try {
             return getConfig().getType();
         } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit type", ex);
         }
+    }
+
+    @Override
+    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
+        if (unitTemplate == null) {
+            throw new NotAvailableException("unit template");
+        }
+        return unitTemplate;
     }
 
     @Override

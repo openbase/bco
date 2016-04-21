@@ -27,13 +27,13 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface TemperatureSensorInterface extends TemperatureProvider, TemperatureAlarmStateProvider {
+public interface TemperatureSensorInterface extends TemperatureProviderService, TemperatureAlarmStateProviderService {
     
 }

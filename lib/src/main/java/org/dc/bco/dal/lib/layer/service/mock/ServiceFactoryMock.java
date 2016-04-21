@@ -21,24 +21,26 @@ package org.dc.bco.dal.lib.layer.service.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.PowerStateType;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.ShutterStateType;
 import rst.homeautomation.state.StandbyStateType;
-import rst.vision.HSVColorType;
+import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
@@ -54,207 +56,134 @@ public class ServiceFactoryMock implements ServiceFactory {
     }
 
     @Override
-    public <UNIT extends BrightnessService & Unit> BrightnessService newBrightnessService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new BrightnessService() {
+    public <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new BrightnessOperationService() {
 
-            @Override
-            public void setBrightness(Double brightness) throws CouldNotPerformException {
-                update(brightness, unit);
-            }
-
-//            @Override
-//            public ServiceType getServiceType() {
-//                return ServiceType.BRIGHTNESS;
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                return null;
-//            }
             @Override
             public Double getBrightness() throws CouldNotPerformException, InterruptedException {
-                return ((BrightnessService) unit).getBrightness();
+                return ((BrightnessOperationService) unit).getBrightness();
+            }
+
+            @Override
+            public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
+                return update(brightness, unit);
             }
         };
     }
 
     @Override
-    public <UNIT extends ColorService & Unit> ColorService newColorService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new ColorService() {
+    public <UNIT extends ColorOperationService & Unit> ColorOperationService newColorService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new ColorOperationService() {
 
             @Override
-            public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
-                update(color, unit);
+            public HSVColor getColor() throws CouldNotPerformException, InterruptedException {
+                return ((ColorOperationService) unit).getColor();
             }
 
             @Override
-            public Future<HSVColorType.HSVColor> getColor() throws CouldNotPerformException, InterruptedException {
-                return ((ColorService) unit).getColor();
-            }
-
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-        };
-    }
-
-    @Override
-    public <UNIT extends PowerService & Unit> PowerService newPowerService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new PowerService() {
-
-            @Override
-            public void setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
-                update(state, unit);
-            }
-
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-            @Override
-            public PowerStateType.PowerState getPower() throws CouldNotPerformException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            public Future<Void> setColor(HSVColor color) throws CouldNotPerformException {
+                return update(color, unit);
             }
         };
     }
 
     @Override
-    public <UNIT extends OpeningRatioService & Unit> OpeningRatioService newOpeningRatioService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new OpeningRatioService() {
+    public <UNIT extends PowerOperationService & Unit> PowerOperationService newPowerService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new PowerOperationService() {
 
             @Override
-            public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-                update(openingRatio, unit);
+            public PowerState getPower() throws CouldNotPerformException, InterruptedException {
+                return ((PowerOperationService) unit).getPower();
             }
 
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
             @Override
-            public Double getOpeningRatio() throws CouldNotPerformException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            public Future<Void> setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
+                return update(state, unit);
             }
         };
     }
 
     @Override
-    public <UNIT extends ShutterService & Unit> ShutterService newShutterService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new ShutterService() {
+    public <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new OpeningRatioOperationService() {
 
             @Override
-            public void setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
-                update(state, unit);
+            public Double getOpeningRatio() throws CouldNotPerformException, InterruptedException {
+                return ((OpeningRatioOperationService) unit).getOpeningRatio();
             }
 
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
+            @Override
+            public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+                return update(openingRatio, unit);
+            }
+        };
+    }
+
+    @Override
+    public <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new ShutterOperationService() {
+
             @Override
             public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public Future<Void> setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
+                return update(state, unit);
+            }
         };
     }
 
     @Override
-    public <UNIT extends DimService & Unit> DimService newDimmService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new DimService() {
+    public <UNIT extends DimOperationService & Unit> DimOperationService newDimmService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new DimOperationService() {
 
-            @Override
-            public void setDim(Double dim) throws CouldNotPerformException {
-                update(dim, unit);
-            }
-
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
             @Override
             public Double getDim() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public Future<Void> setDim(Double dim) throws CouldNotPerformException {
+                return update(dim, unit);
+            }
         };
     }
 
     @Override
-    public <UNIT extends StandbyService & Unit> StandbyService newStandbyService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new StandbyService() {
+    public <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new StandbyOperationService() {
 
-            @Override
-            public void setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-                update(state, unit);
-            }
-
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
             @Override
             public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public Future<Void> setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
+                return update(state, unit);
+            }
         };
     }
 
     @Override
-    public <UNIT extends TargetTemperatureService & Unit> TargetTemperatureService newTargetTemperatureService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new TargetTemperatureService() {
+    public <UNIT extends TargetTemperatureOperationService & Unit> TargetTemperatureOperationService newTargetTemperatureService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
+        return new TargetTemperatureOperationService() {
 
-            @Override
-            public void setTargetTemperature(Double value) throws CouldNotPerformException {
-                update(value, unit);
-            }
-
-//            @Override
-//            public ServiceType getServiceType() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
-//
-//            @Override
-//            public ServiceConfig getServiceConfig() {
-//                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//            }
             @Override
             public Double getTargetTemperature() throws CouldNotPerformException {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
+
+            @Override
+            public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
+                return update(value, unit);
+            }
         };
     }
 
-    private static <ARGUMENT extends Object> void update(final ARGUMENT argument, final Unit unit) throws CouldNotPerformException {
+    private static <ARGUMENT extends Object> CompletableFuture<Void> update(final ARGUMENT argument, final Unit unit) throws CouldNotPerformException {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {
@@ -269,7 +198,9 @@ public class ServiceFactoryMock implements ServiceFactory {
                 throw new CouldNotPerformException("Could not detect update method name!", ex);
             }
             unit.getClass().getMethod(methodName, argument.getClass()).invoke(unit, argument);
-//            return (Future<RETURN>) remote.callMethodAsync(methodName, argument);
+            CompletableFuture f;
+            f.
+            return CompletableFuture.completedFuture(null);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);
         }

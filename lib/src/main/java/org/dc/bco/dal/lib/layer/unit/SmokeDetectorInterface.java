@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface SmokeDetectorInterface extends SmokeAlarmStateProvider, SmokeStateProvider {
+public interface SmokeDetectorInterface extends SmokeAlarmStateProviderService, SmokeStateProviderService {
 }

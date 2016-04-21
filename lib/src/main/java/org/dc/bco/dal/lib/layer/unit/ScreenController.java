@@ -26,8 +26,8 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.PowerService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -52,8 +52,8 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
     }
 
-    private PowerService powerService;
-    private StandbyService standbyService;
+    private PowerOperationService powerService;
+    private StandbyOperationService standbyService;
 
     public ScreenController(final UnitHost unitHost, final Screen.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ScreenController.class, unitHost, builder);

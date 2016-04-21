@@ -27,7 +27,7 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 
@@ -35,7 +35,7 @@ import rst.homeautomation.service.ServiceTemplateType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioService> implements OpeningRatioService{
+public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioOperationService> implements OpeningRatioOperationService{
 
     public OpeningRatioServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         super(serviceType);
@@ -43,7 +43,7 @@ public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRati
 
     @Override
     public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        for(OpeningRatioService service : getServices()) {
+        for(OpeningRatioOperationService service : getServices()) {
             service.setOpeningRatio(openingRatio);
         }
     }

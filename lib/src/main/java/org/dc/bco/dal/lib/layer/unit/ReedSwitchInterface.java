@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface ReedSwitchInterface extends ReedSwitchProvider {
+public interface ReedSwitchInterface extends ReedSwitchProviderService {
 
 }

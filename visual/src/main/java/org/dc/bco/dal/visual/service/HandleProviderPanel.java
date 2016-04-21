@@ -27,7 +27,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -39,7 +39,7 @@ import java.awt.Color;
  *
  * @author kengelma
  */
-public class HandleProviderPanel extends AbstractServicePanel<HandleProvider> {
+public class HandleProviderPanel extends AbstractServicePanel<HandleProviderService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel

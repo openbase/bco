@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface HandleSensorInterface extends HandleProvider {
+public interface HandleSensorInterface extends HandleProviderService {
     
 }

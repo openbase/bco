@@ -26,7 +26,7 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.ShutterService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
@@ -35,7 +35,7 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> implements ShutterService {
+public class ShutterServiceRemote extends AbstractServiceRemote<ShutterOperationService> implements ShutterOperationService {
 
     public ShutterServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         super(serviceType);
@@ -43,7 +43,7 @@ public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> 
 
     @Override
     public void setShutter(ShutterState state) throws CouldNotPerformException {
-        for (ShutterService service : getServices()) {
+        for (ShutterOperationService service : getServices()) {
             service.setShutter(state);
         }
     }

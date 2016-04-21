@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface PowerConsumptionSensorInterface extends PowerConsumptionProvider {
+public interface PowerConsumptionSensorInterface extends PowerConsumptionProviderService {
     
 }

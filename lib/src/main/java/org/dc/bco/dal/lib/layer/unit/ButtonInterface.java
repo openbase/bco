@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.ButtonProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ButtonProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface ButtonInterface extends ButtonProvider {
+public interface ButtonInterface extends ButtonProviderService {
     
 }

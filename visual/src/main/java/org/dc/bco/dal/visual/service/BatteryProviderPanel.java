@@ -27,7 +27,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.BatteryProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BatteryProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
@@ -36,7 +36,7 @@ import java.awt.Color;
  *
  * @author mpohling
  */
-public class BatteryProviderPanel extends AbstractServicePanel<BatteryProvider> {
+public class BatteryProviderPanel extends AbstractServicePanel<BatteryProviderService> {
 
     /**
      * Creates new form BrightnessService

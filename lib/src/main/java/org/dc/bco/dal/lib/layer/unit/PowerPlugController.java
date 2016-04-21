@@ -26,7 +26,7 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -49,7 +49,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
-    private PowerService powerService;
+    private PowerOperationService powerService;
 
     public PowerPlugController(final UnitHost unitHost, final PowerPlug.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(PowerPlugController.class, unitHost, builder);

@@ -27,7 +27,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.util.concurrent.Callable;
@@ -36,7 +36,7 @@ import java.util.concurrent.Callable;
  *
  * @author mpohling
  */
-public class BrightnessServicePanel extends AbstractServicePanel<BrightnessService> {
+public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOperationService> {
 
     /**
      * Creates new form BrightnessService

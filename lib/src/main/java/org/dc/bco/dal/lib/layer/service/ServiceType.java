@@ -27,20 +27,27 @@ package org.dc.bco.dal.lib.layer.service;
  * #L%
  */
 
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.dc.bco.dal.lib.layer.service.provider.BatteryProvider;
-import org.dc.bco.dal.lib.layer.service.provider.ButtonProvider;
-import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
-import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BatteryProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.ButtonProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -60,23 +67,23 @@ import rst.homeautomation.service.ServiceTemplateType;
 @Deprecated
 public enum ServiceType {
 
-    BATTERY(BatteryProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_PROVIDER),
-    BRIGHTNESS(BrightnessService.class, ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE),
-    BUTTON(ButtonProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_PROVIDER),
-    COLOR(ColorService.class, ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE),
-    HANDLE(HandleProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_PROVIDER),
-    TAMPER(TamperProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_PROVIDER),
-    TEMPERATURE(TemperatureProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_PROVIDER),
-    TARGET_TEMPERATURE(TargetTemperatureService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE),
-    POWER(PowerService.class, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_SERVICE),
-    SHUTTER(ShutterService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE),
-    OPENING_RATIO(OpeningRatioService.class, ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER),
-    MOTION(MotionProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_PROVIDER),
-    DIM(DimService.class, ServiceTemplateType.ServiceTemplate.ServiceType.DIM_SERVICE),
-    REED_SWITCH(ReedSwitchProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.REED_SWITCH_PROVIDER),
-    SMOKE_ALARM_STATE(SmokeAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
-    TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
-    SMOKE_STATE(SmokeStateProvider.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_PROVIDER);
+    BATTERY(BatteryProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_PROVIDER),
+    BRIGHTNESS(BrightnessOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE),
+    BUTTON(ButtonProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_PROVIDER),
+    COLOR(ColorOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE),
+    HANDLE(HandleProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_PROVIDER),
+    TAMPER(TamperProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_PROVIDER),
+    TEMPERATURE(TemperatureProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_PROVIDER),
+    TARGET_TEMPERATURE(TargetTemperatureOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE),
+    POWER(PowerOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_SERVICE),
+    SHUTTER(ShutterOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE),
+    OPENING_RATIO(OpeningRatioOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER),
+    MOTION(MotionProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_PROVIDER),
+    DIM(DimOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.DIM_SERVICE),
+    REED_SWITCH(ReedSwitchProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.REED_SWITCH_PROVIDER),
+    SMOKE_ALARM_STATE(SmokeAlarmStateProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
+    TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),
+    SMOKE_STATE(SmokeStateProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_PROVIDER);
 
 
     public static final String SET = "set";

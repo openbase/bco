@@ -27,13 +27,13 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface DimmerInterface extends PowerService, DimService {
+public interface DimmerInterface extends PowerOperationService, DimOperationService {
     
 }

@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.BrightnessProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BrightnessProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface BrightnessSensorInterface extends BrightnessProvider {
+public interface BrightnessSensorInterface extends BrightnessProviderService {
     
 }

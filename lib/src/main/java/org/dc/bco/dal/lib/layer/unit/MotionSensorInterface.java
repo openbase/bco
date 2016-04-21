@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface MotionSensorInterface extends MotionProvider {
+public interface MotionSensorInterface extends MotionProviderService {
     
 }

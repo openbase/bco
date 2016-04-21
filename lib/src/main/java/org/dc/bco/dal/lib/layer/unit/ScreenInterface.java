@@ -27,13 +27,13 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.PowerService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface ScreenInterface extends PowerService, StandbyService {
+public interface ScreenInterface extends PowerOperationService, StandbyOperationService {
     
 }

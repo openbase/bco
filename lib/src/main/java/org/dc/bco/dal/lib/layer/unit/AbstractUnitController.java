@@ -10,39 +10,51 @@ package org.dc.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.service.ServiceFactoryProvider;
 import org.dc.bco.dal.lib.layer.service.ServiceType;
+import org.dc.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.dc.bco.dal.lib.layer.service.operation.OperationService;
+import org.dc.bco.dal.lib.layer.service.provider.ProviderService;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.NotSupportedException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
+import org.dc.jul.processing.StringProcessor;
 import rsb.Scope;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -53,11 +65,12 @@ import rst.rsb.ScopeType;
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */
-public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractConfigurableController<M, MB, UnitConfig> implements Unit, ServiceFactoryProvider {
+public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractConfigurableController<M, MB, UnitConfig> implements UnitController, ServiceFactoryProvider {
 
     private final UnitHost unitHost;
     private final List<Service> serviceList;
     private final ServiceFactory serviceFactory;
+    private UnitTemplate unitTemplate;
 
     public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
@@ -101,6 +114,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         }
     }
 
+    public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
+        try {
+            init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
+        } catch (CouldNotPerformException | NullPointerException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
@@ -130,18 +151,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         }
     }
 
-    public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
-        try {
-            init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
-        } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
     @Override
     public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-//        setField(TYPE_FIELD_ID, config.getId());
-//        setField(TYPE_FIELD_LABEL, config.getLabel());
+        unitTemplate = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
         return super.updateConfig(config);
     }
 
@@ -198,13 +210,112 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
+    public UnitTemplate getTemplate() throws NotAvailableException {
+        if (unitTemplate == null) {
+            throw new NotAvailableException("unit template");
+        }
+        return unitTemplate;
+    }
+
+    @Override
     public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
-        ServiceType.registerServiceMethods(server, this);
+
+        // collect service interface methods
+        HashMap<String, ServiceTemplate.ServiceType> methodMap = new HashMap<>();
+        for (ServiceTemplate.ServiceType serviceType : getTemplate().getServiceTypeList()) {
+            methodMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceType);
+        }
+
+        for (Entry<String, ServiceTemplate.ServiceType> methodEntry : methodMap.entrySet()) {
+            try {
+                // Identify package
+                Package servicePackage;
+                if (methodEntry.getKey().contains(Service.CONSUMER_SERVICE_LABEL)) {
+                    servicePackage = ConsumerService.class.getPackage();
+                } else if (methodEntry.getKey().contains(Service.OPERATION_SERVICE_LABEL)) {
+                    servicePackage = OperationService.class.getPackage();
+                } else if (methodEntry.getKey().contains(Service.PROVIDER_SERVICE_LABEL)) {
+                    servicePackage = ProviderService.class.getPackage();
+                } else {
+                    throw new NotSupportedException(methodEntry.getValue() + " is not supported!", this);
+                }
+
+                // Identify interface class
+                Class<? extends Service> serviceInterfaceClass;
+                try {
+                    serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + methodEntry.getKey());
+                } catch (ClassNotFoundException | ClassCastException ex) {
+                    throw new CouldNotPerformException("Could not load service interface!", ex);
+                }
+
+                if(!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
+
+                }
+
+                Service cast = serviceInterfaceClass.cast(this);
+
+                RPCHelper.registerInterface(serviceInterfaceClass, serviceInterfaceClass.cast(this), server);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] for service methode " + method.toGenericString(), ex), logger);
+            }
+        }
+//        for (ServiceType serviceType : ServiceType.getServiceTypeList(this)) {
+//            for (Method method : serviceType.getDeclaredMethods()) {
+//                try {
+//                    server.addMethod(method.getName(), getCallback(method, this, serviceType));
+//                } catch (CouldNotPerformException ex) {
+//                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex), logger);
+//                }
+//            }
+//        }
     }
 
     @Override
     public ServiceFactory getServiceFactory() throws NotAvailableException {
         return serviceFactory;
+    }
+
+    @Override
+    public void applyUpdate(ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException {
+        try {
+
+            if (serviceArgument == null) {
+                throw new NotAvailableException("ServiceArgument");
+            }
+
+            final Method updateMethod = getUpdateMethod(serviceType, serviceArgument.getClass());
+
+            try {
+                updateMethod.invoke(this, serviceArgument);
+            } catch (IllegalAccessException ex) {
+                throw new CouldNotPerformException("Cannot access related Method [" + updateMethod.getName() + "]", ex);
+            } catch (IllegalArgumentException ex) {
+                throw new CouldNotPerformException("Does not match [" + updateMethod.getParameterTypes()[0].getName() + "] which is needed by [" + updateMethod.getName() + "]!", ex);
+            } catch (InvocationTargetException ex) {
+                throw new CouldNotPerformException("The related method [" + updateMethod.getName() + "] throws an exceptioin during invocation!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply " + serviceType.name() + " Update[" + serviceArgument + "] for Unit[" + getLabel() + "]!", ex);
+        }
+    }
+
+    @Override
+    public Method getUpdateMethod(final ServiceTemplate.ServiceType serviceType, Class serviceArgumentClass) throws CouldNotPerformException {
+        try {
+            Method updateMethod;
+            String updateMethodName = Service.UPDATE_METHOD_PREFIX + Service.getServiceTypeName(serviceType);
+            try {
+                updateMethod = getClass().getMethod(updateMethodName, serviceArgumentClass);
+                if (updateMethod == null) {
+                    throw new NotAvailableException(updateMethod);
+                }
+            } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
+                throw new NotAvailableException("Method " + this + "." + updateMethodName + "(" + serviceArgumentClass + ")", ex);
+            }
+            return updateMethod;
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Unit not compatible!", ex);
+        }
     }
 
     /**

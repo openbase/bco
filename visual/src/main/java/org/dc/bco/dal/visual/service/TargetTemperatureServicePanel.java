@@ -27,7 +27,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -38,7 +38,7 @@ import java.util.concurrent.Callable;
  *
  * @author mpohling
  */
-public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTemperatureService> {
+public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTemperatureOperationService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 

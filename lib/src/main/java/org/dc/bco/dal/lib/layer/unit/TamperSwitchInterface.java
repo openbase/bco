@@ -27,12 +27,12 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface TamperSwitchInterface extends TamperProvider {
+public interface TamperSwitchInterface extends TamperProviderService {
     
 }

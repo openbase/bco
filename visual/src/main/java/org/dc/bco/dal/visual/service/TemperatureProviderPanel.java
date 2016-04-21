@@ -27,7 +27,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -37,7 +37,7 @@ import java.text.DecimalFormat;
  *
  * @author mpohling
  */
-public class TemperatureProviderPanel extends AbstractServicePanel<TemperatureProvider> {
+public class TemperatureProviderPanel extends AbstractServicePanel<TemperatureProviderService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 

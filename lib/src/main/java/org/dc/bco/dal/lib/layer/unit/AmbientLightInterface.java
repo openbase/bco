@@ -27,14 +27,14 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 
 /**
  *
  * @author mpohling
  */
-public interface AmbientLightInterface extends ColorService, BrightnessService, PowerService {
+public interface AmbientLightInterface extends ColorOperationService, BrightnessOperationService, PowerOperationService {
     
 }

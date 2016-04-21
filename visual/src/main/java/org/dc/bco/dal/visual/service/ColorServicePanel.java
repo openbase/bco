@@ -24,7 +24,7 @@ package org.dc.bco.dal.visual.service;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.dc.bco.dal.lib.layer.service.ColorService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class ColorServicePanel extends AbstractServicePanel<ColorService> {
+public class ColorServicePanel extends AbstractServicePanel<ColorOperationService> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

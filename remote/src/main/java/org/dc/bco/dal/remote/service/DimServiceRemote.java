@@ -27,7 +27,7 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 
@@ -35,7 +35,7 @@ import rst.homeautomation.service.ServiceTemplateType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimService> implements DimService {
+public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
 
     public DimServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         super(serviceType);
@@ -43,7 +43,7 @@ public class DimServiceRemote extends AbstractServiceRemote<DimService> implemen
 
     @Override
     public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimService service : getServices()) {
+        for (DimOperationService service : getServices()) {
             service.setDim(dim);
         }
     }

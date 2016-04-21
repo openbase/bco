@@ -27,7 +27,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InvalidStateException;
@@ -42,7 +42,7 @@ import java.util.Date;
  *
  * @author mpohling
  */
-public class MotionProviderPanel extends AbstractServicePanel<MotionProvider> {
+public class MotionProviderPanel extends AbstractServicePanel<MotionProviderService> {
 
     private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM);
 
