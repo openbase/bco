@@ -37,8 +37,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
+import rsb.Event;
 import rsb.Factory;
 import rsb.Informer;
+import rsb.Scope;
 import rsb.config.ParticipantConfig;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -91,5 +93,9 @@ public class SceneRemoteTest {
 
         Button button = Button.newBuilder().setButtonState(ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build()).build();
         informer.send(button);
+        Event event = new Event(new Scope("/home/sports/button/pathwaybelowbutton_3/status/hallo"), String.class, "Hallo");
+//        System.out.println("event:"+event);
+        informer.send(event);
+
     }
 }

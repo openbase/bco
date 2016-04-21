@@ -44,13 +44,20 @@ import java.io.File;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
+import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
+import org.dc.bco.registry.app.remote.AppRegistryRemote;
 import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
+import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
 import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
 /**
+ * //TODO: openHAB config generator should maybe become a project on its on. It
+ * does not belong to the device manager since it also generates entries for
+ * scenes, agents etc
  *
  * @author mpohling
  */
@@ -64,6 +71,8 @@ public class OpenHABConfigGenerator {
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
     private final SceneRegistryRemote sceneRegistryRemote;
+    private final AgentRegistryRemote agentRegistryRemote;
+    private final AppRegistryRemote appRegistryRemote;
     private final RecurrenceEventFilter recurrenceGenerationFilter;
 
     public OpenHABConfigGenerator() throws InstantiationException {
@@ -71,7 +80,9 @@ public class OpenHABConfigGenerator {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.sceneRegistryRemote = new SceneRegistryRemote();
-            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote, sceneRegistryRemote);
+            this.agentRegistryRemote = new AgentRegistryRemote();
+            this.appRegistryRemote = new AppRegistryRemote();
+            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote, sceneRegistryRemote, agentRegistryRemote, appRegistryRemote);
             this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
                 @Override
@@ -94,6 +105,10 @@ public class OpenHABConfigGenerator {
         locationRegistryRemote.activate();
         sceneRegistryRemote.init();
         sceneRegistryRemote.activate();
+        agentRegistryRemote.init();
+        agentRegistryRemote.activate();
+        appRegistryRemote.init();
+        appRegistryRemote.activate();
         itemConfigGenerator.init();
 
         this.deviceRegistryRemote.addObserver((Observable<DeviceRegistry> source, DeviceRegistry data) -> {
@@ -103,6 +118,12 @@ public class OpenHABConfigGenerator {
             generate();
         });
         this.sceneRegistryRemote.addObserver((Observable<SceneRegistry> source, SceneRegistry data) -> {
+            generate();
+        });
+        this.agentRegistryRemote.addObserver((Observable<AgentRegistry> source, AgentRegistry data) -> {
+            generate();
+        });
+        this.appRegistryRemote.addObserver((Observable<AppRegistry> source, AppRegistry data) -> {
             generate();
         });
     }
@@ -130,6 +151,8 @@ public class OpenHABConfigGenerator {
         deviceRegistryRemote.shutdown();
         locationRegistryRemote.shutdown();
         sceneRegistryRemote.shutdown();
+        agentRegistryRemote.shutdown();
+        appRegistryRemote.shutdown();
     }
 
     /**

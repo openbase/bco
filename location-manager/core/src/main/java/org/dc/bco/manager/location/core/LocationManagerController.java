@@ -1,8 +1,13 @@
-package org.dc.bco.manager.device.binding.openhab;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.dc.bco.manager.location.core;
 
 /*
  * #%L
- * COMA DeviceManager Binding OpenHAB
+ * COMA LocationManager Core
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -22,13 +27,12 @@ package org.dc.bco.manager.device.binding.openhab;
  * #L%
  */
 
-import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicator;
-import org.dc.jul.exception.NotAvailableException;
+import org.dc.bco.manager.location.lib.LocationManager;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface OpenHABBinding {
-    public OpenHABCommunicator getBusCommunicator() throws NotAvailableException;
+public class LocationManagerController implements LocationManager {
+    
 }

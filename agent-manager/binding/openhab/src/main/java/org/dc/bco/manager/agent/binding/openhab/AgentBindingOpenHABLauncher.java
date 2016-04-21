@@ -1,4 +1,4 @@
-package org.dc.bco.manager.device.binding.openhab;
+package org.dc.bco.manager.agent.binding.openhab;
 
 /*
  * #%L
@@ -21,32 +21,33 @@ package org.dc.bco.manager.device.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
+import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public class OpenHABBindingLauncher {
+public class AgentBindingOpenHABLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenHABBindingLauncher.class);
+    private static final Logger logger = LoggerFactory.getLogger(AgentBindingOpenHABLauncher.class);
 
-    private OpenHABBindingImpl openHABBinding;
+    private AgentBindingOpenHABImpl openHABBinding;
 
     public void launch() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
-            openHABBinding = new OpenHABBindingImpl();
+            openHABBinding = new AgentBindingOpenHABImpl();
             openHABBinding.init();
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | JPServiceException ex) {
             openHABBinding.shutdown();
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
@@ -56,7 +57,7 @@ public class OpenHABBindingLauncher {
         openHABBinding.shutdown();
     }
 
-    public OpenHABBindingImpl getOpenHABBinding() {
+    public AgentBindingOpenHABImpl getOpenHABBinding() {
         return openHABBinding;
     }
 
@@ -70,14 +71,13 @@ public class OpenHABBindingLauncher {
         /* Setup JPService */
         JPService.setApplicationName(OpenHABBinding.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPLocationRegistryScope.class);
-        JPService.registerProperty(JPDeviceRegistryScope.class);
+        JPService.registerProperty(JPAgentRegistryScope.class);
         JPService.parseAndExitOnError(args);
 
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
         try {
-            new OpenHABBindingLauncher().launch();
+            new AgentBindingOpenHABLauncher().launch();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }

@@ -27,7 +27,7 @@ package org.dc.bco.manager.device.binding.openhab.transform;
  * #L%
  */
 
-import org.dc.bco.manager.device.binding.openhab.comm.OpenHABCommunicatorImpl;
+import org.dc.bco.manager.device.binding.openhab.comm.OpenHABRemoteImpl;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.NotSupportedException;
@@ -69,7 +69,7 @@ public final class OpenhabCommandTransformer {
                     case COLOR_SERVICE:
                         return HSVColorTransformer.transform(command.getHsb());
                     default:
-                        throw new NotSupportedException(serviceType, OpenHABCommunicatorImpl.class);
+                        throw new NotSupportedException(serviceType, OpenHABRemoteImpl.class);
                 }
             case INCREASEDECREASE:
 //				return IncreaseDecreaseTransformer(command.getIncreaseDecrease());
@@ -82,7 +82,7 @@ public final class OpenhabCommandTransformer {
                     case POWER_SERVICE:
                         return PowerStateTransformer.transform(command.getOnOff().getState());
                     default:
-                        throw new NotSupportedException(serviceType, OpenHABCommunicatorImpl.class);
+                        throw new NotSupportedException(serviceType, OpenHABRemoteImpl.class);
                 }
             case OPENCLOSED:
                 return OpenClosedStateTransformer.transform(command.getOpenClosed().getState());

@@ -28,7 +28,6 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen.items;
  */
 
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
-import static org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InstantiationException;
@@ -38,8 +37,6 @@ import org.dc.jul.extension.protobuf.ProtobufVariableProvider;
 import org.dc.jul.extension.rst.processing.MetaConfigPool;
 import org.dc.jul.processing.StringProcessor;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.slf4j.LoggerFactory;

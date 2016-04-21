@@ -76,7 +76,7 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.binding.openhab.OpenHABBindingLauncher</mainClass>
+                            <mainClass>org.dc.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher</mainClass>
                             <id>binding-openhab-device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -156,6 +156,12 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <!-- for openhab binding -->
+            <groupId>org.dc</groupId>
+            <artifactId>jul.extension.openhab</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
-
 </project>

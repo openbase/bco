@@ -27,6 +27,7 @@
     </licenses>
     
     <modules>
+        <module>binding</module>
         <module>lib</module>
         <module>core</module>
         <module>remote</module>

@@ -146,8 +146,6 @@ public class OpenHABCommandExecutor {
             throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
         } catch (InvocationTargetException ex) {
             throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
-        } catch (Throwable cause) {
-            throw new CouldNotPerformException("Fatal invocation error!", cause);
         }
     }
 }

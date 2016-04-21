@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.dc.bco.manager.location.lib;
 
 /*
@@ -21,17 +26,13 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.jul.extension.rst.iface.ScopeProvider;
-import org.dc.jul.iface.Configurable;
-import org.dc.jul.iface.Identifiable;
-import org.dc.jul.iface.provider.LabelProvider;
+
+import org.dc.jul.pattern.Factory;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface Location extends ScopeProvider, LabelProvider, Identifiable<String>, Configurable<String, LocationConfig> {
-
+public interface LocationFactory extends Factory<Location, LocationConfig> {
 }

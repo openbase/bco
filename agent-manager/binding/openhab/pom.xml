@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dc.bco</groupId>
-    <artifactId>manager.scene.binding.openhab</artifactId>
+    <artifactId>manager.agent.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA SceneManager Binding OpenHAB</name>
+    <name>COMA AgentManager Binding OpenHAB</name>
     
     <parent>
         <groupId>org.dc.bco</groupId>
-        <artifactId>manager.scene.binding</artifactId>
+        <artifactId>manager.agent.binding</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>    
     
@@ -62,8 +62,8 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher</mainClass>
-                            <id>binding-openhab-scene-manager</id>
+                            <mainClass>org.dc.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher</mainClass>
+                            <id>binding-openhab-agent-manager</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -107,7 +107,7 @@
     <dependencies>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>manager.scene.remote</artifactId>
+            <artifactId>manager.agent.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
