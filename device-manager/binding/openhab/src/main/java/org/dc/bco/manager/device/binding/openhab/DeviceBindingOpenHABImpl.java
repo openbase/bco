@@ -44,17 +44,18 @@ import rst.homeautomation.device.DeviceConfigType;
 public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     //TODO: Should be declared in the openhab config generator and used from there
-    public static final String AGENT_MANAGER_ITEM_FILTER = "";
+    public static final String DEVICE_MANAGER_ITEM_FILTER = "";
 
     private DeviceManagerController deviceManagerController;
     private DeviceRegistryRemote deviceRegistryRemote;
 
     public DeviceBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException {
+        super();
     }
 
     public void init() throws InitializationException, InterruptedException {
         try {
-            init(AGENT_MANAGER_ITEM_FILTER, new OpenHABRemoteImpl());
+            init(DEVICE_MANAGER_ITEM_FILTER, new OpenHABRemoteImpl());
         } catch (InstantiationException | JPNotAvailableException ex) {
             throw new InitializationException(this, ex);
         }
@@ -62,7 +63,6 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
-        super.init(itemFilter, openHABRemote);
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.deviceRegistryRemote.init();
@@ -85,6 +85,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
                 }
             };
 
+            super.init(itemFilter, openHABRemote);
             this.deviceManagerController.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
