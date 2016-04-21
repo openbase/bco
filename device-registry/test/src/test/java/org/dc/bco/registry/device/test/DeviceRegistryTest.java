@@ -470,7 +470,7 @@ public class DeviceRegistryTest {
         assertTrue("The owner did not get removed!", !userRegistry.containsUserConfig(owner));
 
         ownerRemovalDeviceConfig = deviceRegistry.getDeviceConfigById(ownerRemovalDeviceConfig.getId());
-        assertTrue("The owner id did not get removed even though the user got removed!", ownerRemovalDeviceConfig.getInventoryState().getOwnerId().isEmpty());
+        assertEquals("The owner id did not get removed even though the user got removed!", "", ownerRemovalDeviceConfig.getInventoryState().getOwnerId());
     }
 
     /**
