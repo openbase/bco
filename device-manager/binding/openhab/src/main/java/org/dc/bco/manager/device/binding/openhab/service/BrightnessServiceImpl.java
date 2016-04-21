@@ -28,7 +28,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
  */
 
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -38,7 +38,7 @@ import org.dc.jul.exception.InstantiationException;
  * @author mpohling
  * @param <UNIT> Related unit.
  */
-public class BrightnessServiceImpl<UNIT extends BrightnessService & Unit> extends OpenHABService<UNIT> implements BrightnessService {
+public class BrightnessServiceImpl<UNIT extends BrightnessOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessOperationService {
 
     public BrightnessServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);

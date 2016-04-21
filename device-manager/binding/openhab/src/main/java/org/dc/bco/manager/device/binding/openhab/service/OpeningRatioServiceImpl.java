@@ -29,7 +29,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
 
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.manager.device.lib.Device;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -39,7 +39,7 @@ import org.dc.jul.exception.InstantiationException;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class OpeningRatioServiceImpl<ST extends OpeningRatioService & Unit>  extends OpenHABService<ST> implements OpeningRatioService {
+public class OpeningRatioServiceImpl<ST extends OpeningRatioOperationService & Unit>  extends OpenHABService<ST> implements OpeningRatioOperationService {
 
     public OpeningRatioServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

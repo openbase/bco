@@ -35,7 +35,7 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import java.util.List;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.bco.dal.remote.unit.UnitGroupRemote;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
@@ -128,13 +128,13 @@ public class UnitGroupRemoteTest {
         unitGroupRemote.setPower(state);
 
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPower(state);
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
         }
     }
 

@@ -29,7 +29,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
 
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.manager.device.lib.Device;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -39,7 +39,7 @@ import org.dc.jul.exception.InstantiationException;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class DimServiceImpl<ST extends DimService & Unit> extends OpenHABService<ST> implements DimService {
+public class DimServiceImpl<ST extends DimOperationService & Unit> extends OpenHABService<ST> implements DimOperationService {
 
     public DimServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

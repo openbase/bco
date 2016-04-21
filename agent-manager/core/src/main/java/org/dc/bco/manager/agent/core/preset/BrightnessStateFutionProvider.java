@@ -31,7 +31,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dc.bco.dal.lib.layer.service.provider.BrightnessProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BrightnessProviderService;
 import org.dc.bco.dal.remote.unit.BrightnessSensorRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ import rst.homeautomation.unit.UnitTemplateType;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class BrightnessStateFutionProvider extends Observable<Double> implements BrightnessProvider {
+public class BrightnessStateFutionProvider extends Observable<Double> implements BrightnessProviderService {
 //
 //    /**
 //     * Default 3 minute window of no movement unit the state switches to NO_MOTION.

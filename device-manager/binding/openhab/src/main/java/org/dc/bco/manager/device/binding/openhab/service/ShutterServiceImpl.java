@@ -28,7 +28,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
  */
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.manager.device.lib.Device;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -39,7 +39,7 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class ShutterServiceImpl<ST extends ShutterService & Unit> extends OpenHABService<ST> implements ShutterService {
+public class ShutterServiceImpl<ST extends ShutterOperationService & Unit> extends OpenHABService<ST> implements ShutterOperationService {
 
     public ShutterServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

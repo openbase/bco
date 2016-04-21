@@ -27,7 +27,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -38,7 +38,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class PowerServiceImpl<ST extends PowerService & Unit> extends OpenHABService<ST> implements org.dc.bco.dal.lib.layer.service.PowerService {
+public class PowerServiceImpl<ST extends PowerOperationService & Unit> extends OpenHABService<ST> implements org.dc.bco.dal.lib.layer.service.operation.PowerOperationService {
 
     public PowerServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

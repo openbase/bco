@@ -28,7 +28,7 @@ package org.dc.bco.manager.device.binding.openhab.service;
  */
 
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.dal.lib.layer.service.ColorService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
@@ -39,7 +39,7 @@ import rst.vision.HSVColorType;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class ColorServiceImpl<ST extends ColorService & Unit>  extends OpenHABService<ST> implements ColorService {
+public class ColorServiceImpl<ST extends ColorOperationService & Unit>  extends OpenHABService<ST> implements ColorOperationService {
 
     public ColorServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
