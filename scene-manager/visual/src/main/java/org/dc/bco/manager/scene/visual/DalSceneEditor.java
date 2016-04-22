@@ -15,12 +15,12 @@ package org.dc.bco.manager.scene.visual;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -29,19 +29,20 @@ package org.dc.bco.manager.scene.visual;
 import java.awt.Component;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.dc.bco.dal.visual.service.AbstractServicePanel;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.printer.LogLevel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.JComponent;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.bco.dal.visual.unit.GenericUnitPanel;
 import org.dc.bco.dal.visual.unit.RemovableGenericUnitPanel;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
@@ -63,12 +64,14 @@ public class DalSceneEditor extends javax.swing.JFrame {
     /**
      * Creates new form DalSceneEditor
      *
-     * @throws org.dc.jul.exception.InstantiationException
      */
-    public DalSceneEditor() throws org.dc.jul.exception.InstantiationException {
+    public DalSceneEditor() {
         serviceProcessor = new ServiceJSonProcessor();
+        initComponents();
+    }
+
+    public DalSceneEditor init() throws InitializationException, InterruptedException {
         try {
-            initComponents();
             sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
 
                 @Override
@@ -89,27 +92,23 @@ public class DalSceneEditor extends javax.swing.JFrame {
                         genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
                     }
                 }
-            }
-            );
+            });
             genericUnitCollectionPanel.init();
             sceneCreationPanel.init();
 
-            Executors.newSingleThreadExecutor()
-                    .execute(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                sceneSelectorPanel.init();
-                            } catch (Exception ex) {
-                                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
-                            }
-                        }
-                    }
-                    );
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+            CompletableFuture.runAsync(() -> {
+                try {
+                    sceneSelectorPanel.init();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+                }
+            });
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
         }
+        return this;
     }
 
     /**
@@ -247,7 +246,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -268,14 +267,14 @@ public class DalSceneEditor extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new DalSceneEditor().setVisible(true);
-                } catch (org.dc.jul.exception.InstantiationException ex) {
-                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-                    System.exit(1);
-                }
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new DalSceneEditor().init().setVisible(true);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                System.exit(1);
             }
         });
     }

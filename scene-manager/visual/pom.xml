@@ -22,7 +22,6 @@
         </license>
     </licenses>
 
-
     <build>
         <plugins>
             <plugin>
@@ -80,7 +79,7 @@
                     <programs>
                         <program>
                             <mainClass>org.dc.bco.manager.scene.visual.DalSceneEditor</mainClass>
-                            <id>dal-scene-editor</id>
+                            <id>scene-editor</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
