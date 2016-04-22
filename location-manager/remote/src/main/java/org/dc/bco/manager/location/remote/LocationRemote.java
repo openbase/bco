@@ -9,10 +9,12 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType;
 import rst.homeautomation.state.MotionStateType;
+import rst.homeautomation.state.PowerConsumptionStateType;
 import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.state.ShutterStateType;
 import rst.homeautomation.state.SmokeStateType;
 import rst.homeautomation.state.StandbyStateType;
+import rst.homeautomation.state.TamperStateType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationDataType.LocationData;
 import rst.vision.HSVColorType;
@@ -158,6 +160,21 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public SmokeStateType.SmokeState getSmokeState() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Double getTemperature() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PowerConsumptionStateType.PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public TamperStateType.TamperState getTamper() throws CouldNotPerformException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
