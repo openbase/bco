@@ -33,6 +33,7 @@ import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
 import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
 import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
 import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
 import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
@@ -47,6 +48,6 @@ import rst.spatial.LocationConfigType.LocationConfig;
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
         BrightnessService, ColorService, DimService, OpeningRatioService, PowerService, ShutterService,
         StandbyService, TargetTemperatureService, MotionProvider, SmokeAlarmStateProvider, SmokeStateProvider,
-        TemperatureProvider, PowerConsumptionProvider {
+        TemperatureProvider, PowerConsumptionProvider, TamperProvider {
 
 }

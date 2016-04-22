@@ -39,6 +39,7 @@ import org.dc.bco.dal.remote.service.ShutterServiceRemote;
 import org.dc.bco.dal.remote.service.SmokeAlarmStateProviderRemote;
 import org.dc.bco.dal.remote.service.SmokeStateProviderRemote;
 import org.dc.bco.dal.remote.service.StandbyServiceRemote;
+import org.dc.bco.dal.remote.service.TamperProviderRemote;
 import org.dc.bco.dal.remote.service.TargetTemperatureServiceRemote;
 import org.dc.bco.dal.remote.service.TemperatureProviderRemote;
 import org.dc.bco.manager.location.lib.Location;
@@ -59,6 +60,7 @@ import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.state.ShutterStateType;
 import rst.homeautomation.state.SmokeStateType;
 import rst.homeautomation.state.StandbyStateType;
+import rst.homeautomation.state.TamperStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationDataType.LocationData;
@@ -101,7 +103,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 serviceRemoteMap.put(entry.getKey(), ServiceRemoteFactoryImpl.getInstance().createAndInitServiceRemote(entry.getKey(), entry.getValue()));
             }
         } catch (CouldNotPerformException ex) {
-
+            throw new InitializationException(this, ex);
         }
     }
 
@@ -323,6 +325,15 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             return ((PowerConsumptionProviderRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).getPowerConsumption();
         } catch (NullPointerException ex) {
             throw new NotAvailableException("temperatureProviderRemote");
+        }
+    }
+
+    @Override
+    public TamperStateType.TamperState getTamper() throws CouldNotPerformException {
+        try {
+            return ((TamperProviderRemote) serviceRemoteMap.get(ServiceType.TAMPER_PROVIDER)).getTamper();
+        } catch (NullPointerException ex) {
+            throw new NotAvailableException("tamperProviderRemote");
         }
     }
 }

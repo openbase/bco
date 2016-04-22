@@ -26,7 +26,8 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.provider.LabelProvider;
@@ -36,6 +37,6 @@ import rst.spatial.ConnectionConfigType.ConnectionConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, ConnectionConfig> {
+public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, ConnectionConfig>, HandleProvider, ReedSwitchProvider {
 
 }
