@@ -37,7 +37,7 @@ import rst.homeautomation.control.app.AppConfigType.AppConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface AppController extends Identifiable<String>, Configurable<String, AppConfig>, Enableable, App {
+public interface AppController extends Identifiable<String>, Enableable, App {
 
     public void init(final AppConfig config) throws InitializationException, InterruptedException;
 

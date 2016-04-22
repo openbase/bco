@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.pattern.Controller;
@@ -29,9 +28,10 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public interface DeviceController extends Device, Controller<DeviceConfig> {
+public interface DeviceController extends Device, Controller<DeviceConfig, DeviceConfig.Builder> {
 
     public ServiceFactory getServiceFactory() throws NotAvailableException;
 }

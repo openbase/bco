@@ -26,6 +26,7 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.jul.exception.InitializationException;
 import org.dc.jul.pattern.Controller;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 
@@ -33,6 +34,7 @@ import rst.spatial.ConnectionConfigType.ConnectionConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface ConnectionController extends Connection, Controller<ConnectionConfig> {
+public interface ConnectionController extends Connection, Controller<ConnectionConfig, ConnectionConfig.Builder> {
 
+    public void init(final ConnectionConfig config) throws InitializationException, InterruptedException;
 }

@@ -26,8 +26,8 @@ package org.dc.bco.manager.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.dc.bco.manager.agent.lib.Agent;
+import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;

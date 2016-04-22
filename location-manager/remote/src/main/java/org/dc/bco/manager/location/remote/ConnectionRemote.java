@@ -33,6 +33,8 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.state.HandleStateType;
+import rst.homeautomation.state.ReedSwitchStateType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -60,5 +62,15 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("label", ex);
         }
+    }
+
+    @Override
+    public HandleStateType.HandleState getHandle() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReedSwitchStateType.ReedSwitchState getReedSwitch() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

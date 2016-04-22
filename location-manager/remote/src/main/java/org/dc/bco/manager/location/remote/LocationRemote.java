@@ -80,7 +80,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(color, this);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setDim(Double dim) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(dim, this);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(openingRatio, this);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(state, this);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(state, this);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(state, this);
     }
 
     @Override
@@ -140,7 +140,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public void setTargetTemperature(Double value) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RPCHelper.callRemoteMethod(value, this);
     }
 
     @Override

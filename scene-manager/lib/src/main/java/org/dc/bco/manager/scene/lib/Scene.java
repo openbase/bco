@@ -28,14 +28,16 @@ package org.dc.bco.manager.scene.lib;
  */
 
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.Identifiable;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.state.ActivationStateType;
 
 /**
  *
  * @author mpohling
  */
-public interface Scene extends Identifiable<String> {
+public interface Scene extends Identifiable<String>, Configurable<String, SceneConfig> {
 
     public void setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
 }
