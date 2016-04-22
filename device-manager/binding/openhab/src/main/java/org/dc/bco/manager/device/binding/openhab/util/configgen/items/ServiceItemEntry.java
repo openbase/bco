@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -39,30 +38,10 @@ import org.dc.jul.processing.StringProcessor;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.List;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
-import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.DIM_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.DIM_SERVICE;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_SERVICE;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.REED_SWITCH_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_PROVIDER;
-import static rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_PROVIDER;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -73,8 +52,6 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class ServiceItemEntry extends AbstractItemEntry {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceItemEntry.class);
-
     public static final String SERVICE_TEMPLATE_BINDING_TYPE = "OPENHAB_BINDING_TYPE";
     public static final String SERVICE_TEMPLATE_BINDING_ICON = "OPENHAB_BINDING_ICON";
     public static final String SERVICE_TEMPLATE_BINDING_COMMAND = "OPENHAB_BINDING_COMMAND";
@@ -83,7 +60,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
     public static final String UNIT_VISIBLE_IN_GUI = "UNIT_VISIBLE_IN_GUI";
     public static final String OPENHAB_BINDING_DEVICE_ID = "OPENHAB_BINDING_DEVICE_ID";
-    
+
     private final MetaConfigPool configPool;
 
     public ServiceItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
@@ -169,7 +146,8 @@ public class ServiceItemEntry extends AbstractItemEntry {
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit template.
+     * Lookups the service template of the given ServiceType out of the unit
+     * template.
      *
      * @param unitTemplate to lookup the service template.
      * @param serviceType the service type to resolve the template.
@@ -203,43 +181,5 @@ public class ServiceItemEntry extends AbstractItemEntry {
             }
         }
         throw new NotAvailableException("unit template config for UnitType[" + unitType.name() + "]");
-    }
-
-    private String getDefaultCommand(ServiceType type) {
-        switch (type) {
-        case COLOR_SERVICE:
-            return "Color";
-        case OPENING_RATIO_PROVIDER:
-        case POWER_CONSUMPTION_PROVIDER:
-        case TEMPERATURE_PROVIDER:
-        case MOTION_PROVIDER:
-        case TAMPER_PROVIDER:
-        case BRIGHTNESS_PROVIDER:
-        case BATTERY_PROVIDER:
-        case SMOKE_ALARM_STATE_PROVIDER:
-        case SMOKE_STATE_PROVIDER:
-        case TEMPERATURE_ALARM_STATE_PROVIDER:
-        case TARGET_TEMPERATURE_PROVIDER:
-        case TARGET_TEMPERATURE_SERVICE:
-            return "Number";
-        case SHUTTER_PROVIDER:
-        case SHUTTER_SERVICE:
-            return "Rollershutter";
-        case POWER_SERVICE:
-        case POWER_PROVIDER:
-        case BUTTON_PROVIDER:
-            return "Switch";
-        case BRIGHTNESS_SERVICE:
-        case DIM_PROVIDER:
-        case DIM_SERVICE:
-            return "Dimmer";
-        case REED_SWITCH_PROVIDER:
-            return "Contact";
-        case HANDLE_PROVIDER:
-            return "String";
-        default:
-            logger.warn("Unkown Service Type: " + type);
-            return "";
-        }
     }
 }

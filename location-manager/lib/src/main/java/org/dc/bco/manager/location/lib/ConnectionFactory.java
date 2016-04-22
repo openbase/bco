@@ -26,13 +26,14 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.dc.jul.pattern.Factory;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.ConnectionConfigType.ConnectionConfig;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface LocationFactory extends Factory<LocationController, LocationConfig> {
-
+public interface ConnectionFactory extends Factory<ConnectionController, ConnectionConfig> {
+    
 }

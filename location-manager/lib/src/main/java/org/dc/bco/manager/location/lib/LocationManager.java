@@ -5,6 +5,9 @@
  */
 package org.dc.bco.manager.location.lib;
 
+import org.dc.bco.registry.device.lib.provider.DeviceRegistryProvider;
+import org.dc.bco.registry.location.lib.provider.LocationRegistryProvider;
+
 /*
  * #%L
  * COMA LocationManager Library
@@ -26,11 +29,10 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface LocationManager {
-    
+public interface LocationManager extends LocationRegistryProvider, DeviceRegistryProvider {
+
 }

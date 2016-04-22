@@ -49,6 +49,7 @@ import org.dc.bco.manager.device.binding.openhab.util.configgen.items.AgentItemE
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry.AGENT_GROUP_LABEL;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry;
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry.APP_GROUP_LABEL;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry;
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry.SCENE_GROUP_LABEL;
 import org.dc.bco.registry.agent.remote.AgentRegistryRemote;
 import org.dc.bco.registry.app.remote.AppRegistryRemote;
@@ -61,6 +62,7 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.EnablingStateType;
 import rst.homeautomation.state.InventoryStateType.InventoryState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -186,6 +188,22 @@ public class OpenHABItemConfigGenerator {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
+                }
+            }
+
+            for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
+                List<ServiceType> serviceTypesOnLocation = new ArrayList<>();
+                for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
+                    if (locationConfig.getUnitIdList().contains(unitConfig.getId())) {
+                        for (ServiceType serviceType : deviceRegistryRemote.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList()) {
+                            if (!serviceTypesOnLocation.contains(serviceType)) {
+                                serviceTypesOnLocation.add(serviceType);
+                            }
+                        }
+                    }
+                }
+                for (ServiceType serviceType : serviceTypesOnLocation) {
+                    itemEntryList.add(new LocationItemEntry(locationConfig, serviceType));
                 }
             }
 

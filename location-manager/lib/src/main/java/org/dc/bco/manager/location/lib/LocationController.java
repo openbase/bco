@@ -5,6 +5,9 @@
  */
 package org.dc.bco.manager.location.lib;
 
+import org.dc.jul.pattern.Controller;
+import rst.spatial.LocationConfigType.LocationConfig;
+
 /*
  * #%L
  * COMA LocationManager Library
@@ -31,6 +34,6 @@ package org.dc.bco.manager.location.lib;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface LocationController extends Location {
+public interface LocationController extends Location, Controller<LocationConfig> {
     
 }
