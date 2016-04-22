@@ -26,7 +26,6 @@ package org.dc.bco.registry.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +96,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws java.lang.InterruptedException
      */
     @Override
-    public  void init(final Scope scope) throws InitializationException, InterruptedException {
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotTransformException ex) {
@@ -118,7 +117,6 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         deviceRegistryRemote.init();
         super.init(scope);
     }
-
 
     /**
      * Method initializes the remote with the default registry connection scope.
@@ -174,6 +172,10 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
 
     public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRemoteRegistry() {
         return locationConfigRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> getConnectionConfigRemoteRegistry() {
+        return connectionConfigRemoteRegistry;
     }
 
     /**
