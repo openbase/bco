@@ -28,7 +28,6 @@ package org.dc.bco.manager.device.core;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
 import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.bco.manager.device.lib.DeviceController;
@@ -39,17 +38,16 @@ import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 
 /**
  *
  * @author Divine Threepwood
- * @param <M>
- * @param <MB>
  */
-public abstract class AbstractDeviceController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractUnitCollectionController<M, MB, DeviceConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractUnitCollectionController<GenericDevice, GenericDevice.Builder, DeviceConfig> implements DeviceController {
 
-    public AbstractDeviceController(final MB builder) throws InstantiationException, CouldNotTransformException {
-        super(builder);
+    public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
+        super(GenericDevice.newBuilder());
 //        try {
 //        } catch (CouldNotPerformException ex) {
 //            throw new InstantiationException(RSBCommunicationService.class, ex);

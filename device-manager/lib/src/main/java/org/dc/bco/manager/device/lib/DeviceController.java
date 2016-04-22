@@ -24,14 +24,14 @@ package org.dc.bco.manager.device.lib;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.pattern.Controller;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public interface DeviceController extends Device, Controller<DeviceConfig, DeviceConfig.Builder> {
+public interface DeviceController extends Device, Controller<GenericDevice, GenericDevice.Builder> {
 
     public ServiceFactory getServiceFactory() throws NotAvailableException;
 }

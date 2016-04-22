@@ -29,12 +29,13 @@ package org.dc.bco.manager.location.lib;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.pattern.Controller;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.spatial.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface ConnectionController extends Connection, Controller<ConnectionConfig, ConnectionConfig.Builder> {
+public interface ConnectionController extends Connection, Controller<ConnectionData, ConnectionData.Builder> {
 
     public void init(final ConnectionConfig config) throws InitializationException, InterruptedException;
 }
