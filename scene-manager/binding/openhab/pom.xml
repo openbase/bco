@@ -62,7 +62,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.scene.binding.openhab.OpenHABBindingLauncher</mainClass>
+                            <mainClass>org.dc.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher</mainClass>
                             <id>binding-openhab-scene-manager</id>
                             <platforms>
                                 <platform>unix</platform>

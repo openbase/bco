@@ -37,6 +37,7 @@ import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
+import org.dc.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
@@ -62,8 +63,9 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
     private final List<ButtonRemote> buttonRemoteList;
     private final List<Action> actionList;
+    private final SyncObject triggerListSync = new SyncObject("TriggerListSync");
+    private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<ButtonType.Button> buttonObserver;
-
     private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.dc.jul.exception.InstantiationException {
@@ -85,56 +87,63 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
-            logger.info("post init " + getConfig().getLabel());
             this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
-            ButtonRemote buttonRemote;
-            try {
-                for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(getConfig().getLabel())) {
-                    //TODO implement deviceregistry method get unit by label and type.
-                    if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
-                        continue;
-                    }
-                    try {
-                        buttonRemote = new ButtonRemote();
-                        buttonRemote.init(unitConfig);
-                        buttonRemoteList.add(buttonRemote);
-                    } catch (InitializationException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!"), logger);
-                    }
-                }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
-            }
-
-            Action action;
-            for (ActionConfig actionConfig : getConfig().getActionConfigList()) {
-                action = new Action();
-                action.init(actionConfig);
-                actionList.add(action);
-            }
-
-//            if (getConfig().getLabel().equals("Test3")) {
-//                logger.info("### init test unit " + getConfig().getLabel());
-//                PowerPlugRemote testplug = new PowerPlugRemote();
-//                testplug.initByLabel("A10C1");
-//                testplug.activate();
-//                testplug.addObserver(new Observer<PowerPlugType.PowerPlug>() {
-//
-//                    @Override
-//                    public void update(Observable<PowerPlugType.PowerPlug> source, PowerPlugType.PowerPlug data) throws Exception {
-//                        logger.info("### got change!");
-//                        if(data.getPowerState().getValue().equals(PowerStateType.PowerState.State.ON)) {
-//                            logger.info("### activate scene!");
-//                            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-//                        }
-//                    }
-//                });
-//            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-
         super.postInit();
+    }
+
+    @Override
+    public SceneConfig updateConfig(SceneConfig config) throws CouldNotPerformException, InterruptedException {
+        try {
+
+            synchronized (triggerListSync) {
+                try {
+                    for (ButtonRemote buttonRemote : buttonRemoteList) {
+                        buttonRemote.deactivate();
+                        buttonRemote.removeObserver(buttonObserver);
+                    }
+                    buttonRemoteList.clear();
+                    ButtonRemote buttonRemote;
+
+                    for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(getConfig().getLabel())) {
+                        //TODO implement deviceregistry method get unit by label and type.
+                        if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
+                            continue;
+                        }
+                        try {
+                            buttonRemote = new ButtonRemote();
+                            buttonRemote.init(unitConfig);
+                            buttonRemoteList.add(buttonRemote);
+                        } catch (InitializationException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
+                        }
+                    }
+                    if (isEnabled()) {
+                        for (ButtonRemote button : buttonRemoteList) {
+                            button.activate();
+                            button.addObserver(buttonObserver);
+                        }
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
+                }
+            }
+
+            synchronized (actionListSync) {
+                actionList.clear();
+                Action action;
+                for (ActionConfig actionConfig : config.getActionConfigList()) {
+                    action = new Action();
+                    action.init(actionConfig);
+                    actionList.add(action);
+                }
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update scene config!");
+        }
+        return super.updateConfig(config);
     }
 
     @Override
@@ -165,24 +174,27 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activate scene: " + getConfig().getLabel());
-        for (Action action : actionList) {
-            action.execute();
+        synchronized (actionListSync) {
+            for (Action action : actionList) {
+                action.execute();
+            }
         }
-        int i = 0;
-        // TODO mpohling: implement external execution service
+
         Thread thread = new Thread() {
 
             @Override
             public void run() {
                 try {
                     logger.info("Waiting for action finalisation...");
-                    for (Action action : actionList) {
-                        try {
-                            logger.info("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
-                            action.waitForFinalization();
-                        } catch (InterruptedException ex) {
-                            ExceptionPrinter.printHistory(ex, logger);
-                            break;
+                    synchronized (actionListSync) {
+                        for (Action action : actionList) {
+                            try {
+                                logger.info("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
+                                action.waitForFinalization();
+                            } catch (InterruptedException ex) {
+                                ExceptionPrinter.printHistory(ex, logger);
+                                break;
+                            }
                         }
                     }
                     logger.info("All Actions are finished. Deactivate scene...");

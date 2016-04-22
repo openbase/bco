@@ -21,7 +21,6 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.Identifiable;
@@ -30,8 +29,9 @@ import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public interface Location extends ScopeProvider, LabelProvider, Identifiable<String>, Configurable<String, LocationConfig>{
+public interface Location extends ScopeProvider, LabelProvider, Identifiable<String>, Configurable<String, LocationConfig> {
 
 }
