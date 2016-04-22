@@ -21,6 +21,8 @@ package org.dc.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.bco.manager.location.remote.ConnectionRemote;
 import org.dc.bco.manager.location.remote.LocationRemote;
@@ -30,12 +32,18 @@ import org.dc.jps.exception.JPNotAvailableException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
+import static org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
+import org.dc.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
+import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import org.dc.jul.processing.StringProcessor;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.dc.jul.storage.registry.RegistrySynchronizer;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -80,19 +88,55 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
             @Override
             public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
-//                try {
-//
-//                    if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-//                        throw new CouldNotPerformException("Command does not have an onOff value required for scenes");
-//                    }
-//                    logger.debug("Received command for scene [" + command.getItem() + "] from openhab");
-//                    registry.get(getSceneIdFromOpenHABItem(command)).setActivationState(ActivationStateTransformer.transform(command.getOnOff().getState()));
-//                } catch (CouldNotPerformException ex) {
-//                    throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + command.getOnOff() + "]!", ex);
-//                }
-            }
+                try {
+                    RSBRemoteService remote = null;
+                    if (command.getItem().startsWith("Location")) {
+                        logger.debug("Received command for location [" + command.getItem() + "] from openhab");
+                        remote = locationRegistry.get(getIdFromOpenHABCommand(command));
+                    } else if (command.getItem().startsWith("Connection")) {
+                        logger.debug("Received command for connection [" + command.getItem() + "] from openhab");
+                        remote = connectionRegistry.get(getIdFromOpenHABCommand(command));
+                    }
 
+                    if (remote == null) {
+                        throw new NotAvailableException("No remote for item [" + command.getItem() + "] found");
+                    }
+
+                    ServiceType serviceType = getServiceTypeForCommand(command);
+                    String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
+                    Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceType);
+                    Method relatedMethod;
+                    try {
+                        relatedMethod = remote.getClass().getMethod(methodName, serviceData.getClass());
+                        if (relatedMethod == null) {
+                            throw new NotAvailableException(relatedMethod);
+                        }
+                    } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
+                        throw new NotAvailableException("Method " + remote + "." + methodName + "(" + serviceData.getClass() + ")", ex);
+                    }
+
+                    try {
+                        relatedMethod.invoke(remote, serviceData);
+                    } catch (IllegalAccessException ex) {
+                        throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
+                    } catch (IllegalArgumentException ex) {
+                        throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
+                    } catch (InvocationTargetException ex) {
+                        throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
+                    }
+                } catch (NotAvailableException ex) {
+                    throw new CouldNotPerformException(ex);
+                }
+            }
         });
+    }
+
+    private String getIdFromOpenHABCommand(OpenhabCommand command) {
+        return command.getItemBindingConfig().split(":")[1];
+    }
+
+    private ServiceType getServiceTypeForCommand(OpenhabCommand command) {
+        return ServiceType.valueOf(StringProcessor.transformToUpperCase(command.getItem().split(ITEM_SEGMENT_DELIMITER)[1]));
     }
 
     @Override
