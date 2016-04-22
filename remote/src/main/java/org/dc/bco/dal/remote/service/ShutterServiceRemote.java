@@ -28,7 +28,7 @@ package org.dc.bco.dal.remote.service;
  */
 import org.dc.bco.dal.lib.layer.service.ShutterService;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
@@ -37,8 +37,8 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  */
 public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> implements ShutterService {
 
-    public ShutterServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        super(serviceType);
+    public ShutterServiceRemote() {
+        super(ServiceType.SHUTTER_SERVICE);
     }
 
     @Override
@@ -48,8 +48,25 @@ public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> 
         }
     }
 
+    /**
+     * Returns up if all shutter services are up and else the from up differing
+     * state of the first shutter.
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public ShutterState getShutter() throws CouldNotPerformException {
-        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (ShutterService service : getServices()) {
+            switch (service.getShutter().getValue()) {
+                case DOWN:
+                    return ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
+                case STOP:
+                    return ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
+                case UP:
+                default:
+            }
+        }
+        return ShutterState.newBuilder().setValue(ShutterState.State.UP).build();
     }
 }

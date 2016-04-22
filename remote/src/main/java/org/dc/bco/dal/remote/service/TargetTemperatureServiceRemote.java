@@ -28,7 +28,7 @@ package org.dc.bco.dal.remote.service;
  */
 import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -36,8 +36,8 @@ import rst.homeautomation.service.ServiceTemplateType;
  */
 public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureService> implements TargetTemperatureService {
 
-    public TargetTemperatureServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        super(serviceType);
+    public TargetTemperatureServiceRemote() {
+        super(ServiceType.TARGET_TEMPERATURE_SERVICE);
     }
 
     @Override
@@ -47,8 +47,20 @@ public class TargetTemperatureServiceRemote extends AbstractServiceRemote<Target
         }
     }
 
+    /**
+     * Returns the average target temperature value for a collection of target
+     * temperature services.
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Double getTargetTemperature() throws CouldNotPerformException {
-        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Double average = 0d;
+        for (TargetTemperatureService service : getServices()) {
+            average += service.getTargetTemperature();
+        }
+        average /= getServices().size();
+        return average;
     }
 }

@@ -26,10 +26,9 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.DimService;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -37,8 +36,8 @@ import rst.homeautomation.service.ServiceTemplateType;
  */
 public class DimServiceRemote extends AbstractServiceRemote<DimService> implements DimService {
 
-    public DimServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        super(serviceType);
+    public DimServiceRemote() {
+        super(ServiceType.DIM_SERVICE);
     }
 
     @Override
@@ -48,8 +47,19 @@ public class DimServiceRemote extends AbstractServiceRemote<DimService> implemen
         }
     }
 
+    /**
+     * Returns the average dim value for a collection of dim services.
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Double getDim() throws CouldNotPerformException {
-        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Double average = 0d;
+        for (DimService service : getServices()) {
+            average += service.getDim();
+        }
+        average /= getServices().size();
+        return average;
     }
 }
