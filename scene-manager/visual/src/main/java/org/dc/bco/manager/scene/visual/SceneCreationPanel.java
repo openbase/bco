@@ -110,6 +110,14 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
             sceneConfigHolderList.add(new SceneConfigHolder(sceneConfig));
         }
+
+        if (sceneConfigHolderList.isEmpty()) {
+            sceneSelectionComboBox.setEnabled(false);
+            return;
+        } else {
+            sceneSelectionComboBox.setEnabled(true);
+        }
+
         Collections.sort(sceneConfigHolderList);
         sceneSelectionComboBox.setModel(new DefaultComboBoxModel(sceneConfigHolderList.toArray()));
         if (lastSelected == null) {
