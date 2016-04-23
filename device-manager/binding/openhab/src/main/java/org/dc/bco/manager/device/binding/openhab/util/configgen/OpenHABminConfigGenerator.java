@@ -210,10 +210,12 @@ public class OpenHABminConfigGenerator {
             openHABConfigGenerator.init();
             openHABConfigGenerator.generate();
             openHABConfigGenerator.shutdown();
+            logger.info(JPService.getApplicationName() + " successfully started.");
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+        logger.info(JPService.getApplicationName() + " finished.");
+        System.exit(0);
     }
 
     private void createDocumentFromFile(File zwaveNodeConfig) {
