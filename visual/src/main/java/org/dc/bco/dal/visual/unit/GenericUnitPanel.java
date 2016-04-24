@@ -35,6 +35,7 @@ import javax.swing.JPanel;
 import org.dc.bco.dal.remote.unit.AbstractUnitRemote;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.bco.dal.visual.util.RSBRemoteView;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -116,7 +117,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
 
         String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
                 + "[" + unitConfig.getLabel() + "]"
-                + " @ " + unitConfig.getPlacementConfig().getLocationId()
+                + " @ " + CachedLocationRegistryRemote.getLocationRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
                 + " of " + unitConfig.getDeviceId()
                 + " : " + unitConfig.getDescription();
 
