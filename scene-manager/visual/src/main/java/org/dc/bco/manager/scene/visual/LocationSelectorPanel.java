@@ -191,8 +191,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
         //no change id the same location has been selected
-        if (locationComboBox.getSelectedIndex() == -1
-                || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
+        if (locationComboBox.getSelectedIndex() == -1 || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
             return;
         }
 

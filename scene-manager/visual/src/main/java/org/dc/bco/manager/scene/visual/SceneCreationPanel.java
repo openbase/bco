@@ -97,6 +97,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             @Override
             public void update(Observable<LocationSelectorPanel.LocationConfigHolder> source, LocationSelectorPanel.LocationConfigHolder data) throws Exception {
                 location = data;
+                logger.info("location update:" + location);
             }
         });
         // init locationSelectorPanel after registering the observer so that the selected location is recieved from the start
@@ -133,6 +134,8 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         SceneConfig.Builder scene = ((SceneConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().toBuilder();
         scene.clearActionConfig();
         scene.addAllActionConfig(actionConfigs);
+        scene.setLocationId(location.getConfig().getId());
+        logger.info("save location:" + location.getConfig().getLabel());
         if (!sceneRegistryRemote.containsSceneConfig(scene.build())) {
             logger.debug("Registering scene from updateSceneConfig");
             lastSelected = sceneRegistryRemote.registerSceneConfig(scene.build());
