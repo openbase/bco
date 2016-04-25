@@ -42,7 +42,7 @@ import rst.homeautomation.device.GenericDeviceType.GenericDevice;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  * @author <a href="mailto:mpohling@techfak.uni-bielefeld.com">Marian Pohling</a>
  */
-public class GenericDeviceController extends AbstractDeviceController<GenericDevice, GenericDevice.Builder> {
+public class GenericDeviceController extends AbstractDeviceController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GenericDevice.getDefaultInstance()));
@@ -51,8 +51,6 @@ public class GenericDeviceController extends AbstractDeviceController<GenericDev
     private final ServiceFactory serviceFactory;
 
     public GenericDeviceController(final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
-        super(GenericDevice.newBuilder());
-
         try {
             if (serviceFactory == null) {
                 throw new NotAvailableException("service factory");

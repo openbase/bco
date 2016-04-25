@@ -21,9 +21,22 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.ColorService;
+import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.ShutterService;
+import org.dc.bco.dal.lib.layer.service.StandbyService;
+import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
-import org.dc.jul.iface.Identifiable;
 import org.dc.jul.iface.provider.LabelProvider;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -32,6 +45,9 @@ import rst.spatial.LocationConfigType.LocationConfig;
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public interface Location extends ScopeProvider, LabelProvider, Identifiable<String>, Configurable<String, LocationConfig> {
+public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
+        BrightnessService, ColorService, DimService, OpeningRatioService, PowerService, ShutterService,
+        StandbyService, TargetTemperatureService, MotionProvider, SmokeAlarmStateProvider, SmokeStateProvider,
+        TemperatureProvider, PowerConsumptionProvider, TamperProvider {
 
 }

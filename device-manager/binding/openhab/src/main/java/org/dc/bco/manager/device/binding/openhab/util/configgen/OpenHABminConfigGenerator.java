@@ -26,7 +26,6 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.OPENHAB_BINDING_DEVICE_ID;
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.SERVICE_TEMPLATE_BINDING_TYPE;
 import org.dc.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
@@ -51,6 +50,7 @@ import java.util.List;
 import nu.xom.Document;
 import nu.xom.Element;
 import org.apache.commons.io.FileUtils;
+import org.dc.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParsingException;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceConfigType;
@@ -184,7 +184,7 @@ public class OpenHABminConfigGenerator {
                 throw new CouldNotPerformException("Could not save zwave node config!", ex);
             }
 
-        } catch (Exception ex) {
+        } catch (XMLParsingException | IOException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update zwave node config of Device[" + deviceConfig.getLabel() + "]!", ex);
         }
     }
@@ -210,10 +210,12 @@ public class OpenHABminConfigGenerator {
             openHABConfigGenerator.init();
             openHABConfigGenerator.generate();
             openHABConfigGenerator.shutdown();
+            logger.info(JPService.getApplicationName() + " successfully started.");
         } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+        logger.info(JPService.getApplicationName() + " finished.");
+        System.exit(0);
     }
 
     private void createDocumentFromFile(File zwaveNodeConfig) {

@@ -1,8 +1,13 @@
-package org.dc.bco.manager.location.core;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.dc.bco.manager.location.binding.openhab.execution;
 
 /*
  * #%L
- * COMA LocationManager Core
+ * COMA DeviceManager Binding OpenHAB
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -21,19 +26,12 @@ package org.dc.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.manager.location.lib.Location;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.pattern.Factory;
-import rst.spatial.LocationConfigType.LocationConfig;
+import org.dc.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author mpohling
  */
-public interface LocationFactory extends Factory<Location, LocationConfig> {
-
-    @Override
-    public LocationController newInstance(final LocationConfig config) throws InstantiationException;
+public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
 
 }

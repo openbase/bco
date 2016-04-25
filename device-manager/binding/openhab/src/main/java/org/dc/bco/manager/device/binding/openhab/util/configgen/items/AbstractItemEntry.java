@@ -26,12 +26,13 @@ package org.dc.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import static org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import org.dc.jul.processing.StringProcessor;
+import org.slf4j.LoggerFactory;
+import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
@@ -39,9 +40,11 @@ import org.dc.jul.processing.StringProcessor;
  */
 public abstract class AbstractItemEntry implements ItemEntry {
 
+    protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(AbstractItemEntry.class);
+
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
-    
+
     protected String commandType;
     protected String itemId;
     protected String label;
@@ -182,5 +185,43 @@ public abstract class AbstractItemEntry implements ItemEntry {
     @Override
     public String getBindingConfigStringRep() {
         return "{ " + itemHardwareConfig + " }";
+    }
+
+    protected String getDefaultCommand(ServiceTemplateType.ServiceTemplate.ServiceType type) {
+        switch (type) {
+            case COLOR_SERVICE:
+                return "Color";
+            case OPENING_RATIO_PROVIDER:
+            case POWER_CONSUMPTION_PROVIDER:
+            case TEMPERATURE_PROVIDER:
+            case MOTION_PROVIDER:
+            case TAMPER_PROVIDER:
+            case BRIGHTNESS_PROVIDER:
+            case BATTERY_PROVIDER:
+            case SMOKE_ALARM_STATE_PROVIDER:
+            case SMOKE_STATE_PROVIDER:
+            case TEMPERATURE_ALARM_STATE_PROVIDER:
+            case TARGET_TEMPERATURE_PROVIDER:
+            case TARGET_TEMPERATURE_SERVICE:
+                return "Number";
+            case SHUTTER_PROVIDER:
+            case SHUTTER_SERVICE:
+                return "Rollershutter";
+            case POWER_SERVICE:
+            case POWER_PROVIDER:
+            case BUTTON_PROVIDER:
+                return "Switch";
+            case BRIGHTNESS_SERVICE:
+            case DIM_PROVIDER:
+            case DIM_SERVICE:
+                return "Dimmer";
+            case REED_SWITCH_PROVIDER:
+                return "Contact";
+            case HANDLE_PROVIDER:
+                return "String";
+            default:
+                logger.warn("Unkown Service Type: " + type);
+                return "";
+        }
     }
 }

@@ -189,6 +189,22 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
+//            for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
+//                List<ServiceType> serviceTypesOnLocation = new ArrayList<>();
+//                for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
+//                    if (locationConfig.getUnitIdList().contains(unitConfig.getId())) {
+//                        for (ServiceType serviceType : deviceRegistryRemote.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList()) {
+//                            if (!serviceTypesOnLocation.contains(serviceType)) {
+//                                serviceTypesOnLocation.add(serviceType);
+//                            }
+//                        }
+//                    }
+//                }
+//                for (ServiceType serviceType : serviceTypesOnLocation) {
+//                    itemEntryList.add(new LocationItemEntry(locationConfig, serviceType));
+//                }
+//            }
+
             for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
                 // Skip disabled scenes
                 if (sceneConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {

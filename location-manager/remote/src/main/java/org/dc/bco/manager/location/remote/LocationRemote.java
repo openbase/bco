@@ -3,8 +3,21 @@ package org.dc.bco.manager.location.remote;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import rst.rsb.ScopeType;
-import rst.spatial.LocationConfigType;
+import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.dc.jul.extension.rsb.com.RPCHelper;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.state.AlarmStateType;
+import rst.homeautomation.state.MotionStateType;
+import rst.homeautomation.state.PowerConsumptionStateType;
+import rst.homeautomation.state.PowerStateType;
+import rst.homeautomation.state.ShutterStateType;
+import rst.homeautomation.state.SmokeStateType;
+import rst.homeautomation.state.StandbyStateType;
+import rst.homeautomation.state.TamperStateType;
+import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.LocationDataType.LocationData;
+import rst.vision.HSVColorType;
 
 /*
  * #%L
@@ -27,36 +40,141 @@ import rst.spatial.LocationConfigType;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public class LocationRemote implements Location {
+public class LocationRemote extends AbstractConfigurableRemote<LocationData, LocationConfig> implements Location {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
+    }
 
     @Override
-    public ScopeType.Scope getScope() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void notifyUpdated(LocationData data) throws CouldNotPerformException {
     }
 
     @Override
     public String getLabel() throws NotAvailableException {
+        try {
+            if (config == null) {
+                throw new NotAvailableException("locationConfig");
+            }
+            return config.getLabel();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("label", ex);
+        }
+    }
+
+    @Override
+    public void setBrightness(Double brightness) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(brightness, this);
+    }
+
+    @Override
+    public Double getBrightness() throws CouldNotPerformException {
+//        return RPCHelper.callRemoteMethod(this, Double.class).get();
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public String getId() throws NotAvailableException {
+    public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(color, this);
+    }
+
+    @Override
+    public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public LocationConfigType.LocationConfig updateConfig(LocationConfigType.LocationConfig config) throws CouldNotPerformException {
+    public void setDim(Double dim) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(dim, this);
+    }
+
+    @Override
+    public Double getDim() throws CouldNotPerformException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public LocationConfigType.LocationConfig getConfig() throws NotAvailableException {
+    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(openingRatio, this);
+    }
+
+    @Override
+    public Double getOpeningRatio() throws CouldNotPerformException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public void setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(state, this);
+    }
+
+    @Override
+    public PowerStateType.PowerState getPower() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(state, this);
+    }
+
+    @Override
+    public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(state, this);
+    }
+
+    @Override
+    public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setTargetTemperature(Double value) throws CouldNotPerformException {
+        RPCHelper.callRemoteMethod(value, this);
+    }
+
+    @Override
+    public Double getTargetTemperature() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public MotionStateType.MotionState getMotion() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public AlarmStateType.AlarmState getSmokeAlarmState() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SmokeStateType.SmokeState getSmokeState() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Double getTemperature() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PowerConsumptionStateType.PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public TamperStateType.TamperState getTamper() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

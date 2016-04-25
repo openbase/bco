@@ -28,14 +28,16 @@ package org.dc.bco.manager.agent.lib;
  */
 
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.Identifiable;
+import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.state.ActivationStateType;
 
 /**
  *
  * @author mpohling
  */
-public interface Agent extends Identifiable<String> {
+public interface Agent extends Identifiable<String>, Configurable<String, AgentConfigType.AgentConfig> {
 
     public void setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
 }

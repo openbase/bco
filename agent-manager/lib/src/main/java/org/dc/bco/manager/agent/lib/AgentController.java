@@ -37,7 +37,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface AgentController extends Identifiable<String>, Configurable<String, AgentConfig>, Enableable, Agent {
+public interface AgentController extends Identifiable<String>, Enableable, Agent {
 
     public void init(final AgentConfig config) throws InitializationException, InterruptedException;
 

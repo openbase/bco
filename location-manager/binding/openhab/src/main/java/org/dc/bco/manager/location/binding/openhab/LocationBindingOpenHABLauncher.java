@@ -1,8 +1,8 @@
-package org.dc.bco.manager.location.core;
+package org.dc.bco.manager.location.binding.openhab;
 
 /*
  * #%L
- * COMA LocationManager Core
+ * COMA DeviceManager Binding OpenHAB
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -21,44 +21,44 @@ package org.dc.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.dc.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.dc.jps.core.JPService;
+import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dc.bco.manager.location.lib.LocationManager;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public class LocationManagerLauncher {
+public class LocationBindingOpenHABLauncher {
 
-    protected static final Logger logger = LoggerFactory.getLogger(LocationManagerLauncher.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocationBindingOpenHABLauncher.class);
 
-    private final LocationManagerController locationManagerController;
-
-    public LocationManagerLauncher() throws org.dc.jul.exception.InstantiationException, InterruptedException {
-        try {
-            this.locationManagerController = new LocationManagerController();
-        } catch (CouldNotPerformException ex) {
-            throw new org.dc.jul.exception.InstantiationException(this, ex);
-        }
-    }
+    private LocationBindingOpenHABImpl openHABBinding;
 
     public void launch() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
-            locationManagerController.init();
-        } catch (CouldNotPerformException ex) {
-            locationManagerController.shutdown();
+            openHABBinding = new LocationBindingOpenHABImpl();
+            openHABBinding.init();
+        } catch (CouldNotPerformException | JPServiceException ex) {
+            openHABBinding.shutdown();
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
 
-    public void shutdown() {
-        locationManagerController.shutdown();
+    public void shutdown() throws InterruptedException {
+        openHABBinding.shutdown();
+    }
+
+    public LocationBindingOpenHABImpl getOpenHABBinding() {
+        return openHABBinding;
     }
 
     /**
@@ -66,16 +66,18 @@ public class LocationManagerLauncher {
      * @throws java.lang.InterruptedException
      * @throws org.dc.jul.exception.CouldNotPerformException
      */
-    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
 
         /* Setup JPService */
-        JPService.setApplicationName(LocationManager.class);
+        JPService.setApplicationName(OpenHABBinding.class);
+        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.parseAndExitOnError(args);
 
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
         try {
-            new LocationManagerLauncher().launch();
+            new LocationBindingOpenHABLauncher().launch();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }

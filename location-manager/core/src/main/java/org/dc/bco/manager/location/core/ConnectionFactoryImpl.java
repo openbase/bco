@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.dc.bco.manager.location.core;
 
 /*
@@ -21,39 +26,38 @@ package org.dc.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.manager.location.lib.LocationController;
-import org.dc.bco.manager.location.lib.LocationFactory;
+import org.dc.bco.manager.location.lib.ConnectionController;
+import org.dc.bco.manager.location.lib.ConnectionFactory;
 import org.dc.jul.exception.InitializationException;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.InstantiationException;
-import rst.spatial.LocationConfigType.LocationConfig;
+import org.dc.jul.exception.NotAvailableException;
+import rst.spatial.ConnectionConfigType.ConnectionConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class LocationFactoryImpl implements LocationFactory {
+public class ConnectionFactoryImpl implements ConnectionFactory {
 
-    private static LocationFactoryImpl instance;
+    private static ConnectionFactoryImpl instance;
 
-    public synchronized static LocationFactoryImpl getInstance() {
+    public synchronized static ConnectionFactoryImpl getInstance() {
         if (instance == null) {
-            instance = new LocationFactoryImpl();
+            instance = new ConnectionFactoryImpl();
         }
         return instance;
     }
 
     @Override
-    public LocationController newInstance(final LocationConfig config) throws InstantiationException, InterruptedException {
-        LocationController locationController;
+    public ConnectionController newInstance(ConnectionConfig config) throws InstantiationException, InterruptedException {
+        ConnectionController connectionController;
         try {
             if (config == null) {
-                throw new NotAvailableException("locationconfig");
+                throw new NotAvailableException("connectionConfig");
             }
-            locationController = new LocationControllerImpl(config);
-            locationController.init(config);
-            return locationController;
+            connectionController = new ConnectionControllerImpl(config);
+            connectionController.init(config);
+            return connectionController;
         } catch (InstantiationException | NotAvailableException | InitializationException ex) {
             throw new InstantiationException(LocationControllerImpl.class, config.getId(), ex);
         }

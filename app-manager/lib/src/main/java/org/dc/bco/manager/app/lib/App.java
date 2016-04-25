@@ -6,6 +6,8 @@
 package org.dc.bco.manager.app.lib;
 
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.iface.Configurable;
+import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /*
@@ -33,7 +35,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  *
  * @author mpohling
  */
-public interface App {
+public interface App extends Configurable<String, AppConfigType.AppConfig> {
 
     public void setActivationState(ActivationState activation) throws CouldNotPerformException;
 }

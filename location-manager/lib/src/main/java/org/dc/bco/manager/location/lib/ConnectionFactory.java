@@ -1,8 +1,13 @@
-package org.dc.bco.manager.device.lib;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.dc.bco.manager.location.lib;
 
 /*
  * #%L
- * COMA DeviceManager Library
+ * COMA LocationManager Library
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -21,17 +26,14 @@ package org.dc.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.pattern.Controller;
-import rst.homeautomation.device.GenericDeviceType.GenericDevice;
+
+import org.dc.jul.pattern.Factory;
+import rst.spatial.ConnectionConfigType.ConnectionConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface DeviceController extends Device, Controller<GenericDevice, GenericDevice.Builder> {
-
-    public ServiceFactory getServiceFactory() throws NotAvailableException;
+public interface ConnectionFactory extends Factory<ConnectionController, ConnectionConfig> {
+    
 }

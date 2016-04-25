@@ -5,6 +5,11 @@
  */
 package org.dc.bco.manager.location.lib;
 
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.pattern.Controller;
+import rst.spatial.LocationConfigType.LocationConfig;
+import rst.spatial.LocationDataType.LocationData;
+
 /*
  * #%L
  * COMA LocationManager Library
@@ -26,11 +31,11 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface LocationController extends Location {
-    
+public interface LocationController extends Location, Controller<LocationData, LocationData.Builder> {
+
+    public void init(final LocationConfig config) throws InitializationException, InterruptedException;
 }
