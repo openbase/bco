@@ -27,41 +27,35 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class SmokeAlarmStateProviderRemote extends AbstractServiceRemote<SmokeAlarmStateProvider> implements SmokeAlarmStateProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public SmokeAlarmStateProviderRemote() {
+        super(ServiceType.SMOKE_ALARM_STATE_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * Returns alarm if at least one smoke alarm state provider returns alarm
+     * else no alarm.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
+        for (SmokeAlarmStateProvider provider : getServices()) {
+            if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
+                return AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
+            }
         }
-        average /= getServices().size();
-        return average;
+        return AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
     }
 }

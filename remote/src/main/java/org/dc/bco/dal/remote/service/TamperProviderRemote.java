@@ -27,41 +27,35 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class TamperProviderRemote extends AbstractServiceRemote<TamperProvider> implements TamperProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public TamperProviderRemote() {
+        super(ServiceType.TAMPER_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * Returns tamper if at least one of the tamper providers returns tamper and
+     * else no tamper.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public TamperState getTamper() throws CouldNotPerformException {
+        for (TamperProvider provider : getServices()) {
+            if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
+                return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+            }
         }
-        average /= getServices().size();
-        return average;
+        return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
     }
 }

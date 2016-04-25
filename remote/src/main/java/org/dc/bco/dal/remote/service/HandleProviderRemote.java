@@ -27,41 +27,43 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class HandleProviderRemote extends AbstractServiceRemote<HandleProvider> implements HandleProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public HandleProviderRemote() {
+        super(ServiceType.HANDLE_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * If at least one handle state provider returns open than that is returned.
+     * Else if at least one returns tilted than that is returned. Else no closed
+     * is returned.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public HandleState getHandle() throws CouldNotPerformException {
+        boolean tilted = false;
+        for (HandleProvider provider : getServices()) {
+            if (provider.getHandle().getValue() == HandleState.State.OPEN) {
+                return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();
+            }
+            if (provider.getHandle().getValue() == HandleState.State.TILTED) {
+                tilted = true;
+            }
         }
-        average /= getServices().size();
-        return average;
+        if (tilted) {
+            return HandleState.newBuilder().setValue(HandleState.State.TILTED).build();
+        }
+        return HandleState.newBuilder().setValue(HandleState.State.CLOSED).build();
     }
 }

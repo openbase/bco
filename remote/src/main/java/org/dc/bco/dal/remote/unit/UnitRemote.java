@@ -26,20 +26,21 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.InitializationException;
-import org.dc.jul.pattern.Remote;
+import org.dc.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @param <M> Message
+ * @param <CONFIG> Configuration
  */
-public interface UnitRemote extends Unit, Service, Remote<UnitConfigType.UnitConfig> {
+public interface UnitRemote<M, CONFIG> extends Unit, Service, ConfigurableRemote<String, M, UnitConfig> {
 
     void init(ScopeType.Scope scope) throws InitializationException, InterruptedException;
 

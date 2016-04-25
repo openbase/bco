@@ -27,41 +27,40 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class PowerConsumptionProviderRemote extends AbstractServiceRemote<PowerConsumptionProvider> implements PowerConsumptionProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public PowerConsumptionProviderRemote() {
+        super(ServiceType.POWER_CONSUMPTION_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * Returns an average current and voltage for the underlying provider and
+     * the sum of their consumptions.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
+        double consumptionSum = 0;
+        double averageCurrent = 0;
+        double averageVoltage = 0;
+        for (PowerConsumptionProvider provider : getServices()) {
+            consumptionSum += provider.getPowerConsumption().getConsumption();
+            averageCurrent += provider.getPowerConsumption().getCurrent();
+            averageVoltage += provider.getPowerConsumption().getVoltage();
         }
-        average /= getServices().size();
-        return average;
+        averageCurrent = averageCurrent / getServices().size();
+        averageVoltage = averageVoltage / getServices().size();
+        return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).build();
     }
 }

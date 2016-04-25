@@ -27,41 +27,45 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.SmokeStateType.SmokeState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class SmokeStateProviderRemote extends AbstractServiceRemote<SmokeStateProvider> implements SmokeStateProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public SmokeStateProviderRemote() {
+        super(ServiceType.SMOKE_STATE_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * If at least one smoke state provider returns smoke than that is returned.
+     * Else if at least one returns some smoke than that is returned. Else no
+     * smoke is returned.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public SmokeState getSmokeState() throws CouldNotPerformException {
+        boolean someSmoke = false;
+        for (SmokeStateProvider provider : getServices()) {
+            if (provider.getSmokeState().getValue() == SmokeState.State.SMOKE) {
+                return SmokeState.newBuilder().setValue(SmokeState.State.SMOKE).build();
+            }
+            if (provider.getSmokeState().getValue() == SmokeState.State.SOME_SMOKE) {
+                someSmoke = true;
+            }
         }
-        average /= getServices().size();
-        return average;
+        if (someSmoke) {
+            return SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).build();
+        } else {
+            return SmokeState.newBuilder().setValue(SmokeState.State.NO_SMOKE).build();
+        }
     }
+
 }

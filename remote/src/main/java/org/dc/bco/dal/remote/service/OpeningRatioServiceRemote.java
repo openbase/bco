@@ -29,7 +29,7 @@ package org.dc.bco.dal.remote.service;
 
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -37,19 +37,32 @@ import rst.homeautomation.service.ServiceTemplateType;
  */
 public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioOperationService> implements OpeningRatioOperationService{
 
-    public OpeningRatioServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        super(serviceType);
+    public OpeningRatioServiceRemote() {
+        super(ServiceType.OPENING_RATIO_SERVICE);
     }
 
     @Override
     public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         for(OpeningRatioOperationService service : getServices()) {
+        for (OpeningRatioService service : getServices()) {
             service.setOpeningRatio(openingRatio);
         }
     }
 
+    /**
+     * Returns the average opening ratio for a collection of opening ratio
+     * services.
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public Double getOpeningRatio() throws CouldNotPerformException {
-        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Double average = 0d;
+        for (OpeningRatioService service : getServices()) {
+            average += service.getOpeningRatio();
+        }
+        average /= getServices().size();
+        return average;
     }
 }

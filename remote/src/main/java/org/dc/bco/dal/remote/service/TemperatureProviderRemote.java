@@ -27,8 +27,7 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
@@ -36,30 +35,24 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class TemperatureProviderRemote extends AbstractServiceRemote<TemperatureProvider> implements TemperatureProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public TemperatureProviderRemote() {
+        super(ServiceType.TEMPERATURE_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * Returns the average temperature value for a collection of temperature
+     * providers.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
+    public Double getTemperature() throws CouldNotPerformException {
         Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+        for (TemperatureProvider service : getServices()) {
+            average += service.getTemperature();
         }
         average /= getServices().size();
         return average;

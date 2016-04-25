@@ -27,41 +27,35 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class ReedSwitchProviderRemote extends AbstractServiceRemote<ReedSwitchProvider> implements ReedSwitchProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public ReedSwitchProviderRemote() {
+        super(ServiceType.REED_SWITCH_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * Returns open if at least one of the reed switch providers returns open
+     * and else no closed.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
+        for (ReedSwitchProvider provider : getServices()) {
+            if (provider.getReedSwitch().getValue() == ReedSwitchState.State.OPEN) {
+                return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.OPEN).build();
+            }
         }
-        average /= getServices().size();
-        return average;
+        return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.CLOSED).build();
     }
 }

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.dc.bco.dal.remote.unit.UnitRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -55,7 +56,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServiceType serviceType;
-    private final Map<String, AbstractIdentifiableRemote> unitRemoteMap;
+    private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<String, S> serviceMap;
     private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
 
@@ -71,7 +72,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
                 throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config.getId(), this);
             }
 
-            AbstractIdentifiableRemote remote = factory.createAndInitUnitRemote(config);
+            UnitRemote remote = factory.newInitializedInstance(config);
             try {
                 serviceMap.put(config.getId(), (S) remote);
             } catch (ClassCastException ex) {
@@ -108,7 +109,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     @Override
     public void activate() throws InterruptedException, MultiException {
         MultiException.ExceptionStack exceptionStack = null;
-        for (AbstractIdentifiableRemote remote : unitRemoteMap.values()) {
+        for (UnitRemote remote : unitRemoteMap.values()) {
             try {
                 remote.activate();
             } catch (CouldNotPerformException ex) {
@@ -121,7 +122,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
-        for (AbstractIdentifiableRemote remote : unitRemoteMap.values()) {
+        for (UnitRemote remote : unitRemoteMap.values()) {
             try {
                 remote.deactivate();
             } catch (CouldNotPerformException ex) {
@@ -133,7 +134,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
 
     @Override
     public boolean isActive() {
-        for (AbstractIdentifiableRemote remote : unitRemoteMap.values()) {
+        for (UnitRemote remote : unitRemoteMap.values()) {
             if (!remote.isActive()) {
                 return false;
             }
@@ -149,7 +150,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         this.factory = factory;
     }
 
-    public Collection<AbstractIdentifiableRemote> getInternalUnits() {
+    public Collection<UnitRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
 
@@ -166,7 +167,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            for (AbstractIdentifiableRemote remote : getInternalUnits()) {
+            for (UnitRemote remote : getInternalUnits()) {
                 remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
                         serviceProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType()));
             }

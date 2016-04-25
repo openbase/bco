@@ -28,7 +28,7 @@ package org.dc.bco.dal.remote.service;
  */
 import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
@@ -37,8 +37,8 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
  */
 public class StandbyServiceRemote extends AbstractServiceRemote<StandbyOperationService> implements StandbyOperationService {
 
-    public StandbyServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        super(serviceType);
+    public StandbyServiceRemote() {
+        super(ServiceType.STANDBY_SERVICE);
     }
 
     @Override
@@ -48,8 +48,20 @@ public class StandbyServiceRemote extends AbstractServiceRemote<StandbyOperation
         }
     }
 
+    /**
+     * Returns running if at least one of the standby services is running and
+     * else standby.
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
     public StandbyState getStandby() throws CouldNotPerformException {
-        throw new CouldNotPerformException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (StandbyService service : getServices()) {
+            if (service.getStandby().getValue() == StandbyState.State.RUNNING) {
+                return StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
+            }
+        }
+        return StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
     }
 }

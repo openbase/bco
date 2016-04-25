@@ -27,41 +27,35 @@ package org.dc.bco.dal.remote.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+public class MotionProviderRemote extends AbstractServiceRemote<MotionProvider> implements MotionProvider {
 
-    public DimServiceRemote() {
-        super(ServiceType.DIM_SERVICE);
-    }
-
-    @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimOperationService service : getServices()) {
-            service.setDim(dim);
-        }
+    public MotionProviderRemote() {
+        super(ServiceType.MOTION_PROVIDER);
     }
 
     /**
-     * Returns the average dim value for a collection of dim services.
+     * Returns movement if at least one motion provider returns movement else no
+     * movement.
      *
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
+    public MotionState getMotion() throws CouldNotPerformException {
+        for (MotionProvider provider : getServices()) {
+            if (provider.getMotion().getValue() == MotionState.State.MOVEMENT) {
+                return MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
+            }
         }
-        average /= getServices().size();
-        return average;
+        return MotionState.newBuilder().setValue(MotionState.State.NO_MOVEMENT).build();
     }
 }
