@@ -59,7 +59,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> implements org.dc.bco.registry.device.lib.DeviceRegistry, Remote<ScopeType.Scope> {
+public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> implements org.dc.bco.registry.device.lib.DeviceRegistry, Remote<DeviceRegistry> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));

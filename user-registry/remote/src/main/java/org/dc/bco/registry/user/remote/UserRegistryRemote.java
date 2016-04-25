@@ -60,7 +60,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements org.dc.bco.registry.user.lib.UserRegistry, Remote<ScopeType.Scope> {
+public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements org.dc.bco.registry.user.lib.UserRegistry, Remote<UserRegistry> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));

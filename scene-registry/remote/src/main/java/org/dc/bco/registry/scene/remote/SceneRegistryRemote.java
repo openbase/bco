@@ -57,7 +57,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> implements org.dc.bco.registry.scene.lib.SceneRegistry, Remote<ScopeType.Scope> {
+public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> implements org.dc.bco.registry.scene.lib.SceneRegistry, Remote<SceneRegistry> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));
