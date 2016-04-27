@@ -26,33 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
-import rst.vision.HSVColorType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ColorServiceRemote extends AbstractServiceRemote<ColorService> implements ColorService {
+public class ColorServiceRemote extends AbstractServiceRemote<ColorService> implements ColorStateOperationServiceCollection {
 
     public ColorServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE);
     }
 
     @Override
-    public void setColor(final HSVColorType.HSVColor color) throws CouldNotPerformException {
-        for (ColorService service : getServices()) {
-            service.setColor(color);
-        }
-    }
-
-    @Override
-    public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
-        for (ColorService service : getServices()) {
-            return service.getColor();
-        }
-        throw new CouldNotPerformException("Not supported yet.");
+    public Collection<ColorService> getColorStateOperationServices() {
+        return getServices();
     }
 }

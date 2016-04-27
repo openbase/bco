@@ -26,42 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.StandbyService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class StandbyServiceRemote extends AbstractServiceRemote<StandbyService> implements StandbyService {
+public class StandbyServiceRemote extends AbstractServiceRemote<StandbyService> implements StandbyStateOperationServiceCollection {
 
     public StandbyServiceRemote() {
         super(ServiceType.STANDBY_SERVICE);
     }
 
     @Override
-    public void setStandby(StandbyState state) throws CouldNotPerformException {
-        for (StandbyService service : getServices()) {
-            service.setStandby(state);
-        }
-    }
-
-    /**
-     * Returns running if at least one of the standby services is running and
-     * else standby.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public StandbyState getStandby() throws CouldNotPerformException {
-        for (StandbyService service : getServices()) {
-            if (service.getStandby().getValue() == StandbyState.State.RUNNING) {
-                return StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
-            }
-        }
-        return StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
+    public Collection<StandbyService> getStandbyStateOperationServices() {
+        return getServices();
     }
 }

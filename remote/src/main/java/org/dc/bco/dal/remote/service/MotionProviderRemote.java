@@ -26,36 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
-import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class MotionProviderRemote extends AbstractServiceRemote<MotionProvider> implements MotionProvider {
+public class MotionProviderRemote extends AbstractServiceRemote<MotionProvider> implements MotionStateProviderServiceCollection {
 
     public MotionProviderRemote() {
         super(ServiceType.MOTION_PROVIDER);
     }
 
-    /**
-     * Returns movement if at least one motion provider returns movement else no
-     * movement.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
     @Override
-    public MotionState getMotion() throws CouldNotPerformException {
-        for (MotionProvider provider : getServices()) {
-            if (provider.getMotion().getValue() == MotionState.State.MOVEMENT) {
-                return MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
-            }
-        }
-        return MotionState.newBuilder().setValue(MotionState.State.NO_MOVEMENT).build();
+    public Collection<MotionProvider> getMotionStateProviderServices() {
+        return getServices();
     }
 }

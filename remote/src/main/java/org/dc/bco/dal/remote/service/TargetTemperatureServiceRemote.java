@@ -26,41 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureService> implements TargetTemperatureService {
+public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureService> implements TargetTemperatureStateOperationServiceCollection {
 
     public TargetTemperatureServiceRemote() {
         super(ServiceType.TARGET_TEMPERATURE_SERVICE);
     }
 
     @Override
-    public void setTargetTemperature(Double value) throws CouldNotPerformException {
-        for (TargetTemperatureService service : getServices()) {
-            service.setTargetTemperature(value);
-        }
-    }
-
-    /**
-     * Returns the average target temperature value for a collection of target
-     * temperature services.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Double getTargetTemperature() throws CouldNotPerformException {
-        Double average = 0d;
-        for (TargetTemperatureService service : getServices()) {
-            average += service.getTargetTemperature();
-        }
-        average /= getServices().size();
-        return average;
+    public Collection<TargetTemperatureService> getTargetTemperatureStateOperationServices() {
+        return getServices();
     }
 }

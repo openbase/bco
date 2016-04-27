@@ -26,47 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.ShutterService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.ShutterStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> implements ShutterService {
+public class ShutterServiceRemote extends AbstractServiceRemote<ShutterService> implements ShutterStateOperationServiceCollection {
 
     public ShutterServiceRemote() {
         super(ServiceType.SHUTTER_SERVICE);
     }
 
     @Override
-    public void setShutter(ShutterState state) throws CouldNotPerformException {
-        for (ShutterService service : getServices()) {
-            service.setShutter(state);
-        }
-    }
-
-    /**
-     * Returns up if all shutter services are up and else the from up differing
-     * state of the first shutter.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public ShutterState getShutter() throws CouldNotPerformException {
-        for (ShutterService service : getServices()) {
-            switch (service.getShutter().getValue()) {
-                case DOWN:
-                    return ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
-                case STOP:
-                    return ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
-                case UP:
-                default:
-            }
-        }
-        return ShutterState.newBuilder().setValue(ShutterState.State.UP).build();
+    public Collection<ShutterService> getShutterStateOperationServices() {
+        return getServices();
     }
 }

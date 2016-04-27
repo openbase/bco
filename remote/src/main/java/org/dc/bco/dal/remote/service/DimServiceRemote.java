@@ -26,40 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.DimStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimServiceRemote extends AbstractServiceRemote<DimService> implements DimService {
+public class DimServiceRemote extends AbstractServiceRemote<DimService> implements DimStateOperationServiceCollection {
 
     public DimServiceRemote() {
         super(ServiceType.DIM_SERVICE);
     }
 
     @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimService service : getServices()) {
-            service.setDim(dim);
-        }
-    }
-
-    /**
-     * Returns the average dim value for a collection of dim services.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getServices()) {
-            average += service.getDim();
-        }
-        average /= getServices().size();
-        return average;
+    public Collection<DimService> getDimStateOperationServices() {
+        return getServices();
     }
 }

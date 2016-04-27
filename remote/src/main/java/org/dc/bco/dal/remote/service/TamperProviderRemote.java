@@ -26,36 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
-import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class TamperProviderRemote extends AbstractServiceRemote<TamperProvider> implements TamperProvider {
+public class TamperProviderRemote extends AbstractServiceRemote<TamperProvider> implements TamperStateProviderServiceCollection {
 
     public TamperProviderRemote() {
         super(ServiceType.TAMPER_PROVIDER);
     }
 
-    /**
-     * Returns tamper if at least one of the tamper providers returns tamper and
-     * else no tamper.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
     @Override
-    public TamperState getTamper() throws CouldNotPerformException {
-        for (TamperProvider provider : getServices()) {
-            if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
-                return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
-            }
-        }
-        return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
+    public Collection<TamperProvider> getTamperStateProviderServices() {
+        return getServices();
     }
 }

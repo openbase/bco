@@ -26,36 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.collection.ReedSwitchStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
-import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ReedSwitchProviderRemote extends AbstractServiceRemote<ReedSwitchProvider> implements ReedSwitchProvider {
+public class ReedSwitchProviderRemote extends AbstractServiceRemote<ReedSwitchProvider> implements ReedSwitchStateProviderServiceCollection {
 
     public ReedSwitchProviderRemote() {
         super(ServiceType.REED_SWITCH_PROVIDER);
     }
 
-    /**
-     * Returns open if at least one of the reed switch providers returns open
-     * and else no closed.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
     @Override
-    public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        for (ReedSwitchProvider provider : getServices()) {
-            if (provider.getReedSwitch().getValue() == ReedSwitchState.State.OPEN) {
-                return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.OPEN).build();
-            }
-        }
-        return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.CLOSED).build();
+    public Collection<ReedSwitchProvider> getReedSwitchStateProviderServices() {
+        return getServices();
     }
 }

@@ -26,41 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.OpeningRatioStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioService> implements OpeningRatioService {
+public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioService> implements OpeningRatioStateOperationServiceCollection {
 
     public OpeningRatioServiceRemote() {
         super(ServiceType.OPENING_RATIO_SERVICE);
     }
 
     @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        for (OpeningRatioService service : getServices()) {
-            service.setOpeningRatio(openingRatio);
-        }
-    }
-
-    /**
-     * Returns the average opening ratio for a collection of opening ratio
-     * services.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Double getOpeningRatio() throws CouldNotPerformException {
-        Double average = 0d;
-        for (OpeningRatioService service : getServices()) {
-            average += service.getOpeningRatio();
-        }
-        average /= getServices().size();
-        return average;
+    public Collection<OpeningRatioService> getOpeningRatioStateOperationServices() {
+        return getServices();
     }
 }

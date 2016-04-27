@@ -26,42 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.PowerService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.PowerStateType;
-import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author mpohling
  */
-public class PowerServiceRemote extends AbstractServiceRemote<PowerService> implements PowerService {
+public class PowerServiceRemote extends AbstractServiceRemote<PowerService> implements PowerStateOperationServiceCollection {
 
     public PowerServiceRemote() {
         super(ServiceType.POWER_SERVICE);
     }
 
     @Override
-    public void setPower(final PowerStateType.PowerState state) throws CouldNotPerformException {
-        for (PowerService service : getServices()) {
-            service.setPower(state);
-        }
-    }
-
-    /**
-     * Returns on if at least one of the power services is on and else off.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public PowerStateType.PowerState getPower() throws CouldNotPerformException {
-        for (PowerService service : getServices()) {
-            if (service.getPower().getValue() == PowerState.State.ON) {
-                return PowerStateType.PowerState.newBuilder().setValue(PowerState.State.ON).build();
-            }
-        }
-        return PowerStateType.PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+    public Collection<PowerService> getPowerStateOperationServices() {
+        return getServices();
     }
 }

@@ -26,36 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
-import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.AlarmStateType.AlarmState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class SmokeAlarmStateProviderRemote extends AbstractServiceRemote<SmokeAlarmStateProvider> implements SmokeAlarmStateProvider {
+public class SmokeAlarmStateProviderRemote extends AbstractServiceRemote<SmokeAlarmStateProvider> implements SmokeAlarmStateProviderServiceCollection {
 
     public SmokeAlarmStateProviderRemote() {
         super(ServiceType.SMOKE_ALARM_STATE_PROVIDER);
     }
 
-    /**
-     * Returns alarm if at least one smoke alarm state provider returns alarm
-     * else no alarm.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
     @Override
-    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        for (SmokeAlarmStateProvider provider : getServices()) {
-            if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
-                return AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-            }
-        }
-        return AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
+    public Collection<SmokeAlarmStateProvider> getSmokeAlarmStateProviderServices() {
+        return getServices();
     }
 }

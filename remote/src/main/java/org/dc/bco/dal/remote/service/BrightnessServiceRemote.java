@@ -26,42 +26,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessService> implements BrightnessService {
+public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessService> implements BrightnessStateOperationServiceCollection {
 
     public BrightnessServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
     }
 
     @Override
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
-        for (BrightnessService service : getServices()) {
-            service.setBrightness(brightness);
-        }
-    }
-
-    /**
-     * Returns the average brightness value for a collection of brightness
-     * services.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Double getBrightness() throws CouldNotPerformException {
-        Double average = 0d;
-        for (BrightnessService service : getServices()) {
-            average += service.getBrightness();
-        }
-        average /= getServices().size();
-        return average;
+    public Collection<BrightnessService> getBrightnessStateOperationServices() {
+        return getServices();
     }
 }
