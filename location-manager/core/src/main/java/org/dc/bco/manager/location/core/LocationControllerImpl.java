@@ -22,10 +22,26 @@ package org.dc.bco.manager.location.core;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.ColorService;
+import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.lib.layer.service.ShutterService;
+import org.dc.bco.dal.lib.layer.service.StandbyService;
+import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
 import org.dc.bco.dal.remote.service.AbstractServiceRemote;
 import org.dc.bco.dal.remote.service.BrightnessServiceRemote;
 import org.dc.bco.dal.remote.service.ColorServiceRemote;
@@ -42,6 +58,8 @@ import org.dc.bco.dal.remote.service.StandbyServiceRemote;
 import org.dc.bco.dal.remote.service.TamperProviderRemote;
 import org.dc.bco.dal.remote.service.TargetTemperatureServiceRemote;
 import org.dc.bco.dal.remote.service.TemperatureProviderRemote;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.bco.manager.location.lib.LocationController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
@@ -73,7 +91,9 @@ import rst.vision.HSVColorType;
  */
 public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, LocationConfig> implements LocationController {
 
+    private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
+    private Map<ServiceType, Collection<Service>> serviceMap;
 
     public LocationControllerImpl(final LocationConfig config) throws InstantiationException {
         super(LocationData.newBuilder());
@@ -84,6 +104,10 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public void init(final LocationConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
+            // instantiate unit remotes and add them to lists with their according services
+            // add observer to the unit remotes which call according getter
+            // getter have to update the location data type
+            
             Map<ServiceType, List<UnitConfig>> unitConfigByServiceMap = new HashMap<>();
             for (ServiceType serviceType : ServiceType.values()) {
                 unitConfigByServiceMap.put(serviceType, new ArrayList<>());
@@ -143,6 +167,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public void setBrightness(Double brightness) throws CouldNotPerformException {
         try {
             ((BrightnessServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_SERVICE)).setBrightness(brightness);
+            setField(LocationData.BRIGHTNESS_FIELD_NUMBER, brightness);
         } catch (NullPointerException ex) {
             throw new NotAvailableException("brightnessServiceRemote");
         }
@@ -335,5 +360,76 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         } catch (NullPointerException ex) {
             throw new NotAvailableException("tamperProviderRemote");
         }
+    }
+
+    @Override
+    public Collection<ColorService> getColorStateOperationServices() {
+//        return (Collection<ColorService>) serviceMap.get(ServiceType.COLOR_SERVICE);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<BrightnessService> getBrightnessStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<DimService> getDimStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<OpeningRatioService> getOpeningRatioStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<PowerService> getPowerStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<ShutterService> getShutterStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<StandbyService> getStandbyStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<TargetTemperatureService> getTargetTemperatureStateOperationServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<MotionProvider> getMotionStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<SmokeAlarmStateProvider> getSmokeAlarmStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<SmokeStateProvider> getSmokeStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<TemperatureProvider> getTemperatureStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<PowerConsumptionProvider> getPowerConsumptionStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Collection<TamperProvider> getTamperStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

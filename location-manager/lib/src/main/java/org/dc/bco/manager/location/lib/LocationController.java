@@ -5,6 +5,20 @@
  */
 package org.dc.bco.manager.location.lib;
 
+import org.dc.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.DimStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.OpeningRatioStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.ShutterStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.SmokeStateProviderServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.pattern.Controller;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -35,7 +49,12 @@ import rst.spatial.LocationDataType.LocationData;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface LocationController extends Location, Controller<LocationData, LocationData.Builder> {
+public interface LocationController extends Location, Controller<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
+        ColorStateOperationServiceCollection, DimStateOperationServiceCollection, OpeningRatioStateOperationServiceCollection,
+        PowerStateOperationServiceCollection, ShutterStateOperationServiceCollection, StandbyStateOperationServiceCollection,
+        TargetTemperatureStateOperationServiceCollection, MotionStateProviderServiceCollection, SmokeAlarmStateProviderServiceCollection,
+        SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,
+        TamperStateProviderServiceCollection {
 
     public void init(final LocationConfig config) throws InitializationException, InterruptedException;
 }
