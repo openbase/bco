@@ -38,8 +38,8 @@ import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.dc.jul.storage.registry.RegistryImpl;
-import org.dc.jul.storage.registry.RegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -60,8 +60,8 @@ public class LocationManagerController implements LocationManager {
     private final ConnectionFactory connectionFactory;
     private final RegistryImpl<String, LocationController> locationRegistry;
     private final RegistryImpl<String, ConnectionController> connectionRegistry;
-    private final RegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
-    private final RegistrySynchronizer<String, ConnectionController, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
 
     public LocationManagerController() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -72,8 +72,20 @@ public class LocationManagerController implements LocationManager {
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new RegistryImpl<>();
             this.connectionRegistry = new RegistryImpl<>();
-            this.locationRegistrySynchronizer = new RegistrySynchronizer<>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory);
-            this.connectionRegistrySynchronizer = new RegistrySynchronizer<>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionFactory);
+            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory) {
+
+                @Override
+                public boolean activationCondition(LocationConfig config) {
+                    return true;
+                }
+            };
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, ConnectionConfig, ConnectionConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionFactory) {
+
+                @Override
+                public boolean activationCondition(ConnectionConfig config) {
+                    return true;
+                }
+            };
         } catch (CouldNotPerformException ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }

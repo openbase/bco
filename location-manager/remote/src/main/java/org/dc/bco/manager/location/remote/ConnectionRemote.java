@@ -26,7 +26,6 @@ package org.dc.bco.manager.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.location.lib.Connection;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -66,11 +65,11 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
 
     @Override
     public HandleStateType.HandleState getHandle() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getHandleState();
     }
 
     @Override
     public ReedSwitchStateType.ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getReedSwitchState();
     }
 }

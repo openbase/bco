@@ -74,8 +74,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getBrightness() throws CouldNotPerformException {
-//        return RPCHelper.callRemoteMethod(this, Double.class).get();
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getBrightness();
     }
 
     @Override
@@ -85,7 +84,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getColor();
     }
 
     @Override
@@ -95,7 +94,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getDim() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getDimValue();
     }
 
     @Override
@@ -105,7 +104,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getOpeningRatio() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getOpeningRatio();
     }
 
     @Override
@@ -115,7 +114,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public PowerStateType.PowerState getPower() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getPowerState();
     }
 
     @Override
@@ -125,7 +124,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getShutterState();
     }
 
     @Override
@@ -135,7 +134,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getStandbyState();
     }
 
     @Override
@@ -145,36 +144,36 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getTargetTemperature() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getTargetTemperature();
     }
 
     @Override
     public MotionStateType.MotionState getMotion() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getMotionState();
     }
 
     @Override
     public AlarmStateType.AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getSmokeAlarmState();
     }
 
     @Override
     public SmokeStateType.SmokeState getSmokeState() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getSmokeState();
     }
 
     @Override
     public Double getTemperature() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getTemperature();
     }
 
     @Override
     public PowerConsumptionStateType.PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getPowerConsumptionState();
     }
 
     @Override
     public TamperStateType.TamperState getTamper() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getTamperState();
     }
 }
