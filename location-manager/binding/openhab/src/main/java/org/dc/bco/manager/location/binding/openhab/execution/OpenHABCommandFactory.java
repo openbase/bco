@@ -7,7 +7,7 @@ package org.dc.bco.manager.location.binding.openhab.execution;
 
 /*
  * #%L
- * COMA DeviceManager Binding OpenHAB
+ * COMA LocationManager Binding OpenHAB
  * %%
  * Copyright (C) 2015 - 2016 DivineCooperation
  * %%
@@ -26,12 +26,72 @@ package org.dc.bco.manager.location.binding.openhab.execution;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory;
+import static org.dc.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory.getCommandBuilder;
+import org.dc.jul.extension.openhab.binding.transform.HSVColorTransformer;
+import org.dc.jul.extension.openhab.binding.transform.PowerStateTransformer;
+import org.dc.jul.extension.openhab.binding.transform.StopMoveStateTransformer;
+import org.dc.jul.extension.openhab.binding.transform.UpDownStateTransformer;
+import rst.homeautomation.openhab.HSBType;
+import rst.homeautomation.openhab.OnOffHolderType;
+import rst.homeautomation.openhab.OpenhabCommandType;
+import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
+import rst.homeautomation.openhab.PercentType;
+import rst.homeautomation.openhab.StopMoveHolderType;
+import rst.homeautomation.openhab.UpDownHolderType;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
+import rst.vision.HSVColorType;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
+public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory{
+    
+    public static OpenhabCommandType.OpenhabCommand.Builder newHSBCommand(final HSVColorType.HSVColor color) throws CouldNotPerformException {
+        return newHSBCommand(HSVColorTransformer.transform(color));
+    }
 
+    public static OpenhabCommandType.OpenhabCommand.Builder newHSBCommand(final HSBType.HSB color) {
+        return getCommandBuilder().setType(CommandType.HSB).setHsb(color);
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newOnOffCommand(final PowerState.State state) throws CouldNotPerformException {
+        return newOnOffCommand(PowerStateTransformer.transform(state));
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newOnOffCommand(final OnOffHolderType.OnOffHolder state) {
+        return getCommandBuilder().setType(CommandType.ONOFF).setOnOff(state);
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newPercentCommand(final Double value) {
+        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(PercentType.Percent.newBuilder().setValue(value.intValue()).build());
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newPercentCommand(final PercentType.Percent percent) {
+        return getCommandBuilder().setType(CommandType.PERCENT).setPercent(percent);
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newStopMoveCommand(final ShutterState.State state) throws CouldNotPerformException {
+        return newStopMoveCommand(StopMoveStateTransformer.transform(state));
+    }
+    
+    public static OpenhabCommandType.OpenhabCommand.Builder newStopMoveCommand(final StopMoveHolderType.StopMoveHolder state) {
+        return getCommandBuilder().setType(CommandType.STOPMOVE).setStopMove(state);
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final ShutterState.State state) throws CouldNotPerformException {
+        return newUpDownCommand(UpDownStateTransformer.transform(state));
+    }
+
+    public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final UpDownHolderType.UpDownHolder state) {
+        return getCommandBuilder().setType(CommandType.UPDOWN).setUpDown(state);
+    }
+    
+    public static OpenhabCommandType.OpenhabCommand.Builder newDecimalCommand(final Double value) {
+        return getCommandBuilder().setType(CommandType.DECIMAL).setDecimal(value);
+    }
 }

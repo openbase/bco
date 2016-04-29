@@ -39,8 +39,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.vision.HSVColorType.HSVColor;
 
@@ -49,11 +47,6 @@ import rst.vision.HSVColorType.HSVColor;
  * @author thuxohl
  */
 public class LocationRemoteTest {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
-    }
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
 

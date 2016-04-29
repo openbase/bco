@@ -26,16 +26,18 @@ package org.dc.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.manager.location.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.manager.location.remote.LocationRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import static org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;
+import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.pattern.Factory;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationDataType.LocationData;
 
@@ -45,13 +47,15 @@ import rst.spatial.LocationDataType.LocationData;
  */
 public class LocationRemoteFactoryImpl implements Factory<LocationRemote, LocationConfig> {
 
-//    private OpenHABRemote openHABRemote;
+    private OpenHABRemote openHABRemote;
+
     public LocationRemoteFactoryImpl() {
     }
 
-//    public void init(final OpenHABRemote openHABRemote) {
-//        this.openHABRemote = openHABRemote;
-//    }
+    public void init(final OpenHABRemote openHABRemote) {
+        this.openHABRemote = openHABRemote;
+    }
+
     @Override
     public LocationRemote newInstance(LocationConfig config) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         LocationRemote locationRemote = new LocationRemote();
@@ -60,7 +64,8 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
 
                 @Override
                 public void update(final Observable<LocationData> source, LocationData data) throws Exception {
-//                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColor()).setItem(generateItemId(config, ServiceType.COLOR_SERVICE)).build());
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(config, ServiceType.POWER_SERVICE)).build());
                 }
             });
             locationRemote.init(config);
@@ -73,7 +78,7 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(LocationConfig locationConfig, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+    private String generateItemId(LocationConfig locationConfig, ServiceType serviceType) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Location")
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(serviceType.name())
