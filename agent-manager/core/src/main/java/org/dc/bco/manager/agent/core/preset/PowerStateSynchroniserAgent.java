@@ -131,7 +131,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         sourceRemote.addObserver(new Observer<GeneratedMessage>() {
 
             @Override
-            public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
+            public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 sourceLatestPowerState = invokeGetPowerState(data).getValue();
                 logger.info("Recieved new value [" + sourceLatestPowerState + "] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
@@ -167,7 +167,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             targetRemote.addObserver(new Observer<GeneratedMessage>() {
 
                 @Override
-                public void update(Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
+                public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                     PowerState.State newPowerState = invokeGetPowerState(data).getValue();
                     logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + ((AbstractIdentifiableRemote) source).getId() + "]");
                     if (!updateLatestTargetPowerState(newPowerState)) {

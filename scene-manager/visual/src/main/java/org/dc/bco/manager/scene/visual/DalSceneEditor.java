@@ -75,14 +75,14 @@ public class DalSceneEditor extends javax.swing.JFrame {
             sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
 
                 @Override
-                public void update(Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
+                public void update(final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
                     genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
                 }
             });
             sceneCreationPanel.addObserver(new Observer<List<ActionConfig>>() {
 
                 @Override
-                public void update(Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
+                public void update(final Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
 //                    logger.info("Update through new scene selected!");
                     genericUnitCollectionPanel.clearUnitPanel();
 //                    logger.info("Cleared unit collection panel!");

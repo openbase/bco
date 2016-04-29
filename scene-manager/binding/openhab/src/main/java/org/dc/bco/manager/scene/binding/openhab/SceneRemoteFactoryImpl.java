@@ -63,7 +63,7 @@ public class SceneRemoteFactoryImpl implements Factory<SceneRemote, SceneConfig>
             sceneRemote.addObserver(new Observer<SceneData>() {
 
                 @Override
-                public void update(Observable<SceneData> source, SceneData data) throws Exception {
+                public void update(final Observable<SceneData> source, SceneData data) throws Exception {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
                 }
             });

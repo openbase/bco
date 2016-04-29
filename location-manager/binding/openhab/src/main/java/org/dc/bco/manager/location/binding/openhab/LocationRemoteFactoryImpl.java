@@ -59,7 +59,7 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
             locationRemote.addObserver(new Observer<LocationData>() {
 
                 @Override
-                public void update(Observable<LocationData> source, LocationData data) throws Exception {
+                public void update(final Observable<LocationData> source, LocationData data) throws Exception {
 //                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
                 }
             });

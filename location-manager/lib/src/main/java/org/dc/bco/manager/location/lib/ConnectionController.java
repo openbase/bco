@@ -26,6 +26,8 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
+import org.dc.bco.dal.lib.layer.service.collection.ReedSwitchStateProviderServiceCollection;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.pattern.Controller;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -35,7 +37,8 @@ import rst.spatial.ConnectionDataType.ConnectionData;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface ConnectionController extends Connection, Controller<ConnectionData, ConnectionData.Builder> {
+public interface ConnectionController extends Connection, Controller<ConnectionData, ConnectionData.Builder>, 
+        HandleStateProviderServiceCollection, ReedSwitchStateProviderServiceCollection {
 
     public void init(final ConnectionConfig config) throws InitializationException, InterruptedException;
 }

@@ -31,7 +31,7 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import java.util.ArrayList;
@@ -39,13 +39,13 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.dc.bco.manager.scene.remote.SceneRemote;
 import org.dc.bco.manager.scene.visual.LocationSelectorPanel.LocationConfigHolder;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
+import org.dc.jul.pattern.Observable;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
@@ -61,7 +61,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
 
-    private final Observable<List<ActionConfig>> observable;
+    private final ObservableImpl<List<ActionConfig>> observable;
     private SceneRegistryRemote sceneRegistryRemote;
     private SceneConfig lastSelected = null;
     private LocationConfigHolder location = null;
@@ -72,7 +72,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
      */
     public SceneCreationPanel() {
         initComponents();
-        observable = new Observable<>();
+        observable = new ObservableImpl<>();
     }
 
     public void init() throws CouldNotPerformException, InterruptedException {
@@ -86,7 +86,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneRegistryRemote.addObserver(new Observer<SceneRegistryType.SceneRegistry>() {
 
             @Override
-            public void update(Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
+            public void update(final Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
 
                 updateDynamicComponents();
 
@@ -95,7 +95,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         locationSelectorPanel.addObserver(new Observer<LocationSelectorPanel.LocationConfigHolder>() {
 
             @Override
-            public void update(Observable<LocationSelectorPanel.LocationConfigHolder> source, LocationSelectorPanel.LocationConfigHolder data) throws Exception {
+            public void update(final Observable<LocationSelectorPanel.LocationConfigHolder> source, LocationSelectorPanel.LocationConfigHolder data) throws Exception {
                 location = data;
             }
         });

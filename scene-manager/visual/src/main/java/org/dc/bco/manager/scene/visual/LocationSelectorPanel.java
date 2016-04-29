@@ -34,10 +34,10 @@ import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(LocationSelectorPanel.class);
 
-    private final Observable<LocationConfigHolder> locationConfigHolderObservable;
+    private final ObservableImpl<LocationConfigHolder> locationConfigHolderObservable;
     private boolean enableAllLocation;
     private LocationRegistryRemote locationRegistryRemote;
     private LocationConfigHolder selectedLocationConfigHolder;
@@ -67,7 +67,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     public LocationSelectorPanel() {
         initComponents();
         setEnable(false);
-        locationConfigHolderObservable = new Observable<>();
+        locationConfigHolderObservable = new ObservableImpl<>();
     }
 
     public void init(boolean enableAllLocation) throws InitializationException, InterruptedException, CouldNotPerformException {
@@ -97,7 +97,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.addObserver(new Observer<LocationRegistry>() {
 
             @Override
-            public void update(Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+            public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
                 updateDynamicComponents();
             }
         });

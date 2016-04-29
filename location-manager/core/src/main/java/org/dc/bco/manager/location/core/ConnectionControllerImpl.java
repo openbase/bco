@@ -26,17 +26,11 @@ package org.dc.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.dc.bco.dal.remote.service.AbstractServiceRemote;
-import org.dc.bco.dal.remote.service.HandleProviderRemote;
-import org.dc.bco.dal.remote.service.ReedSwitchProviderRemote;
-import org.dc.bco.dal.remote.service.ServiceRemoteFactoryImpl;
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
 import org.dc.bco.manager.location.lib.Connection;
 import org.dc.bco.manager.location.lib.ConnectionController;
-import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -44,10 +38,6 @@ import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.HandleStateType;
-import rst.homeautomation.state.ReedSwitchStateType;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -57,38 +47,13 @@ import rst.spatial.ConnectionDataType.ConnectionData;
  */
 public class ConnectionControllerImpl extends AbstractConfigurableController<ConnectionData, ConnectionData.Builder, ConnectionConfig> implements ConnectionController {
 
-    private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
-
     public ConnectionControllerImpl(ConnectionConfig connection) throws InstantiationException {
         super(ConnectionData.newBuilder());
-        serviceRemoteMap = new HashMap<>();
     }
 
     @Override
     public void init(final ConnectionConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-        try {
-            Map<ServiceType, List<UnitConfigType.UnitConfig>> unitConfigByServiceMap = new HashMap<>();
-            for (ServiceType serviceType : ServiceType.values()) {
-                unitConfigByServiceMap.put(serviceType, new ArrayList<>());
-            }
-            DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
-            for (UnitConfigType.UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
-                if (config.getUnitIdList().contains(unitConfig.getId())) {
-                    for (ServiceType serviceType : deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList()) {
-                        unitConfigByServiceMap.get(serviceType).add(unitConfig);
-                    }
-                }
-            }
-            for (Map.Entry<ServiceType, List<UnitConfigType.UnitConfig>> entry : unitConfigByServiceMap.entrySet()) {
-                if (entry.getValue().isEmpty()) {
-                    continue;
-                }
-                serviceRemoteMap.put(entry.getKey(), ServiceRemoteFactoryImpl.getInstance().createAndInitServiceRemote(entry.getKey(), entry.getValue()));
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
     }
 
     @Override
@@ -99,17 +64,11 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.activate();
-        }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.deactivate();
-        }
     }
 
     @Override
@@ -118,20 +77,12 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public HandleStateType.HandleState getHandle() throws CouldNotPerformException {
-        try {
-            return ((HandleProviderRemote) serviceRemoteMap.get(ServiceType.HANDLE_PROVIDER)).getHandle();
-        } catch (NullPointerException ex) {
-            throw new NotAvailableException("handleProviderRemote");
-        }
+    public Collection<HandleProvider> getHandleStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public ReedSwitchStateType.ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        try {
-            return ((ReedSwitchProviderRemote) serviceRemoteMap.get(ServiceType.REED_SWITCH_PROVIDER)).getReedSwitch();
-        } catch (NullPointerException ex) {
-            throw new NotAvailableException("reedSwitchProviderRemote");
-        }
+    public Collection<ReedSwitchProvider> getReedSwitchStateProviderServices() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

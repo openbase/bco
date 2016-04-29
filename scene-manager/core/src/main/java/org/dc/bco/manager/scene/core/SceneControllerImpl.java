@@ -76,7 +76,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         this.buttonObserver = new Observer<ButtonType.Button>() {
 
             @Override
-            public void update(Observable<ButtonType.Button> source, ButtonType.Button data) throws Exception {
+            public void update(final Observable<ButtonType.Button> source, ButtonType.Button data) throws Exception {
                 if (data.getButtonState().getValue().equals(ButtonState.State.CLICKED)) {
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                 }

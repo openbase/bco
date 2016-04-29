@@ -27,13 +27,14 @@ import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.iface.Activatable;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.schedule.Timeout;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
 import org.dc.bco.dal.remote.unit.MotionSensorRemote;
+import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
@@ -48,7 +49,7 @@ import rst.homeautomation.unit.UnitTemplateType;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class MotionStateFutionProvider extends Observable<MotionState> implements MotionProvider, Activatable {
+public class MotionStateFutionProvider extends ObservableImpl<MotionState> implements MotionProvider, Activatable {
 
     /**
      * Default 3 minute window of no movement unit the state switches to NO_MOTION.

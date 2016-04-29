@@ -63,7 +63,7 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, AgentConfig>
             agentRemote.addObserver(new Observer<AgentData>() {
 
                 @Override
-                public void update(Observable<AgentData> source, AgentData data) throws Exception {
+                public void update(final Observable<AgentData> source, AgentData data) throws Exception {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
                 }
             });
