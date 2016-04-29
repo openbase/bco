@@ -28,7 +28,7 @@ package org.dc.bco.dal.visual.util;
  */
 
 import org.dc.jul.exception.MultiException;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import java.awt.Color;
 import org.slf4j.LoggerFactory;
@@ -42,14 +42,14 @@ public class RSBScopePanel extends javax.swing.JPanel {
 
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Observable<Scope> observable;
+    private ObservableImpl<Scope> observable;
 
     /**
      * Creates new form ScopePanel
      */
     public RSBScopePanel() {
         initComponents();
-        observable = new Observable<>();
+        observable = new ObservableImpl<>();
     }
 
     public void addObserver(Observer<Scope> observer) {

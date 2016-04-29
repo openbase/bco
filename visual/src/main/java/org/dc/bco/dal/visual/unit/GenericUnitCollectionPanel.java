@@ -71,7 +71,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         removedObserver = new Observer<String>() {
             
             @Override
-            public void update(Observable<String> source, String data) throws Exception {
+            public void update(final Observable<String> source, String data) throws Exception {
                 synchronized (unitPanelMapLock) {
                     if (unitPanelMap.containsKey(data)) {
                         unitPanelMap.remove(data);

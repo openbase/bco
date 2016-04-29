@@ -31,7 +31,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -42,14 +42,14 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemote> {
 
-    private final Observable<String> removedObservable;
+    private final ObservableImpl<String> removedObservable;
     private String mapId;
 
     /**
      * Creates new form TestPanel
      */
     public RemovableGenericUnitPanel() {
-        removedObservable = new Observable<>();
+        removedObservable = new ObservableImpl<>();
         initComponents();
     }
 
