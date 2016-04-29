@@ -30,7 +30,7 @@ package org.dc.bco.dal.lib.layer.service.collection;
 import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.ColorService;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.vision.HSVColorType;
+import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
@@ -39,18 +39,28 @@ import rst.vision.HSVColorType;
 public interface ColorStateOperationServiceCollection extends ColorService {
 
     @Override
-    default public void setColor(final HSVColorType.HSVColor color) throws CouldNotPerformException {
+    default public void setColor(final HSVColor color) throws CouldNotPerformException {
         for (ColorService service : getColorStateOperationServices()) {
             service.setColor(color);
         }
     }
 
     @Override
-    default public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
-        for (ColorService service : getColorStateOperationServices()) {
-            return service.getColor();
+    default public HSVColor getColor() throws CouldNotPerformException {
+        double averageHue = 0;
+        double averageSaturation = 0;
+        double averageValue = 0;
+        Collection<ColorService> colorStateOperationServicCollection = getColorStateOperationServices();
+        for (ColorService service : colorStateOperationServicCollection) {
+            HSVColor color = service.getColor();
+            averageHue += color.getHue();
+            averageSaturation += color.getSaturation();
+            averageValue += color.getValue();
         }
-        throw new CouldNotPerformException("Not supported yet.");
+        averageHue = averageHue / getColorStateOperationServices().size();
+        averageSaturation = averageSaturation / getColorStateOperationServices().size();
+        averageValue = averageValue / getColorStateOperationServices().size();
+        return HSVColor.newBuilder().setHue(averageHue).setSaturation(averageSaturation).setValue(averageValue).build();
     }
 
     public Collection<ColorService> getColorStateOperationServices();
