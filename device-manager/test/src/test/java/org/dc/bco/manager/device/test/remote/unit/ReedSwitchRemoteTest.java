@@ -120,7 +120,7 @@ public class ReedSwitchRemoteTest {
         System.out.println("getReedSwitchState");
         ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
         ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitch(state);
-        reedSwitchRemote.requestStatus();
+        reedSwitchRemote.requestData();
         Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch().getValue());
     }
 }

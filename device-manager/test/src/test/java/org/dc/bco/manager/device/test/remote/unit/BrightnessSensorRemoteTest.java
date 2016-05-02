@@ -119,7 +119,7 @@ public class BrightnessSensorRemoteTest {
         System.out.println("getBrightness");
         double brightness = 0.5;
         ((BrightnessSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightness(brightness);
-        brightnessSensorRemote.requestStatus();
+        brightnessSensorRemote.requestData();
         assertEquals("The getter for the brightness returns the wrong value!", brightness, brightnessSensorRemote.getBrightness(), 0.1);
     }
 }

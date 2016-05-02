@@ -118,7 +118,7 @@ public class HandleSensorRemoteTest {
         System.out.println("getRotaryHandleState");
         HandleState.State state = HandleState.State.TILTED;
         ((HandleSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleSensorRemote.getId())).updateHandle(state);
-        handleSensorRemote.requestStatus();
+        handleSensorRemote.requestData();
         Assert.assertEquals("The getter for the handle state returns the wrong value!",state, handleSensorRemote.getHandle().getValue());
     }
 }

@@ -112,7 +112,7 @@ public class LightRemoteTest {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         lightRemote.setPower(state);
-        lightRemote.requestStatus();
+        lightRemote.requestData();
         assertEquals("Power has not been set in time!", state, lightRemote.getData().getPowerState());
     }
 
@@ -126,7 +126,7 @@ public class LightRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePower(state);
-        lightRemote.requestStatus();
+        lightRemote.requestData();
         assertEquals("Light has not been set in time!", state, lightRemote.getPower());
     }
 }

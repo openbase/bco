@@ -111,7 +111,7 @@ public class RollershutterRemoteTest {
         System.out.println("setShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
         rollershutterRemote.setShutter(state);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.requestData();
         assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState());
     }
 
@@ -125,7 +125,7 @@ public class RollershutterRemoteTest {
         System.out.println("getShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutter(state);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.requestData();
         assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
     }
 
@@ -139,7 +139,7 @@ public class RollershutterRemoteTest {
         System.out.println("setOpeningRatio");
         double openingRatio = 34.0D;
         rollershutterRemote.setOpeningRatio(openingRatio);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.requestData();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getData().getOpeningRatio(), 0.1);
     }
 
@@ -153,7 +153,7 @@ public class RollershutterRemoteTest {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateOpeningRatio(openingRatio);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.requestData();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getOpeningRatio());
     }
 

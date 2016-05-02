@@ -120,7 +120,7 @@ public class TamperSwitchRemoteTest {
         System.out.println("getTamperState");
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         ((TamperSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperSwitchRemote.getId())).updateTamper(tamperState);
-        tamperSwitchRemote.requestStatus();
+        tamperSwitchRemote.requestData();
         assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().getValue().equals(tamperState.getValue()));
     }
 }

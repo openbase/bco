@@ -120,7 +120,7 @@ public class AmbientLightRemoteTest {
         System.out.println("setColor");
         Color color = Color.MAGENTA;
         ambientLightRemote.setColor(color);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Color has not been set in time!", HSVColorToRGBColorTransformer.transform(color), ambientLightRemote.getData().getColor());
     }
 
@@ -135,7 +135,7 @@ public class AmbientLightRemoteTest {
         System.out.println("setColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(50).setSaturation(50).setValue(50).build();
         ambientLightRemote.setColor(color);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Color has not been set in time!", color, ambientLightRemote.getData().getColor());
     }
 
@@ -150,7 +150,7 @@ public class AmbientLightRemoteTest {
         System.out.println("getColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(66).setSaturation(63).setValue(33).build();
         ambientLightRemote.setColor(color);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, ambientLightRemote.getColor());
     }
     
@@ -164,7 +164,7 @@ public class AmbientLightRemoteTest {
         System.out.println("getColor");
         HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(61).setSaturation(23).setValue(37).build();
         ambientLightRemote.setColor(color);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         HSVColor colorResult = (HSVColor) ambientLightRemote.callMethod("getColor");
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult);
     }
@@ -180,7 +180,7 @@ public class AmbientLightRemoteTest {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         ambientLightRemote.setPower(state);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Power state has not been set in time!", state, ambientLightRemote.getData().getPowerState());
     }
 
@@ -195,7 +195,7 @@ public class AmbientLightRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ambientLightRemote.setPower(state);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state, ambientLightRemote.getPower());
     }
 
@@ -210,7 +210,7 @@ public class AmbientLightRemoteTest {
         System.out.println("setBrightness");
         Double brightness = 75d;
         ambientLightRemote.setBrightness(brightness);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Power state has not been set in time!", brightness, ambientLightRemote.getData().getColor().getValue(), 0.1);
     }
 
@@ -225,7 +225,7 @@ public class AmbientLightRemoteTest {
         System.out.println("getBrightness");
         Double brightness = 25d;
         ambientLightRemote.setBrightness(brightness);
-        ambientLightRemote.requestStatus();
+        ambientLightRemote.requestData();
         assertEquals("Brightness has not been set in time or the return value from the getter is different!", brightness, ambientLightRemote.getBrightness(), 0.1);
     }
 }

@@ -32,7 +32,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import javax.swing.JComponent;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -96,7 +96,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
             genericUnitCollectionPanel.init();
             sceneCreationPanel.init();
 
-            CompletableFuture.runAsync(() -> {
+            Future.runAsync(() -> {
                 try {
                     sceneSelectorPanel.init();
                 } catch (InterruptedException ex) {
