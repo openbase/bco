@@ -26,8 +26,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.dc.bco.dal.lib.GlobalExecutorService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -63,13 +61,11 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     }
 
     @Override
-    public Future<BatteryState> getBattery() {
-        return GlobalExecutorService.submit(() -> {
-            try {
-                return getData().getBatteryState();
-            } catch (CouldNotPerformException ex) {
-                throw new NotAvailableException("battery", ex);
-            }
-        });
+    public BatteryState getBattery() throws NotAvailableException {
+        try {
+            return getData().getBatteryState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("battery", ex);
+        }
     }
 }

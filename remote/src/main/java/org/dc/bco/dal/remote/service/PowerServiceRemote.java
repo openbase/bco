@@ -15,17 +15,20 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -43,10 +46,12 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerOperationServ
     }
 
     @Override
-    public void setPower(final PowerStateType.PowerState state) throws CouldNotPerformException {
+    public Future<Void> setPower(final PowerStateType.PowerState state) throws CouldNotPerformException {
+        List<Future> futureList = new ArrayList<>();
         for (PowerOperationService service : getServices()) {
-            service.setPower(state);
+            futureList.add(service.setPower(state));
         }
+        return Future.allOf(futureList.toArray(new Future[futureList.size()]));
     }
 
     /**
@@ -54,9 +59,10 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerOperationServ
      *
      * @return
      * @throws CouldNotPerformException
+     * @throws java.lang.InterruptedException
      */
     @Override
-    public PowerStateType.PowerState getPower() throws CouldNotPerformException {
+    public PowerStateType.PowerState getPower() throws CouldNotPerformException, InterruptedException {
         for (PowerOperationService service : getServices()) {
             if (service.getPower().getValue() == PowerState.State.ON) {
                 return PowerStateType.PowerState.newBuilder().setValue(PowerState.State.ON).build();

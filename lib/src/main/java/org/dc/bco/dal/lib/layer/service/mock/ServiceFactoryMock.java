@@ -21,7 +21,7 @@ package org.dc.bco.dal.lib.layer.service.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.CompletableFuture;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
@@ -58,6 +58,7 @@ public class ServiceFactoryMock implements ServiceFactory {
     @Override
     public <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
         return new BrightnessOperationService() {
+
 
             @Override
             public Double getBrightness() throws CouldNotPerformException, InterruptedException {
@@ -183,7 +184,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
 
-    private static <ARGUMENT extends Object> CompletableFuture<Void> update(final ARGUMENT argument, final Unit unit) throws CouldNotPerformException {
+    private static <ARGUMENT extends Object> Future<Void> update(final ARGUMENT argument, final Unit unit) throws CouldNotPerformException {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {
@@ -198,10 +199,8 @@ public class ServiceFactoryMock implements ServiceFactory {
                 throw new CouldNotPerformException("Could not detect update method name!", ex);
             }
             unit.getClass().getMethod(methodName, argument.getClass()).invoke(unit, argument);
-            CompletableFuture f;
-            f.
-            return CompletableFuture.completedFuture(null);
-        } catch (Exception ex) {
+            return Future.completedFuture(null);
+        } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);
         }
     }

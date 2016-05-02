@@ -28,13 +28,13 @@ package org.dc.bco.dal.lib.layer.service;
  */
 
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.InstantiationException;
 

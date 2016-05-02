@@ -35,7 +35,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.unit.MotionSensorType.MotionSensor;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
 
 /**

@@ -15,12 +15,12 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -78,7 +78,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         String remoteClassName = AbstractServiceRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + "Remote";
         try {
             return (Class<? extends AbstractServiceRemote>) ServiceRemoteFactoryImpl.class.getClassLoader().loadClass(remoteClassName);
-        } catch (Exception ex) {
+        } catch (NullPointerException | ClassNotFoundException ex) {
             throw new CouldNotPerformException("Could not detect service remote class for ServiceType[" + serviceType.name() + "]!", ex);
         }
     }
@@ -87,7 +87,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         try {
             AbstractServiceRemote remote = serviceRemoteClass.newInstance();
             return remote;
-        } catch (Exception ex) {
+        } catch (InstantiationException | IllegalAccessException ex) {
             throw new org.dc.jul.exception.InstantiationException("Could not instantiate service remote out of Class[" + serviceRemoteClass.getName() + "]", ex);
         }
     }

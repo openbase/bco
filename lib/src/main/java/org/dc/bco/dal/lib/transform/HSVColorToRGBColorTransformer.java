@@ -27,9 +27,9 @@ package org.dc.bco.dal.lib.transform;
  * #L%
  */
 
+import java.awt.Color;
 import org.dc.jul.exception.CouldNotTransformException;
 import org.dc.jul.exception.TypeNotSupportedException;
-import java.awt.Color;
 import rst.vision.HSVColorType;
 import rst.vision.HSVColorType.HSVColor;
 

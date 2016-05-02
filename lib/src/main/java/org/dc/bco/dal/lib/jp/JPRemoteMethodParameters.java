@@ -27,9 +27,9 @@ package org.dc.bco.dal.lib.jp;
  * #L%
  */
 
-import org.dc.jps.core.AbstractJavaProperty;
 import java.util.ArrayList;
 import java.util.List;
+import org.dc.jps.core.AbstractJavaProperty;
 
 /**
  *

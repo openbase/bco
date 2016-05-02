@@ -15,17 +15,18 @@ package org.dc.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -61,8 +62,8 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            this.shutterService = getServiceFactory().newShutterService(this);
-            this.openingRatioService = getServiceFactory().newOpeningRatioService(this);
+            shutterService = getServiceFactory().newShutterService(this);
+            openingRatioService = getServiceFactory().newOpeningRatioService(this);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -79,9 +80,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     @Override
-    public void setShutter(final ShutterState state) throws CouldNotPerformException {
+    public Future<Void> setShutter(final ShutterState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to ShutterState [" + state + "]");
-        this.shutterService.setShutter(state);
+        return shutterService.setShutter(state);
     }
 
     @Override
@@ -104,9 +105,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to OpeningRatio [" + openingRatio + "]");
-        this.openingRatioService.setOpeningRatio(openingRatio);
+        return openingRatioService.setOpeningRatio(openingRatio);
     }
 
     @Override

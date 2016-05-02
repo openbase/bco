@@ -27,9 +27,9 @@ package org.dc.bco.dal.lib.jp;
  * #L%
  */
 
+import java.lang.reflect.Method;
 import org.dc.jps.preset.AbstractJPMethod;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
-import java.lang.reflect.Method;
 
 /**
  *

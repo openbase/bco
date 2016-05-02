@@ -15,18 +15,20 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -35,18 +37,19 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioOperationService> implements OpeningRatioOperationService{
+public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioOperationService> implements OpeningRatioOperationService {
 
     public OpeningRatioServiceRemote() {
         super(ServiceType.OPENING_RATIO_SERVICE);
     }
 
     @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        for(OpeningRatioOperationService service : getServices()) {
-        for (OpeningRatioService service : getServices()) {
-            service.setOpeningRatio(openingRatio);
+    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+        List<Future> futureList = new ArrayList<>();
+        for (OpeningRatioOperationService service : getServices()) {
+            futureList.add(service.setOpeningRatio(openingRatio));
         }
+        return Future.allOf(futureList.toArray(new Future[futureList.size()]));
     }
 
     /**
@@ -55,11 +58,12 @@ public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRati
      *
      * @return
      * @throws CouldNotPerformException
+     * @throws java.lang.InterruptedException
      */
     @Override
-    public Double getOpeningRatio() throws CouldNotPerformException {
+    public Double getOpeningRatio() throws CouldNotPerformException, InterruptedException {
         Double average = 0d;
-        for (OpeningRatioService service : getServices()) {
+        for (OpeningRatioOperationService service : getServices()) {
             average += service.getOpeningRatio();
         }
         average /= getServices().size();

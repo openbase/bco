@@ -36,7 +36,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperStateType.TamperState;
 import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
 
 /**

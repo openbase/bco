@@ -36,7 +36,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.homeautomation.unit.HandleSensorType.HandleSensor;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

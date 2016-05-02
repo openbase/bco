@@ -15,19 +15,19 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
@@ -36,7 +36,7 @@ import rst.homeautomation.state.SmokeStateType.SmokeState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class SmokeStateProviderRemote extends AbstractServiceRemote<SmokeStateProvider> implements SmokeStateProvider {
+public class SmokeStateProviderRemote extends AbstractServiceRemote<SmokeStateProviderService> implements SmokeStateProviderService {
 
     public SmokeStateProviderRemote() {
         super(ServiceType.SMOKE_STATE_PROVIDER);
@@ -49,11 +49,12 @@ public class SmokeStateProviderRemote extends AbstractServiceRemote<SmokeStatePr
      *
      * @return
      * @throws CouldNotPerformException
+     * @throws java.lang.InterruptedException
      */
     @Override
-    public SmokeState getSmokeState() throws CouldNotPerformException {
+    public SmokeState getSmokeState() throws CouldNotPerformException, InterruptedException {
         boolean someSmoke = false;
-        for (SmokeStateProvider provider : getServices()) {
+        for (SmokeStateProviderService provider : getServices()) {
             if (provider.getSmokeState().getValue() == SmokeState.State.SMOKE) {
                 return SmokeState.newBuilder().setValue(SmokeState.State.SMOKE).build();
             }

@@ -227,6 +227,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         }
 
         for (Entry<String, ServiceTemplate.ServiceType> methodEntry : methodMap.entrySet()) {
+            Class<? extends Service> serviceInterfaceClass = null;
+
             try {
                 // Identify package
                 Package servicePackage;
@@ -241,22 +243,22 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                 }
 
                 // Identify interface class
-                Class<? extends Service> serviceInterfaceClass;
                 try {
                     serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + methodEntry.getKey());
                 } catch (ClassNotFoundException | ClassCastException ex) {
                     throw new CouldNotPerformException("Could not load service interface!", ex);
                 }
 
-                if(!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
-
+                if (!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
+                    // interface not supported dummy.
                 }
 
-                Service cast = serviceInterfaceClass.cast(this);
+                Class<? extends Service> asSubclass = getClass().asSubclass(serviceInterfaceClass);
 
-                RPCHelper.registerInterface(serviceInterfaceClass, serviceInterfaceClass.cast(this), server);
+//                RPCHelper.registerServiceInterface(serviceInterfaceClass, this, server);
+                RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] for service methode " + method.toGenericString(), ex), logger);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Methode [" + methodEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
         }
 //        for (ServiceType serviceType : ServiceType.getServiceTypeList(this)) {
@@ -303,7 +305,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public Method getUpdateMethod(final ServiceTemplate.ServiceType serviceType, Class serviceArgumentClass) throws CouldNotPerformException {
         try {
             Method updateMethod;
-            String updateMethodName = Service.UPDATE_METHOD_PREFIX + Service.getServiceTypeName(serviceType);
+            String updateMethodName = Service.UPDATE_METHOD_PREFIX + Service.getServiceBaseName(serviceType);
             try {
                 updateMethod = getClass().getMethod(updateMethodName, serviceArgumentClass);
                 if (updateMethod == null) {

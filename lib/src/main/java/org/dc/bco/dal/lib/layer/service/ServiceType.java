@@ -15,29 +15,29 @@ package org.dc.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.bco.dal.lib.layer.service.provider.BatteryProviderService;
 import org.dc.bco.dal.lib.layer.service.provider.ButtonProviderService;
 import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
@@ -52,7 +52,6 @@ import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.NotSupportedException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,15 +162,15 @@ public enum ServiceType {
 
     @Deprecated
     public static void registerServiceMethods(final RSBLocalServerInterface server, final Service service) {
-        for (ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
-            for (Method method : serviceType.getDeclaredMethods()) {
-                try {
-                    server.addMethod(method.getName(), getCallback(method, service, serviceType));
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex),logger);
-                }
-            }
-        }
+//        for (ServiceType serviceType : ServiceType.getServiceTypeList(service)) {
+//            for (Method method : serviceType.getDeclaredMethods()) {
+//                try {
+//                    server.addMethod(method.getName(), getCallback(method, service, serviceType));
+//                } catch (CouldNotPerformException ex) {
+//                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex),logger);
+//                }
+//            }
+//        }
     }
 
     private static Callback getCallback(final Method method, final Service service, final ServiceType serviceType) throws CouldNotPerformException {

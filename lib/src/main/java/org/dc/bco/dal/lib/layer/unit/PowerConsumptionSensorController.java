@@ -36,7 +36,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *

@@ -15,19 +15,19 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.TamperStateType.TamperState;
@@ -36,7 +36,7 @@ import rst.homeautomation.state.TamperStateType.TamperState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class TamperProviderRemote extends AbstractServiceRemote<TamperProvider> implements TamperProvider {
+public class TamperProviderRemote extends AbstractServiceRemote<TamperProviderService> implements TamperProviderService {
 
     public TamperProviderRemote() {
         super(ServiceType.TAMPER_PROVIDER);
@@ -48,10 +48,11 @@ public class TamperProviderRemote extends AbstractServiceRemote<TamperProvider> 
      *
      * @return
      * @throws CouldNotPerformException
+     * @throws java.lang.InterruptedException
      */
     @Override
-    public TamperState getTamper() throws CouldNotPerformException {
-        for (TamperProvider provider : getServices()) {
+    public TamperState getTamper() throws CouldNotPerformException, InterruptedException {
+        for (TamperProviderService provider : getServices()) {
             if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
                 return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
             }
