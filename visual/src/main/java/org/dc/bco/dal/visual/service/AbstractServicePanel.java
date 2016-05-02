@@ -22,21 +22,20 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.visual.DalVisualRemote;
 import org.dc.bco.dal.visual.util.StatusPanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.schedule.SyncObject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;

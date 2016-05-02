@@ -32,7 +32,6 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
@@ -80,7 +79,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
     }
 
     @Override
-    public void update(Observable<GeneratedMessage> source, GeneratedMessage data) {
+    public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) {
         updateDynamicComponents(data);
     }
 

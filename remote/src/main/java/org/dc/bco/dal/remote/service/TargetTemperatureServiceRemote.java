@@ -26,24 +26,35 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+=======
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
+>>>>>>> master
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
+<<<<<<< HEAD
 public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureOperationService> implements TargetTemperatureOperationService {
+=======
+public class TargetTemperatureServiceRemote extends AbstractServiceRemote<TargetTemperatureService> implements TargetTemperatureStateOperationServiceCollection {
+>>>>>>> master
 
     public TargetTemperatureServiceRemote() {
         super(ServiceType.TARGET_TEMPERATURE_SERVICE);
     }
 
     @Override
+<<<<<<< HEAD
     public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
         List<Future> futureList = new ArrayList<>();
         for (TargetTemperatureOperationService service : getServices()) {
@@ -68,5 +79,9 @@ public class TargetTemperatureServiceRemote extends AbstractServiceRemote<Target
         }
         average /= getServices().size();
         return average;
+=======
+    public Collection<TargetTemperatureService> getTargetTemperatureStateOperationServices() {
+        return getServices();
+>>>>>>> master
     }
 }

@@ -26,26 +26,35 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+=======
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
+>>>>>>> master
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.PowerStateType;
-import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author mpohling
  */
+<<<<<<< HEAD
 public class PowerServiceRemote extends AbstractServiceRemote<PowerOperationService> implements PowerOperationService {
+=======
+public class PowerServiceRemote extends AbstractServiceRemote<PowerService> implements PowerStateOperationServiceCollection {
+>>>>>>> master
 
     public PowerServiceRemote() {
         super(ServiceType.POWER_SERVICE);
     }
 
     @Override
+<<<<<<< HEAD
     public Future<Void> setPower(final PowerStateType.PowerState state) throws CouldNotPerformException {
         List<Future> futureList = new ArrayList<>();
         for (PowerOperationService service : getServices()) {
@@ -69,5 +78,9 @@ public class PowerServiceRemote extends AbstractServiceRemote<PowerOperationServ
             }
         }
         return PowerStateType.PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+=======
+    public Collection<PowerService> getPowerStateOperationServices() {
+        return getServices();
+>>>>>>> master
     }
 }

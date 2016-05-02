@@ -30,7 +30,6 @@ package org.dc.bco.dal.visual.util;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import com.google.protobuf.GeneratedMessage;
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 
@@ -84,7 +83,7 @@ public abstract class RSBRemoteViewFrame<M extends GeneratedMessage> extends jav
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void update(Observable source, Object data) {
+    public void update(final Observable source, Object data) {
         updateDynamicComponents();
     }
     

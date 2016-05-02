@@ -26,24 +26,35 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+=======
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.collection.OpeningRatioStateOperationServiceCollection;
+>>>>>>> master
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
+<<<<<<< HEAD
 public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioOperationService> implements OpeningRatioOperationService {
+=======
+public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioService> implements OpeningRatioStateOperationServiceCollection {
+>>>>>>> master
 
     public OpeningRatioServiceRemote() {
         super(ServiceType.OPENING_RATIO_SERVICE);
     }
 
     @Override
+<<<<<<< HEAD
     public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         List<Future> futureList = new ArrayList<>();
         for (OpeningRatioOperationService service : getServices()) {
@@ -68,5 +79,9 @@ public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRati
         }
         average /= getServices().size();
         return average;
+=======
+    public Collection<OpeningRatioService> getOpeningRatioStateOperationServices() {
+        return getServices();
+>>>>>>> master
     }
 }

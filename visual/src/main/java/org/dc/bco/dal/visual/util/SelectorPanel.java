@@ -47,6 +47,7 @@ import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -79,7 +80,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     private LocationConfigHolder selectedLocationConfigHolder;
     private UnitConfigHolder selectedUnitConfigHolder;
 
-    private Observable<UnitConfig> unitConfigObservable;
+    private ObservableImpl<UnitConfig> unitConfigObservable;
 
     private boolean init = false;
 
@@ -94,7 +95,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     public SelectorPanel() throws InstantiationException {
         try {
             this.executorService = Executors.newCachedThreadPool();
-            this.unitConfigObservable = new Observable<>();
+            this.unitConfigObservable = new ObservableImpl<>();
             this.initComponents();
             this.setEnable(false);
             this.initDynamicComponents();

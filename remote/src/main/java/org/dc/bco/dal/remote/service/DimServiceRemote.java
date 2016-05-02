@@ -26,24 +26,35 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+=======
+import java.util.Collection;
+import org.dc.bco.dal.lib.layer.service.DimService;
+import org.dc.bco.dal.lib.layer.service.collection.DimStateOperationServiceCollection;
+>>>>>>> master
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
+<<<<<<< HEAD
 public class DimServiceRemote extends AbstractServiceRemote<DimOperationService> implements DimOperationService {
+=======
+public class DimServiceRemote extends AbstractServiceRemote<DimService> implements DimStateOperationServiceCollection {
+>>>>>>> master
 
     public DimServiceRemote() {
         super(ServiceType.DIM_SERVICE);
     }
 
     @Override
+<<<<<<< HEAD
     public Future<Void> setDim(Double dim) throws CouldNotPerformException {
         List<Future> futureList = new ArrayList<>();
         for (DimOperationService service : getServices()) {
@@ -67,5 +78,9 @@ public class DimServiceRemote extends AbstractServiceRemote<DimOperationService>
         }
         average /= getServices().size();
         return average;
+=======
+    public Collection<DimService> getDimStateOperationServices() {
+        return getServices();
+>>>>>>> master
     }
 }

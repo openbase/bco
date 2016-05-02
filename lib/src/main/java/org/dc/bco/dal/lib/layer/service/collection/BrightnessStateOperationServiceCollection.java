@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.dal.remote.service;
+package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
  * #%L
- * DAL Remote
+ * DAL Library
  * %%
  * Copyright (C) 2014 - 2016 DivineCooperation
  * %%
@@ -15,45 +15,33 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
-import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.dc.jul.exception.CouldNotPerformException;
+
 import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
-import rst.homeautomation.service.ServiceTemplateType;
+import org.dc.jul.exception.CouldNotPerformException;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessOperationService> implements BrightnessStateOperationServiceCollection {
-
-    public BrightnessServiceRemote() {
-        super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
-    }
+public interface BrightnessStateOperationServiceCollection extends BrightnessService {
 
     @Override
-<<<<<<< HEAD
-    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
-        List<Future> futureList = new ArrayList<>();
-        for (BrightnessOperationService service : getServices()) {
-            futureList.add(service.setBrightness(brightness));
+    default public void setBrightness(Double brightness) throws CouldNotPerformException {
+        for (BrightnessService service : getBrightnessStateOperationServices()) {
+            service.setBrightness(brightness);
         }
-        return Future.allOf(futureList.toArray(new Future[futureList.size()]));
     }
 
     /**
@@ -62,18 +50,16 @@ public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessOpe
      *
      * @return
      * @throws CouldNotPerformException
-     * @throws java.lang.InterruptedException
      */
     @Override
-    public Double getBrightness() throws CouldNotPerformException, InterruptedException {
+    default public Double getBrightness() throws CouldNotPerformException {
         Double average = 0d;
-        for (BrightnessOperationService service : getServices()) {
+        for (BrightnessService service : getBrightnessStateOperationServices()) {
             average += service.getBrightness();
         }
-        average /= getServices().size();
+        average /= getBrightnessStateOperationServices().size();
         return average;
-    
-    public Collection<BrightnessService> getBrightnessStateOperationServices() {
-        return getServices();
     }
+
+    public Collection<BrightnessService> getBrightnessStateOperationServices();
 }

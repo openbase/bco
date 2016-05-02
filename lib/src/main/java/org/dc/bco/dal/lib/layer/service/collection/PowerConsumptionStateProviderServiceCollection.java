@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.dal.remote.service;
+package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
  * #%L
- * DAL Remote
+ * DAL Library
  * %%
  * Copyright (C) 2014 - 2016 DivineCooperation
  * %%
@@ -15,67 +15,50 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-<<<<<<< HEAD
-import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
-import org.dc.jul.exception.CouldNotPerformException;
-=======
+
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
->>>>>>> master
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.dc.jul.exception.CouldNotPerformException;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-<<<<<<< HEAD
-public class PowerConsumptionProviderRemote extends AbstractServiceRemote<PowerConsumptionProviderService> implements PowerConsumptionProviderService {
-=======
-public class PowerConsumptionProviderRemote extends AbstractServiceRemote<PowerConsumptionProvider> implements PowerConsumptionStateProviderServiceCollection {
->>>>>>> master
+public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionProvider {
 
-    public PowerConsumptionProviderRemote() {
-        super(ServiceType.POWER_CONSUMPTION_PROVIDER);
-    }
-
-<<<<<<< HEAD
     /**
      * Returns an average current and voltage for the underlying provider and
      * the sum of their consumptions.
      *
      * @return
      * @throws CouldNotPerformException
-     * @throws java.lang.InterruptedException
      */
     @Override
-    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException, InterruptedException {
+    default public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
         double consumptionSum = 0;
         double averageCurrent = 0;
         double averageVoltage = 0;
-        for (PowerConsumptionProviderService provider : getServices()) {
+        for (PowerConsumptionProvider provider : getPowerConsumptionStateProviderServices()) {
             consumptionSum += provider.getPowerConsumption().getConsumption();
             averageCurrent += provider.getPowerConsumption().getCurrent();
             averageVoltage += provider.getPowerConsumption().getVoltage();
         }
-        averageCurrent = averageCurrent / getServices().size();
-        averageVoltage = averageVoltage / getServices().size();
+        averageCurrent = averageCurrent / getPowerConsumptionStateProviderServices().size();
+        averageVoltage = averageVoltage / getPowerConsumptionStateProviderServices().size();
         return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).build();
-=======
-    @Override
-    public Collection<PowerConsumptionProvider> getPowerConsumptionStateProviderServices() {
-        return getServices();
->>>>>>> master
     }
+
+    public Collection<PowerConsumptionProvider> getPowerConsumptionStateProviderServices();
 }

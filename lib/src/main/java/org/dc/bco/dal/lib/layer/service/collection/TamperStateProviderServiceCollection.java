@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.dc.bco.dal.remote.service;
+package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
  * #%L
- * DAL Remote
+ * DAL Library
  * %%
  * Copyright (C) 2014 - 2016 DivineCooperation
  * %%
@@ -15,63 +15,45 @@ package org.dc.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-<<<<<<< HEAD
 
-import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
-import org.dc.jul.exception.CouldNotPerformException;
-=======
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
->>>>>>> master
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.dc.jul.exception.CouldNotPerformException;
+import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-<<<<<<< HEAD
-public class TamperProviderRemote extends AbstractServiceRemote<TamperProviderService> implements TamperProviderService {
-=======
-public class TamperProviderRemote extends AbstractServiceRemote<TamperProvider> implements TamperStateProviderServiceCollection {
->>>>>>> master
+public interface TamperStateProviderServiceCollection extends TamperProvider {
 
-    public TamperProviderRemote() {
-        super(ServiceType.TAMPER_PROVIDER);
-    }
-
-<<<<<<< HEAD
     /**
      * Returns tamper if at least one of the tamper providers returns tamper and
      * else no tamper.
      *
      * @return
      * @throws CouldNotPerformException
-     * @throws java.lang.InterruptedException
      */
     @Override
-    public TamperState getTamper() throws CouldNotPerformException, InterruptedException {
-        for (TamperProviderService provider : getServices()) {
+    default public TamperState getTamper() throws CouldNotPerformException {
+        for (TamperProvider provider : getTamperStateProviderServices()) {
             if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
                 return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
             }
         }
         return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
-=======
-    @Override
-    public Collection<TamperProvider> getTamperStateProviderServices() {
-        return getServices();
->>>>>>> master
     }
+
+    public Collection<TamperProvider> getTamperStateProviderServices();
 }
