@@ -35,7 +35,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.dc.jul.storage.registry.RegistrySynchronizer;

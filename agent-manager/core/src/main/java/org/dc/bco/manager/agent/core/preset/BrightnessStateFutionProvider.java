@@ -25,7 +25,7 @@ package org.dc.bco.manager.agent.core.preset;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.provider.BrightnessProviderService;
 import org.dc.bco.dal.remote.unit.BrightnessSensorRemote;
+import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.unit.BrightnessSensorType;
@@ -44,7 +45,11 @@ import rst.homeautomation.unit.UnitTemplateType;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
+<<<<<<< HEAD
 public class BrightnessStateFutionProvider extends Observable<Double> implements BrightnessProviderService {
+=======
+public class BrightnessStateFutionProvider extends ObservableImpl<Double> implements BrightnessProvider {
+>>>>>>> master
 //
 //    /**
 //     * Default 3 minute window of no movement unit the state switches to NO_MOTION.

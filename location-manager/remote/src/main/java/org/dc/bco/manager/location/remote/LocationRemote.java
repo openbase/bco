@@ -7,17 +7,17 @@ import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.AlarmStateType;
-import rst.homeautomation.state.MotionStateType;
-import rst.homeautomation.state.PowerConsumptionStateType;
-import rst.homeautomation.state.PowerStateType;
-import rst.homeautomation.state.ShutterStateType;
-import rst.homeautomation.state.SmokeStateType;
-import rst.homeautomation.state.StandbyStateType;
-import rst.homeautomation.state.TamperStateType;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
+import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.ShutterStateType.ShutterState;
+import rst.homeautomation.state.SmokeStateType.SmokeState;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
+import rst.homeautomation.state.TamperStateType.TamperState;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationDataType.LocationData;
-import rst.vision.HSVColorType;
+import rst.vision.HSVColorType.HSVColor;
 
 /*
  * #%L
@@ -49,6 +49,15 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
     }
 
     @Override
@@ -74,18 +83,17 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getBrightness() throws CouldNotPerformException {
-//        return RPCHelper.callRemoteMethod(this, Double.class).get();
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getBrightness();
     }
 
     @Override
-    public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
+    public void setColor(HSVColor color) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(color, this);
     }
 
     @Override
-    public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public HSVColor getColor() throws CouldNotPerformException {
+        return getData().getColor();
     }
 
     @Override
@@ -95,7 +103,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getDim() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getDimValue();
     }
 
     @Override
@@ -105,37 +113,37 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getOpeningRatio() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getOpeningRatio();
     }
 
     @Override
-    public void setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
+    public void setPower(PowerState state) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(state, this);
     }
 
     @Override
-    public PowerStateType.PowerState getPower() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public PowerState getPower() throws CouldNotPerformException {
+        return getData().getPowerState();
     }
 
     @Override
-    public void setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
+    public void setShutter(ShutterState state) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(state, this);
     }
 
     @Override
-    public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ShutterState getShutter() throws CouldNotPerformException {
+        return getData().getShutterState();
     }
 
     @Override
-    public void setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
+    public void setStandby(StandbyState state) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(state, this);
     }
 
     @Override
-    public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public StandbyState getStandby() throws CouldNotPerformException {
+        return getData().getStandbyState();
     }
 
     @Override
@@ -145,36 +153,36 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
 
     @Override
     public Double getTargetTemperature() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getTargetTemperature();
     }
 
     @Override
-    public MotionStateType.MotionState getMotion() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public MotionState getMotion() throws CouldNotPerformException {
+        return getData().getMotionState();
     }
 
     @Override
-    public AlarmStateType.AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
+        return getData().getSmokeAlarmState();
     }
 
     @Override
-    public SmokeStateType.SmokeState getSmokeState() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public SmokeState getSmokeState() throws CouldNotPerformException {
+        return getData().getSmokeState();
     }
 
     @Override
     public Double getTemperature() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getData().getTemperature();
     }
 
     @Override
-    public PowerConsumptionStateType.PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
+        return getData().getPowerConsumptionState();
     }
 
     @Override
-    public TamperStateType.TamperState getTamper() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public TamperState getTamper() throws CouldNotPerformException {
+        return getData().getTamperState();
     }
 }

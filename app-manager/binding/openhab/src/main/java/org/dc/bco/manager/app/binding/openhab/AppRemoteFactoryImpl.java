@@ -63,7 +63,7 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, AppConfig> {
             appRemote.addObserver(new Observer<AppData>() {
 
                 @Override
-                public void update(Observable<AppData> source, AppData data) throws Exception {
+                public void update(final Observable<AppData> source, AppData data) throws Exception {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
                 }
             });

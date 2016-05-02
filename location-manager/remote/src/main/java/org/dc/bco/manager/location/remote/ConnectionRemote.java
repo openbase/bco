@@ -26,15 +26,14 @@ package org.dc.bco.manager.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.location.lib.Connection;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.HandleStateType;
-import rst.homeautomation.state.ReedSwitchStateType;
+import rst.homeautomation.state.HandleStateType.HandleState;
+import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -46,6 +45,8 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
     }
 
     @Override
@@ -65,12 +66,12 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     @Override
-    public HandleStateType.HandleState getHandle() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public HandleState getHandle() throws CouldNotPerformException {
+        return getData().getHandleState();
     }
 
     @Override
-    public ReedSwitchStateType.ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
+        return getData().getReedSwitchState();
     }
 }

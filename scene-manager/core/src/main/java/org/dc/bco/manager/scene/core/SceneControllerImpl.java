@@ -76,7 +76,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         this.buttonObserver = new Observer<ButtonType.Button>() {
 
             @Override
-            public void update(Observable<ButtonType.Button> source, ButtonType.Button data) throws Exception {
+            public void update(final Observable<ButtonType.Button> source, ButtonType.Button data) throws Exception {
                 if (data.getButtonState().getValue().equals(ButtonState.State.CLICKED)) {
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                 }
@@ -85,13 +85,13 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    protected void postInit() throws InitializationException, InterruptedException {
+    public void init(SceneConfig config) throws InitializationException, InterruptedException {
         try {
             this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-        super.postInit();
+        super.init(config);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                     buttonRemoteList.clear();
                     ButtonRemote buttonRemote;
 
-                    for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(getConfig().getLabel())) {
+                    for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(config.getLabel())) {
                         //TODO implement deviceregistry method get unit by label and type.
                         if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
                             continue;

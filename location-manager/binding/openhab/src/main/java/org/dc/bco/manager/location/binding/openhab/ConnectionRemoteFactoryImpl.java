@@ -53,7 +53,7 @@ public class ConnectionRemoteFactoryImpl implements Factory<ConnectionRemote, Co
             connectionRemote.addObserver(new Observer<ConnectionData>() {
 
                 @Override
-                public void update(Observable<ConnectionData> source, ConnectionData data) throws Exception {
+                public void update(final Observable<ConnectionData> source, ConnectionData data) throws Exception {
 //                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
                 }
             });

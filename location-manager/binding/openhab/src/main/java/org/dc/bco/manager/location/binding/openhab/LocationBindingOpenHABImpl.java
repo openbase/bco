@@ -40,6 +40,7 @@ import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.processing.StringProcessor;
+import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.dc.jul.storage.registry.RegistrySynchronizer;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
@@ -60,8 +61,8 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final LocationRegistryRemote locationRegistryRemote;
     private final LocationRemoteFactoryImpl locationRemoteFactory;
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
-    private final RegistrySynchronizer<String, LocationRemote, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
-    private final RegistrySynchronizer<String, ConnectionRemote, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, LocationRemote, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
     private final RegistryImpl<String, LocationRemote> locationRegistry;
     private final RegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
@@ -74,8 +75,20 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         connectionRegistry = new RegistryImpl<>();
         locationRemoteFactory = new LocationRemoteFactoryImpl();
         connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-        this.locationRegistrySynchronizer = new RegistrySynchronizer<>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory);
-        this.connectionRegistrySynchronizer = new RegistrySynchronizer<>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionRemoteFactory);
+        this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, LocationConfig, LocationConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory) {
+
+            @Override
+            public boolean activationCondition(LocationConfig config) {
+                return true;
+            }
+        };
+        this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, ConnectionConfig, ConnectionConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
+
+            @Override
+            public boolean activationCondition(ConnectionConfig config) {
+                return true;
+            }
+        };
     }
 
     public void init() throws InitializationException, InterruptedException {
@@ -88,6 +101,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
             @Override
             public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
+                //TODO:paramite; compare this to the implementation in the device manager openhab binding
                 try {
                     RSBRemoteService remote = null;
                     if (command.getItem().startsWith("Location")) {
@@ -142,6 +156,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         super.init(itemFilter, openHABRemote);
+        locationRemoteFactory.init(openHABRemote);
         try {
             locationRegistryRemote.init();
             locationRegistryRemote.activate();

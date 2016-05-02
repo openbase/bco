@@ -35,7 +35,7 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
-import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
@@ -46,6 +46,7 @@ import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.dc.jul.exception.MultiException;
+import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceRegistryType;
@@ -79,7 +80,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     private UnitConfigHolder selectedUnitConfigHolder;
     private ServiceTypeHolder selectedServiceTypeHolder;
 
-    private final Observable<UnitConfigServiceTypeHolder> unitConfigServiceTypeObservable;
+    private final ObservableImpl<UnitConfigServiceTypeHolder> unitConfigServiceTypeObservable;
 
     private boolean init = false;
 
@@ -91,7 +92,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
      */
     public SceneSelectorPanel() {
         this.serviceExecuterService = Executors.newSingleThreadExecutor();
-        this.unitConfigServiceTypeObservable = new Observable<>();
+        this.unitConfigServiceTypeObservable = new ObservableImpl<>();
         this.initComponents();
         this.setEnable(false);
         this.initDynamicComponents();
@@ -131,7 +132,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
 
             @Override
-            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
+            public void update(final Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -144,7 +145,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         deviceRegistryRemote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
 
             @Override
-            public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
+            public void update(final Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

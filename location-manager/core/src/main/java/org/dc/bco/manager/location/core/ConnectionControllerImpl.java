@@ -27,13 +27,16 @@ package org.dc.bco.manager.location.core;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dc.bco.dal.remote.service.AbstractServiceRemote;
-import org.dc.bco.dal.remote.service.HandleProviderRemote;
-import org.dc.bco.dal.remote.service.ReedSwitchProviderRemote;
-import org.dc.bco.dal.remote.service.ServiceRemoteFactoryImpl;
+import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
+import org.dc.bco.dal.remote.unit.UnitRemote;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
+import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.bco.manager.location.lib.Connection;
 import org.dc.bco.manager.location.lib.ConnectionController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
@@ -41,13 +44,20 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.extension.protobuf.ClosableDataBuilder;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
+import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.HandleStateType;
 import rst.homeautomation.state.ReedSwitchStateType;
 import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -57,38 +67,145 @@ import rst.spatial.ConnectionDataType.ConnectionData;
  */
 public class ConnectionControllerImpl extends AbstractConfigurableController<ConnectionData, ConnectionData.Builder, ConnectionConfig> implements ConnectionController {
 
-    private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
+    }
+
+    private final UnitRemoteFactory factory;
+    private final Map<String, UnitRemote> unitRemoteMap;
+    private final Map<ServiceTemplateType.ServiceTemplate.ServiceType, Collection<? extends Service>> serviceMap;
+    private List<String> originalUnitIdList;
 
     public ConnectionControllerImpl(ConnectionConfig connection) throws InstantiationException {
         super(ConnectionData.newBuilder());
-        serviceRemoteMap = new HashMap<>();
+        this.factory = UnitRemoteFactoryImpl.getInstance();
+        this.unitRemoteMap = new HashMap<>();
+        this.serviceMap = new HashMap<>();
+    }
+
+    private boolean isSupportedServiceType(final ServiceType serviceType) {
+        switch (serviceType) {
+            case HANDLE_PROVIDER:
+            case REED_SWITCH_PROVIDER:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isSupportedServiceType(final List<ServiceType> serviceTypes) {
+        return serviceTypes.stream().anyMatch((serviceType) -> (isSupportedServiceType(serviceType)));
+    }
+
+    private void addRemoteToServiceMap(final ServiceType serviceType, final UnitRemote unitRemote) {
+        //TODO: should be replaced with generic class loading
+        // and the update can be realized with reflections or the setField method and a notify
+        switch (serviceType) {
+            case HANDLE_PROVIDER:
+                ((ArrayList<HandleProvider>) serviceMap.get(ServiceType.HANDLE_PROVIDER)).add((HandleProvider) unitRemote);
+                unitRemote.addObserver(new Observer() {
+
+                    @Override
+                    public void update(final Observable source, Object data) throws Exception {
+                        HandleStateType.HandleState handle = getHandle();
+                        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
+                            dataBuilder.getInternalBuilder().setHandleState(handle);
+                        } catch (Exception ex) {
+                            throw new CouldNotPerformException("Could not apply data change!", ex);
+                        }
+                    }
+                });
+                break;
+            case REED_SWITCH_PROVIDER:
+                ((ArrayList<ReedSwitchProvider>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER)).add((ReedSwitchProvider) unitRemote);
+                unitRemote.addObserver(new Observer() {
+
+                    @Override
+                    public void update(final Observable source, Object data) throws Exception {
+                        ReedSwitchStateType.ReedSwitchState reedSwitch = getReedSwitch();
+                        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
+                            dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
+                        } catch (Exception ex) {
+                            throw new CouldNotPerformException("Could not apply data change!", ex);
+                        }
+                    }
+                });
+                break;
+        }
     }
 
     @Override
     public void init(final ConnectionConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
         try {
-            Map<ServiceType, List<UnitConfigType.UnitConfig>> unitConfigByServiceMap = new HashMap<>();
+            originalUnitIdList = config.getUnitIdList();
             for (ServiceType serviceType : ServiceType.values()) {
-                unitConfigByServiceMap.put(serviceType, new ArrayList<>());
+                if (isSupportedServiceType(serviceType)) {
+                    serviceMap.put(serviceType, new ArrayList<>());
+                }
             }
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
             for (UnitConfigType.UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
                 if (config.getUnitIdList().contains(unitConfig.getId())) {
-                    for (ServiceType serviceType : deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList()) {
-                        unitConfigByServiceMap.get(serviceType).add(unitConfig);
+                    List<ServiceType> serviceTypes = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList();
+
+                    // ignore units that do not have any service supported by a location
+                    if (!isSupportedServiceType(serviceTypes)) {
+                        continue;
                     }
+
+                    UnitRemote unitRemote = factory.newInitializedInstance(unitConfig);
+                    unitRemoteMap.put(unitConfig.getId(), unitRemote);
                 }
-            }
-            for (Map.Entry<ServiceType, List<UnitConfigType.UnitConfig>> entry : unitConfigByServiceMap.entrySet()) {
-                if (entry.getValue().isEmpty()) {
-                    continue;
-                }
-                serviceRemoteMap.put(entry.getKey(), ServiceRemoteFactoryImpl.getInstance().createAndInitServiceRemote(entry.getKey(), entry.getValue()));
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+        super.init(config);
+    }
+
+    @Override
+    public ConnectionConfig updateConfig(final ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
+        List<String> newUnitIdList = new ArrayList<>(config.getUnitIdList());
+        for (String originalId : originalUnitIdList) {
+            if (config.getUnitIdList().contains(originalId)) {
+                newUnitIdList.remove(originalId);
+            } else {
+                unitRemoteMap.get(originalId).deactivate();
+                unitRemoteMap.remove(originalId);
+                for (Collection<? extends Service> serviceCollection : serviceMap.values()) {
+                    Collection serviceSelectionCopy = new ArrayList<>(serviceCollection);
+                    for (Object service : serviceSelectionCopy) {
+                        if (((UnitRemote) service).getId().equals(originalId)) {
+                            serviceCollection.remove(service);
+                        }
+                    }
+                }
+            }
+        }
+        for (String newUnitId : newUnitIdList) {
+            DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
+            UnitConfig unitConfig = deviceRegistry.getUnitConfigById(newUnitId);
+            List<ServiceType> serviceTypes = new ArrayList<>();
+
+            // ignore units that do not have any service supported by a location
+            if (!isSupportedServiceType(serviceTypes)) {
+                continue;
+            }
+
+            UnitRemote unitRemote = factory.newInitializedInstance(unitConfig);
+            unitRemoteMap.put(unitConfig.getId(), unitRemote);
+            if (isActive()) {
+                for (ServiceType serviceType : serviceTypes) {
+                    addRemoteToServiceMap(serviceType, unitRemote);
+                }
+                unitRemote.activate();
+            }
+        }
+        if (isActive()) {
+            getCurrentStatus();
+        }
+        originalUnitIdList = config.getUnitIdList();
+        return super.updateConfig(config);
     }
 
     @Override
@@ -98,17 +215,39 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
+        for (UnitRemote unitRemote : unitRemoteMap.values()) {
+            unitRemote.activate();
+        }
         super.activate();
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.activate();
+
+        for (UnitRemote unitRemote : unitRemoteMap.values()) {
+            for (ServiceType serviceType : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTypeList()) {
+                addRemoteToServiceMap(serviceType, unitRemote);
+            }
+        }
+        getCurrentStatus();
+    }
+
+    private void getCurrentStatus() {
+        try {
+            HandleStateType.HandleState handle = getHandle();
+            ReedSwitchStateType.ReedSwitchState reedSwitch = getReedSwitch();
+            try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
+                dataBuilder.getInternalBuilder().setHandleState(handle);
+                dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
+            } catch (Exception ex) {
+                throw new CouldNotPerformException("Could not apply data change!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            logger.warn("Could not get current status", ex);
         }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.deactivate();
+        for (UnitRemote unitRemote : unitRemoteMap.values()) {
+            unitRemote.deactivate();
         }
     }
 
@@ -118,20 +257,12 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public HandleStateType.HandleState getHandle() throws CouldNotPerformException {
-        try {
-            return ((HandleProviderRemote) serviceRemoteMap.get(ServiceType.HANDLE_PROVIDER)).getHandle();
-        } catch (NullPointerException ex) {
-            throw new NotAvailableException("handleProviderRemote");
-        }
+    public Collection<HandleProvider> getHandleStateProviderServices() {
+        return (Collection<HandleProvider>) serviceMap.get(ServiceType.HANDLE_PROVIDER);
     }
 
     @Override
-    public ReedSwitchStateType.ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        try {
-            return ((ReedSwitchProviderRemote) serviceRemoteMap.get(ServiceType.REED_SWITCH_PROVIDER)).getReedSwitch();
-        } catch (NullPointerException ex) {
-            throw new NotAvailableException("reedSwitchProviderRemote");
-        }
+    public Collection<ReedSwitchProvider> getReedSwitchStateProviderServices() {
+        return (Collection<ReedSwitchProvider>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER);
     }
 }
