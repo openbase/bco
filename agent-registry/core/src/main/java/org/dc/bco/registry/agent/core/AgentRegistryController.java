@@ -29,7 +29,7 @@ package org.dc.bco.registry.agent.core;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.agent.core.consistency.LabelConsistencyHandler;
 import org.dc.bco.registry.agent.core.consistency.LocationIdConsistencyHandler;
@@ -208,7 +208,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
     @Override
     public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(agentConfigRegistry.isReadOnly());
+        return Future.completedFuture(agentConfigRegistry.isReadOnly());
     }
 
     public ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRegistry() {

@@ -29,7 +29,7 @@ package org.dc.bco.registry.user.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
 import org.dc.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
@@ -225,7 +225,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(userRegistry.isReadOnly());
+        return Future.completedFuture(userRegistry.isReadOnly());
     }
 
     @Override
@@ -290,6 +290,6 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public Future<Boolean> isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(userGroupRegistry.isReadOnly());
+        return Future.completedFuture(userGroupRegistry.isReadOnly());
     }
 }

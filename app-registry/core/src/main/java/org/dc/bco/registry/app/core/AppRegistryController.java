@@ -29,7 +29,7 @@ package org.dc.bco.registry.app.core;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.app.core.consistency.LabelConsistencyHandler;
 import org.dc.bco.registry.app.core.consistency.ScopeConsistencyHandler;
@@ -203,7 +203,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
 
     @Override
     public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(appConfigRegistry.isReadOnly());
+        return Future.completedFuture(appConfigRegistry.isReadOnly());
     }
 
     public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRegistry() {

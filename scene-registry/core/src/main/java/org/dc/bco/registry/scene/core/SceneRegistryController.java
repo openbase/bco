@@ -29,7 +29,7 @@ package org.dc.bco.registry.scene.core;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.scene.core.consistency.LabelConsistencyHandler;
@@ -204,7 +204,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
     @Override
     public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(sceneConfigRegistry.isReadOnly());
+        return Future.completedFuture(sceneConfigRegistry.isReadOnly());
     }
 
     public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRegistry() {

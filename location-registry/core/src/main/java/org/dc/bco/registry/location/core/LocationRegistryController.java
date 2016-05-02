@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -485,7 +485,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(locationConfigRegistry.isReadOnly());
+        return Future.completedFuture(locationConfigRegistry.isReadOnly());
     }
 
     /**
@@ -673,6 +673,6 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(connectionConfigRegistry.isReadOnly());
+        return Future.completedFuture(connectionConfigRegistry.isReadOnly());
     }
 }

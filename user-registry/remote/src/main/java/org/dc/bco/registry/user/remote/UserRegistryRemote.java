@@ -29,7 +29,7 @@ package org.dc.bco.registry.user.remote;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.dc.jps.core.JPService;
@@ -129,7 +129,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestStatus());
+            notifyUpdated(requestData());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
@@ -205,7 +205,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return CompletableFuture.completedFuture(true);
+                return Future.completedFuture(true);
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
@@ -299,7 +299,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     public Future<Boolean> isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return CompletableFuture.completedFuture(true);
+                return Future.completedFuture(true);
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);

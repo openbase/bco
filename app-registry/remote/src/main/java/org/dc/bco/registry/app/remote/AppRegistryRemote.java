@@ -28,7 +28,7 @@ package org.dc.bco.registry.app.remote;
  */
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
@@ -124,7 +124,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestStatus());
+            notifyUpdated(requestData());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
@@ -195,7 +195,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return CompletableFuture.completedFuture(true);
+                return Future.completedFuture(true);
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);

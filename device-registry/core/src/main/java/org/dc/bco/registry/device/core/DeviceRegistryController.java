@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.device.core.consistency.DeviceConfigDeviceClassIdConsistencyHandler;
 import org.dc.bco.registry.device.core.consistency.DeviceConfigDeviceClassUnitConsistencyHandler;
@@ -669,7 +669,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(unitTemplateRegistry.isReadOnly());
+        return Future.completedFuture(unitTemplateRegistry.isReadOnly());
     }
 
     /**
@@ -680,7 +680,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(deviceClassRegistry.isReadOnly());
+        return Future.completedFuture(deviceClassRegistry.isReadOnly());
     }
 
     /**
@@ -691,7 +691,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(deviceConfigRegistry.isReadOnly());
+        return Future.completedFuture(deviceConfigRegistry.isReadOnly());
     }
 
     /**
@@ -922,7 +922,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return CompletableFuture.completedFuture(unitGroupConfigRegistry.isReadOnly());
+        return Future.completedFuture(unitGroupConfigRegistry.isReadOnly());
     }
 
     /**

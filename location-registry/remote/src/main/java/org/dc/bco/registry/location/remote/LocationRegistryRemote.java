@@ -29,7 +29,7 @@ package org.dc.bco.registry.location.remote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -143,7 +143,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         deviceRegistryRemote.activate();
         super.activate();
         try {
-            notifyUpdated(requestStatus());
+            notifyUpdated(requestData());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
@@ -430,7 +430,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return CompletableFuture.completedFuture(true);
+                return Future.completedFuture(true);
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
@@ -632,7 +632,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return CompletableFuture.completedFuture(true);
+                return Future.completedFuture(true);
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);

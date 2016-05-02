@@ -181,19 +181,19 @@ public class LocationRegistryTest {
     public void testRootConsistency() throws Exception {
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
         LocationConfig registeredRoot = remote.registerLocationConfig(root);
-        remote.requestStatus();
+        remote.requestData();
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getRoot());
         assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
 
         LocationConfig child = LocationConfig.newBuilder().setLabel("TestChildLocation").setPlacementConfig(PlacementConfig.newBuilder().setLocationId(registeredRoot.getId()).build()).build();
         LocationConfig registeredChild = remote.registerLocationConfig(child);
         assertTrue("The new location isn't registered as a child location.", !registeredChild.getRoot());
-        remote.requestStatus();
+        remote.requestData();
         assertTrue("The child location isn't represented in its parent.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdList().contains(registeredChild.getId()));
         assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdCount() == 1);
 
         LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot);
-        remote.requestStatus();
+        remote.requestData();
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", remote.getLocationConfigById(registeredChild.getId()).getRoot());
     }
@@ -219,7 +219,7 @@ public class LocationRegistryTest {
         LocationConfig.Builder registeredLivingBuilder = remote.getLocationConfigById(registeredLiving.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
         remote.updateLocationConfig(registeredLivingBuilder.build());
-        remote.requestStatus();
+        remote.requestData();
         assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
 
         LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").build();
@@ -260,7 +260,7 @@ public class LocationRegistryTest {
         registeredChildLocationConfig = remote.updateLocationConfig(registeredChildLocationConfigBuilder.build());
 
         assertEquals("The parent location of child was not updated as new placement location id after update.", registeredParentLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
-        remote.requestStatus();
+        remote.requestData();
         assertEquals("The parent location of child was not updated as new placement location id in global registry.", registeredParentLocationConfig.getId(), remote.getLocationConfigsByLabel(childLocationConfigLabel).get(0).getPlacementConfig().getLocationId());
     }
 

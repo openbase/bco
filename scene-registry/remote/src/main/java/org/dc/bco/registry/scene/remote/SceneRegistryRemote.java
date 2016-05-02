@@ -27,7 +27,7 @@ package org.dc.bco.registry.scene.remote;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
@@ -122,7 +122,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestStatus());
+            notifyUpdated(requestData());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
         }
@@ -193,7 +193,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return CompletableFuture.completedFuture(true);
+                return Future.completedFuture(true);
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
