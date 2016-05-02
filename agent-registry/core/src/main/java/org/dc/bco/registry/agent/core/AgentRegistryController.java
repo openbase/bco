@@ -87,7 +87,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
 
                 @Override
-                public void update(Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+                public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
                     agentConfigRegistry.checkConsistency();
                 }
             };
@@ -104,7 +104,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             agentConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>>() {
 
                 @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>> data) throws Exception {
+                public void update(final Observable<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>> data) throws Exception {
                     notifyChange();
                 }
             });

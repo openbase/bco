@@ -85,7 +85,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
             locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
 
                 @Override
-                public void update(Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+                public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
                     sceneConfigRegistry.checkConsistency();
                 }
             };
@@ -99,7 +99,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
             sceneConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>>>() {
 
                 @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>>> source, Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>> data) throws Exception {
+                public void update(final Observable<Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>>> source, Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>> data) throws Exception {
                     notifyChange();
                 }
             });

@@ -38,7 +38,6 @@ import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
-import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.bco.registry.location.core.LocationRegistryController;
 import java.io.IOException;
@@ -47,6 +46,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import org.dc.bco.registry.user.core.UserRegistryController;
+import org.dc.jul.pattern.Observable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -570,7 +570,7 @@ public class DeviceRegistryTest {
         remote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
             
             @Override
-            public void update(Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
+            public void update(final Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
                 if (data != null) {
                     logger.info("Got empty data!");
                 } else {
