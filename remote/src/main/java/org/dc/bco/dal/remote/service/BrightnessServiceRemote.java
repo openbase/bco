@@ -26,14 +26,10 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.dc.jul.exception.CouldNotPerformException;
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
+import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
@@ -45,35 +41,9 @@ public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessOpe
     public BrightnessServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
     }
-
-    @Override
-<<<<<<< HEAD
-    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
-        List<Future> futureList = new ArrayList<>();
-        for (BrightnessOperationService service : getServices()) {
-            futureList.add(service.setBrightness(brightness));
-        }
-        return Future.allOf(futureList.toArray(new Future[futureList.size()]));
-    }
-
-    /**
-     * Returns the average brightness value for a collection of brightness
-     * services.
-     *
-     * @return
-     * @throws CouldNotPerformException
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public Double getBrightness() throws CouldNotPerformException, InterruptedException {
-        Double average = 0d;
-        for (BrightnessOperationService service : getServices()) {
-            average += service.getBrightness();
-        }
-        average /= getServices().size();
-        return average;
     
-    public Collection<BrightnessService> getBrightnessStateOperationServices() {
+    @Override
+    public Collection<BrightnessOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
         return getServices();
     }
 }

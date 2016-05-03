@@ -26,23 +26,23 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface StandbyStateOperationServiceCollection extends StandbyService {
+public interface StandbyStateOperationServiceCollection extends StandbyOperationService {
 
     @Override
-    default public void setStandby(StandbyState state) throws CouldNotPerformException {
-        for (StandbyService service : getStandbyStateOperationServices()) {
-            service.setStandby(state);
-        }
+    default public Future<Void> setStandby(StandbyState state) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((StandbyOperationService input) -> input.setStandby(state), getStandbyStateOperationServices());
     }
 
     /**
@@ -50,17 +50,21 @@ public interface StandbyStateOperationServiceCollection extends StandbyService {
      * else standby.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public StandbyState getStandby() throws CouldNotPerformException {
-        for (StandbyService service : getStandbyStateOperationServices()) {
-            if (service.getStandby().getValue() == StandbyState.State.RUNNING) {
-                return StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
+    default public StandbyState getStandby() throws NotAvailableException {
+        try {
+            for (StandbyOperationService service : getStandbyStateOperationServices()) {
+                if (service.getStandby().getValue() == StandbyState.State.RUNNING) {
+                    return StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
+                }
             }
+            return StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("StandbyState", ex);
         }
-        return StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
     }
 
-    public Collection<StandbyService> getStandbyStateOperationServices();
+    public Collection<StandbyOperationService> getStandbyStateOperationServices() throws CouldNotPerformException;
 }

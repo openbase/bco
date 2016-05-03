@@ -26,42 +26,63 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.awt.Color;
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.ColorService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.com">Marian Pohling</a>
  */
-public interface ColorStateOperationServiceCollection extends ColorService {
+public interface ColorStateOperationServiceCollection extends ColorOperationService {
 
+    /**
+     *
+     * @param color
+     * @return
+     * @throws CouldNotPerformException
+     */
     @Override
-    default public void setColor(final HSVColor color) throws CouldNotPerformException {
-        for (ColorService service : getColorStateOperationServices()) {
-            service.setColor(color);
+    default public Future<Void> setColor(final HSVColor color) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((ColorOperationService input) -> input.setColor(color), getColorStateOperationServices());
+    }
+
+    /**
+     * Returns the average rgb value for a collection of color services.
+     * 
+     * @return
+     * @throws NotAvailableException
+     */
+    @Override
+    default public HSVColor getColor() throws NotAvailableException {
+        try {
+            double averageRed = 0;
+            double averageGreen = 0;
+            double averageBlue = 0;
+            int amount = getColorStateOperationServices().size();
+            Collection<ColorOperationService> colorStateOperationServicCollection = getColorStateOperationServices();
+            for (ColorOperationService service : colorStateOperationServicCollection) {
+                Color color = HSVColorToRGBColorTransformer.transform(service.getColor());
+                averageRed += color.getRed();
+                averageGreen += color.getGreen();
+                averageBlue += color.getBlue();
+            }
+            averageRed = averageRed / amount;
+            averageGreen = averageGreen / amount;
+            averageBlue = averageBlue / amount;
+
+            return HSVColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HSVColor", ex);
         }
     }
 
-    @Override
-    default public HSVColor getColor() throws CouldNotPerformException {
-        double averageHue = 0;
-        double averageSaturation = 0;
-        double averageValue = 0;
-        Collection<ColorService> colorStateOperationServicCollection = getColorStateOperationServices();
-        for (ColorService service : colorStateOperationServicCollection) {
-            HSVColor color = service.getColor();
-            averageHue += color.getHue();
-            averageSaturation += color.getSaturation();
-            averageValue += color.getValue();
-        }
-        averageHue = averageHue / getColorStateOperationServices().size();
-        averageSaturation = averageSaturation / getColorStateOperationServices().size();
-        averageValue = averageValue / getColorStateOperationServices().size();
-        return HSVColor.newBuilder().setHue(averageHue).setSaturation(averageSaturation).setValue(averageValue).build();
-    }
-
-    public Collection<ColorService> getColorStateOperationServices();
+    public Collection<ColorOperationService> getColorStateOperationServices() throws CouldNotPerformException;
 }

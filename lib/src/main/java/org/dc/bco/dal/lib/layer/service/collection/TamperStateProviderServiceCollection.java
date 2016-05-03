@@ -26,34 +26,39 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface TamperStateProviderServiceCollection extends TamperProvider {
+public interface TamperStateProviderServiceCollection extends TamperProviderService {
 
     /**
      * Returns tamper if at least one of the tamper providers returns tamper and
      * else no tamper.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public TamperState getTamper() throws CouldNotPerformException {
-        for (TamperProvider provider : getTamperStateProviderServices()) {
-            if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
-                return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+    default public TamperState getTamper() throws NotAvailableException {
+        try {
+            for (TamperProviderService provider : getTamperStateProviderServices()) {
+                if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
+                    return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+                }
             }
+            return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
+
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("TamperState", ex);
         }
-        return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
     }
 
-    public Collection<TamperProvider> getTamperStateProviderServices();
+    public Collection<TamperProviderService> getTamperStateProviderServices() throws CouldNotPerformException;
 }

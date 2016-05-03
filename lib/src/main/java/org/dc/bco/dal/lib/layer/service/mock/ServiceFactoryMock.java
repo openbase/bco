@@ -10,18 +10,19 @@ package org.dc.bco.dal.lib.layer.service.mock;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
@@ -44,8 +45,7 @@ import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class ServiceFactoryMock implements ServiceFactory {
 
@@ -59,9 +59,8 @@ public class ServiceFactoryMock implements ServiceFactory {
     public <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
         return new BrightnessOperationService() {
 
-
             @Override
-            public Double getBrightness() throws CouldNotPerformException, InterruptedException {
+            public Double getBrightness() throws NotAvailableException {
                 return ((BrightnessOperationService) unit).getBrightness();
             }
 
@@ -77,7 +76,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new ColorOperationService() {
 
             @Override
-            public HSVColor getColor() throws CouldNotPerformException, InterruptedException {
+            public HSVColor getColor() throws NotAvailableException {
                 return ((ColorOperationService) unit).getColor();
             }
 
@@ -93,7 +92,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new PowerOperationService() {
 
             @Override
-            public PowerState getPower() throws CouldNotPerformException, InterruptedException {
+            public PowerState getPower() throws NotAvailableException {
                 return ((PowerOperationService) unit).getPower();
             }
 
@@ -109,7 +108,7 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new OpeningRatioOperationService() {
 
             @Override
-            public Double getOpeningRatio() throws CouldNotPerformException, InterruptedException {
+            public Double getOpeningRatio() throws NotAvailableException {
                 return ((OpeningRatioOperationService) unit).getOpeningRatio();
             }
 
@@ -125,8 +124,8 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new ShutterOperationService() {
 
             @Override
-            public ShutterStateType.ShutterState getShutter() throws CouldNotPerformException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            public ShutterStateType.ShutterState getShutter() throws NotAvailableException {
+                return ((ShutterOperationService) unit).getShutter();
             }
 
             @Override
@@ -141,8 +140,8 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new DimOperationService() {
 
             @Override
-            public Double getDim() throws CouldNotPerformException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            public Double getDim() throws NotAvailableException {
+                return ((DimOperationService) unit).getDim();
             }
 
             @Override
@@ -157,8 +156,8 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new StandbyOperationService() {
 
             @Override
-            public StandbyStateType.StandbyState getStandby() throws CouldNotPerformException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            public StandbyStateType.StandbyState getStandby() throws NotAvailableException {
+                return ((StandbyOperationService) unit).getStandby();
             }
 
             @Override
@@ -173,8 +172,8 @@ public class ServiceFactoryMock implements ServiceFactory {
         return new TargetTemperatureOperationService() {
 
             @Override
-            public Double getTargetTemperature() throws CouldNotPerformException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            public Double getTargetTemperature() throws NotAvailableException {
+                return ((TargetTemperatureOperationService) unit).getTargetTemperature();
             }
 
             @Override
@@ -199,7 +198,7 @@ public class ServiceFactoryMock implements ServiceFactory {
                 throw new CouldNotPerformException("Could not detect update method name!", ex);
             }
             unit.getClass().getMethod(methodName, argument.getClass()).invoke(unit, argument);
-            return Future.completedFuture(null);
+            return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);
         }

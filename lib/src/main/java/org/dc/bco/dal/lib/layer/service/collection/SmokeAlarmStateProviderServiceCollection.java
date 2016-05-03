@@ -26,34 +26,38 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface SmokeAlarmStateProviderServiceCollection extends SmokeAlarmStateProvider {
+public interface SmokeAlarmStateProviderServiceCollection extends SmokeAlarmStateProviderService {
 
     /**
      * Returns alarm if at least one smoke alarm state provider returns alarm
      * else no alarm.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        for (SmokeAlarmStateProvider provider : getSmokeAlarmStateProviderServices()) {
-            if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
-                return AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
+    default public AlarmState getSmokeAlarmState() throws NotAvailableException {
+        try {
+            for (SmokeAlarmStateProviderService provider : getSmokeAlarmStateProviderServices()) {
+                if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
+                    return AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
+                }
             }
+            return AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AlarmState", ex);
         }
-        return AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
     }
 
-    public Collection<SmokeAlarmStateProvider> getSmokeAlarmStateProviderServices();
+    public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() throws CouldNotPerformException;
 }

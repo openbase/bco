@@ -64,7 +64,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
     }
 
     @Override
-    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
+    public AlarmState getSmokeAlarmState() throws NotAvailableException {
         try {
             return getData().getSmokeAlarmState();
         } catch (CouldNotPerformException ex) {
@@ -83,7 +83,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
     }
 
     @Override
-    public SmokeState getSmokeState() throws CouldNotPerformException {
+    public SmokeState getSmokeState() throws NotAvailableException {
         try {
             return getData().getSmokeState();
         } catch (CouldNotPerformException ex) {

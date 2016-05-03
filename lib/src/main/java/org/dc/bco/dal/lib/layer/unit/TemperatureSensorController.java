@@ -82,7 +82,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
     }
 
     @Override
-    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException {
+    public AlarmState getTemperatureAlarmState() throws NotAvailableException {
         try {
             return getData().getTemperatureAlarmState();
         } catch (CouldNotPerformException ex) {

@@ -28,15 +28,16 @@ package org.dc.bco.dal.lib.layer.service.collection;
  */
 
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface SmokeStateProviderServiceCollection extends SmokeStateProvider {
+public interface SmokeStateProviderServiceCollection extends SmokeStateProviderService {
 
     /**
      * If at least one smoke state provider returns smoke than that is returned.
@@ -44,12 +45,13 @@ public interface SmokeStateProviderServiceCollection extends SmokeStateProvider 
      * smoke is returned.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public SmokeState getSmokeState() throws CouldNotPerformException {
+    default public SmokeState getSmokeState() throws NotAvailableException {
+        try {
         boolean someSmoke = false;
-        for (SmokeStateProvider provider : getSmokeStateProviderServices()) {
+        for (SmokeStateProviderService provider : getSmokeStateProviderServices()) {
             if (provider.getSmokeState().getValue() == SmokeState.State.SMOKE) {
                 return SmokeState.newBuilder().setValue(SmokeState.State.SMOKE).build();
             }
@@ -62,7 +64,10 @@ public interface SmokeStateProviderServiceCollection extends SmokeStateProvider 
         } else {
             return SmokeState.newBuilder().setValue(SmokeState.State.NO_SMOKE).build();
         }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SmokeState", ex);
+        }
     }
 
-    public Collection<SmokeStateProvider> getSmokeStateProviderServices();
+    public Collection<SmokeStateProviderService> getSmokeStateProviderServices() throws CouldNotPerformException;
 }

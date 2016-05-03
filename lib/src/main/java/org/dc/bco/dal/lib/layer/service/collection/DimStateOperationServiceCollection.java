@@ -26,39 +26,43 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.DimService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface DimStateOperationServiceCollection extends DimService {
+public interface DimStateOperationServiceCollection extends DimOperationService {
 
     @Override
-    default public void setDim(Double dim) throws CouldNotPerformException {
-        for (DimService service : getDimStateOperationServices()) {
-            service.setDim(dim);
-        }
+    default public Future<Void> setDim(Double dim) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((DimOperationService input) -> input.setDim(dim), getDimStateOperationServices());
     }
 
     /**
      * Returns the average dim value for a collection of dim services.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public Double getDim() throws CouldNotPerformException {
-        Double average = 0d;
-        for (DimService service : getDimStateOperationServices()) {
-            average += service.getDim();
+    default public Double getDim() throws NotAvailableException {
+        try {
+            Double average = 0d;
+            for (DimOperationService service : getDimStateOperationServices()) {
+                average += service.getDim();
+            }
+            average /= getDimStateOperationServices().size();
+            return average;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("DimState", ex);
         }
-        average /= getDimStateOperationServices().size();
-        return average;
     }
 
-    public Collection<DimService> getDimStateOperationServices();
+    public Collection<DimOperationService> getDimStateOperationServices() throws CouldNotPerformException;
 }

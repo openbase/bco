@@ -26,39 +26,43 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionProvider {
+public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionProviderService {
 
     /**
      * Returns an average current and voltage for the underlying provider and
      * the sum of their consumptions.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
-        double consumptionSum = 0;
-        double averageCurrent = 0;
-        double averageVoltage = 0;
-        for (PowerConsumptionProvider provider : getPowerConsumptionStateProviderServices()) {
-            consumptionSum += provider.getPowerConsumption().getConsumption();
-            averageCurrent += provider.getPowerConsumption().getCurrent();
-            averageVoltage += provider.getPowerConsumption().getVoltage();
+    default public PowerConsumptionState getPowerConsumption() throws NotAvailableException {
+        try {
+            double consumptionSum = 0;
+            double averageCurrent = 0;
+            double averageVoltage = 0;
+            for (PowerConsumptionProviderService provider : getPowerConsumptionStateProviderServices()) {
+                consumptionSum += provider.getPowerConsumption().getConsumption();
+                averageCurrent += provider.getPowerConsumption().getCurrent();
+                averageVoltage += provider.getPowerConsumption().getVoltage();
+            }
+            averageCurrent = averageCurrent / getPowerConsumptionStateProviderServices().size();
+            averageVoltage = averageVoltage / getPowerConsumptionStateProviderServices().size();
+            return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerConsumptionState", ex);
         }
-        averageCurrent = averageCurrent / getPowerConsumptionStateProviderServices().size();
-        averageVoltage = averageVoltage / getPowerConsumptionStateProviderServices().size();
-        return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).build();
     }
 
-    public Collection<PowerConsumptionProvider> getPowerConsumptionStateProviderServices();
+    public Collection<PowerConsumptionProviderService> getPowerConsumptionStateProviderServices() throws CouldNotPerformException;
 }

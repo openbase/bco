@@ -107,7 +107,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     }
 
     @Override
-    public void activate() throws InterruptedException, MultiException {
+    public void activate() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         for (UnitRemote remote : unitRemoteMap.values()) {
             try {

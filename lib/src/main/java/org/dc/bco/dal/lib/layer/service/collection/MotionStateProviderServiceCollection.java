@@ -26,34 +26,38 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface MotionStateProviderServiceCollection extends MotionProvider {
+public interface MotionStateProviderServiceCollection extends MotionProviderService {
 
     /**
      * Returns movement if at least one motion provider returns movement else no
      * movement.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public MotionState getMotion() throws CouldNotPerformException {
-        for (MotionProvider provider : getMotionStateProviderServices()) {
-            if (provider.getMotion().getValue() == MotionState.State.MOVEMENT) {
-                return MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
+    default public MotionState getMotion() throws NotAvailableException {
+        try {
+            for (MotionProviderService provider : getMotionStateProviderServices()) {
+                if (provider.getMotion().getValue() == MotionState.State.MOVEMENT) {
+                    return MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
+                }
             }
+            return MotionState.newBuilder().setValue(MotionState.State.NO_MOVEMENT).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("MotionState", ex);
         }
-        return MotionState.newBuilder().setValue(MotionState.State.NO_MOVEMENT).build();
     }
 
-    public Collection<MotionProvider> getMotionStateProviderServices();
+    public Collection<MotionProviderService> getMotionStateProviderServices() throws CouldNotPerformException;
 }

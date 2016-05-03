@@ -26,33 +26,38 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface TemperatureStateProviderServiceCollection extends TemperatureProvider {
+public interface TemperatureStateProviderServiceCollection extends TemperatureProviderService {
 
     /**
      * Returns the average temperature value for a collection of temperature
      * providers.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public Double getTemperature() throws CouldNotPerformException {
-        Double average = 0d;
-        for (TemperatureProvider service : getTemperatureStateProviderServices()) {
-            average += service.getTemperature();
+    default public Double getTemperature() throws NotAvailableException {
+
+        try {
+            Double average = 0d;
+            for (TemperatureProviderService service : getTemperatureStateProviderServices()) {
+                average += service.getTemperature();
+            }
+            average /= getTemperatureStateProviderServices().size();
+            return average;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Temperature", ex);
         }
-        average /= getTemperatureStateProviderServices().size();
-        return average;
     }
 
-    public Collection<TemperatureProvider> getTemperatureStateProviderServices();
+    public Collection<TemperatureProviderService> getTemperatureStateProviderServices() throws CouldNotPerformException;
 }
