@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.registry.location.remote;
 
 /*
@@ -29,8 +24,6 @@ package org.dc.bco.registry.location.remote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -58,7 +51,6 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
-import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryType.LocationRegistry;
 
@@ -144,8 +136,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         deviceRegistryRemote.activate();
         super.activate();
         try {
-            notifyUpdated(requestData().get());
-        } catch (CouldNotPerformException | ExecutionException ex) {
+            waitForData();
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
     }

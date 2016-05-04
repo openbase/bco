@@ -135,8 +135,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestData().get());
-        } catch (CouldNotPerformException | ExecutionException ex) {
+            waitForData();
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
     }

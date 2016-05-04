@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.registry.app.remote;
 
 /*
@@ -120,8 +115,9 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
+        // TODO paramite: why is this sync manual triggered? is the startup sync not suitable?
         try {
-            notifyUpdated(requestData().get());
+            notifyDataUpdate(requestData().get());
         } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
