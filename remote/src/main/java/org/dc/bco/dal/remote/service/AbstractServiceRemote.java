@@ -34,7 +34,6 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotSupportedException;
 import org.dc.jul.exception.VerificationFailedException;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -134,12 +133,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
 
     @Override
     public boolean isActive() {
-        for (UnitRemote remote : unitRemoteMap.values()) {
-            if (!remote.isActive()) {
-                return false;
-            }
-        }
-        return true;
+        return unitRemoteMap.values().stream().allMatch((remote) -> (remote.isActive()));
     }
 
     public UnitRemoteFactory getFactory() {

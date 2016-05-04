@@ -10,12 +10,12 @@ package org.dc.bco.dal.remote.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -103,16 +103,16 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
-            init(ScopeGenerator.generateScope(label, detectMessageClass().getSimpleName(), location.getScope()));
+            init(ScopeGenerator.generateScope(label, getDataClass().getSimpleName(), location.getScope()));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     @Override
-    public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         unitTemplate = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override

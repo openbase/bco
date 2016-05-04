@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -48,7 +43,7 @@ public class TamperSwitchRemote extends AbstractUnitRemote<TamperSwitch> impleme
     }
 
     @Override
-    public void notifyUpdated(TamperSwitch data) {
+    public void notifyDataUpdate(TamperSwitch data) {
     }
 
     @Override

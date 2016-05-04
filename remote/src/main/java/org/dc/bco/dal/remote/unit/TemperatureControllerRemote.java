@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -51,7 +46,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     @Override
-    public void notifyUpdated(TemperatureController data) throws CouldNotPerformException {
+    public void notifyDataUpdate(TemperatureController data) throws CouldNotPerformException {
     }
 
     @Override

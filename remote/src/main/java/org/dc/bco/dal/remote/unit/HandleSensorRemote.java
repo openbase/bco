@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -49,7 +44,7 @@ public class HandleSensorRemote extends AbstractUnitRemote<HandleSensor> impleme
     }
 
     @Override
-    public void notifyUpdated(HandleSensor data) {
+    public void notifyDataUpdate(HandleSensor data) {
     }
 
     @Override

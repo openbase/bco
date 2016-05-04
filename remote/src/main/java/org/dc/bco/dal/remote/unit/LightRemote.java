@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -52,7 +47,7 @@ public class LightRemote extends AbstractUnitRemote<Light> implements LightInter
     }
 
     @Override
-    public void notifyUpdated(Light data) {
+    public void notifyDataUpdate(Light data) {
     }
 
     public void setPower(final PowerState.State value) throws CouldNotPerformException {
