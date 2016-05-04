@@ -10,12 +10,12 @@ package org.dc.bco.registry.device.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -24,6 +24,7 @@ package org.dc.bco.registry.device.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -86,7 +87,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         }
     }
 
-     /**
+    /**
      * Method initializes the remote with the given scope for the server
      * registry connection.
      *
@@ -95,7 +96,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws java.lang.InterruptedException
      */
     @Override
-    public  void init(final Scope scope) throws InitializationException, InterruptedException {
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotTransformException ex) {
@@ -116,7 +117,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         super.init(scope);
     }
 
-
     /**
      * Method initializes the remote with the default registry connection scope.
      *
@@ -135,8 +135,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestData());
-        } catch (CouldNotPerformException ex) {
+            notifyUpdated(requestData().get());
+        } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
     }
@@ -179,9 +179,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceConfig registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<DeviceConfig> registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfig) callMethod("registerDeviceConfig", deviceConfig);
+            return RPCHelper.callRemoteMethod(deviceConfig, this, DeviceConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device config!", ex);
         }
@@ -325,9 +325,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceConfig updateDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public Future<DeviceConfig> updateDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfig) callMethod("updateDeviceConfig", deviceConfig);
+            return RPCHelper.callRemoteMethod(deviceConfig, this, DeviceConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device config!", ex);
         }
@@ -357,9 +357,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceConfig removeDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public Future<DeviceConfig> removeDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return (DeviceConfig) callMethod("removeDeviceConfig", deviceConfig);
+            return RPCHelper.callRemoteMethod(deviceConfig, this, DeviceConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device config!", ex);
         }
@@ -373,9 +373,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceClass registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClass) callMethod("registerDeviceClass", deviceClass);
+            return RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device class!", ex);
         }
@@ -415,9 +415,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceClass updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClass) callMethod("updateDeviceClass", deviceClass);
+            return RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device class!", ex);
         }
@@ -431,9 +431,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public DeviceClass removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return (DeviceClass) callMethod("removeDeviceClass", deviceClass);
+            return RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }
@@ -577,20 +577,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public Future<Boolean> isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the unit template registry!!", ex);
-        }
+        return getData().getUnitTemplateRegistryReadOnly();
     }
 
     /**
@@ -600,20 +596,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public Future<Boolean> isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the device class registry!!", ex);
-        }
+        return getData().getDeviceClassRegistryReadOnly();
     }
 
     /**
@@ -623,20 +615,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public Future<Boolean> isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the device config registry!", ex);
-        }
+        return getData().getDeviceConfigRegistryReadOnly();
     }
 
     /**
@@ -647,9 +635,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public UnitGroupConfig registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<UnitGroupConfig> registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return (UnitGroupConfig) callMethod("registerUnitGroupConfig", groupConfig);
+            return RPCHelper.callRemoteMethod(groupConfig, this, UnitGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register unit group config!", ex);
         }
@@ -689,9 +677,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public UnitGroupConfig updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<UnitGroupConfig> updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return (UnitGroupConfig) callMethod("updateUnitGroupConfig", groupConfig);
+            return RPCHelper.callRemoteMethod(groupConfig, this, UnitGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update unit group config!", ex);
         }
@@ -705,9 +693,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public UnitGroupConfig removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<UnitGroupConfig> removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return (UnitGroupConfig) callMethod("removeUnitGroupConfig", groupConfig);
+            return RPCHelper.callRemoteMethod(groupConfig, this, UnitGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove unit group config!", ex);
         }
@@ -887,7 +875,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 return unitConfig;
             }
         }
-        throw new NotAvailableException("No unit config available for given Scope["+scope+"]!");
+        throw new NotAvailableException("No unit config available for given Scope[" + scope + "]!");
     }
 
     /**

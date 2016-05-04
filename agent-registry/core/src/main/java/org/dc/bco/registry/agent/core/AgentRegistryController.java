@@ -26,10 +26,9 @@ package org.dc.bco.registry.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.agent.core.consistency.LabelConsistencyHandler;
 import org.dc.bco.registry.agent.core.consistency.LocationIdConsistencyHandler;
@@ -91,8 +90,6 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
                     agentConfigRegistry.checkConsistency();
                 }
             };
-
-
 
             locationRegistryRemote = new LocationRegistryRemote();
 
@@ -172,8 +169,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     }
 
     @Override
-    public AgentConfig registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return agentConfigRegistry.register(agentConfig);
+    public Future<AgentConfig> registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> agentConfigRegistry.register(agentConfig));
     }
 
     @Override
@@ -192,13 +189,13 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     }
 
     @Override
-    public AgentConfig updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return agentConfigRegistry.update(agentConfig);
+    public Future<AgentConfig> updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> agentConfigRegistry.update(agentConfig));
     }
 
     @Override
-    public AgentConfig removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return agentConfigRegistry.remove(agentConfig);
+    public Future<AgentConfig> removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> agentConfigRegistry.remove(agentConfig));
     }
 
     @Override
@@ -207,8 +204,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     }
 
     @Override
-    public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(agentConfigRegistry.isReadOnly());
+    public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
+        return agentConfigRegistry.isReadOnly();
     }
 
     public ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRegistry() {

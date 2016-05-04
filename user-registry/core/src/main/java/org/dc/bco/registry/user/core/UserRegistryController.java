@@ -29,7 +29,7 @@ package org.dc.bco.registry.user.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
 import org.dc.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
@@ -189,8 +189,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public UserConfig registerUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return userRegistry.register(userConfig);
+    public Future<UserConfig> registerUserConfig(UserConfig userConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> userRegistry.register(userConfig));
     }
 
     @Override
@@ -204,13 +204,13 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public UserConfig updateUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return userRegistry.update(userConfig);
+    public Future<UserConfig> updateUserConfig(UserConfig userConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> userRegistry.update(userConfig));
     }
 
     @Override
-    public UserConfig removeUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return userRegistry.remove(userConfig);
+    public Future<UserConfig> removeUserConfig(UserConfig userConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> userRegistry.remove(userConfig));
     }
 
     @Override
@@ -224,8 +224,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(userRegistry.isReadOnly());
+    public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException {
+        return userRegistry.isReadOnly();
     }
 
     @Override
@@ -243,8 +243,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public UserGroupConfig registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return userGroupRegistry.register(groupConfig);
+    public Future<UserGroupConfig> registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> userGroupRegistry.register(groupConfig));
     }
 
     @Override
@@ -258,13 +258,13 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public UserGroupConfig updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return userGroupRegistry.update(groupConfig);
+    public Future<UserGroupConfig> updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> userGroupRegistry.update(groupConfig));
     }
 
     @Override
-    public UserGroupConfig removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return userGroupRegistry.remove(groupConfig);
+    public Future<UserGroupConfig> removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> userGroupRegistry.remove(groupConfig));
     }
 
     @Override
@@ -289,7 +289,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public Future<Boolean> isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(userGroupRegistry.isReadOnly());
+    public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        return userGroupRegistry.isReadOnly();
     }
 }

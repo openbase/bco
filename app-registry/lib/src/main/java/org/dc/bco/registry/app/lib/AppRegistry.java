@@ -26,7 +26,6 @@ package org.dc.bco.registry.app.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -38,21 +37,21 @@ import rst.homeautomation.control.app.AppConfigType.AppConfig;
  */
 public interface AppRegistry {
 
-    public AppConfig registerAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Future<AppConfig> registerAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
     public Boolean containsAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
     public Boolean containsAppConfigById(String appConfigId) throws CouldNotPerformException;
 
-    public AppConfig updateAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Future<AppConfig> updateAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
-    public AppConfig removeAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Future<AppConfig> removeAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
     public AppConfig getAppConfigById(final String appConfigId) throws CouldNotPerformException;
-    
+
     public List<AppConfig> getAppConfigs() throws CouldNotPerformException;
-    
-     public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException;
-    
+
+    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException;
+
     public void shutdown();
 }

@@ -26,7 +26,6 @@ package org.dc.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
@@ -63,9 +62,9 @@ public class DeviceScopeConsistencyHandler extends AbstractProtoBufRegistryConsi
         if (!deviceConfig.getPlacementConfig().hasLocationId() || deviceConfig.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("deviceconfig.placementconfig.locationid");
         }
-        
-        LocationConfig test = locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId());
-        ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(deviceConfig, test);
+
+        LocationConfig locationConfig = locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId());
+        ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(deviceConfig, locationConfig);
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(deviceConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {

@@ -27,7 +27,7 @@ package org.dc.bco.registry.agent.remote;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
@@ -48,7 +48,6 @@ import org.dc.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
 import rst.rsb.ScopeType;
@@ -61,7 +60,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfigType.AgentConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> agentConfigRemoteRegistry;
@@ -122,8 +121,8 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestData());
-        } catch (CouldNotPerformException ex) {
+            notifyUpdated(requestData().get());
+        } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
         }
     }
@@ -138,9 +137,9 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     }
 
     @Override
-    public AgentConfigType.AgentConfig registerAgentConfig(final AgentConfigType.AgentConfig agentConfig) throws CouldNotPerformException {
+    public Future<AgentConfig> registerAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
         try {
-            return (AgentConfigType.AgentConfig) callMethod("registerAgentConfig", agentConfig);
+            return RPCHelper.callRemoteMethod(agentConfig, this, AgentConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register agent config!", ex);
         }
@@ -153,7 +152,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     }
 
     @Override
-    public Boolean containsAgentConfig(final AgentConfigType.AgentConfig agentConfig) throws CouldNotPerformException {
+    public Boolean containsAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
         getData();
         return agentConfigRemoteRegistry.contains(agentConfig);
     }
@@ -165,18 +164,18 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     }
 
     @Override
-    public AgentConfigType.AgentConfig updateAgentConfig(final AgentConfigType.AgentConfig agentConfig) throws CouldNotPerformException {
+    public Future<AgentConfig> updateAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
         try {
-            return (AgentConfigType.AgentConfig) callMethod("updateAgentConfig", agentConfig);
+            return RPCHelper.callRemoteMethod(agentConfig, this, AgentConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update agent config!", ex);
         }
     }
 
     @Override
-    public AgentConfigType.AgentConfig removeAgentConfig(final AgentConfigType.AgentConfig agentConfig) throws CouldNotPerformException {
+    public Future<AgentConfig> removeAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
         try {
-            return (AgentConfigType.AgentConfig) callMethod("removeAgentConfig", agentConfig);
+            return RPCHelper.callRemoteMethod(agentConfig, this, AgentConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove agent config!", ex);
         }
@@ -190,19 +189,15 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     }
 
     @Override
-    public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the agent config registry!!", ex);
-        }
+        return getData().getAgentConfigRegistryReadOnly();
     }
 }

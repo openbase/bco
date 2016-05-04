@@ -27,7 +27,7 @@ package org.dc.bco.registry.scene.remote;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
@@ -48,7 +48,6 @@ import org.dc.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
 import rst.rsb.ScopeType;
@@ -61,7 +60,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfigType.SceneConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> sceneConfigRemoteRegistry;
@@ -122,8 +121,8 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestData());
-        } catch (CouldNotPerformException ex) {
+            notifyUpdated(requestData().get());
+        } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
         }
     }
@@ -138,9 +137,9 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     }
 
     @Override
-    public SceneConfigType.SceneConfig registerSceneConfig(final SceneConfigType.SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Future<SceneConfig> registerSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
         try {
-            return (SceneConfigType.SceneConfig) callMethod("registerSceneConfig", sceneConfig);
+            return RPCHelper.callRemoteMethod(sceneConfig, this, SceneConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register scene config!", ex);
         }
@@ -153,7 +152,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     }
 
     @Override
-    public Boolean containsSceneConfig(final SceneConfigType.SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Boolean containsSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
         getData();
         return sceneConfigRemoteRegistry.contains(sceneConfig);
     }
@@ -165,18 +164,18 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     }
 
     @Override
-    public SceneConfigType.SceneConfig updateSceneConfig(final SceneConfigType.SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Future<SceneConfig> updateSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
         try {
-            return (SceneConfigType.SceneConfig) callMethod("updateSceneConfig", sceneConfig);
+            return RPCHelper.callRemoteMethod(sceneConfig, this, SceneConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update scene config!", ex);
         }
     }
 
     @Override
-    public SceneConfigType.SceneConfig removeSceneConfig(final SceneConfigType.SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Future<SceneConfig> removeSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
         try {
-            return (SceneConfigType.SceneConfig) callMethod("removeSceneConfig", sceneConfig);
+            return RPCHelper.callRemoteMethod(sceneConfig, this, SceneConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove scene config!", ex);
         }
@@ -190,19 +189,15 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
     }
 
     @Override
-    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the scene config registry!!", ex);
-        }
+        return getData().getSceneConfigRegistryReadOnly();
     }
 }

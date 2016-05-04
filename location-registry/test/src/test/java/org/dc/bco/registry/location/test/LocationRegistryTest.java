@@ -27,6 +27,7 @@ package org.dc.bco.registry.location.test;
  * #L%
  */
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import org.dc.bco.registry.device.core.DeviceRegistryController;
 import org.dc.bco.registry.location.core.LocationRegistryController;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
@@ -180,19 +181,19 @@ public class LocationRegistryTest {
     @Test(timeout = 5000)
     public void testRootConsistency() throws Exception {
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
-        LocationConfig registeredRoot = remote.registerLocationConfig(root);
+        LocationConfig registeredRoot = remote.registerLocationConfig(root).get();
         remote.requestData();
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getRoot());
         assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
 
         LocationConfig child = LocationConfig.newBuilder().setLabel("TestChildLocation").setPlacementConfig(PlacementConfig.newBuilder().setLocationId(registeredRoot.getId()).build()).build();
-        LocationConfig registeredChild = remote.registerLocationConfig(child);
+        LocationConfig registeredChild = remote.registerLocationConfig(child).get();
         assertTrue("The new location isn't registered as a child location.", !registeredChild.getRoot());
         remote.requestData();
         assertTrue("The child location isn't represented in its parent.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdList().contains(registeredChild.getId()));
         assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdCount() == 1);
 
-        LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot);
+        LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot).get();
         remote.requestData();
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", remote.getLocationConfigById(registeredChild.getId()).getRoot());
@@ -208,14 +209,14 @@ public class LocationRegistryTest {
     public void testChildConsistency() throws Exception {
         String label = "Test2Living";
         LocationConfig living = LocationConfig.newBuilder().setLabel(label).build();
-        LocationConfig registeredLiving = remote.registerLocationConfig(living);
+        LocationConfig registeredLiving = remote.registerLocationConfig(living).get();
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getRoot());
         assertEquals("Label has not been set", label, registeredLiving.getLabel());
 
         String rootLocationConfigLabel = "Test3RootLocation";
         LocationConfig.Builder rootLocationConfigBuilder = LocationConfig.newBuilder();
         rootLocationConfigBuilder.setLabel(rootLocationConfigLabel);
-        LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build());
+        LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build()).get();
         LocationConfig.Builder registeredLivingBuilder = remote.getLocationConfigById(registeredLiving.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
         remote.updateLocationConfig(registeredLivingBuilder.build());
@@ -223,10 +224,10 @@ public class LocationRegistryTest {
         assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
 
         LocationConfig home = LocationConfig.newBuilder().setLabel("Test2Home").build();
-        LocationConfig registeredHome = remote.registerLocationConfig(home);
+        LocationConfig registeredHome = remote.registerLocationConfig(home).get();
         registeredLivingBuilder = remote.getLocationConfigById(registeredRootLocationConfig.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredHome.getId());
-        assertEquals("Parent was not updated!", registeredHome.getId(), remote.updateLocationConfig(registeredLivingBuilder.build()).getPlacementConfig().getLocationId());
+        assertEquals("Parent was not updated!", registeredHome.getId(), remote.updateLocationConfig(registeredLivingBuilder.build()).get().getPlacementConfig().getLocationId());
     }
 
     /**
@@ -241,23 +242,23 @@ public class LocationRegistryTest {
         String rootLocationConfigLabel = "Test3RootLocation";
         LocationConfig.Builder rootLocationConfigBuilder = LocationConfig.newBuilder();
         rootLocationConfigBuilder.setLabel(rootLocationConfigLabel);
-        LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build());
+        LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build()).get();
 
         String childLocationConfigLabel = "Test3ChildLocation";
         LocationConfig.Builder childLocationConfigBuilder = LocationConfig.newBuilder();
         childLocationConfigBuilder.setLabel(childLocationConfigLabel);
         childLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
-        LocationConfig registeredChildLocationConfig = remote.registerLocationConfig(childLocationConfigBuilder.build());
+        LocationConfig registeredChildLocationConfig = remote.registerLocationConfig(childLocationConfigBuilder.build()).get();
 
         String parentLabel = "Test3ParentLocation";
         LocationConfig.Builder parentLocationConfigBuilder = LocationConfig.newBuilder().setLabel(parentLabel);
-        LocationConfig registeredParentLocationConfig = remote.registerLocationConfig(parentLocationConfigBuilder.build());
+        LocationConfig registeredParentLocationConfig = remote.registerLocationConfig(parentLocationConfigBuilder.build()).get();
 
         assertEquals("The new location isn't registered as child of Location[" + rootLocationConfigLabel + "]!", registeredRootLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
 
         LocationConfig.Builder registeredChildLocationConfigBuilder = registeredChildLocationConfig.toBuilder();
         registeredChildLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredParentLocationConfig.getId());
-        registeredChildLocationConfig = remote.updateLocationConfig(registeredChildLocationConfigBuilder.build());
+        registeredChildLocationConfig = remote.updateLocationConfig(registeredChildLocationConfigBuilder.build()).get();
 
         assertEquals("The parent location of child was not updated as new placement location id after update.", registeredParentLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
         remote.requestData();
@@ -293,20 +294,20 @@ public class LocationRegistryTest {
         String firstChildLabel = "FirstChild";
         String SecondChildLabel = "SecondChild";
         LocationConfig root = LocationConfig.newBuilder().setLabel(rootLabel).build();
-        root = remote.registerLocationConfig(root);
+        root = remote.registerLocationConfig(root).get();
 
         LocationConfig firstChild = LocationConfig.newBuilder().setLabel(firstChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         remote.registerLocationConfig(firstChild);
 
         LocationConfig secondChild = LocationConfig.newBuilder().setLabel(SecondChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
-        secondChild = remote.registerLocationConfig(secondChild);
+        secondChild = remote.registerLocationConfig(secondChild).get();
 
         try {
             // register loop
             root = remote.getLocationConfigById(root.getId());
             LocationConfig.Builder rootBuilder = root.toBuilder();
             rootBuilder.getPlacementConfigBuilder().setLocationId(secondChild.getId());
-            remote.registerLocationConfig(rootBuilder.build());
+            remote.registerLocationConfig(rootBuilder.build()).get();
             Assert.fail("No exception when registering location with a loop [" + secondChild + "]");
         } catch (Exception ex) {
         }
@@ -323,14 +324,14 @@ public class LocationRegistryTest {
         String rootLabel = "RootWithChildrenWithSameLabel";
         String childLabel = "childWithSameLabel";
         LocationConfig root = LocationConfig.newBuilder().setLabel(rootLabel).build();
-        root = remote.registerLocationConfig(root);
+        root = remote.registerLocationConfig(root).get();
 
         LocationConfig firstChild = LocationConfig.newBuilder().setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
-        firstChild = remote.registerLocationConfig(firstChild);
+        firstChild = remote.registerLocationConfig(firstChild).get();
 
         try {
             LocationConfig secondChild = LocationConfig.newBuilder().setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
-            secondChild = remote.registerLocationConfig(secondChild);
+            secondChild = remote.registerLocationConfig(secondChild).get();
             Assert.fail("No exception thrown when registering a second child with the same label");
         } catch (Exception ex) {
         }
@@ -348,16 +349,16 @@ public class LocationRegistryTest {
         String tile1Label = "Tile1";
         String tile2Label = "Tile3";
         String tile3Label = "Tile2";
-        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build());
-        LocationConfig zone = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(zoneLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.ZONE).build());
-        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
-        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build());
-        LocationConfig tile3 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build());
+        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build()).get();
+        LocationConfig zone = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(zoneLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.ZONE).build()).get();
+        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build()).get();
+        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build()).get();
+        LocationConfig tile3 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).setType(LocationConfig.LocationType.TILE).build()).get();
 
         String connection1Label = "Connection1";
         String connection2Label = "Connection2";
-        ConnectionConfig connection1 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection1Label).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build());
-        ConnectionConfig connection2 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build());
+        ConnectionConfig connection1 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection1Label).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build()).get();
+        ConnectionConfig connection2 = remote.registerConnectionConfig(ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build()).get();
 
         assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
         assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
@@ -367,9 +368,9 @@ public class LocationRegistryTest {
 
         ConnectionConfig connection3 = ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
         try {
-            remote.registerConnectionConfig(connection3);
+            remote.registerConnectionConfig(connection3).get();
             Assert.fail("No exception thrown when registering a second connection at the same location with the same label");
-        } catch (CouldNotPerformException ex) {
+        } catch (ExecutionException ex) {
         }
     }
 
@@ -384,18 +385,18 @@ public class LocationRegistryTest {
         String noTileLabel = "NoTile";
         String tile1Label = "RealTile1";
         String tile2Label = "RealTile2";
-        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build());
-        LocationConfig noTile = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.REGION).build());
-        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
-        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build());
+        LocationConfig root = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(rootLabel).setType(LocationConfig.LocationType.ZONE).build()).get();
+        LocationConfig noTile = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.REGION).build()).get();
+        LocationConfig tile1 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build()).get();
+        LocationConfig tile2 = remote.registerLocationConfig(LocationConfig.newBuilder().setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).setType(LocationConfig.LocationType.TILE).build()).get();
 
         String connectionFailLabel = "ConnectionFail";
         String connectionLabel = "TilesTestConnection";
         ConnectionConfig connectionFail = ConnectionConfig.newBuilder().setLabel(connectionFailLabel).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile2.getId()).build();
         try {
-            remote.registerConnectionConfig(connectionFail);
+            remote.registerConnectionConfig(connectionFail).get();
             Assert.fail("Registered connection with less than one tile");
-        } catch (CouldNotPerformException ex) {
+        } catch (ExecutionException ex) {
         }
 
         ConnectionConfig.Builder connectionBuilder = ConnectionConfig.newBuilder().setLabel(connectionLabel).setType(ConnectionConfig.ConnectionType.WINDOW);
@@ -405,7 +406,7 @@ public class LocationRegistryTest {
         connectionBuilder.addTileId(tile2.getId());
         connectionBuilder.addTileId(root.getId());
         connectionBuilder.addTileId("fakeLocationId");
-        ConnectionConfig connection = remote.registerConnectionConfig(connectionBuilder.build());
+        ConnectionConfig connection = remote.registerConnectionConfig(connectionBuilder.build()).get();
 
         assertEquals("Doubled tiles or locations that aren't tiles or that do not exists do not have been removed", 2, connection.getTileIdCount());
         assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile1.getId()));
