@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.device.core.consistency.DeviceConfigDeviceClassIdConsistencyHandler;
@@ -105,7 +107,7 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  * @author mpohling
  */
 public class DeviceRegistryController extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements org.dc.bco.registry.device.lib.DeviceRegistry, Manageable<ScopeType.Scope> {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
@@ -113,17 +115,17 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
     }
-    
+
     private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
     private ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupConfigRegistry;
-    
+
     private final LocationRegistryRemote locationRegistryRemote;
     private final UserRegistryRemote userRegistryRemote;
     private Observer<LocationRegistry> locationRegistryUpdateObserver;
     private Observer<UserRegistry> userRegistryUpdateObserver;
-    
+
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
         super(DeviceRegistry.newBuilder());
         try {
@@ -132,20 +134,20 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfig.class, getBuilderSetup(), getFieldDescriptor(DeviceRegistry.UNIT_GROUP_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            
+
             deviceConfigRegistry.activateVersionControl(DeviceConfig_0_To_1_DBConverter.class.getPackage());
-            
+
             locationRegistryRemote = new LocationRegistryRemote();
             userRegistryRemote = new UserRegistryRemote();
-            
+
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
             unitGroupConfigRegistry.loadRegistry();
-            
+
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
-            
+
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
@@ -153,7 +155,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.registerConsistencyHandler(new DeviceOwnerConsistencyHandler(userRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationRegistryRemote.getLocationConfigRemoteRegistry()));
-            
+
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitBoundsToDeviceConsistencyHandler(deviceClassRegistry));
@@ -167,27 +169,27 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConfigIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassUnitConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigLocationIdForInstalledDevicesConsistencyHandler());
-            
+
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler(unitTemplateRegistry));
             unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
-            
+
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListDuplicationConsistencyHandler());
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberExistsConsistencyHandler(deviceConfigRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(deviceConfigRegistry, unitTemplateRegistry));
-            
+
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             unitGroupConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder>> data) -> {
                 notifyChange();
             });
@@ -196,7 +198,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
-            
+
             userRegistryUpdateObserver = (Observable<UserRegistry> source, UserRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
@@ -215,12 +217,12 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) -> {
                 unitGroupConfigRegistry.checkConsistency();
             });
-            
+
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
@@ -248,31 +250,31 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
-        
+
         try {
             unitTemplateRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             deviceClassRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             deviceConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             unitGroupConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             logger.info("register transformation plugin");
             deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationRegistryRemote));
@@ -304,19 +306,19 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         if (deviceClassRegistry != null) {
             deviceClassRegistry.shutdown();
         }
-        
+
         if (deviceConfigRegistry != null) {
             deviceConfigRegistry.shutdown();
         }
-        
+
         if (unitTemplateRegistry != null) {
             unitTemplateRegistry.shutdown();
         }
-        
+
         if (unitGroupConfigRegistry != null) {
             unitGroupConfigRegistry.shutdown();
         }
-        
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -433,7 +435,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
                 unitConfigs.add(unitConfig);
             });
         });
-        
+
         return unitConfigs;
     }
 
@@ -493,8 +495,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      * @throws CouldNotPerformException
      */
     @Override
-    public UnitTemplate updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return unitTemplateRegistry.update(unitTemplate);
+    public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+        return ForkJoinTask.adapt(() -> unitTemplateRegistry.update(unitTemplate));
     }
 
     /**
@@ -733,19 +735,19 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
         return serviceConfigs;
     }
-    
+
     public ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRegistry() {
         return unitTemplateRegistry;
     }
-    
+
     public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> getDeviceClassRegistry() {
         return deviceClassRegistry;
     }
-    
+
     public ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> getDeviceConfigRegistry() {
         return deviceConfigRegistry;
     }
-    
+
     public ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> getUnitGroupRegistry() {
         return unitGroupConfigRegistry;
     }
@@ -935,11 +937,11 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        
+
         List<UnitConfig> unitConfigs = getUnitConfigs(type);
-        
+
         boolean foundServiceType;
-        
+
         for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
             foundServiceType = false;
             for (ServiceType serviceType : serviceTypes) {

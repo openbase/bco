@@ -54,7 +54,7 @@ public interface DeviceRegistry {
 
     public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException;
 
-    public UnitTemplate updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
+    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
     public DeviceConfig updateDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
 

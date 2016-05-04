@@ -23,6 +23,7 @@ package org.dc.bco.registry.device.remote;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -340,9 +341,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public UnitTemplate updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
         try {
-            return callMethod("updateUnitTemplate", unitTemplate);
+            return RPCHelper.callRemoteMethod(unitTemplate, this, UnitTemplate.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update unit template!", ex);
         }
@@ -829,20 +830,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public Future<Boolean> isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the unit group config registry!", ex);
-        }
+        return getData().getUnitGroupRegistryReadOnly();
     }
 
     /**
