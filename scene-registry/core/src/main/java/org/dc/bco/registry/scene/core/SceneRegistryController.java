@@ -26,10 +26,9 @@ package org.dc.bco.registry.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.scene.core.consistency.LabelConsistencyHandler;
@@ -168,8 +167,8 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     }
 
     @Override
-    public SceneConfig registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return sceneConfigRegistry.register(sceneConfig);
+    public Future<SceneConfig> registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> sceneConfigRegistry.register(sceneConfig));
     }
 
     @Override
@@ -188,13 +187,13 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     }
 
     @Override
-    public SceneConfig updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return sceneConfigRegistry.update(sceneConfig);
+    public Future<SceneConfig> updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> sceneConfigRegistry.update(sceneConfig));
     }
 
     @Override
-    public SceneConfig removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return sceneConfigRegistry.remove(sceneConfig);
+    public Future<SceneConfig> removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> sceneConfigRegistry.remove(sceneConfig));
     }
 
     @Override
@@ -203,8 +202,8 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     }
 
     @Override
-    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(sceneConfigRegistry.isReadOnly());
+    public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+        return sceneConfigRegistry.isReadOnly();
     }
 
     public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRegistry() {

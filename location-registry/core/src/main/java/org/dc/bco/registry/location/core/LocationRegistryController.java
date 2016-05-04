@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -263,8 +263,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return locationConfigRegistry.register(locationConfig);
+    public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> locationConfigRegistry.register(locationConfig));
     }
 
     /**
@@ -327,8 +327,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return locationConfigRegistry.update(locationConfig);
+    public Future<LocationConfig> updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> locationConfigRegistry.update(locationConfig));
     }
 
     /**
@@ -337,8 +337,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig removeLocationConfig(LocationConfig locationConfig) throws CouldNotPerformException {
-        return locationConfigRegistry.remove(locationConfig);
+    public Future<LocationConfig> removeLocationConfig(LocationConfig locationConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> locationConfigRegistry.remove(locationConfig));
     }
 
     /**
@@ -484,8 +484,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(locationConfigRegistry.isReadOnly());
+    public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
+        return locationConfigRegistry.isReadOnly();
     }
 
     /**
@@ -512,8 +512,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return connectionConfigRegistry.register(connectionConfig);
+    public Future<ConnectionConfig> registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> connectionConfigRegistry.register(connectionConfig));
     }
 
     /**
@@ -564,8 +564,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return connectionConfigRegistry.update(connectionConfig);
+    public Future<ConnectionConfig> updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> connectionConfigRegistry.update(connectionConfig));
     }
 
     /**
@@ -574,8 +574,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return connectionConfigRegistry.remove(connectionConfig);
+    public Future<ConnectionConfig> removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> connectionConfigRegistry.remove(connectionConfig));
     }
 
     /**
@@ -672,7 +672,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(connectionConfigRegistry.isReadOnly());
+    public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
+        return connectionConfigRegistry.isReadOnly();
     }
 }

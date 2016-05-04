@@ -26,10 +26,9 @@ package org.dc.bco.registry.user.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.dc.jps.core.JPService;
@@ -89,7 +88,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
      * @throws java.lang.InterruptedException
      */
     @Override
-    public  void init(final Scope scope) throws InitializationException, InterruptedException {
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotTransformException ex) {
@@ -110,7 +109,6 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
         super.init(scope);
     }
 
-
     /**
      * Method initializes the remote with the default registry connection scope.
      *
@@ -129,8 +127,8 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestData());
-        } catch (CouldNotPerformException ex) {
+            notifyUpdated(requestData().get());
+        } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
     }
@@ -150,9 +148,9 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public UserConfig registerUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
+    public Future<UserConfig> registerUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         try {
-            return (UserConfig) callMethod("registerUserConfig", userConfig);
+            return RPCHelper.callRemoteMethod(userConfig, this, UserConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register user config!", ex);
         }
@@ -177,18 +175,18 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public UserConfig updateUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
+    public Future<UserConfig> updateUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         try {
-            return (UserConfig) callMethod("updateUserConfig", userConfig);
+            return RPCHelper.callRemoteMethod(userConfig, this, UserConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update user config[" + userConfig + "]!", ex);
         }
     }
 
     @Override
-    public UserConfig removeUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
+    public Future<UserConfig> removeUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
         try {
-            return (UserConfig) callMethod("removeUserConfig", userConfig);
+            return RPCHelper.callRemoteMethod(userConfig, this, UserConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove user config[" + userConfig + "]!", ex);
         }
@@ -202,19 +200,16 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public Future<Boolean> isUserConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the user config registry!!", ex);
-        }
+
+        return getData().getUserConfigRegistryReadOnly();
     }
 
     @Override
@@ -233,9 +228,9 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public UserGroupConfig registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<UserGroupConfig> registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return (UserGroupConfig) callMethod("registerUserGroupConfig", groupConfig);
+            return RPCHelper.callRemoteMethod(groupConfig, this, UserGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register group config!", ex);
         }
@@ -254,18 +249,18 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public UserGroupConfig updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<UserGroupConfig> updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return (UserGroupConfig) callMethod("updateUserGroupConfig", groupConfig);
+            return RPCHelper.callRemoteMethod(groupConfig, this, UserGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update group config[" + groupConfig + "]!", ex);
         }
     }
 
     @Override
-    public UserGroupConfig removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<UserGroupConfig> removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return (UserGroupConfig) callMethod("removeUserGroupConfig", groupConfig);
+            return RPCHelper.callRemoteMethod(groupConfig, this, UserGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove group config[" + groupConfig + "]!", ex);
         }
@@ -296,18 +291,15 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public Future<Boolean> isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the group config registry!!", ex);
-        }
+
+        return getData().getGroupConfigRegistryReadOnly();
     }
 }

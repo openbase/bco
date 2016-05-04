@@ -26,10 +26,9 @@ package org.dc.bco.registry.app.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.app.core.consistency.LabelConsistencyHandler;
 import org.dc.bco.registry.app.core.consistency.ScopeConsistencyHandler;
@@ -167,8 +166,8 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
     }
 
     @Override
-    public AppConfig registerAppConfig(AppConfig appConfig) throws CouldNotPerformException {
-        return appConfigRegistry.register(appConfig);
+    public Future<AppConfig> registerAppConfig(AppConfig appConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> appConfigRegistry.register(appConfig));
     }
 
     @Override
@@ -187,13 +186,13 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
     }
 
     @Override
-    public AppConfig updateAppConfig(AppConfig appConfig) throws CouldNotPerformException {
-        return appConfigRegistry.update(appConfig);
+    public Future<AppConfig> updateAppConfig(AppConfig appConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> appConfigRegistry.update(appConfig));
     }
 
     @Override
-    public AppConfig removeAppConfig(AppConfig appConfig) throws CouldNotPerformException {
-        return appConfigRegistry.remove(appConfig);
+    public Future<AppConfig> removeAppConfig(AppConfig appConfig) throws CouldNotPerformException {
+        return ForkJoinPool.commonPool().submit(() -> appConfigRegistry.remove(appConfig));
     }
 
     @Override
@@ -202,8 +201,8 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
     }
 
     @Override
-    public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
-        return Future.completedFuture(appConfigRegistry.isReadOnly());
+    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException {
+        return appConfigRegistry.isReadOnly();
     }
 
     public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRegistry() {

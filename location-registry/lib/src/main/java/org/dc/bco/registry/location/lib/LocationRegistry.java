@@ -52,7 +52,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException is thrown in case if the registered
      * entry already exists or is inconsistent.
      */
-    public LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method returns the location config which is registered with the given
@@ -102,7 +102,7 @@ public interface LocationRegistry {
      * @return the updated location config.
      * @throws CouldNotPerformException
      */
-    public LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Future<LocationConfig> updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method removes the given location config out of the global registry.
@@ -111,7 +111,7 @@ public interface LocationRegistry {
      * @return The removed location config.
      * @throws CouldNotPerformException
      */
-    public LocationConfig removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Future<LocationConfig> removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method returns all registered location configs.
@@ -217,7 +217,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
+    public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
      * Method returns the root location of the registered location hierarchy
@@ -240,7 +240,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException is thrown in case if the registered
      * entry already exists or is inconsistent.
      */
-    public ConnectionConfig registerConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Future<ConnectionConfig> registerConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method returns the connection config which is registered with the given
@@ -290,7 +290,7 @@ public interface LocationRegistry {
      * @return the updated connection config.
      * @throws CouldNotPerformException
      */
-    public ConnectionConfig updateConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Future<ConnectionConfig> updateConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method removes the given connection config out of the global registry.
@@ -299,7 +299,7 @@ public interface LocationRegistry {
      * @return The removed connection config.
      * @throws CouldNotPerformException
      */
-    public ConnectionConfig removeConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Future<ConnectionConfig> removeConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method returns all registered connection configs.
@@ -365,6 +365,6 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException;
+    public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException;
 
 }

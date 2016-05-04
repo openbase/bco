@@ -26,9 +26,8 @@ package org.dc.bco.registry.app.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
@@ -49,7 +48,6 @@ import org.dc.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
 import rst.rsb.ScopeType;
@@ -62,7 +60,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfigType.AppConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfig.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> appConfigRemoteRegistry;
@@ -84,7 +82,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
      * @throws java.lang.InterruptedException
      */
     @Override
-    public  void init(final Scope scope) throws InitializationException, InterruptedException {
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotTransformException ex) {
@@ -105,7 +103,6 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         super.init(scope);
     }
 
-
     /**
      * Method initializes the remote with the default registry connection scope.
      *
@@ -124,8 +121,8 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         try {
-            notifyUpdated(requestData());
-        } catch (CouldNotPerformException ex) {
+            notifyUpdated(requestData().get());
+        } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
     }
@@ -140,9 +137,9 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public AppConfigType.AppConfig registerAppConfig(final AppConfigType.AppConfig appConfig) throws CouldNotPerformException {
+    public Future<AppConfig> registerAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
         try {
-            return (AppConfigType.AppConfig) callMethod("registerAppConfig", appConfig);
+            return RPCHelper.callRemoteMethod(appConfig, this, AppConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register app config!", ex);
         }
@@ -155,7 +152,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public Boolean containsAppConfig(final AppConfigType.AppConfig appConfig) throws CouldNotPerformException {
+    public Boolean containsAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
         getData();
         return appConfigRemoteRegistry.contains(appConfig);
     }
@@ -167,18 +164,18 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public AppConfigType.AppConfig updateAppConfig(final AppConfigType.AppConfig appConfig) throws CouldNotPerformException {
+    public Future<AppConfig> updateAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
         try {
-            return (AppConfigType.AppConfig) callMethod("updateAppConfig", appConfig);
+            return RPCHelper.callRemoteMethod(appConfig, this, AppConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update app config!", ex);
         }
     }
 
     @Override
-    public AppConfigType.AppConfig removeAppConfig(final AppConfigType.AppConfig appConfig) throws CouldNotPerformException {
+    public Future<AppConfig> removeAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
         try {
-            return (AppConfigType.AppConfig) callMethod("removeAppConfig", appConfig);
+            return RPCHelper.callRemoteMethod(appConfig, this, AppConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove app config!", ex);
         }
@@ -192,19 +189,15 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public Future<Boolean> isAppConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the app config registry!!", ex);
-        }
+        return getData().getAppConfigRegistryReadOnly();
     }
 }

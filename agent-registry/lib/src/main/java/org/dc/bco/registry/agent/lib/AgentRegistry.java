@@ -26,7 +26,6 @@ package org.dc.bco.registry.agent.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -38,21 +37,21 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
  */
 public interface AgentRegistry {
 
-    public AgentConfig registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Future<AgentConfig> registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
 
     public Boolean containsAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
 
     public Boolean containsAgentConfigById(String agentConfigId) throws CouldNotPerformException;
 
-    public AgentConfig updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Future<AgentConfig> updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
 
-    public AgentConfig removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Future<AgentConfig> removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
 
     public AgentConfig getAgentConfigById(final String agentConfigId) throws CouldNotPerformException;
-    
+
     public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException;
-    
-     public Future<Boolean> isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
 
     public void shutdown();
 }

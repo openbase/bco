@@ -29,6 +29,7 @@ package org.dc.bco.registry.location.remote;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -143,8 +144,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         deviceRegistryRemote.activate();
         super.activate();
         try {
-            notifyUpdated(requestData());
-        } catch (CouldNotPerformException ex) {
+            notifyUpdated(requestData().get());
+        } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
     }
@@ -184,9 +185,9 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
+    public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {
-            return (LocationConfigType.LocationConfig) callMethod("registerLocationConfig", locationConfig);
+            return RPCHelper.callRemoteMethod(locationConfig, this, LocationConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register location config!", ex);
         }
@@ -257,9 +258,9 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
+    public Future<LocationConfig> updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {
-            return (LocationConfigType.LocationConfig) callMethod("updateLocationConfig", locationConfig);
+            return RPCHelper.callRemoteMethod(locationConfig, this, LocationConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update location[" + locationConfig + "]!", ex);
         }
@@ -271,9 +272,9 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
+    public Future<LocationConfig> removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
         try {
-            return (LocationConfigType.LocationConfig) callMethod("removeLocationConfig", locationConfig);
+            return RPCHelper.callRemoteMethod(locationConfig, this, LocationConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove location[" + locationConfig + "]!", ex);
         }
@@ -427,20 +428,16 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<Boolean> isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the location config registry!!", ex);
-        }
+        return getData().getLocationConfigRegistryReadOnly();
     }
 
     /**
@@ -449,9 +446,9 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+    public Future<ConnectionConfig> registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return (ConnectionConfig) callMethod("registerConnectionConfig", connectionConfig);
+            return RPCHelper.callRemoteMethod(connectionConfig, this, ConnectionConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register connection config!", ex);
         }
@@ -509,9 +506,9 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+    public Future<ConnectionConfig> updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return (ConnectionConfig) callMethod("updateConnectionConfig", connectionConfig);
+            return RPCHelper.callRemoteMethod(connectionConfig, this, ConnectionConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update connection[" + connectionConfig + "]!", ex);
         }
@@ -523,9 +520,9 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
+    public Future<ConnectionConfig> removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return (ConnectionConfig) callMethod("removeConnectionConfig", connectionConfig);
+            return RPCHelper.callRemoteMethod(connectionConfig, this, ConnectionConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove connection[" + connectionConfig + "]!", ex);
         }
@@ -629,18 +626,15 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<Boolean> isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return Future.completedFuture(true);
+                return true;
             }
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-        try {
-            return RPCHelper.callRemoteMethod(this, Boolean.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not return read only state of the location config registry!!", ex);
-        }
+
+        return getData().getConnectionConfigRegistryReadOnly();
     }
 }

@@ -26,7 +26,6 @@ package org.dc.bco.registry.scene.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -38,19 +37,19 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
  */
 public interface SceneRegistry {
 
-    public SceneConfig registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Future<SceneConfig> registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
 
     public Boolean containsSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
 
     public Boolean containsSceneConfigById(String sceneConfigId) throws CouldNotPerformException;
 
-    public SceneConfig updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Future<SceneConfig> updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
 
-    public SceneConfig removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Future<SceneConfig> removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
 
     public SceneConfig getSceneConfigById(final String sceneConfigId) throws CouldNotPerformException;
 
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException;
 
-    public Future<Boolean> isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
+    public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
 }
