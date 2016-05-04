@@ -496,7 +496,13 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return ForkJoinTask.adapt(() -> unitTemplateRegistry.update(unitTemplate));
+        return ForkJoinTask.adapt(new Callable<UnitTemplate>() {
+
+            @Override
+            public UnitTemplate call() throws Exception {
+                throw new Exception("bad");
+            }
+        });
     }
 
     /**

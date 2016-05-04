@@ -165,7 +165,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.dc.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void notifyUpdated(final LocationRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final LocationRegistry data) throws CouldNotPerformException {
         locationConfigRemoteRegistry.notifyRegistryUpdated(data.getLocationConfigList());
         connectionConfigRemoteRegistry.notifyRegistryUpdated(data.getConnectionConfigList());
     }

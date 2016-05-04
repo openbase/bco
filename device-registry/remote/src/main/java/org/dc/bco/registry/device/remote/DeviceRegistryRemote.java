@@ -148,7 +148,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException
      */
     @Override
-    public void notifyUpdated(final DeviceRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final DeviceRegistry data) throws CouldNotPerformException {
         deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassList());
         deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigList());
         unitTemplateRemoteRegistry.notifyRegistryUpdated(data.getUnitTemplateList());
