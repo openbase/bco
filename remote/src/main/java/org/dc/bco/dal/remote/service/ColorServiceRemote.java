@@ -26,17 +26,14 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
-=======
 import org.dc.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.ColorService;
->>>>>>> master
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
