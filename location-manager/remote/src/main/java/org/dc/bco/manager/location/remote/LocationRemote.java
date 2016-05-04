@@ -61,7 +61,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     }
 
     @Override
-    public void notifyUpdated(LocationData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(LocationData data) throws CouldNotPerformException {
     }
 
     @Override

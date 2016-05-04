@@ -1,8 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.dc.bco.manager.device.binding.openhab.util.configgen.xmlpaser;
+org.dc.bco.manager.device.binding.openhab.util.configgen.xmlpaser;
 
 /*
  * #%L

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.app.remote;
 
 /*
@@ -49,7 +44,7 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
     }
 
     @Override
-    public void notifyUpdated(AppData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(AppData data) throws CouldNotPerformException {
 
     }
 

@@ -129,7 +129,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         switch (serviceType) {
             case BRIGHTNESS_SERVICE:
                 ((ArrayList<BrightnessService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE)).add((BrightnessService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -145,7 +145,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case COLOR_SERVICE:
                 ((ArrayList<ColorService>) serviceMap.get(ServiceType.COLOR_SERVICE)).add((ColorService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -160,7 +160,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case DIM_SERVICE:
                 ((ArrayList<DimService>) serviceMap.get(ServiceType.DIM_SERVICE)).add((DimService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -175,7 +175,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case MOTION_PROVIDER:
                 ((ArrayList<MotionProvider>) serviceMap.get(ServiceType.MOTION_PROVIDER)).add((MotionProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -190,7 +190,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case OPENING_RATIO_SERVICE:
                 ((ArrayList<OpeningRatioService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE)).add((OpeningRatioService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -205,7 +205,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case POWER_CONSUMPTION_PROVIDER:
                 ((ArrayList<PowerConsumptionProvider>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).add((PowerConsumptionProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -220,7 +220,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case POWER_SERVICE:
                 ((ArrayList<PowerService>) serviceMap.get(ServiceType.POWER_SERVICE)).add((PowerService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -235,7 +235,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case SHUTTER_SERVICE:
                 ((ArrayList<ShutterService>) serviceMap.get(ServiceType.SHUTTER_SERVICE)).add((ShutterService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -250,7 +250,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case SMOKE_ALARM_STATE_PROVIDER:
                 ((ArrayList<SmokeAlarmStateProvider>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER)).add((SmokeAlarmStateProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -265,7 +265,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case SMOKE_STATE_PROVIDER:
                 ((ArrayList<SmokeStateProvider>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER)).add((SmokeStateProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -280,7 +280,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case STANDBY_SERVICE:
                 ((ArrayList<StandbyService>) serviceMap.get(ServiceType.STANDBY_SERVICE)).add((StandbyService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -295,7 +295,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case TAMPER_PROVIDER:
                 ((ArrayList<TamperProvider>) serviceMap.get(ServiceType.TAMPER_PROVIDER)).add((TamperProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -310,7 +310,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case TARGET_TEMPERATURE_SERVICE:
                 ((ArrayList<TargetTemperatureService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE)).add((TargetTemperatureService) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -325,7 +325,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 break;
             case TEMPERATURE_PROVIDER:
                 ((ArrayList<TemperatureProvider>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER)).add((TemperatureProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
