@@ -21,7 +21,6 @@ package org.dc.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -34,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
 import org.dc.bco.dal.remote.unit.MotionSensorRemote;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,16 +47,14 @@ import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-<<<<<<< HEAD
-public class MotionStateFutionProvider extends Observable<MotionState> implements MotionProviderService, Activatable {
-=======
-public class MotionStateFutionProvider extends ObservableImpl<MotionState> implements MotionProvider, Activatable {
->>>>>>> master
+public class MotionStateFutionProvider extends ObservableImpl<MotionState> implements MotionProviderService, Activatable {
 
     /**
-     * Default 3 minute window of no movement unit the state switches to NO_MOTION.
+     * Default 3 minute window of no movement unit the state switches to
+     * NO_MOTION.
      */
     public static final long MOTION_TIMEOUT = 10000;
 
@@ -158,7 +156,7 @@ public class MotionStateFutionProvider extends ObservableImpl<MotionState> imple
     }
 
     @Override
-    public MotionState getMotion() throws CouldNotPerformException {
+    public MotionState getMotion() throws NotAvailableException {
         return this.motionState.build();
     }
 }

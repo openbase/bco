@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import javax.swing.JComponent;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -91,13 +91,13 @@ public class DalSceneEditor extends javax.swing.JFrame {
             genericUnitCollectionPanel.init();
             sceneCreationPanel.init();
 
-            Future.runAsync(() -> {
+            ForkJoinPool.commonPool().submit(() -> {
                 try {
-                    sceneSelectorPanel.init();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
+                    sceneCreationPanel.init();
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
                 }
             });
         } catch (CouldNotPerformException ex) {

@@ -21,11 +21,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
@@ -40,12 +42,12 @@ public class PowerServiceImpl<ST extends PowerOperationService & Unit> extends O
     }
 
     @Override
-    public PowerState getPower() throws CouldNotPerformException {
+    public PowerState getPower() throws NotAvailableException {
         return unit.getPower();
     }
 
     @Override
-    public void setPower(PowerState state) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
+    public Future<Void> setPower(PowerState state) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
     }
 }

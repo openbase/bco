@@ -21,13 +21,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
@@ -41,13 +41,13 @@ public class DimServiceImpl<ST extends DimOperationService & Unit> extends OpenH
     }
 
     @Override
-    public void setDim(Double dimm) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newPercentCommand(dimm));
+    public Future<Void> setDim(Double dimm) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newPercentCommand(dimm));
     }
 
     @Override
-    public Double getDim() throws CouldNotPerformException {
+    public Double getDim() throws NotAvailableException {
         return unit.getDim();
     }
-    
+
 }

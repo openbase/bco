@@ -21,12 +21,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
@@ -41,12 +42,12 @@ public class ShutterServiceImpl<ST extends ShutterOperationService & Unit> exten
     }
 
     @Override
-    public void setShutter(ShutterState state) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newUpDownCommand(state.getValue()));
+    public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newUpDownCommand(state.getValue()));
     }
 
     @Override
-    public ShutterState getShutter() throws CouldNotPerformException {
+    public ShutterState getShutter() throws NotAvailableException {
         return unit.getShutter();
     }
 

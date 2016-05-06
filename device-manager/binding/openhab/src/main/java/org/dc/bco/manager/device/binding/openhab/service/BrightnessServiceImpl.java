@@ -22,14 +22,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
@@ -43,7 +42,7 @@ public class BrightnessServiceImpl<UNIT extends BrightnessOperationService & Uni
     }
 
     @Override
-    public Double getBrightness() throws CouldNotPerformException {
+    public Double getBrightness() throws NotAvailableException {
         return unit.getBrightness();
     }
 

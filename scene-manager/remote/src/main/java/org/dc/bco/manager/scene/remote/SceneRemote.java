@@ -56,4 +56,9 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(activation, this);
     }
+
+    @Override
+    public SceneConfig updateConfig(SceneConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

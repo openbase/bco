@@ -10,32 +10,23 @@ package org.dc.bco.manager.scene.visual;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-<<<<<<< HEAD
 import java.awt.Color;
-=======
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.exception.VerificationFailedException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.ObservableImpl;
-import org.dc.jul.pattern.Observer;
-import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
->>>>>>> master
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -46,16 +37,12 @@ import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.MultiException;
-<<<<<<< HEAD
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
-=======
-import org.dc.jul.pattern.Observable;
->>>>>>> master
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
@@ -67,6 +54,8 @@ import rst.homeautomation.state.EnablingStateType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
+
+
 public class SceneCreationPanel extends javax.swing.JPanel {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
@@ -146,11 +135,15 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         scene.addAllActionConfig(actionConfigs);
         scene.setLocationId(location.getConfig().getId());
         logger.info("save location:" + location.getConfig().getLabel());
-        if (!sceneRegistryRemote.containsSceneConfig(scene.build())) {
-            logger.debug("Registering scene from updateSceneConfig");
-            lastSelected = sceneRegistryRemote.registerSceneConfig(scene.build());
-        } else {
-            lastSelected = sceneRegistryRemote.updateSceneConfig(scene.build());
+        try {
+            if (!sceneRegistryRemote.containsSceneConfig(scene.build())) {
+                logger.debug("Registering scene from updateSceneConfig");
+                lastSelected = sceneRegistryRemote.registerSceneConfig(scene.build()).get();
+            } else {
+                lastSelected = sceneRegistryRemote.updateSceneConfig(scene.build()).get();
+            }
+        } catch (ExecutionException | InterruptedException ex) {
+            throw new CouldNotPerformException("Could not register/update scene", ex);
         }
     }
 
@@ -264,10 +257,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         }
         try {
             logger.info("Registering scene from new button");
-            lastSelected = sceneRegistryRemote.registerSceneConfig(SceneConfig.newBuilder().setLabel(label).setLocationId(location.getConfig().getId()).setEnablingState(EnablingStateType.EnablingState.newBuilder().setValue(EnablingStateType.EnablingState.State.ENABLED)).build());
+            lastSelected = sceneRegistryRemote.registerSceneConfig(SceneConfig.newBuilder().setLabel(label).setLocationId(location.getConfig().getId()).setEnablingState(EnablingStateType.EnablingState.newBuilder().setValue(EnablingStateType.EnablingState.State.ENABLED)).build()).get();
             updateDynamicComponents();
             observable.notifyObservers(lastSelected.getActionConfigList());
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
     }//GEN-LAST:event_newButtonActionPerformed
@@ -295,7 +288,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             sceneRemote.init(lastSelected);
             applyUpdateButton.setBackground(Color.GRAY);
             sceneRemote.activate();
-            switch(sceneRemote.getData().getActivationState().getValue()) {
+            switch (sceneRemote.getData().getActivationState().getValue()) {
                 case ACTIVE:
                     applyUpdateButton.setBackground(Color.GREEN.darker().darker());
                     break;
@@ -308,7 +301,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
             }
             sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-            switch(sceneRemote.getData().getActivationState().getValue()) {
+            switch (sceneRemote.getData().getActivationState().getValue()) {
                 case ACTIVE:
                     applyUpdateButton.setBackground(Color.GREEN.darker().darker());
                     break;

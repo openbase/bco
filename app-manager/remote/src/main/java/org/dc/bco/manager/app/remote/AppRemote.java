@@ -52,4 +52,9 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(activation, this);
     }
+
+    @Override
+    public AppConfig updateConfig(AppConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

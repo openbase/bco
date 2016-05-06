@@ -21,20 +21,20 @@ package org.dc.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
-import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
 import org.dc.jul.iface.provider.LabelProvider;
@@ -46,8 +46,8 @@ import rst.spatial.LocationConfigType.LocationConfig;
  * Threepwood</a>
  */
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
-        BrightnessService, ColorService, DimService, OpeningRatioService, PowerService, ShutterService,
-        StandbyService, TargetTemperatureService, MotionProvider, SmokeAlarmStateProvider, SmokeStateProvider,
-        TemperatureProvider, PowerConsumptionProvider, TamperProvider {
+        BrightnessOperationService, ColorOperationService, DimOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService,
+        StandbyOperationService, TargetTemperatureOperationService, MotionProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
+        TemperatureProviderService, PowerConsumptionProviderService, TamperProviderService {
 
 }

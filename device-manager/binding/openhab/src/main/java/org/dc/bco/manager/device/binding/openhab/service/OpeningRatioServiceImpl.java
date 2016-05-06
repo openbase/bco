@@ -22,12 +22,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
@@ -41,12 +42,12 @@ public class OpeningRatioServiceImpl<ST extends OpeningRatioOperationService & U
     }
 
     @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newPercentCommand(openingRatio));
+    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newPercentCommand(openingRatio));
     }
 
     @Override
-    public Double getOpeningRatio() throws CouldNotPerformException {
+    public Double getOpeningRatio() throws NotAvailableException {
         return unit.getOpeningRatio();
     }
 }

@@ -1,4 +1,4 @@
-org.dc.bco.manager.device.binding.openhab.util.configgen.xmlpaser;
+package org.dc.bco.manager.device.binding.openhab.util.configgen.xmlpaser;
 
 /*
  * #%L

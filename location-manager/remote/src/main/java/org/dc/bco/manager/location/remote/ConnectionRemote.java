@@ -21,6 +21,8 @@ package org.dc.bco.manager.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.bco.manager.location.lib.Connection;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -61,12 +63,25 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     @Override
-    public HandleState getHandle() throws CouldNotPerformException {
-        return getData().getHandleState();
+    public HandleState getHandle() throws NotAvailableException {
+        try {
+            return getData().getHandleState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HandleState", ex);
+        }
     }
 
     @Override
-    public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        return getData().getReedSwitchState();
+    public ReedSwitchState getReedSwitch() throws NotAvailableException {
+        try {
+            return getData().getReedSwitchState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ReedSwitchState", ex);
+        }
+    }
+
+    @Override
+    public ConnectionConfig updateConfig(ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

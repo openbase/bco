@@ -22,11 +22,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.vision.HSVColorType;
 
 /**
@@ -41,12 +43,12 @@ public class ColorServiceImpl<ST extends ColorOperationService & Unit>  extends 
     }
 
     @Override
-    public HSVColorType.HSVColor getColor() throws CouldNotPerformException {
+    public HSVColorType.HSVColor getColor() throws NotAvailableException {
         return unit.getColor();
     }
 
     @Override
-    public void setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newHSBCommand(color));
+    public Future<Void> setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newHSBCommand(color));
     }
 }

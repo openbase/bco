@@ -26,21 +26,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
-import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
-import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TamperProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.TemperatureProviderService;
 import org.dc.bco.dal.remote.unit.UnitRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -128,7 +128,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         // and the update can be realized with reflections or the setField method and a notify
         switch (serviceType) {
             case BRIGHTNESS_SERVICE:
-                ((ArrayList<BrightnessService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE)).add((BrightnessService) unitRemote);
+                ((ArrayList<BrightnessOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE)).add((BrightnessOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -144,7 +144,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case COLOR_SERVICE:
-                ((ArrayList<ColorService>) serviceMap.get(ServiceType.COLOR_SERVICE)).add((ColorService) unitRemote);
+                ((ArrayList<ColorOperationService>) serviceMap.get(ServiceType.COLOR_SERVICE)).add((ColorOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -159,7 +159,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case DIM_SERVICE:
-                ((ArrayList<DimService>) serviceMap.get(ServiceType.DIM_SERVICE)).add((DimService) unitRemote);
+                ((ArrayList<DimOperationService>) serviceMap.get(ServiceType.DIM_SERVICE)).add((DimOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -174,7 +174,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case MOTION_PROVIDER:
-                ((ArrayList<MotionProvider>) serviceMap.get(ServiceType.MOTION_PROVIDER)).add((MotionProvider) unitRemote);
+                ((ArrayList<MotionProviderService>) serviceMap.get(ServiceType.MOTION_PROVIDER)).add((MotionProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -189,7 +189,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case OPENING_RATIO_SERVICE:
-                ((ArrayList<OpeningRatioService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE)).add((OpeningRatioService) unitRemote);
+                ((ArrayList<OpeningRatioOperationService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE)).add((OpeningRatioOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -204,7 +204,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case POWER_CONSUMPTION_PROVIDER:
-                ((ArrayList<PowerConsumptionProvider>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).add((PowerConsumptionProvider) unitRemote);
+                ((ArrayList<PowerConsumptionProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).add((PowerConsumptionProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -219,7 +219,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case POWER_SERVICE:
-                ((ArrayList<PowerService>) serviceMap.get(ServiceType.POWER_SERVICE)).add((PowerService) unitRemote);
+                ((ArrayList<PowerOperationService>) serviceMap.get(ServiceType.POWER_SERVICE)).add((PowerOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -234,7 +234,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case SHUTTER_SERVICE:
-                ((ArrayList<ShutterService>) serviceMap.get(ServiceType.SHUTTER_SERVICE)).add((ShutterService) unitRemote);
+                ((ArrayList<ShutterOperationService>) serviceMap.get(ServiceType.SHUTTER_SERVICE)).add((ShutterOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -249,7 +249,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case SMOKE_ALARM_STATE_PROVIDER:
-                ((ArrayList<SmokeAlarmStateProvider>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER)).add((SmokeAlarmStateProvider) unitRemote);
+                ((ArrayList<SmokeAlarmStateProviderService>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER)).add((SmokeAlarmStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -264,7 +264,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case SMOKE_STATE_PROVIDER:
-                ((ArrayList<SmokeStateProvider>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER)).add((SmokeStateProvider) unitRemote);
+                ((ArrayList<SmokeStateProviderService>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER)).add((SmokeStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -279,7 +279,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case STANDBY_SERVICE:
-                ((ArrayList<StandbyService>) serviceMap.get(ServiceType.STANDBY_SERVICE)).add((StandbyService) unitRemote);
+                ((ArrayList<StandbyOperationService>) serviceMap.get(ServiceType.STANDBY_SERVICE)).add((StandbyOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -294,7 +294,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case TAMPER_PROVIDER:
-                ((ArrayList<TamperProvider>) serviceMap.get(ServiceType.TAMPER_PROVIDER)).add((TamperProvider) unitRemote);
+                ((ArrayList<TamperProviderService>) serviceMap.get(ServiceType.TAMPER_PROVIDER)).add((TamperProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -309,7 +309,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case TARGET_TEMPERATURE_SERVICE:
-                ((ArrayList<TargetTemperatureService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE)).add((TargetTemperatureService) unitRemote);
+                ((ArrayList<TargetTemperatureOperationService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE)).add((TargetTemperatureOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -324,7 +324,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case TEMPERATURE_PROVIDER:
-                ((ArrayList<TemperatureProvider>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER)).add((TemperatureProvider) unitRemote);
+                ((ArrayList<TemperatureProviderService>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER)).add((TemperatureProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -490,72 +490,72 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Collection<ColorService> getColorStateOperationServices() {
-        return (Collection<ColorService>) serviceMap.get(ServiceType.COLOR_SERVICE);
+    public Collection<ColorOperationService> getColorStateOperationServices() {
+        return (Collection<ColorOperationService>) serviceMap.get(ServiceType.COLOR_SERVICE);
     }
 
     @Override
-    public Collection<BrightnessService> getBrightnessStateOperationServices() {
-        return (Collection<BrightnessService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE);
+    public Collection<BrightnessOperationService> getBrightnessStateOperationServices() {
+        return (Collection<BrightnessOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE);
     }
 
     @Override
-    public Collection<DimService> getDimStateOperationServices() {
-        return (Collection<DimService>) serviceMap.get(ServiceType.DIM_SERVICE);
+    public Collection<DimOperationService> getDimStateOperationServices() {
+        return (Collection<DimOperationService>) serviceMap.get(ServiceType.DIM_SERVICE);
     }
 
     @Override
-    public Collection<OpeningRatioService> getOpeningRatioStateOperationServices() {
-        return (Collection<OpeningRatioService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE);
+    public Collection<OpeningRatioOperationService> getOpeningRatioStateOperationServices() {
+        return (Collection<OpeningRatioOperationService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE);
     }
 
     @Override
-    public Collection<PowerService> getPowerStateOperationServices() {
-        return (Collection<PowerService>) serviceMap.get(ServiceType.POWER_SERVICE);
+    public Collection<PowerOperationService> getPowerStateOperationServices() {
+        return (Collection<PowerOperationService>) serviceMap.get(ServiceType.POWER_SERVICE);
     }
 
     @Override
-    public Collection<ShutterService> getShutterStateOperationServices() {
-        return (Collection<ShutterService>) serviceMap.get(ServiceType.SHUTTER_SERVICE);
+    public Collection<ShutterOperationService> getShutterStateOperationServices() {
+        return (Collection<ShutterOperationService>) serviceMap.get(ServiceType.SHUTTER_SERVICE);
     }
 
     @Override
-    public Collection<StandbyService> getStandbyStateOperationServices() {
-        return (Collection<StandbyService>) serviceMap.get(ServiceType.STANDBY_SERVICE);
+    public Collection<StandbyOperationService> getStandbyStateOperationServices() {
+        return (Collection<StandbyOperationService>) serviceMap.get(ServiceType.STANDBY_SERVICE);
     }
 
     @Override
-    public Collection<TargetTemperatureService> getTargetTemperatureStateOperationServices() {
-        return (Collection<TargetTemperatureService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE);
+    public Collection<TargetTemperatureOperationService> getTargetTemperatureStateOperationServices() {
+        return (Collection<TargetTemperatureOperationService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE);
     }
 
     @Override
-    public Collection<MotionProvider> getMotionStateProviderServices() {
-        return (Collection<MotionProvider>) serviceMap.get(ServiceType.MOTION_PROVIDER);
+    public Collection<MotionProviderService> getMotionStateProviderServices() {
+        return (Collection<MotionProviderService>) serviceMap.get(ServiceType.MOTION_PROVIDER);
     }
 
     @Override
-    public Collection<SmokeAlarmStateProvider> getSmokeAlarmStateProviderServices() {
-        return (Collection<SmokeAlarmStateProvider>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER);
+    public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
+        return (Collection<SmokeAlarmStateProviderService>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER);
     }
 
     @Override
-    public Collection<SmokeStateProvider> getSmokeStateProviderServices() {
-        return (Collection<SmokeStateProvider>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER);
+    public Collection<SmokeStateProviderService> getSmokeStateProviderServices() {
+        return (Collection<SmokeStateProviderService>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER);
     }
 
     @Override
-    public Collection<TemperatureProvider> getTemperatureStateProviderServices() {
-        return (Collection<TemperatureProvider>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER);
+    public Collection<TemperatureProviderService> getTemperatureStateProviderServices() {
+        return (Collection<TemperatureProviderService>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER);
     }
 
     @Override
-    public Collection<PowerConsumptionProvider> getPowerConsumptionStateProviderServices() {
-        return (Collection<PowerConsumptionProvider>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER);
+    public Collection<PowerConsumptionProviderService> getPowerConsumptionStateProviderServices() {
+        return (Collection<PowerConsumptionProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER);
     }
 
     @Override
-    public Collection<TamperProvider> getTamperStateProviderServices() {
-        return (Collection<TamperProvider>) serviceMap.get(ServiceType.TAMPER_PROVIDER);
+    public Collection<TamperProviderService> getTamperStateProviderServices() {
+        return (Collection<TamperProviderService>) serviceMap.get(ServiceType.TAMPER_PROVIDER);
     }
 }

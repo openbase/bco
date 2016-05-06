@@ -24,7 +24,7 @@ package org.dc.bco.manager.device.core;
  */
 
 import org.dc.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
-import org.dc.bco.dal.lib.layer.unit.Unit;
+import org.dc.bco.dal.lib.layer.unit.UnitController;
 import org.dc.bco.manager.device.lib.DeviceController;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.CouldNotTransformException;
@@ -78,7 +78,7 @@ public abstract class AbstractDeviceController extends AbstractUnitCollectionCon
             try {
                 registerUnits(config.getUnitConfigList());
 
-                for (Unit unit : getUnits()) {
+                for (UnitController unit : getUnits()) {
                     DeviceManagerController.getDeviceManager().getUnitControllerRegistry().register(unit);
                 }
             } catch (CouldNotPerformException ex) {

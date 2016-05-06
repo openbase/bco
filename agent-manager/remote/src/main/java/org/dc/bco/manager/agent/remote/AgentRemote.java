@@ -53,4 +53,9 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
         logger.info("Calling remote setActivationState to [" + activation + "] for agent");
         RPCHelper.callRemoteMethod(activation, this);
     }
+
+    @Override
+    public AgentConfig updateConfig(AgentConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

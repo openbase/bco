@@ -100,7 +100,7 @@ public class UserRemoteTest {
      */
     @Test
     public void testGetUserName() throws Exception {
-        userRemote.requestStatus();
+        userRemote.requestData().get();
         assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
         logger.info("User activity [" + userRemote.getUserActivity() + "]");
         logger.info("User presence [" + userRemote.getUserPresenceState() + "]");

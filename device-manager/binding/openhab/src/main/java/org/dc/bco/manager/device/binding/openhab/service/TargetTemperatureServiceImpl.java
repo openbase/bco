@@ -21,13 +21,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
@@ -35,18 +35,18 @@ import org.dc.jul.exception.InstantiationException;
  * @param <ST> Related service type.
  */
 public class TargetTemperatureServiceImpl<ST extends TargetTemperatureOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureOperationService {
-    
+
     public TargetTemperatureServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
-    
+
     @Override
-    public void setTargetTemperature(final Double value) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newDecimalCommand(value));
+    public Future<Void> setTargetTemperature(final Double value) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newDecimalCommand(value));
     }
 
     @Override
-    public Double getTargetTemperature() throws CouldNotPerformException {
+    public Double getTargetTemperature() throws NotAvailableException {
         return unit.getTargetTemperature();
     }
 
