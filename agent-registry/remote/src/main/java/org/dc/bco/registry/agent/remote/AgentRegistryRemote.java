@@ -124,7 +124,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     @Override
     public void notifyDataUpdate(final AgentRegistry data) throws CouldNotPerformException {
-        agentConfigRemoteRegistry.notifyRegistryUpdated(data.getAgentConfigList());
+        agentConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentConfigList());
     }
 
     public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRemoteRegistry() {

@@ -125,7 +125,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     @Override
     public void notifyDataUpdate(final AppRegistry data) throws CouldNotPerformException {
-        appConfigRemoteRegistry.notifyRegistryUpdated(data.getAppConfigList());
+        appConfigRemoteRegistry.notifyRegistryUpdate(data.getAppConfigList());
     }
 
     public RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRemoteRegistry() {

@@ -130,8 +130,8 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public void notifyDataUpdate(final UserRegistry data) throws CouldNotPerformException {
-        userConfigRemoteRegistry.notifyRegistryUpdated(data.getUserConfigList());
-        groupConfigRemoteRegistry.notifyRegistryUpdated(data.getUserGroupConfigList());
+        userConfigRemoteRegistry.notifyRegistryUpdate(data.getUserConfigList());
+        groupConfigRemoteRegistry.notifyRegistryUpdate(data.getUserGroupConfigList());
     }
 
     public RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> getUserConfigRemoteRegistry() {

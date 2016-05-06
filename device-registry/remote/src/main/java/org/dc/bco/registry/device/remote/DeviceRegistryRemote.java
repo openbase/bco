@@ -23,9 +23,6 @@ package org.dc.bco.registry.device.remote;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.jps.core.JPService;
@@ -149,10 +146,10 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public void notifyDataUpdate(final DeviceRegistry data) throws CouldNotPerformException {
-        deviceClassRemoteRegistry.notifyRegistryUpdated(data.getDeviceClassList());
-        deviceConfigRemoteRegistry.notifyRegistryUpdated(data.getDeviceConfigList());
-        unitTemplateRemoteRegistry.notifyRegistryUpdated(data.getUnitTemplateList());
-        unitGroupRemoteRegistry.notifyRegistryUpdated(data.getUnitGroupConfigList());
+        deviceClassRemoteRegistry.notifyRegistryUpdate(data.getDeviceClassList());
+        deviceConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceConfigList());
+        unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
+        unitGroupRemoteRegistry.notifyRegistryUpdate(data.getUnitGroupConfigList());
     }
 
     public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRemoteRegistry() {

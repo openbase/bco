@@ -124,7 +124,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     @Override
     public void notifyDataUpdate(final SceneRegistry data) throws CouldNotPerformException {
-        sceneConfigRemoteRegistry.notifyRegistryUpdated(data.getSceneConfigList());
+        sceneConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneConfigList());
     }
 
     public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRemoteRegistry() {
