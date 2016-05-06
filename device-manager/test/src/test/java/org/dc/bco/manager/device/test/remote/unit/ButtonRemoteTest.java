@@ -115,7 +115,7 @@ public class ButtonRemoteTest {
         logger.debug("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
         ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButton(buttonState);
-        buttonRemote.requestData();
+        buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButton().getValue());
     }
 }

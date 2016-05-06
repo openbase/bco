@@ -107,7 +107,7 @@ public class PowerPlugRemoteTest {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         powerPlugRemote.setPower(state);
-        powerPlugRemote.requestData();
+        powerPlugRemote.requestData().get();
         assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState());
     }
 
@@ -121,7 +121,7 @@ public class PowerPlugRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePower(state);
-        powerPlugRemote.requestData();
+        powerPlugRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
     }
 

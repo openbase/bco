@@ -113,7 +113,7 @@ public class SmokeDetectorRemoteTest {
         System.out.println("getSmokeAlarmState");
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeAlarmState(alarmState);
-        smokeDetectorRemote.requestData();
+        smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke alarm state returns the wrong value!", alarmState, smokeDetectorRemote.getSmokeAlarmState());
     }
 
@@ -125,7 +125,7 @@ public class SmokeDetectorRemoteTest {
         System.out.println("getSmokeState");
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();
         ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeState(smokeState);
-        smokeDetectorRemote.requestData();
+        smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState, smokeDetectorRemote.getSmokeState());
     }
 
