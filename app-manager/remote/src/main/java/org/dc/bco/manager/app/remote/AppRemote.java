@@ -54,7 +54,7 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
     }
 
     @Override
-    public AppConfig updateConfig(AppConfig config) throws CouldNotPerformException, InterruptedException {
+    public AppConfig applyConfigUpdate(AppConfig config) throws CouldNotPerformException, InterruptedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

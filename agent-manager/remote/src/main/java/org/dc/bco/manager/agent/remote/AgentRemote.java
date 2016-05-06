@@ -55,7 +55,7 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
     }
 
     @Override
-    public AgentConfig updateConfig(AgentConfig config) throws CouldNotPerformException, InterruptedException {
+    public AgentConfig applyConfigUpdate(AgentConfig config) throws CouldNotPerformException, InterruptedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -81,7 +81,7 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     @Override
-    public ConnectionConfig updateConfig(ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
+    public ConnectionConfig applyConfigUpdate(ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
