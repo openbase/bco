@@ -29,7 +29,6 @@ import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
@@ -154,21 +153,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             dataBuilder.getInternalBuilder().setColor(color);
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply color data change!", ex);
-                        }
-                    }
-                });
-                break;
-            case DIM_SERVICE:
-                ((ArrayList<DimOperationService>) serviceMap.get(ServiceType.DIM_SERVICE)).add((DimOperationService) unitRemote);
-                unitRemote.addDataObserver(new Observer() {
-
-                    @Override
-                    public void update(final Observable source, Object data) throws Exception {
-                        Double dim = getDim();
-                        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setDimValue(dim);
-                        } catch (Exception ex) {
-                            throw new CouldNotPerformException("Could not apply dim data change!", ex);
                         }
                     }
                 });
@@ -436,7 +420,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         try {
             Double brighntess = getBrightness();
             HSVColorType.HSVColor color = getColor();
-            Double dim = getDim();
             MotionStateType.MotionState motion = getMotion();
             Double openingRatio = getOpeningRatio();
             PowerStateType.PowerState power = getPower();
@@ -451,7 +434,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                 dataBuilder.getInternalBuilder().setBrightness(brighntess);
                 dataBuilder.getInternalBuilder().setColor(color);
-                dataBuilder.getInternalBuilder().setDimValue(dim);
                 dataBuilder.getInternalBuilder().setMotionState(motion);
                 dataBuilder.getInternalBuilder().setOpeningRatio(openingRatio);
                 dataBuilder.getInternalBuilder().setPowerState(power);
@@ -497,11 +479,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     @Override
     public Collection<BrightnessOperationService> getBrightnessStateOperationServices() {
         return (Collection<BrightnessOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE);
-    }
-
-    @Override
-    public Collection<DimOperationService> getDimStateOperationServices() {
-        return (Collection<DimOperationService>) serviceMap.get(ServiceType.DIM_SERVICE);
     }
 
     @Override

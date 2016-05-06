@@ -2,7 +2,6 @@ package org.dc.bco.manager.location.lib;
 
 import org.dc.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.dc.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
-import org.dc.bco.dal.lib.layer.service.collection.DimStateOperationServiceCollection;
 import org.dc.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
 import org.dc.bco.dal.lib.layer.service.collection.OpeningRatioStateOperationServiceCollection;
 import org.dc.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
@@ -45,7 +44,7 @@ import rst.spatial.LocationDataType.LocationData;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public interface LocationController extends Location, Controller<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
-        ColorStateOperationServiceCollection, DimStateOperationServiceCollection, OpeningRatioStateOperationServiceCollection,
+        ColorStateOperationServiceCollection, OpeningRatioStateOperationServiceCollection,
         PowerStateOperationServiceCollection, ShutterStateOperationServiceCollection, StandbyStateOperationServiceCollection,
         TargetTemperatureStateOperationServiceCollection, MotionStateProviderServiceCollection, SmokeAlarmStateProviderServiceCollection,
         SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,

@@ -1,8 +1,6 @@
 package org.dc.bco.manager.location.remote;
 
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -104,20 +102,6 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
             return getData().getColor();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Color", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setDim(Double dim) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(dim, this, Void.class);
-    }
-
-    @Override
-    public Double getDim() throws NotAvailableException {
-        try {
-            return getData().getDimValue();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Dim", ex);
         }
     }
 

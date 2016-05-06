@@ -26,7 +26,6 @@ import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
@@ -70,11 +69,6 @@ public class OpenhabServiceFactory implements ServiceFactory {
     @Override
     public <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(final UNIT unit) throws InstantiationException {
         return new ShutterServiceImpl(unit);
-    }
-
-    @Override
-    public <UNIT extends DimOperationService & Unit> DimOperationService newDimmService(final UNIT unit) throws InstantiationException {
-        return new DimServiceImpl(unit);
     }
 
     @Override

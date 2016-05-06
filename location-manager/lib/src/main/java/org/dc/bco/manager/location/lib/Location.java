@@ -23,7 +23,6 @@ package org.dc.bco.manager.location.lib;
  */
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
@@ -46,7 +45,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
  * Threepwood</a>
  */
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
-        BrightnessOperationService, ColorOperationService, DimOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService,
+        BrightnessOperationService, ColorOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService,
         StandbyOperationService, TargetTemperatureOperationService, MotionProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
         TemperatureProviderService, PowerConsumptionProviderService, TamperProviderService {
 

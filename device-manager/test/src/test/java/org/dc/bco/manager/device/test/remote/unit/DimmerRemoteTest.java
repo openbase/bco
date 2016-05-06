@@ -131,23 +131,23 @@ public class DimmerRemoteTest {
      * Test of setDimm method, of class DimmerRemote.
      */
     @Test(timeout = 60000)
-    public void testSetDim() throws Exception {
-        System.out.println("setDim");
-        Double dim = 66d;
-        dimmerRemote.setDim(dim);
+    public void testSetBrightness() throws Exception {
+        System.out.println("setBrightness");
+        Double brightness = 66d;
+        dimmerRemote.setBrightness(brightness);
         dimmerRemote.requestData();
-        assertEquals("Dimm has not been set in time!", dim, dimmerRemote.getData().getValue(), 0.1);
+        assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getData().getValue(), 0.1);
     }
 
     /**
      * Test of getDimm method, of class DimmerRemote.
      */
     @Test(timeout = 60000)
-    public void testGetDimm() throws Exception {
-        System.out.println("getDimm");
-        Double dimm = 70.0d;
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateDim(dimm);
+    public void testGetBrightness() throws Exception {
+        System.out.println("getBrightness");
+        Double brightness = 70.0d;
+        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateBrightness(brightness);
         dimmerRemote.requestData();
-        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getDim());
+        assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getBrightness());
     }
 }
