@@ -24,7 +24,6 @@ package org.dc.bco.dal.lib.layer.service;
 
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
@@ -48,8 +47,6 @@ public interface ServiceFactory {
     public abstract <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(UNIT unit) throws InstantiationException;
 
     public abstract <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(UNIT unit) throws InstantiationException;
-
-    public abstract <UNIT extends DimOperationService & Unit> DimOperationService newDimmService(UNIT unit) throws InstantiationException;
 
     public abstract <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(UNIT unit) throws InstantiationException;
 

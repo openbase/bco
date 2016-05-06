@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
@@ -73,7 +72,6 @@ public enum ServiceType {
     SHUTTER(ShutterOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SHUTTER_SERVICE),
     OPENING_RATIO(OpeningRatioOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.OPENING_RATIO_PROVIDER),
     MOTION(MotionProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_PROVIDER),
-    DIM(DimOperationService.class, ServiceTemplateType.ServiceTemplate.ServiceType.DIM_SERVICE),
     REED_SWITCH(ReedSwitchProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.REED_SWITCH_PROVIDER),
     SMOKE_ALARM_STATE(SmokeAlarmStateProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_PROVIDER),
     TEMPERATURE_ALARM_STATE(TemperatureAlarmStateProviderService.class, ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_PROVIDER),

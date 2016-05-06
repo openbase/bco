@@ -22,7 +22,7 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -46,7 +46,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     }
 
     private PowerOperationService powerService;
-    private DimOperationService dimmService;
+    private BrightnessOperationService brightnessService;
 
     public DimmerController(final UnitHost unitHost, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(DimmerController.class, unitHost, builder);
@@ -57,7 +57,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         super.init(config);
         try {
             this.powerService = getServiceFactory().newPowerService(this);
-            this.dimmService = getServiceFactory().newDimmService(this);
+            this.brightnessService = getServiceFactory().newBrightnessService(this);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -88,7 +88,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         }
     }
 
-    public void updateDim(final Double value) throws CouldNotPerformException {
+    public void updateBrightness(final Double value) throws CouldNotPerformException {
         logger.debug("Apply dim Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
@@ -104,16 +104,16 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     }
 
     @Override
-    public Future<Void> setDim(Double dimm) throws CouldNotPerformException {
-        return dimmService.setDim(dimm);
+    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
+        return brightnessService.setBrightness(brightness);
     }
 
     @Override
-    public Double getDim() throws NotAvailableException {
+    public Double getBrightness() throws NotAvailableException {
         try {
             return getData().getValue();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("dim", ex);
+            throw new NotAvailableException("brightness", ex);
         }
     }
 }

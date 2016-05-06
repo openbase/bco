@@ -221,30 +221,41 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
 
         // collect service interface methods
-        HashMap<String, ServiceTemplate.ServiceType> methodMap = new HashMap<>();
+        HashMap<String, ServiceTemplate.ServiceType> serviceInterfaceMap = new HashMap<>();
         for (ServiceTemplate.ServiceType serviceType : getTemplate().getServiceTypeList()) {
-            methodMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceType);
+            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceType);
         }
 
-        for (Entry<String, ServiceTemplate.ServiceType> methodEntry : methodMap.entrySet()) {
+        for (Entry<String, ServiceTemplate.ServiceType> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             Class<? extends Service> serviceInterfaceClass = null;
 
             try {
                 // Identify package
                 Package servicePackage;
-                if (methodEntry.getKey().contains(Service.CONSUMER_SERVICE_LABEL)) {
+                if (serviceInterfaceMapEntry.getKey().contains(Service.CONSUMER_SERVICE_LABEL)) {
                     servicePackage = ConsumerService.class.getPackage();
-                } else if (methodEntry.getKey().contains(Service.OPERATION_SERVICE_LABEL)) {
+//                } else if (serviceInterfaceMapEntry.getKey().contains(Service.OPERATION_SERVICE_LABEL)) {
+//                    servicePackage = OperationService.class.getPackage();
+//                } else if (serviceInterfaceMapEntry.getKey().contains(Service.PROVIDER_SERVICE_LABEL)) {
+//                    servicePackage = ProviderService.class.getPackage();
+                } else if (serviceInterfaceMapEntry.getKey().contains("Service")) {
                     servicePackage = OperationService.class.getPackage();
-                } else if (methodEntry.getKey().contains(Service.PROVIDER_SERVICE_LABEL)) {
+                } else if (serviceInterfaceMapEntry.getKey().contains("Provider")) {
                     servicePackage = ProviderService.class.getPackage();
                 } else {
-                    throw new NotSupportedException(methodEntry.getValue() + " is not supported!", this);
+                    throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
                 }
 
                 // Identify interface class
                 try {
-                    serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + methodEntry.getKey());
+                    if (servicePackage.equals(ProviderService.class.getPackage())) {
+                        serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + serviceInterfaceMapEntry.getKey() + "Service");
+                    } else if (servicePackage.equals(OperationService.class.getPackage())) {
+                        serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + serviceInterfaceMapEntry.getKey().replaceAll("Service", "") + "OperationService");
+                    }
+                    if (serviceInterfaceClass == null) {
+                        throw new NotAvailableException(serviceInterfaceMapEntry.getKey());
+                    }
                 } catch (ClassNotFoundException | ClassCastException ex) {
                     throw new CouldNotPerformException("Could not load service interface!", ex);
                 }
@@ -253,12 +264,16 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                     // interface not supported dummy.
                 }
 
-                Class<? extends Service> asSubclass = getClass().asSubclass(serviceInterfaceClass);
+                try {
+                    Class<? extends Service> asSubclass = getClass().asSubclass(serviceInterfaceClass);
+                } catch (ClassCastException ex) {
+                    throw new CouldNotPerformException("Could not register methods for serviceInterface [" + serviceInterfaceClass.getName() + "]", ex);
+                }
 
 //                RPCHelper.registerServiceInterface(serviceInterfaceClass, this, server);
                 RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Methode [" + methodEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
         }
 //        for (ServiceType serviceType : ServiceType.getServiceTypeList(this)) {

@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
@@ -38,7 +37,6 @@ import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationServ
 import org.dc.bco.dal.remote.service.AbstractServiceRemote;
 import org.dc.bco.dal.remote.service.BrightnessServiceRemote;
 import org.dc.bco.dal.remote.service.ColorServiceRemote;
-import org.dc.bco.dal.remote.service.DimServiceRemote;
 import org.dc.bco.dal.remote.service.OpeningRatioServiceRemote;
 import org.dc.bco.dal.remote.service.PowerServiceRemote;
 import org.dc.bco.dal.remote.service.ServiceRemoteFactory;
@@ -65,7 +63,7 @@ import rst.vision.HSVColorType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig> implements BrightnessOperationService, ColorOperationService, DimOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService, StandbyOperationService, TargetTemperatureOperationService {
+public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig> implements BrightnessOperationService, ColorOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService, StandbyOperationService, TargetTemperatureOperationService {
 
     private final Map<ServiceTemplate.ServiceType, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
     private final ServiceRemoteFactory serviceRemoteFactory;
@@ -101,18 +99,6 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     public HSVColorType.HSVColor getColor() throws NotAvailableException {
         testServiceAvailability(ServiceTemplate.ServiceType.COLOR_SERVICE);
         return ((ColorServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.COLOR_SERVICE)).getColor();
-    }
-
-    @Override
-    public Future<Void> setDim(Double dim) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.DIM_SERVICE);
-        return ((DimServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.DIM_SERVICE)).setDim(dim);
-    }
-
-    @Override
-    public Double getDim() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.DIM_SERVICE);
-        return ((DimServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.DIM_SERVICE)).getDim();
     }
 
     @Override

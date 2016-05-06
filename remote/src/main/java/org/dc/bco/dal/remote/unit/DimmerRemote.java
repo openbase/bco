@@ -68,16 +68,16 @@ public class DimmerRemote extends AbstractUnitRemote<Dimmer> implements DimmerIn
     }
 
     @Override
-    public Future<Void> setDim(Double value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(brightness, this, Void.class);
     }
 
     @Override
-    public Double getDim() throws NotAvailableException {
+    public Double getBrightness() throws NotAvailableException {
         try {
             return getData().getValue();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Dim", ex);
+            throw new NotAvailableException("brightness", ex);
         }
     }
 

@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.dc.bco.dal.lib.layer.service.operation.DimOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
@@ -131,22 +130,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             @Override
             public Future<Void> setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
                 return update(state, unit);
-            }
-        };
-    }
-
-    @Override
-    public <UNIT extends DimOperationService & Unit> DimOperationService newDimmService(final UNIT unit) throws org.dc.jul.exception.InstantiationException {
-        return new DimOperationService() {
-
-            @Override
-            public Double getDim() throws NotAvailableException {
-                return ((DimOperationService) unit).getDim();
-            }
-
-            @Override
-            public Future<Void> setDim(Double dim) throws CouldNotPerformException {
-                return update(dim, unit);
             }
         };
     }
