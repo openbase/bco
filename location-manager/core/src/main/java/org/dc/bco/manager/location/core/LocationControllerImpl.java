@@ -372,7 +372,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public LocationConfig updateConfig(final LocationConfig config) throws CouldNotPerformException, InterruptedException {
+    public LocationConfig applyConfigUpdate(final LocationConfig config) throws CouldNotPerformException, InterruptedException {
         List<String> newUnitIdList = new ArrayList<>(config.getUnitIdList());
         for (String originalId : originalUnitIdList) {
             if (config.getUnitIdList().contains(originalId)) {
@@ -413,7 +413,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             getCurrentStatus();
         }
         originalUnitIdList = config.getUnitIdList();
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override

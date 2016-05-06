@@ -95,7 +95,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public SceneConfig updateConfig(SceneConfig config) throws CouldNotPerformException, InterruptedException {
+    public SceneConfig applyConfigUpdate(SceneConfig config) throws CouldNotPerformException, InterruptedException {
         try {
 
             synchronized (triggerListSync) {
@@ -143,7 +143,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update scene config!");
         }
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override

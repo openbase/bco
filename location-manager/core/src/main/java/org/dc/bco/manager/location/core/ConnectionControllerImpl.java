@@ -159,7 +159,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public ConnectionConfig updateConfig(final ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
+    public ConnectionConfig applyConfigUpdate(final ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
         List<String> newUnitIdList = new ArrayList<>(config.getUnitIdList());
         for (String originalId : originalUnitIdList) {
             if (config.getUnitIdList().contains(originalId)) {
@@ -200,7 +200,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             getCurrentStatus();
         }
         originalUnitIdList = config.getUnitIdList();
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override

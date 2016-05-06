@@ -79,9 +79,9 @@ public class UserControllerImpl extends AbstractConfigurableController<UserDataT
     }
 
     @Override
-    public UserConfig updateConfig(UserConfig config) throws CouldNotPerformException, InterruptedException {
+    public UserConfig applyConfigUpdate(UserConfig config) throws CouldNotPerformException, InterruptedException {
         setField(TYPE_FIELD_USER_NAME, config.getUserName());
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override

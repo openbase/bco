@@ -30,6 +30,7 @@ import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 
 /**
