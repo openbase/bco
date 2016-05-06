@@ -152,9 +152,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         unitTemplate = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override
