@@ -117,6 +117,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         super.activate();
         // TODO paramite: why is this sync manual triggered? is the startup sync not suitable?
         try {
+            waitForData();
             notifyDataUpdate(requestData().get());
         } catch (CouldNotPerformException | ExecutionException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
@@ -124,7 +125,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public void notifyDataUpdate(final AppRegistry data) throws CouldNotPerformException {
+    protected void notifyDataUpdate(final AppRegistry data) throws CouldNotPerformException {
         appConfigRemoteRegistry.notifyRegistryUpdate(data.getAppConfigList());
     }
 
