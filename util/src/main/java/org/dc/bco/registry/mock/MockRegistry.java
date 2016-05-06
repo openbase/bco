@@ -249,7 +249,7 @@ public class MockRegistry {
             userRemote.activate();
 
             for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                deviceRemote.updateUnitTemplate(template.getTemplate());
+                deviceRemote.updateUnitTemplate(template.getTemplate()).get();
             }
             registerUser();
             registerLocations();
@@ -296,7 +296,7 @@ public class MockRegistry {
         // ambient light
         DeviceClass ambientLightClass = deviceRemote.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.AMBIENT_LIGHT, AMBIENT_LIGHT_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units)).get();
 
         units.clear();
         // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
@@ -306,7 +306,7 @@ public class MockRegistry {
         units.add(getUnitConfig(UnitTemplate.UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.TAMPER_SWITCH, TAMPER_SWITCH_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units)).get();
 
         units.clear();
         // button
@@ -318,13 +318,13 @@ public class MockRegistry {
         // dimmer
         DeviceClass dimmerClass = deviceRemote.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.DIMMER, DIMMER_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units)).get();
 
         units.clear();
         // handle
         DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE_SENSOR, HANDLE_SENSOR_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units)).get();
 
         units.clear();
         // light
@@ -337,31 +337,31 @@ public class MockRegistry {
         DeviceClass powerPlugClass = deviceRemote.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.POWER_PLUG, POWER_PLUG_LABEL));
         units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units)).get();
 
         units.clear();
         // reedSwitch
         DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.REED_SWITCH, REED_SWITCH_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units)).get();
 
         units.clear();
         // rollershutter
         DeviceClass rollershutterClass = deviceRemote.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.ROLLERSHUTTER, ROLLERSHUTTER_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units)).get();
 
         units.clear();
         // smoke detector
         DeviceClass smokeDetector = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units)).get();
 
         units.clear();
         // temperature controller
         DeviceClass temperatureControllerClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass, units)).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
