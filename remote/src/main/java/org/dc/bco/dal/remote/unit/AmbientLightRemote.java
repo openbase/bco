@@ -49,12 +49,8 @@ public class AmbientLightRemote extends AbstractUnitRemote<AmbientLightType.Ambi
     public AmbientLightRemote() {
     }
 
-    public void setColor(final java.awt.Color color) throws CouldNotPerformException {
-        try {
-            setColor(HSVColorToRGBColorTransformer.transform(color));
-        } catch (CouldNotPerformException ex) {
-            logger.warn("Could not set color!", ex);
-        }
+    public Future<Void> setColor(final java.awt.Color color) throws CouldNotPerformException {
+        return setColor(HSVColorToRGBColorTransformer.transform(color));
     }
 
     @Override
