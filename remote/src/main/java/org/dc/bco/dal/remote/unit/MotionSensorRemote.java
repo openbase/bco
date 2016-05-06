@@ -21,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.MotionSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionStateType.MotionState;
@@ -48,8 +48,12 @@ public class MotionSensorRemote extends AbstractUnitRemote<MotionSensor> impleme
     }
 
     @Override
-    public MotionState getMotion() throws CouldNotPerformException {
-        return getData().getMotionState();
+    public MotionState getMotion() throws NotAvailableException {
+        try {
+            return getData().getMotionState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("MotionState", ex);
+        }
     }
 
 }

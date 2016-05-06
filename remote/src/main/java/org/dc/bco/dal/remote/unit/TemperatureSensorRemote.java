@@ -21,9 +21,12 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.io.NotActiveException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.bco.dal.lib.layer.unit.TemperatureSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
@@ -48,13 +51,21 @@ public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSenso
     }
 
     @Override
-    public Double getTemperature() throws CouldNotPerformException {
-        return getData().getTemperature();
+    public Double getTemperature() throws NotAvailableException {
+        try {
+            return getData().getTemperature();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Temperature", ex);
+        }
     }
 
     @Override
-    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException {
-        return getData().getTemperatureAlarmState();
+    public AlarmState getTemperatureAlarmState() throws NotAvailableException {
+        try {
+            return getData().getTemperatureAlarmState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AlarmState", ex);
+        }
     }
 
 }

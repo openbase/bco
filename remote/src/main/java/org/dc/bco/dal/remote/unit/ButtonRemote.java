@@ -21,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.ButtonInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
@@ -48,7 +48,11 @@ public class ButtonRemote extends AbstractUnitRemote<Button> implements ButtonIn
     }
 
     @Override
-    public ButtonState getButton() throws CouldNotPerformException {
-        return getData().getButtonState();
+    public ButtonState getButton() throws NotAvailableException {
+        try {
+            return getData().getButtonState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ButtonState", ex);
+        }
     }
 }

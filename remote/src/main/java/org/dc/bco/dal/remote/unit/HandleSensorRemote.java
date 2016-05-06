@@ -21,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.HandleSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.HandleStateType.HandleState;
@@ -48,8 +48,12 @@ public class HandleSensorRemote extends AbstractUnitRemote<HandleSensor> impleme
     }
 
     @Override
-    public HandleState getHandle() throws CouldNotPerformException {
-        return getData().getHandleState();
+    public HandleState getHandle() throws NotAvailableException {
+        try {
+            return getData().getHandleState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HandleState", ex);
+        }
     }
 
 }

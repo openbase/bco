@@ -21,11 +21,10 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.unit.RollershutterInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -55,35 +54,31 @@ public class RollershutterRemote extends AbstractUnitRemote<Rollershutter> imple
     }
 
     @Override
-    public void setShutter(ShutterState value) throws CouldNotPerformException {
+    public Future<Void> setShutter(ShutterState value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    }
+
+    @Override
+    public ShutterState getShutter() throws NotAvailableException {
         try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
+            return getData().getShutterState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ShutterState", ex);
         }
     }
 
     @Override
-    public ShutterState getShutter() throws CouldNotPerformException {
-        return getData().getShutterState();
+    public Future<Void> setOpeningRatio(final Double value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
     }
 
     @Override
-    public void setOpeningRatio(final Double value) throws CouldNotPerformException {
+    public Double getOpeningRatio() throws NotAvailableException {
         try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(RollershutterRemote.class.getName()).log(Level.SEVERE, null, ex);
+            return getData().getOpeningRatio();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("OpeningRatio", ex);
         }
-    }
-
-    @Override
-    public Double getOpeningRatio() throws CouldNotPerformException {
-        return getData().getOpeningRatio();
     }
 
 }

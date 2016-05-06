@@ -21,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.SmokeDetectorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
@@ -47,12 +47,20 @@ public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetector> imple
     }
 
     @Override
-    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        return getData().getSmokeAlarmState();
+    public AlarmState getSmokeAlarmState() throws NotAvailableException {
+        try {
+            return getData().getSmokeAlarmState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AlarmState", ex);
+        }
     }
 
     @Override
-    public SmokeState getSmokeState() throws CouldNotPerformException {
-        return getData().getSmokeState();
+    public SmokeState getSmokeState() throws NotAvailableException {
+        try {
+            return getData().getSmokeState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SmokeState", ex);
+        }
     }
 }

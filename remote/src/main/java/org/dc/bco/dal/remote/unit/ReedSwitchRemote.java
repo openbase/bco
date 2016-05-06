@@ -21,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.ReedSwitchInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
@@ -48,8 +48,12 @@ public class ReedSwitchRemote extends AbstractUnitRemote<ReedSwitch> implements 
     }
 
     @Override
-    public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        return getData().getReedSwitchState();
+    public ReedSwitchState getReedSwitch() throws NotAvailableException {
+        try {
+            return getData().getReedSwitchState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ReedSwitchState", ex);
+        }
     }
 
 }
