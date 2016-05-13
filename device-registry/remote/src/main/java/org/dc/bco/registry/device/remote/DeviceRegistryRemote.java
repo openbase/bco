@@ -79,6 +79,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             deviceClassRemoteRegistry = new RemoteRegistry<>();
             deviceConfigRemoteRegistry = new RemoteRegistry<>();
             unitGroupRemoteRegistry = new RemoteRegistry<>();
+            localId = id;
+            id++;
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -130,9 +132,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
+        System.out.println("Activating DeviceRegistryRemote[" + localId + "]!");
         super.activate();
+        System.out.println("Returned from activation super.activate in DeviceRegistryRemote[" + localId + "]");
         try {
+            System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data....");
             waitForData();
+            System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data finished!");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
         }
@@ -146,6 +152,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public void notifyDataUpdate(final DeviceRegistry data) throws CouldNotPerformException {
+        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update");
         deviceClassRemoteRegistry.notifyRegistryUpdate(data.getDeviceClassList());
         deviceConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceConfigList());
         unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
