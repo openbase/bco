@@ -363,7 +363,7 @@ public class DeviceRegistryTest {
         for (UnitConfig unit : config.getUnitConfigList()) {
             if (unit.getType().equals(unitTemplateConfig1.getType())) {
                 containsLight = true;
-                assertTrue("The light unit contains more or less services than the template config", unit.getServiceConfigCount() == unitTemplateConfig1.getServiceTemplateCount());
+                assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(),unitTemplateConfig1.getServiceTemplateCount());
                 assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getType().equals(serviceTemplate1.getServiceType()));
             } else if (unit.getType().equals(unitTemplateConfig2.getType())) {
                 containsHandlseSensor = true;

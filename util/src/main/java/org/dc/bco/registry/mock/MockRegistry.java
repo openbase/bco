@@ -247,6 +247,10 @@ public class MockRegistry {
             deviceRemote.activate();
             locationRemote.activate();
             userRemote.activate();
+            
+            deviceRemote.waitForData();
+            locationRemote.waitForData();
+            userRemote.waitForData();
 
             for (MockUnitTemplate template : MockUnitTemplate.values()) {
                 deviceRemote.updateUnitTemplate(template.getTemplate()).get();
@@ -254,6 +258,8 @@ public class MockRegistry {
             registerUser();
             registerLocations();
             registerDevices();
+            
+            Thread.sleep(2000);
         } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
@@ -312,7 +318,7 @@ public class MockRegistry {
         // button
         DeviceClass buttonClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.BUTTON, BUTTON_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass, units)).get();
 
         units.clear();
         // dimmer
@@ -330,7 +336,7 @@ public class MockRegistry {
         // light
         DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro")).get();
         units.add(getUnitConfig(UnitTemplate.UnitType.LIGHT, LIGHT_LABEL));
-        deviceRemote.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units));
+        deviceRemote.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units)).get();
 
         units.clear();
         // powerConsumptionSensor, powerPlug

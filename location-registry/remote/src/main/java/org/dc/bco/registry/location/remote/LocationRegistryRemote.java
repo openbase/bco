@@ -142,13 +142,27 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         }
     }
 
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        try {
+            deviceRegistryRemote.deactivate();
+        } finally {
+            super.deactivate();
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void shutdown() {
-        deviceRegistryRemote.shutdown();
-        super.shutdown();
+        try {
+            deviceRegistryRemote.shutdown();
+            locationConfigRemoteRegistry.shutdown();
+            connectionConfigRemoteRegistry.shutdown();
+        } finally {
+            super.shutdown();
+        }
     }
 
     /**

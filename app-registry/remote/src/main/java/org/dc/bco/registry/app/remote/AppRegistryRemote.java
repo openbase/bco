@@ -123,6 +123,15 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
     }
+    
+    @Override
+    public void shutdown() {
+        try {
+            appConfigRemoteRegistry.shutdown();
+        } finally {
+            super.shutdown();
+        }
+    }
 
     @Override
     protected void notifyDataUpdate(final AppRegistry data) throws CouldNotPerformException {
