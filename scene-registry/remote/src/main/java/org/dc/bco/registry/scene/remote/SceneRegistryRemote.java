@@ -23,6 +23,7 @@ package org.dc.bco.registry.scene.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -36,6 +37,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import static org.dc.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
@@ -110,22 +112,22 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
             throw new InitializationException(this, ex);
         }
     }
-    
+
     /**
      * {@inheritDoc}
+     *
      * @throws java.lang.InterruptedException
      * @throws org.dc.jul.exception.CouldNotPerformException
      */
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        try {
-            waitForData();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
-        }
-    }
-
+//    @Override
+//    public void activate() throws InterruptedException, CouldNotPerformException {
+//        super.activate();
+//        try {
+//            waitForData();
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
+//        }
+//    }
     /**
      * {@inheritDoc}
      */
@@ -152,8 +154,9 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     /**
      * {@inheritDoc}
+     *
      * @param sceneConfig
-     * @return 
+     * @return
      * @throws org.dc.jul.exception.CouldNotPerformException
      */
     @Override
@@ -170,19 +173,19 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
      */
     @Override
     public SceneConfig getSceneConfigById(String sceneConfigId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return sceneConfigRemoteRegistry.getMessage(sceneConfigId);
     }
 
     @Override
     public Boolean containsSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return sceneConfigRemoteRegistry.contains(sceneConfig);
     }
 
     @Override
     public Boolean containsSceneConfigById(final String sceneConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return sceneConfigRemoteRegistry.contains(sceneConfigId);
     }
 
@@ -206,13 +209,14 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     @Override
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<SceneConfig> messages = sceneConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

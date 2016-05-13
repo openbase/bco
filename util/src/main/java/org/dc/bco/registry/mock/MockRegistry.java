@@ -228,7 +228,7 @@ public class MockRegistry {
             appRegistryThread.start();
             sceneRegistryThread.start();
             userRegistryThread.start();
-
+            
             deviceRegistryThread.join();
             locationRegistryThread.join();
             agentRegistryThread.join();

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -39,6 +40,7 @@ import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import static org.dc.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
@@ -118,15 +120,15 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
         }
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        try {
-            waitForData();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
-        }
-    }
+//    @Override
+//    public void activate() throws InterruptedException, CouldNotPerformException {
+//        super.activate();
+//        try {
+//            waitForData();
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
+//        }
+//    }
     
     /**
      * {@inheritDoc}
@@ -166,19 +168,19 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public UserConfig getUserConfigById(String userConfigId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return userConfigRemoteRegistry.getMessage(userConfigId);
     }
 
     @Override
     public Boolean containsUserConfig(final UserConfig userConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);;
         return userConfigRemoteRegistry.contains(userConfig);
     }
 
     @Override
     public Boolean containsUserConfigById(final String userConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return userConfigRemoteRegistry.contains(userConfigId);
     }
 
@@ -202,7 +204,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public List<UserConfig> getUserConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<UserConfig> messages = userConfigRemoteRegistry.getMessages();
         return messages;
     }
@@ -217,12 +219,12 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return getData().getUserConfigRegistryReadOnly();
     }
 
     @Override
     public List<UserConfig> getUserConfigsByUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        getData();
         List<UserConfig> userConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : groupConfigRemoteRegistry.getEntries()) {
             if (group.getMessage().equals(groupConfig)) {
@@ -246,13 +248,13 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public Boolean containsUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return groupConfigRemoteRegistry.contains(groupConfig);
     }
 
     @Override
     public Boolean containsUserGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return groupConfigRemoteRegistry.contains(groupConfigId);
     }
 
@@ -276,19 +278,19 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public UserGroupConfig getUserGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return groupConfigRemoteRegistry.getMessage(groupConfigId);
     }
 
     @Override
     public List<UserGroupConfig> getUserGroupConfigs() throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return groupConfigRemoteRegistry.getMessages();
     }
 
     @Override
     public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<UserGroupConfig> groupConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : groupConfigRemoteRegistry.getEntries()) {
             group.getMessage().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
@@ -300,6 +302,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 
     @Override
     public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

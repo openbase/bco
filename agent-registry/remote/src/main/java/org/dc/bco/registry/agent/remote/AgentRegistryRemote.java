@@ -23,6 +23,7 @@ package org.dc.bco.registry.agent.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -33,7 +34,6 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
@@ -111,16 +111,15 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
         }
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        try {
-            waitForData();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
-        }
-    }
-
+//    @Override
+//    public void activate() throws InterruptedException, CouldNotPerformException {
+//        super.activate();
+//        try {
+//            waitForData();
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
+//        }
+//    }
     @Override
     public void shutdown() {
         try {
@@ -150,19 +149,19 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     @Override
     public AgentConfig getAgentConfigById(String agentConfigId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return agentConfigRemoteRegistry.getMessage(agentConfigId);
     }
 
     @Override
     public Boolean containsAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return agentConfigRemoteRegistry.contains(agentConfig);
     }
 
     @Override
     public Boolean containsAgentConfigById(final String agentConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return agentConfigRemoteRegistry.contains(agentConfigId);
     }
 
@@ -186,13 +185,14 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     @Override
     public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<AgentConfig> messages = agentConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

@@ -24,6 +24,7 @@ package org.dc.bco.registry.app.remote;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -37,6 +38,7 @@ import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
+import static org.dc.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RemoteRegistry;
@@ -112,18 +114,17 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
         }
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        // TODO paramite: why is this sync manual triggered? is the startup sync not suitable?
-        try {
-            waitForData();
-            notifyDataUpdate(requestData().get());
-        } catch (CouldNotPerformException | ExecutionException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
-        }
-    }
-    
+//    @Override
+//    public void activate() throws InterruptedException, CouldNotPerformException {
+//        super.activate();
+//        // TODO paramite: why is this sync manual triggered? is the startup sync not suitable?
+//        try {
+//            waitForData();
+//            notifyDataUpdate(requestData().get());
+//        } catch (CouldNotPerformException | ExecutionException ex) {
+//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
+//        }
+//    }
     @Override
     public void shutdown() {
         try {
@@ -153,19 +154,19 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     @Override
     public AppConfig getAppConfigById(String appConfigId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return appConfigRemoteRegistry.getMessage(appConfigId);
     }
 
     @Override
     public Boolean containsAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return appConfigRemoteRegistry.contains(appConfig);
     }
 
     @Override
     public Boolean containsAppConfigById(final String appConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return appConfigRemoteRegistry.contains(appConfigId);
     }
 
@@ -189,13 +190,14 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
 
     @Override
     public List<AppConfig> getAppConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<AppConfig> messages = appConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
     public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

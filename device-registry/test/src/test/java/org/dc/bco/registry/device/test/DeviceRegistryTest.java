@@ -57,6 +57,7 @@ import rst.geometry.PoseType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
 import rst.homeautomation.binding.BindingConfigType;
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -349,8 +350,8 @@ public class DeviceRegistryTest {
         ServiceTemplate serviceTemplate3 = ServiceTemplate.newBuilder().setServiceType(ServiceType.HANDLE_PROVIDER).build();
         UnitTemplateConfig unitTemplateConfig2 = UnitTemplateConfig.newBuilder().setType(UnitType.HANDLE_SENSOR).addServiceTemplate(serviceTemplate2).addServiceTemplate(serviceTemplate3).build();
 
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceType(serviceTemplate1.getServiceType()).build());
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.HANDLE_SENSOR).addServiceType(ServiceType.BATTERY_PROVIDER).addServiceType(ServiceType.HANDLE_PROVIDER).build());
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceType(serviceTemplate1.getServiceType()).build()).get();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.HANDLE_SENSOR).addServiceType(ServiceType.BATTERY_PROVIDER).addServiceType(ServiceType.HANDLE_PROVIDER).build()).get();
 
         BindingConfigType.BindingConfig bindingConfig = BindingConfigType.BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("unittemplateUnitConfigTest", "0149283794283", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).addUnitTemplateConfig(unitTemplateConfig2).setBindingConfig(bindingConfig).build()).get();
@@ -363,7 +364,7 @@ public class DeviceRegistryTest {
         for (UnitConfig unit : config.getUnitConfigList()) {
             if (unit.getType().equals(unitTemplateConfig1.getType())) {
                 containsLight = true;
-                assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(),unitTemplateConfig1.getServiceTemplateCount());
+                assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateCount());
                 assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getType().equals(serviceTemplate1.getServiceType()));
             } else if (unit.getType().equals(unitTemplateConfig2.getType())) {
                 containsHandlseSensor = true;
@@ -378,7 +379,7 @@ public class DeviceRegistryTest {
         ServiceTemplate serviceTemplate4 = ServiceTemplate.newBuilder().setServiceType(ServiceType.BUTTON_PROVIDER).build();
         UnitTemplateConfig unitTemplateConfig3 = UnitTemplateConfig.newBuilder().setType(UnitType.BUTTON).addServiceTemplate(serviceTemplate1).build();
 
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).addServiceType(ServiceType.BUTTON_PROVIDER).build());
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).addServiceType(ServiceType.BUTTON_PROVIDER).build()).get();
 
         clazz = deviceRegistry.updateDeviceClass(clazz.toBuilder().addUnitTemplateConfig(unitTemplateConfig3).build()).get();
         config = deviceRegistry.getDeviceConfigById(config.getId());
@@ -427,13 +428,14 @@ public class DeviceRegistryTest {
     @Test
     public void testServiceConsistencyHandling() throws Exception {
         UnitConfig unitConfig = getUnitConfig(UnitType.LIGHT, "ServiceTest");
-        BindingServiceConfig bindingConfig = BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
-        ServiceConfig serviceConfig = ServiceConfig.newBuilder().setType(ServiceType.POWER_PROVIDER).setBindingServiceConfig(bindingConfig).build();
+        BindingServiceConfig bindingServiceConfig = BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        ServiceConfig serviceConfig = ServiceConfig.newBuilder().setType(ServiceType.POWER_PROVIDER).setBindingServiceConfig(bindingServiceConfig).build();
         unitConfig = unitConfig.toBuilder().addServiceConfig(serviceConfig).build();
         ArrayList<UnitConfig> units = new ArrayList<>();
         units.add(unitConfig);
+        BindingConfig bindingConfig = BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.MIELE_AT_HOME).build();
 
-        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("ServiceUnitIdTest", "8383838", "ServiceGMBH")).get();
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("ServiceUnitIdTest", "8383838", "ServiceGMBH").toBuilder().setBindingConfig(bindingConfig).build()).get();
 
         DeviceConfig deviceConfig = deviceRegistry.registerDeviceConfig(getDeviceConfig("ServiceTest", "123456", clazz, units)).get();
 
@@ -489,11 +491,12 @@ public class DeviceRegistryTest {
      * Test if when breaking an existing device the sandbox registers it and
      * does not modify the real registry.
      *
-     * @throws exception
+     * @throws java.lang.Exception
      */
     @Test
     public void testSandbox() throws Exception {
-        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("SandboxTestLabel", "SandboxTestPNR", "SanboxCompany")).get();
+        BindingConfig bindingConfig = BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.SINACT).build();
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("SandboxTestLabel", "SandboxTestPNR", "SanboxCompany").toBuilder().setBindingConfig(bindingConfig).build()).get();
 
         String unitLabel = "SandboxTestUnitLabel";
         ArrayList<UnitConfig> units = new ArrayList<>();
@@ -595,7 +598,7 @@ public class DeviceRegistryTest {
     /**
      * Test of registering a DeviceConfig per remote.
      */
-//    @Test(timeout = 3000)
+    @Test(timeout = 3000)
     public void testRegisterDeviceConfigPerRemote() throws Exception {
         System.out.println("registerDeviceConfigPerRemote");
         remote.registerDeviceConfig(deviceConfigRemoteMessage.clone().build());

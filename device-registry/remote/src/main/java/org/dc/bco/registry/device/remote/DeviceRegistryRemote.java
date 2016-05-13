@@ -24,6 +24,7 @@ package org.dc.bco.registry.device.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -90,9 +91,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * Method initializes the remote with the given scope for the server
      * registry connection.
      *
-     * @param scope
+     * @param scope {@inheritDoc}
      * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public void init(final Scope scope) throws InitializationException, InterruptedException {
@@ -107,9 +108,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * Method initializes the remote with the given scope for the server
      * registry connection.
      *
-     * @param scope
+     * @param scope {@inheritDoc}
      * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
@@ -132,17 +133,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        System.out.println("Activating DeviceRegistryRemote[" + localId + "]!");
+//        System.out.println("Activating DeviceRegistryRemote[" + localId + "]!");
         super.activate();
-        System.out.println("Returned from activation super.activate in DeviceRegistryRemote[" + localId + "]");
-//        try {
-        System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data....");
-        waitForData();
-//            notifyDataUpdate(requestData().get());
-        System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data finished!");
-//        } catch (CouldNotPerformException | ExecutionException ex) {
-//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
-//        }
+//        System.out.println("Returned from activation super.activate in DeviceRegistryRemote[" + localId + "]");
     }
 
     @Override
@@ -160,17 +153,17 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param data
-     * @throws CouldNotPerformException
+     * @param data {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public void notifyDataUpdate(final DeviceRegistry data) throws CouldNotPerformException {
-        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update ...");
+//        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update ...");
         unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
         deviceClassRemoteRegistry.notifyRegistryUpdate(data.getDeviceClassList());
         deviceConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceConfigList());
         unitGroupRemoteRegistry.notifyRegistryUpdate(data.getUnitGroupConfigList());
-        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update finished");
+//        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update finished");
     }
 
     public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRemoteRegistry() {
@@ -192,9 +185,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceConfig> registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -208,56 +201,56 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplateId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @param unitTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException, InterruptedException {
-        getData();
+    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param deviceClassId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @param deviceClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceClassRemoteRegistry.getMessage(deviceClassId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfigId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @param deviceConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceConfigRemoteRegistry.getMessage(deviceConfigId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param unitConfigId
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @param unitConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getId().equals(unitConfigId)) {
@@ -271,8 +264,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
-        getData();
-
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel)) {
@@ -286,61 +278,61 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplate
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitTemplateRemoteRegistry.contains(unitTemplate);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplateId
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitTemplateRemoteRegistry.contains(unitTemplateId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceConfigRemoteRegistry.contains(deviceConfig);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfigId
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceConfigRemoteRegistry.contains(deviceConfigId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceConfig> updateDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -354,9 +346,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplate
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
@@ -370,9 +362,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceConfig> removeDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -386,9 +378,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
@@ -402,13 +394,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceClassRemoteRegistry.contains(deviceClass);
     }
 
@@ -421,16 +413,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceClassRemoteRegistry.contains(deviceClassId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
@@ -444,9 +436,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
@@ -460,13 +452,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
@@ -477,13 +469,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
+     * @param type {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
@@ -498,9 +490,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException, NotAvailableException {
@@ -514,13 +506,13 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param serviceType
-     * @return
-     * @throws CouldNotPerformException
+     * @param serviceType {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
-        getData();
+    public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -535,51 +527,52 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitTemplateRemoteRegistry.getMessages();
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceClassRemoteRegistry.getMessages();
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException, NotAvailableException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return deviceConfigRemoteRegistry.getMessages();
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
+     * @param type {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         for (UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
             if (unitTemplate.getType() == type) {
                 return unitTemplate;
@@ -591,11 +584,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -610,11 +604,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -629,11 +624,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -648,9 +644,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitGroupConfig> registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
@@ -664,35 +660,35 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitGroupRemoteRegistry.contains(groupConfig);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param groupConfigId
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitGroupRemoteRegistry.contains(groupConfigId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitGroupConfig> updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
@@ -706,9 +702,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitGroupConfig> removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
@@ -722,25 +718,25 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param groupConfigId
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public UnitGroupConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return unitGroupRemoteRegistry.getMessage(groupConfigId);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException {
-        getData();
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> unitGroup : unitGroupRemoteRegistry.getEntries()) {
             unitGroups.add(unitGroup.getMessage());
@@ -751,13 +747,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param unitConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
-        getData();
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
             if (unitGroup.getMemberIdList().contains(unitConfig.getId())) {
@@ -770,13 +765,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param serviceTypes
-     * @return
-     * @throws CouldNotPerformException
+     * @param serviceTypes {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        getData();
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
             boolean skipGroup = false;
@@ -796,13 +790,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
+     * @param type {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(UnitType type) throws CouldNotPerformException {
-        getData();
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
             if (unitGroup.getUnitType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroup.getUnitType())) {
@@ -815,13 +808,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param groupConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
-        getData();
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (String unitId : groupConfig.getMemberIdList()) {
             unitConfigs.add(getUnitConfigById(unitId));
@@ -832,8 +824,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
@@ -845,16 +837,17 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return getData().getUnitGroupRegistryReadOnly();
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @param serviceTypes
-     * @return
-     * @throws CouldNotPerformException
+     * @param type {@inheritDoc}
+     * @param serviceTypes {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
@@ -882,9 +875,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param scope
-     * @return
-     * @throws CouldNotPerformException
+     * @param scope {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigByScope(final ScopeType.Scope scope) throws CouldNotPerformException {
@@ -899,9 +892,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
+     * @param type {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<UnitType> getSubUnitTypesOfUnitType(UnitType type) throws CouldNotPerformException {
