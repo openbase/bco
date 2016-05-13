@@ -135,12 +135,25 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         System.out.println("Activating DeviceRegistryRemote[" + localId + "]!");
         super.activate();
         System.out.println("Returned from activation super.activate in DeviceRegistryRemote[" + localId + "]");
+//        try {
+        System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data....");
+        waitForData();
+//            notifyDataUpdate(requestData().get());
+        System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data finished!");
+//        } catch (CouldNotPerformException | ExecutionException ex) {
+//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
+//        }
+    }
+
+    @Override
+    public void shutdown() {
         try {
-            System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data....");
-            waitForData();
-            System.out.println("DeviceRegistryRemote[" + localId + "] waiting for data finished!");
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
+            unitTemplateRemoteRegistry.shutdown();
+            deviceClassRemoteRegistry.shutdown();
+            deviceConfigRemoteRegistry.shutdown();
+            unitGroupRemoteRegistry.shutdown();
+        } finally {
+            super.shutdown();
         }
     }
 
@@ -152,11 +165,12 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public void notifyDataUpdate(final DeviceRegistry data) throws CouldNotPerformException {
-        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update");
+        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update ...");
+        unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
         deviceClassRemoteRegistry.notifyRegistryUpdate(data.getDeviceClassList());
         deviceConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceConfigList());
-        unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
         unitGroupRemoteRegistry.notifyRegistryUpdate(data.getUnitGroupConfigList());
+        System.out.println("DeviceRegistryRemote[" + localId + "] Notify data update finished");
     }
 
     public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRemoteRegistry() {
@@ -571,7 +585,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
                 return unitTemplate;
             }
         }
-        throw new NotAvailableException("unit template", "No UnitTemplate with given type registered!");
+        throw new NotAvailableException("unit template", "No UnitTemplate with given Type[" + type + "] registered!");
     }
 
     /**

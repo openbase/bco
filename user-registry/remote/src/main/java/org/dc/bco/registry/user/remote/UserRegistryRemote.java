@@ -127,6 +127,19 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
         }
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdown() {
+        try {
+            userConfigRemoteRegistry.shutdown();
+            groupConfigRemoteRegistry.shutdown();
+        } finally {
+            super.shutdown();
+        }
+    }
 
     @Override
     public void notifyDataUpdate(final UserRegistry data) throws CouldNotPerformException {

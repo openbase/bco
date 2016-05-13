@@ -22,7 +22,6 @@ package org.dc.bco.registry.agent.remote;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.dc.jps.core.JPService;
@@ -119,6 +118,15 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
             waitForData();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            agentConfigRemoteRegistry.shutdown();
+        } finally {
+            super.shutdown();
         }
     }
 

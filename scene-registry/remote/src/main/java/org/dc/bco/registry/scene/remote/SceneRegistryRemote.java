@@ -22,7 +22,6 @@ package org.dc.bco.registry.scene.remote;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.dc.jps.core.JPService;
@@ -111,7 +110,12 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
             throw new InitializationException(this, ex);
         }
     }
-
+    
+    /**
+     * {@inheritDoc}
+     * @throws java.lang.InterruptedException
+     * @throws org.dc.jul.exception.CouldNotPerformException
+     */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
@@ -122,6 +126,21 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdown() {
+        try {
+            sceneConfigRemoteRegistry.shutdown();
+        } finally {
+            super.shutdown();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void notifyDataUpdate(final SceneRegistry data) throws CouldNotPerformException {
         sceneConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneConfigList());
@@ -131,6 +150,12 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         return sceneConfigRemoteRegistry;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param sceneConfig
+     * @return 
+     * @throws org.dc.jul.exception.CouldNotPerformException
+     */
     @Override
     public Future<SceneConfig> registerSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
         try {
@@ -140,6 +165,9 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SceneConfig getSceneConfigById(String sceneConfigId) throws CouldNotPerformException, NotAvailableException {
         getData();
