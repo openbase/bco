@@ -79,6 +79,15 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         try {
             init(CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
+            try {
+                System.out.println("available units:");
+                for (UnitConfig col : CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigs()) {
+                    System.out.println("units: " + col.getScope());
+                }
+            } catch (CouldNotPerformException exx) {
+                throw new InitializationException(this, new CouldNotPerformException("Fatal!", exx));
+            }
+
             throw new InitializationException(this, ex);
         }
     }
