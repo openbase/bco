@@ -161,7 +161,7 @@ public class AmbientLightRemoteTest {
         HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(61).setSaturation(23).setValue(37).build();
         ambientLightRemote.setColor(color).get();
         ambientLightRemote.requestData().get();
-        HSVColor colorResult = (HSVColor) ambientLightRemote.callMethod("getColor");
+        HSVColor colorResult = (HSVColor) ambientLightRemote.callMethodAsync("getColor").get();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult);
     }
 
