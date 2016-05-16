@@ -26,6 +26,7 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +37,7 @@ import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.AmbientLightType;
 import rst.vision.HSVColorType;

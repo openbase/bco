@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.remote.unit.UnitRemote;
@@ -34,7 +36,6 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotSupportedException;
 import org.dc.jul.exception.VerificationFailedException;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import org.dc.jul.iface.Activatable;
 import org.dc.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -50,8 +51,6 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  * @param <S> generic definition of the overall service type for this remote.
  */
 public abstract class AbstractServiceRemote<S extends Service> implements Service, Activatable {
-
-    protected static ServiceJSonProcessor serviceProcessor = new ServiceJSonProcessor();
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -162,15 +161,19 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         return serviceType;
     }
 
-    public void applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    @Override
+    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
             for (UnitRemote remote : getInternalUnits()) {
-                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
-                        serviceProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType()));
+                remote.applyAction(actionConfig);
+//                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
+//                        ServiceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType()));
             }
+            // TODO Should be asynchron!
+            return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

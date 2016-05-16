@@ -27,12 +27,21 @@ package org.dc.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotSupportedException;
+import rst.homeautomation.control.action.ActionConfigType;
 
 /**
  *
  * @author thuxohl
  */
 public interface Provider extends Service {
+
+    @Override
+    public default Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        throw new NotSupportedException("actions", Provider.class);
+    }
     
 }

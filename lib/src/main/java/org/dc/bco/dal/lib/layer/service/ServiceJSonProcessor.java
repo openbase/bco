@@ -37,8 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class ServiceJSonProcessor {
 
@@ -70,7 +69,7 @@ public class ServiceJSonProcessor {
         }
     }
 
-    public ServiceJSonProcessor() {
+    private ServiceJSonProcessor() {
     }
 
     /**
@@ -82,7 +81,7 @@ public class ServiceJSonProcessor {
      * @return
      * @throws CouldNotPerformException
      */
-    public String serialize(final Object serviceAttribute) throws CouldNotPerformException {
+    public static String serialize(final Object serviceAttribute) throws CouldNotPerformException {
         if (serviceAttribute instanceof Message) {
             try {
                 String jsonStringRep = JsonFormat.printToString((Message) serviceAttribute);
@@ -108,7 +107,7 @@ public class ServiceJSonProcessor {
      * @return a string representation of the serviceAttribute type
      * @throws CouldNotPerformException
      */
-    public String getServiceAttributeType(final Object serviceAttribute) throws CouldNotPerformException {
+    public static String getServiceAttributeType(final Object serviceAttribute) throws CouldNotPerformException {
         if (serviceAttribute.getClass().getName().startsWith("rst")) {
             return serviceAttribute.getClass().getName();
         }
@@ -142,7 +141,7 @@ public class ServiceJSonProcessor {
      * @return the deserialized value
      * @throws org.dc.jul.exception.CouldNotPerformException
      */
-    public Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
+    public static Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
         try {
             if (serviceAttributeType.startsWith("rst")) {
                 try {
@@ -196,12 +195,12 @@ public class ServiceJSonProcessor {
         }
     }
 
-    private String getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
+    public static String getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
         switch (protoType.getJavaType()) {
-            case INT:
-                return javaPrimitvePrefix + "Integer";
-            default:
-                return javaPrimitvePrefix + StringProcessor.transformUpperCaseToCamelCase(protoType.getJavaType().name());
+        case INT:
+            return javaPrimitvePrefix + "Integer";
+        default:
+            return javaPrimitvePrefix + StringProcessor.transformUpperCaseToCamelCase(protoType.getJavaType().name());
         }
     }
 }

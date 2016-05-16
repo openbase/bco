@@ -22,17 +22,23 @@ package org.dc.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import rsb.Scope;
+import rst.homeautomation.control.action.ActionConfigType;
+import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.rsb.ScopeType;
@@ -43,6 +49,9 @@ import rst.rsb.ScopeType;
  * @param <M>
  */
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M, UnitConfig> {
+
+    private UnitTemplateType.UnitTemplate template;
+    protected DeviceRegistry deviceRegistry;
 
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
@@ -108,6 +117,28 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        try {
+            deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    /**
+     *
+     * @param config
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException
+     */
+    @Override
+    public UnitConfig updateConfig(UnitConfig config) throws CouldNotPerformException, NotAvailableException {
+        template = deviceRegistry.getUnitTemplateById(config.getUnitTemplateConfigId());
+        return super.updateConfig(config);
+    }
+
+    @Override
     public UnitTemplateType.UnitTemplate.UnitType getType() throws NotAvailableException {
         try {
             return getConfig().getType();
@@ -126,11 +157,29 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     @Override
+    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
+        if (template == null) {
+            throw new NotAvailableException("UnitTemplate");
+        }
+        return template;
+    }
+
+    @Override
     public ScopeType.Scope getScope() throws NotAvailableException {
         try {
             return getConfig().getScope();
         } catch (NullPointerException | CouldNotPerformException ex) {
             throw new NotAvailableException("unit label", ex);
         }
+    }
+
+    @Override
+    public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionConfig, this);
+    }
+
+    @Override
+    public Future<SceneConfigType.SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(this);
     }
 }

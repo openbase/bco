@@ -27,13 +27,25 @@ package org.dc.bco.dal.remote.control.action;
  * #L%
  */
 
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.jul.exception.CouldNotPerformException;
+import rst.homeautomation.control.action.ActionConfigType;
 
 /**
  *
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public interface ActionService extends Service {
+
     public void execute() throws CouldNotPerformException;
+
+
+    // TODO Please check why an action should be a service?? Makes this really sense?
+    @Override
+    public default Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+
 }

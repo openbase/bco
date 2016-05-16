@@ -27,22 +27,33 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.lib.layer.service.ServiceType;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.dc.jul.extension.rsb.scope.ScopeGenerator;
 import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import rsb.Scope;
+import rst.homeautomation.control.action.ActionAuthorityType;
+import rst.homeautomation.control.action.ActionConfigType;
+import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
+import rst.homeautomation.control.action.ActionPriorityType;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -58,6 +69,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final UnitHost unitHost;
     private final List<Service> serviceList;
     private final ServiceFactory serviceFactory;
+    private UnitTemplate template;
 
     public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
@@ -140,8 +152,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public UnitConfig updateConfig(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-//        setField(TYPE_FIELD_ID, config.getId());
-//        setField(TYPE_FIELD_LABEL, config.getLabel());
+        template = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
         return super.updateConfig(config);
     }
 
@@ -183,6 +194,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public UnitTemplate.UnitType getType() throws NotAvailableException {
         return getConfig().getType();
+    }
+
+    @Override
+    public UnitTemplate getTemplate() throws NotAvailableException {
+        if (template == null) {
+            throw new NotAvailableException("UnitTemplate");
+        }
+        return template;
     }
 
     public UnitHost getUnitHost() {
@@ -234,6 +253,17 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
         // === throw multi exception in error case. ===
         MultiException.checkAndThrow("Update service not valid!", exceptionStack);
+    }
+
+    @Override
+    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        try {
+            Object attribute = ServiceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+            Service.invokeServiceMethod(actionConfig.getServiceType(), this, attribute);
+            return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
     }
 
     @Override
