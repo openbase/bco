@@ -37,17 +37,17 @@ import org.dc.bco.dal.lib.layer.service.provider.TamperProvider;
 import org.dc.bco.dal.lib.layer.service.provider.TemperatureProvider;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.iface.Configurable;
+import org.dc.jul.iface.Snapshotable;
 import org.dc.jul.iface.provider.LabelProvider;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
         BrightnessService, ColorService, DimService, OpeningRatioService, PowerService, ShutterService,
         StandbyService, TargetTemperatureService, MotionProvider, SmokeAlarmStateProvider, SmokeStateProvider,
-        TemperatureProvider, PowerConsumptionProvider, TamperProvider {
-
+        TemperatureProvider, PowerConsumptionProvider, TamperProvider, Snapshotable<SceneConfig> {
 }

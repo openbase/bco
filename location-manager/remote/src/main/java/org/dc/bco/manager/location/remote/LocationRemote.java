@@ -1,5 +1,7 @@
 package org.dc.bco.manager.location.remote;
 
+import java.util.concurrent.Future;
+import static javafx.scene.input.KeyCode.T;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -7,6 +9,8 @@ import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.action.ActionConfigType;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
@@ -184,5 +188,20 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     @Override
     public TamperState getTamper() throws CouldNotPerformException {
         return getData().getTamperState();
+    }
+
+    @Override
+    public Future<SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(this);
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(final SceneConfig snapshot) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(snapshot, this);
+    }
+
+    @Override
+    public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionConfig, this);
     }
 }

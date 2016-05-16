@@ -59,14 +59,12 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
 public class DalSceneEditor extends javax.swing.JFrame {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(DalSceneEditor.class);
-    private final ServiceJSonProcessor serviceProcessor;
 
     /**
      * Creates new form DalSceneEditor
      *
      */
     public DalSceneEditor() {
-        serviceProcessor = new ServiceJSonProcessor();
         initComponents();
     }
 
@@ -88,7 +86,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
 //                    logger.info("Cleared unit collection panel!");
                     for (ActionConfig action : data) {
 //                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
-                        Object value = serviceProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
+                        Object value = ServiceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
                         genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
                     }
                 }
@@ -211,8 +209,8 @@ public class DalSceneEditor extends javax.swing.JFrame {
                 try {
                     ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
                     Object value = getServiceValue(panel.getService(), panel.getServiceType());
-                    actionConfig.setServiceAttribute(serviceProcessor.serialize(value));
-                    actionConfig.setServiceAttributeType(serviceProcessor.getServiceAttributeType(value));
+                    actionConfig.setServiceAttribute(ServiceJSonProcessor.serialize(value));
+                    actionConfig.setServiceAttributeType(ServiceJSonProcessor.getServiceAttributeType(value));
                     actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
                     actionConfigs.add(actionConfig.build());
                 } catch (CouldNotPerformException ex) {
