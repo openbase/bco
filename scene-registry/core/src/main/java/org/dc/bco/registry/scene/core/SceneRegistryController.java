@@ -86,6 +86,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            sceneConfigRegistry.setName("SceneConfigRegistry");
             sceneConfigRegistry.loadRegistry();
 
             sceneConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));

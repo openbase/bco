@@ -48,7 +48,7 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
     }
 
     private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
-        loopTestBottomUp(locationConfig, registry, new ArrayList<String>());
+        loopTestBottomUp(locationConfig, registry, new ArrayList<>());
     }
 
     private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
@@ -72,7 +72,7 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
     }
 
     private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
-        loopTestTopDown(locationConfig, registry, new ArrayList<String>());
+        loopTestTopDown(locationConfig, registry, new ArrayList<>());
     }
 
     private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {

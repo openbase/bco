@@ -173,7 +173,7 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test//(timeout = 5000)
+    @Test(timeout = 5000)
     public void testRootConsistency() throws Exception {
         System.out.println("TestRootConsisntency");
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();

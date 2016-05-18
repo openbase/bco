@@ -43,7 +43,6 @@ public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegi
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         if (rootLocation == null) {
             rootLocation = LocationUtils.detectRootLocation(entry.getMessage(), entryMap, this);
-            logger.info("current RootLocation[" + rootLocation + "]");
         }
     }
 

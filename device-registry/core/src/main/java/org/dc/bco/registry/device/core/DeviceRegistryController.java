@@ -138,6 +138,11 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             locationRegistryRemote = new LocationRegistryRemote();
             userRegistryRemote = new UserRegistryRemote();
 
+            unitTemplateRegistry.setName("UnitTemplateRegistry");
+            deviceClassRegistry.setName("DeviceClassRegistry");
+            deviceConfigRegistry.setName("DeviceConfigRegistry");
+            unitGroupConfigRegistry.setName("unitGroupConfigRegistry");
+            
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();

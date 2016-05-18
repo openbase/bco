@@ -43,6 +43,7 @@ import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import org.dc.bco.registry.user.core.UserRegistryController;
 import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -175,9 +176,7 @@ public class DeviceRegistryTest {
 
         deviceClassRemoteMessage = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClassRemoteMessage.setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
-        deviceConfigRemoteMessage = DeviceConfig.getDefaultInstance().newBuilderForType();
-        deviceConfigRemoteMessage.setLabel("RemoteTestDeviceConfig").setSerialNumber("1123-5813-2134");
-        deviceConfigRemoteMessage.setDeviceClassId("RemoteTestDeviceClass");
+        
 
         remote = new DeviceRegistryRemote();
         remote.init();
@@ -578,6 +577,7 @@ public class DeviceRegistryTest {
             }
         });
 
+        remote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         returnValue = remote.registerDeviceClass(deviceClassRemoteMessage.clone().build()).get().toBuilder();
         logger.info("Returned device class id [" + returnValue.getId() + "]");
         deviceClassRemoteMessage.setId(returnValue.getId());
@@ -593,15 +593,9 @@ public class DeviceRegistryTest {
             Thread.yield();
         }
         assertTrue(remote.containsDeviceClass(deviceClassRemoteMessage.clone().build()));
-    }
-
-    /**
-     * Test of registering a DeviceConfig per remote.
-     */
-    @Test(timeout = 3000)
-    public void testRegisterDeviceConfigPerRemote() throws Exception {
-        System.out.println("registerDeviceConfigPerRemote");
-        remote.registerDeviceConfig(deviceConfigRemoteMessage.clone().build());
+        
+        deviceConfigRemoteMessage = getDeviceConfig("RemoteTestDeviceConfig", "1123-5813-2134", deviceClassRemoteMessage.build(), null).toBuilder();
+        remote.registerDeviceConfig(deviceConfigRemoteMessage.clone().setDeviceClassId(deviceClassRemoteMessage.getId()).build());
         while (true) {
             if (remote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build())) {
                 break;
@@ -616,7 +610,9 @@ public class DeviceRegistryTest {
      */
     @Test(timeout = 3000)
     public void testGetReadOnlyFlag() throws Exception {
-        System.out.println("registerDeviceConfigPerRemote");
+        System.out.println("testGetReadOnlyFlag");
+        System.out.println("remote state: "+remote.getConnectionState().name());
+        remote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         assertEquals(Boolean.FALSE, remote.isDeviceClassRegistryReadOnly());
         assertEquals(Boolean.FALSE, remote.isDeviceConfigRegistryReadOnly());
         assertEquals(Boolean.FALSE, remote.isUnitTemplateRegistryReadOnly());

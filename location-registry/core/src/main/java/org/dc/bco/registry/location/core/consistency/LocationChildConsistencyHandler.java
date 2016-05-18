@@ -21,7 +21,6 @@ package org.dc.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -56,10 +55,9 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
 
             // check if given child is registered otherwise remove child.
             if (!registry.contains(childLocationId)) {
-                logger.warn("Registered ChildLocation[" + childLocationId + "] for ParentLocation[" + locationConfig.getId() + "] does not exists.");
                 List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
                 childIds.remove(childLocationId);
-                throw new EntryModification(entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
+                throw new EntryModification("Child location removed because registered ChildLocation[" + childLocationId + "] for ParentLocation[" + locationConfig.getId() + "] does not exists.", entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
             }
 
             // check if given child is not parent location otherwise remove child.
@@ -69,19 +67,10 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
                 throw new EntryModification(entry.setMessage(locationConfig.clearChildId().addAllChildId(childIds).build()), this);
             }
 
-
-//            // check if parent id is registered
-//            if (!childLocationConfig.hasPlacementConfig() || locationConfig.getPlacementConfig().hasLocationId()) {
-//                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()))), this);
-//            }
-
             childLocationConfig = registry.getMessage(childLocationId);
 
             // check if parent id is valid.
             if (!childLocationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId())) {
-//                IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> child = entryMap.get(childLocationConfig.getId());
-//                throw new EntryModification(child.setMessage(child.getMessage().toBuilder().setPlacementConfig(childLocationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfig.getId()).build())), this);
-
                 // remove child.
                 List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
                 childIds.remove(childLocationId);

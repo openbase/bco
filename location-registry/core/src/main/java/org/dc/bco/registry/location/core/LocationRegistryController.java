@@ -107,6 +107,9 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
             connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfig.class, getBuilderSetup(), getFieldDescriptor(LocationRegistry.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
 
+            locationConfigRegistry.setName("LocationConfigRegistry");
+            connectionConfigRegistry.setName("ConnectionConfigRegistry");
+            
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
             connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
 
@@ -117,8 +120,12 @@ public class LocationRegistryController extends RSBCommunicationService<Location
 
             deviceRegistryRemote = new DeviceRegistryRemote();
 
+            System.out.println("=========== load registry");
+            
             locationConfigRegistry.loadRegistry();
             connectionConfigRegistry.loadRegistry();
+            
+            System.out.println("=========== register handler");
 
             locationConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());

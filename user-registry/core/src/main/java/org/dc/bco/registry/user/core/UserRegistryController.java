@@ -80,11 +80,13 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfig.class, getBuilderSetup(), getFieldDescriptor(UserRegistry.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getFieldDescriptor(UserRegistry.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
+            userRegistry.setName("UserRegistry");
             userRegistry.loadRegistry();
 
             userRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
             userRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
 
+            userGroupRegistry.setName("UserGroupRegistry");
             userGroupRegistry.loadRegistry();
 
             userGroupRegistry.registerConsistencyHandler(new UserGroupConfigLabelConsistencyHandler());

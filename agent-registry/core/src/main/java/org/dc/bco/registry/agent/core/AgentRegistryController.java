@@ -88,6 +88,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            agentConfigRegistry.setName("AgentConfigRegistry");
             agentConfigRegistry.loadRegistry();
 
             agentConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler(locationRegistryRemote));

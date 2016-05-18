@@ -86,6 +86,8 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            appConfigRegistry.setName("AppConfigRegistry");
+            
             appConfigRegistry.loadRegistry();
 
             appConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));

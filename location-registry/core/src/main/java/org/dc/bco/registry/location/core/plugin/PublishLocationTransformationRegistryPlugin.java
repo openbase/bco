@@ -51,7 +51,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
 
     public PublishLocationTransformationRegistryPlugin() throws org.dc.jul.exception.InstantiationException {
         try {
-            logger.info("create location transformation publisher");
+            logger.debug("create location transformation publisher");
             this.transformerFactory = TransformerFactory.getInstance();
             this.transformPublisher = transformerFactory.createTransformPublisher(LocationRegistryLauncher.APP_NAME);
         } catch (Exception ex) {
@@ -71,7 +71,17 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
         }
     }
 
-    public void publishtransformation(final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) {
+    @Override
+    public void afterRegister(final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) {
+        publishtransformation(entry);
+    }
+
+    @Override
+    public void afterUpdate(final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) throws CouldNotPerformException {
+        publishtransformation(entry);
+    }
+
+    private void publishtransformation(final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) {
         try {
             LocationConfig locationConfig = entry.getMessage();
 
@@ -109,17 +119,9 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             transformation.setAuthority(LocationRegistryLauncher.APP_NAME);
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (CouldNotPerformException | TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct["+registry.isConsistent()+"]", ex), logger, LogLevel.WARN);
+            System.out.println("!!!!!! ERROR: "+ex.getMessage() + " "+registry.getName());
+            
         }
-    }
-
-    @Override
-    public void afterRegister(final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) {
-        publishtransformation(entry);
-    }
-
-    @Override
-    public void afterUpdate(final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry) throws CouldNotPerformException {
-        publishtransformation(entry);
     }
 }

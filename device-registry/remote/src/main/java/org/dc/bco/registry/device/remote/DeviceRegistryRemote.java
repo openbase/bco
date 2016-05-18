@@ -133,9 +133,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-//        System.out.println("Activating DeviceRegistryRemote[" + localId + "]!");
+        System.out.println("Activating DeviceRegistryRemote[" + localId + "]!");
         super.activate();
-//        System.out.println("Returned from activation super.activate in DeviceRegistryRemote[" + localId + "]");
+        System.out.println("Returned from activation super.activate in DeviceRegistryRemote[" + localId + "]");
     }
 
     @Override
@@ -589,7 +589,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -598,6 +597,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return getData().getUnitTemplateRegistryReadOnly();
     }
 
@@ -609,7 +609,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -618,6 +617,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return getData().getDeviceClassRegistryReadOnly();
     }
 
@@ -629,7 +629,6 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean isDeviceConfigRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -638,6 +637,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
+        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return getData().getDeviceConfigRegistryReadOnly();
     }
 

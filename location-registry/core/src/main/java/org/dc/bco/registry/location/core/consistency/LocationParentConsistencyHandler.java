@@ -21,8 +21,6 @@ package org.dc.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import java.util.Arrays;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
@@ -55,25 +53,21 @@ public class LocationParentConsistencyHandler extends AbstractProtoBufRegistryCo
         }
 
         // skip root locations
-        if(locationConfig.getRoot()) {
+        if (locationConfig.getRoot()) {
             return;
         }
 
         // check if parent is registered.
         if (!entryMap.containsKey(locationConfig.getPlacementConfig().getLocationId())) {
-            logger.warn("Parent[" + locationConfig.getPlacementConfig().getLocationId() + "] of child[" + locationConfig.getId() + "] is unknown! Entry will moved to root location!");
-            logger.info("known entries["+Arrays.toString(entryMap.getMessages().toArray())+"]");
             entry.setMessage(locationConfig.setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().clearLocationId()));
-//            entry.setMessage(locationConfig.setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(locationConfigRegistry.getRootLocationConfig().getId())));
-            throw new EntryModification(entry, this);
+            throw new EntryModification("Parent[" + locationConfig.getPlacementConfig().getLocationId() + "] of child[" + locationConfig.getId() + "] is unknown! Entry will moved to root location!", entry, this);
         }
 
         // check if parents knows given child.
         IdentifiableMessage<String, LocationConfigType.LocationConfig, LocationConfig.Builder> parent = registry.get(locationConfig.getPlacementConfig().getLocationId());
         if (parent != null && !parentHasChild(parent.getMessage(), locationConfig.build()) && !parent.getMessage().getPlacementConfig().getLocationId().equals(locationConfig.getId())) {
-             logger.warn("Parent["+parent.getId()+"] does not know Child["+locationConfig.getId()+"]");
             parent.setMessage(parent.getMessage().toBuilder().addChildId(locationConfig.getId()));
-            throw new EntryModification(parent, this);
+            throw new EntryModification("Parent[" + parent.getId() + "] does not know Child[" + locationConfig.getId() + "]", parent, this);
         }
     }
 
