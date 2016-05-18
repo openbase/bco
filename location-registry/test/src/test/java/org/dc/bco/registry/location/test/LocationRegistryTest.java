@@ -173,24 +173,35 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testRootConsistency() throws Exception {
         System.out.println("TestRootConsisntency");
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
+        long time = System.currentTimeMillis();
         LocationConfig registeredRoot = remote.registerLocationConfig(root).get();
+        System.out.println("Time for registration [" + (System.currentTimeMillis() - time) + "]");
+        System.out.println("Root location succesfully registered!");
+        time = System.currentTimeMillis();
         remote.requestData().get();
+        System.out.println("Time for request data [" + (System.currentTimeMillis() - time) + "]");
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getRoot());
         assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
 
         LocationConfig child = LocationConfig.newBuilder().setLabel("TestChildLocation").setPlacementConfig(PlacementConfig.newBuilder().setLocationId(registeredRoot.getId()).build()).build();
+        time = System.currentTimeMillis();
         LocationConfig registeredChild = remote.registerLocationConfig(child).get();
+        System.out.println("Time for registration [" + (System.currentTimeMillis() - time) + "]");
         assertTrue("The new location isn't registered as a child location.", !registeredChild.getRoot());
+        time = System.currentTimeMillis();
         remote.requestData().get();
+        System.out.println("Time for request data [" + (System.currentTimeMillis() - time) + "]");
         assertTrue("The child location isn't represented in its parent.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdList().contains(registeredChild.getId()));
         assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdCount() == 1);
 
+        time = System.currentTimeMillis();
         LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot).get();
-        remote.requestData().get();
+        System.out.println("Time for removal [" + (System.currentTimeMillis() - time) + "]");
+//        remote.requestData().get();
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", remote.getLocationConfigById(registeredChild.getId()).getRoot());
     }
