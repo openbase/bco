@@ -135,7 +135,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        locationRegistryRemote.removeObserver(locationRegistryUpdateObserver);
+        locationRegistryRemote.removeDataObserver(locationRegistryUpdateObserver);
+        locationRegistryRemote.deactivate();
         super.deactivate();
     }
 
@@ -150,6 +151,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
+        
+        locationRegistryRemote.shutdown();
     }
 
     @Override

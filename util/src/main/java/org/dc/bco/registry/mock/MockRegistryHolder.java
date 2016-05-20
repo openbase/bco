@@ -21,8 +21,8 @@ package org.dc.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.schedule.SyncObject;
 
 /**
@@ -31,34 +31,26 @@ import org.dc.jul.schedule.SyncObject;
  */
 public class MockRegistryHolder {
 
-    private static int mockRegistryCounter = 0;
     private final static SyncObject mockRegistrySync = new SyncObject("MockRegistrySync");
     private static MockRegistry mockRegistry;
 
     public static MockRegistry newMockRegistry() throws InstantiationException {
         synchronized (mockRegistrySync) {
-            if (mockRegistry == null) {
-                assert mockRegistryCounter == 0;
-                mockRegistry = new MockRegistry();
+            if (mockRegistry != null) {
+                throw new InstantiationException(MockRegistryHolder.class, new InvalidStateException("There is still one MockRegistry instance running!"));
             }
-            mockRegistryCounter++;
-            assert mockRegistry != null;
+
+            mockRegistry = new MockRegistry();
             return mockRegistry;
         }
     }
 
     public static void shutdownMockRegistry() {
         synchronized (mockRegistrySync) {
-            if(mockRegistry == null) {
-                assert mockRegistryCounter == 0;
+            if (mockRegistry == null) {
                 return;
             }
-            mockRegistryCounter--;
-            
-            if(mockRegistryCounter == 0) {
-                mockRegistry.shutdown();
-                mockRegistry = null;
-            }
+            mockRegistry.shutdown();
         }
     }
 }

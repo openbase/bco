@@ -206,7 +206,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        deviceRegistryRemote.removeObserver(deviceRegistryUpdateObserver);
+        deviceRegistryRemote.removeDataObserver(deviceRegistryUpdateObserver);
+        deviceRegistryRemote.deactivate();
         super.deactivate();
     }
 
@@ -233,6 +234,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
+        
+        deviceRegistryRemote.shutdown();
     }
 
     /**

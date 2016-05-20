@@ -277,6 +277,7 @@ public class MockRegistry {
         appRegistry.shutdown();
         sceneRegistry.shutdown();
         userRegistry.shutdown();
+        int i = 0;
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {

@@ -142,7 +142,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceClassRegistry.setName("DeviceClassRegistry");
             deviceConfigRegistry.setName("DeviceConfigRegistry");
             unitGroupConfigRegistry.setName("unitGroupConfigRegistry");
-            
+
             unitTemplateRegistry.loadRegistry();
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
@@ -297,6 +297,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         locationRegistryRemote.removeDataObserver(locationRegistryUpdateObserver);
         userRegistryRemote.removeDataObserver(userRegistryUpdateObserver);
+        locationRegistryRemote.deactivate();
+        userRegistryRemote.deactivate();
         super.deactivate();
     }
 
@@ -327,6 +329,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
+        locationRegistryRemote.shutdown();
+        userRegistryRemote.shutdown();
     }
 
     /**
