@@ -35,14 +35,12 @@ import org.dc.jul.storage.registry.EntryModification;
 import org.dc.jul.storage.registry.FileSynchronizedRegistryInterface;
 import org.dc.jul.storage.registry.ProtoBufRegistryInterface;
 import org.dc.jul.storage.registry.version.DBVersionControl;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.HashMap;
 import java.util.Map;
 import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType.LocationRegistry;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -57,17 +55,11 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
     public DeviceConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
         this.locationLabelIdMap = new HashMap<>();
-//        System.out.println("Constructor call");
-//        try {
-//        } catch (CouldNotPerformException ex) {
-//            throw new InstantiationException(this, ex);
-//        }
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
 
-//        System.out.println("processData:" + entry.getId());
         if (locationRegistry == null) {
             logger.info("Connect to location registry....");
             try {
