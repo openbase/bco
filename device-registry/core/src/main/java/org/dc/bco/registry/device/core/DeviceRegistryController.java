@@ -248,8 +248,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             super.activate();
             locationRegistryRemote.activate();
             userRegistryRemote.activate();
-            locationRegistryRemote.addObserver(locationRegistryUpdateObserver);
-            userRegistryRemote.addObserver(userRegistryUpdateObserver);
+            locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
+            userRegistryRemote.addDataObserver(userRegistryUpdateObserver);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
@@ -295,8 +295,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        locationRegistryRemote.removeObserver(locationRegistryUpdateObserver);
-        userRegistryRemote.removeObserver(userRegistryUpdateObserver);
+        locationRegistryRemote.removeDataObserver(locationRegistryUpdateObserver);
+        userRegistryRemote.removeDataObserver(userRegistryUpdateObserver);
         super.deactivate();
     }
 
