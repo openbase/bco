@@ -74,7 +74,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
         super(AppRegistry.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getFieldDescriptor(AppRegistry.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistry.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
 
@@ -153,7 +153,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
     @Override
     public final void notifyChange() throws CouldNotPerformException {
         // sync read only flags
-        setField(AppRegistry.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
+        setDataField(AppRegistry.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
