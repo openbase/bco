@@ -205,7 +205,7 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
     @Override
     public String toString() {
         try {
-            if (hasField(TYPE_FIELD_ID)) {
+            if (hasDataField(TYPE_FIELD_ID)) {
                 return getClass().getSimpleName() + "[" + getId() + "]";
             }
         } catch (CouldNotPerformException ex) {
