@@ -173,11 +173,11 @@ public class LocationRegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 5000)
     public void testRootConsistency() throws Exception {
+        long time = System.currentTimeMillis();
         System.out.println("TestRootConsisntency");
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
-        long time = System.currentTimeMillis();
         LocationConfig registeredRoot = remote.registerLocationConfig(root).get();
         System.out.println("Time for registration [" + (System.currentTimeMillis() - time) + "]");
         System.out.println("Root location succesfully registered!");

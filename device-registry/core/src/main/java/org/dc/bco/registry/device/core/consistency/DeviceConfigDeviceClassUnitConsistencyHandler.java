@@ -51,8 +51,6 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  */
 public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceConfigDeviceClassUnitConsistencyHandler.class);
-
     private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
 
     public DeviceConfigDeviceClassUnitConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
@@ -62,10 +60,6 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
-
-        if (!deviceConfig.hasDeviceClassId()) {
-            throw new NotAvailableException("deviceclass");
-        }
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceclass.id");
@@ -77,7 +71,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         deviceConfig.clearUnitConfig();
 
         for (UnitTemplateConfig unitTemplate : deviceClass.getUnitTemplateConfigList()) {
-            if (!existUnitWithRelatedTemplate(unitConfigs, unitTemplate)) {
+            if (!unitWithRelatedTemplateExists(unitConfigs, unitTemplate)) {
                 List<ServiceConfig> serviceConfigs = new ArrayList<>();
                 for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
                     serviceConfigs.add(ServiceConfig.newBuilder().setType(serviceTemplate.getServiceType()).setBindingServiceConfig(BindingServiceConfigType.BindingServiceConfig.newBuilder().setType(deviceClass.getBindingConfig().getType())).build());
@@ -88,21 +82,18 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         }
         deviceConfig.addAllUnitConfig(unitConfigs);
 
-//        for (UnitConfig unitConfig : unitConfigs) {
-//            if (!containsUnitConfigId(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
-                
-//                logger.warn("Unit Config [" + unitConfig.getId() + "] in device [" + deviceConfig.getId() + "] has no according unit template config in device class [" + deviceClass.getId() + "]");
-                //TODO Tamino: Just Logging makes no sense! Throw VerificationFailedException or EntryModification to fix inconsistency.
-                // May this? throw new VerificationFailedException("UnitConfig[" + unitConfig.getId() + "] in DeviceConfig[" + deviceConfig.getId() + "] has no according UnitTemplateConfig in DeviceClass[" + deviceClass.getId() + "].");
-//            }
-//        }
+        for (UnitConfig unitConfig : unitConfigs) {
+            if (!templateForUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
+                throw new VerificationFailedException("Unit Config [" + unitConfig.getId() + "] in device [" + deviceConfig.getId() + "] has no according unit template config in device class [" + deviceClass.getId() + "]");
+            }
+        }
 
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
 
-    private boolean existUnitWithRelatedTemplate(List<UnitConfig> units, UnitTemplateConfig unitTemplate) {
+    private boolean unitWithRelatedTemplateExists(List<UnitConfig> units, UnitTemplateConfig unitTemplate) {
         for (UnitConfig unit : units) {
             if (unit.getUnitTemplateConfigId().equals(unitTemplate.getId())) {
                 return true;
@@ -111,7 +102,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         return false;
     }
 
-    private boolean containsUnitConfigId(List<UnitTemplateConfig> units, String id) {
+    private boolean templateForUnitExists(List<UnitTemplateConfig> units, String id) {
         for (UnitTemplateConfig unit : units) {
             if (unit.getId().equals(id)) {
                 return true;
