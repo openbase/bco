@@ -45,6 +45,7 @@ public class CachedDeviceRegistryRemote {
 
             @Override
             public void run() {
+                shutdown = true;
                 shutdown();
             }
         });
@@ -81,7 +82,6 @@ public class CachedDeviceRegistryRemote {
     }
 
     public static void shutdown() {
-        shutdown = true;
         if (deviceRegistryRemote != null) {
             deviceRegistryRemote.shutdown();
             deviceRegistryRemote = null;

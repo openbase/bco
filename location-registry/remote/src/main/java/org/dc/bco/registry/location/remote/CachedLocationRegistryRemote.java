@@ -45,6 +45,7 @@ public class CachedLocationRegistryRemote {
 
             @Override
             public void run() {
+                shutdown = true;
                 shutdown();
             }
         });
@@ -81,7 +82,6 @@ public class CachedLocationRegistryRemote {
     }
 
     public static void shutdown() {
-        shutdown = true;
         if (locationRegistryRemote != null) {
             locationRegistryRemote.shutdown();
             locationRegistryRemote = null;
