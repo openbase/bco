@@ -89,7 +89,6 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOpera
     }// </editor-fold>//GEN-END:initComponents
 
     private void brightnessSliderPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_brightnessSliderPropertyChange
-        System.out.println("brightnessSliderPropertyChange");
     }//GEN-LAST:event_brightnessSliderPropertyChange
 
     private void brightnessSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_brightnessSliderStateChanged

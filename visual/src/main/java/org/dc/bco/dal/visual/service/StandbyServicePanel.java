@@ -145,8 +145,6 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationSe
 
     @Override
     protected void updateDynamicComponents() {
-        System.out.println("updateDynamicComponents");
-
         try {
             switch (getService().getStandby().getValue()) {
                 case STANDBY:
