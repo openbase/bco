@@ -21,7 +21,6 @@ package org.dc.bco.registry.device.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
@@ -32,7 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class CachedDeviceRegistryRemote {
 
@@ -45,19 +45,14 @@ public class CachedDeviceRegistryRemote {
 
             @Override
             public void run() {
-                shutdown = true;
-                if (deviceRegistryRemote != null) {
-                    deviceRegistryRemote.shutdown();
-                    deviceRegistryRemote = null;
-                }
+                shutdown();
             }
         });
     }
 
     /**
      *
-     * @return
-     * @throws InterruptedException
+     * @return @throws InterruptedException
      * @throws NotAvailableException
      */
     public synchronized static DeviceRegistry getDeviceRegistry() throws InterruptedException, NotAvailableException {
@@ -82,6 +77,14 @@ public class CachedDeviceRegistryRemote {
             return deviceRegistryRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached device registry", ex);
+        }
+    }
+
+    public static void shutdown() {
+        shutdown = true;
+        if (deviceRegistryRemote != null) {
+            deviceRegistryRemote.shutdown();
+            deviceRegistryRemote = null;
         }
     }
 }

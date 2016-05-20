@@ -21,7 +21,6 @@ package org.dc.bco.registry.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
@@ -32,7 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class CachedLocationRegistryRemote {
 
@@ -45,19 +45,14 @@ public class CachedLocationRegistryRemote {
 
             @Override
             public void run() {
-                shutdown = true;
-                if (locationRegistryRemote != null) {
-                    locationRegistryRemote.shutdown();
-                    locationRegistryRemote = null;
-                }
+                shutdown();
             }
         });
     }
 
     /**
      *
-     * @return
-     * @throws InterruptedException
+     * @return @throws InterruptedException
      * @throws NotAvailableException
      */
     public synchronized static LocationRegistry getLocationRegistry() throws InterruptedException, NotAvailableException {
@@ -82,6 +77,14 @@ public class CachedLocationRegistryRemote {
             return locationRegistryRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached location registry", ex);
+        }
+    }
+
+    public static void shutdown() {
+        shutdown = true;
+        if (locationRegistryRemote != null) {
+            locationRegistryRemote.shutdown();
+            locationRegistryRemote = null;
         }
     }
 }

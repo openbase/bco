@@ -27,8 +27,10 @@ import java.util.concurrent.ExecutionException;
 import org.dc.bco.registry.agent.core.AgentRegistryLauncher;
 import org.dc.bco.registry.app.core.AppRegistryLauncher;
 import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.bco.registry.location.core.LocationRegistryLauncher;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
 import org.dc.bco.registry.user.core.UserRegistryLauncher;
@@ -277,6 +279,8 @@ public class MockRegistry {
         appRegistry.shutdown();
         sceneRegistry.shutdown();
         userRegistry.shutdown();
+        CachedDeviceRegistryRemote.shutdown();
+        CachedLocationRegistryRemote.shutdown();
         int i = 0;
     }
 

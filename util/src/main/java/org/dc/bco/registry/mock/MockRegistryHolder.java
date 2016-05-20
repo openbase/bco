@@ -51,6 +51,7 @@ public class MockRegistryHolder {
                 return;
             }
             mockRegistry.shutdown();
+            mockRegistry = null;
         }
     }
 }
