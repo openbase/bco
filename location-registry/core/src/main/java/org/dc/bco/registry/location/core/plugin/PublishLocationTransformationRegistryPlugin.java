@@ -120,8 +120,6 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (CouldNotPerformException | TransformerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct["+registry.isConsistent()+"]", ex), logger, LogLevel.WARN);
-            System.out.println("!!!!!! ERROR: "+ex.getMessage() + " "+registry.getName());
-            
         }
     }
 }

@@ -120,13 +120,9 @@ public class LocationRegistryController extends RSBCommunicationService<Location
 
             deviceRegistryRemote = new DeviceRegistryRemote();
 
-            System.out.println("=========== load registry");
-            
             locationConfigRegistry.loadRegistry();
             connectionConfigRegistry.loadRegistry();
             
-            System.out.println("=========== register handler");
-
             locationConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
