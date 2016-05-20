@@ -146,7 +146,6 @@ public class PowerStateSynchroniserAgentTest {
         System.out.println("testPowerStateSyncAgent");
 
         AgentConfig config = registerAgent();
-        System.out.println("Agent scope [" + config.getScope() + "]");
         agent = new AgentRemote();
         agent.init(config);
         agent.activate();

@@ -61,7 +61,7 @@ public class HSVColorTransformerTest {
      */
     @Test(timeout = 60000)
     public void testTransform_HSBType() throws Exception {
-        System.out.println("transform");
+        System.out.println("testTransform_HSBType");
         HSB color = HSB.newBuilder().setHue(345).setSaturation(30).setBrightness(50).build();
         HSVColorType.HSVColor tempResult = HSVColorTransformer.transform(color);
         HSB result = HSVColorTransformer.transform(tempResult);
@@ -73,7 +73,7 @@ public class HSVColorTransformerTest {
      */
     @Test(timeout = 60000)
     public void testTransform_HSVColorTypeHSVColor() throws Exception {
-        System.out.println("transform");
+        System.out.println("testTransform_HSVColorTypeHSVColor");
         HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(111).setSaturation(56).setValue(57).build();
         HSB tempResult = HSVColorTransformer.transform(color);
         HSVColorType.HSVColor result = HSVColorTransformer.transform(tempResult);
