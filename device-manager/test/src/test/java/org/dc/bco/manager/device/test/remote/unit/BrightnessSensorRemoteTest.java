@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -112,6 +113,7 @@ public class BrightnessSensorRemoteTest {
     @Test(timeout = 60000)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
+        brightnessSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         double brightness = 0.5;
         ((BrightnessSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightness(brightness);
         brightnessSensorRemote.requestData().get();

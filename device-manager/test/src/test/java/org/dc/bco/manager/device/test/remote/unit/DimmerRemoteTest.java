@@ -32,6 +32,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -110,7 +111,7 @@ public class DimmerRemoteTest {
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        dimmerRemote.setPower(state);
+        dimmerRemote.setPower(state).get();
         dimmerRemote.requestData().get();
         assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState());
     }
@@ -122,6 +123,7 @@ public class DimmerRemoteTest {
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePower(state);
         dimmerRemote.requestData().get();
         assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
@@ -134,7 +136,7 @@ public class DimmerRemoteTest {
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 66d;
-        dimmerRemote.setBrightness(brightness);
+        dimmerRemote.setBrightness(brightness).get();
         dimmerRemote.requestData().get();
         assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getData().getValue(), 0.1);
     }
@@ -146,6 +148,7 @@ public class DimmerRemoteTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         Double brightness = 70.0d;
+        dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateBrightness(brightness);
         dimmerRemote.requestData().get();
         assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getBrightness());

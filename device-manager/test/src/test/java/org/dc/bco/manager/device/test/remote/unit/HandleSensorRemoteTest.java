@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -111,6 +112,7 @@ public class HandleSensorRemoteTest {
     @Test(timeout = 60000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
+        handleSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         HandleState.State state = HandleState.State.TILTED;
         ((HandleSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleSensorRemote.getId())).updateHandle(state);
         handleSensorRemote.requestData().get();

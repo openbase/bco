@@ -32,6 +32,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -105,7 +106,7 @@ public class RollershutterRemoteTest {
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
-        rollershutterRemote.setShutter(state);
+        rollershutterRemote.setShutter(state).get();
         rollershutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState());
     }
@@ -119,6 +120,7 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
+        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutter(state);
         rollershutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
@@ -133,7 +135,7 @@ public class RollershutterRemoteTest {
     public void testSetOpeningRatio() throws Exception {
         System.out.println("setOpeningRatio");
         double openingRatio = 34.0D;
-        rollershutterRemote.setOpeningRatio(openingRatio);
+        rollershutterRemote.setOpeningRatio(openingRatio).get();
         rollershutterRemote.requestData().get();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getData().getOpeningRatio(), 0.1);
     }
@@ -147,6 +149,7 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
+        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateOpeningRatio(openingRatio);
         rollershutterRemote.requestData().get();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getOpeningRatio());

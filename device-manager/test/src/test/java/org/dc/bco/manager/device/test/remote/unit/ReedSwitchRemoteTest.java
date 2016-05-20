@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -113,6 +114,7 @@ public class ReedSwitchRemoteTest {
     @Test(timeout = 60000)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
+        reedSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
         ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitch(state);
         reedSwitchRemote.requestData().get();

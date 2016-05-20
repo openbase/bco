@@ -32,6 +32,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -111,6 +112,7 @@ public class MotionSensorRemoteTest {
     @Test(timeout = 60000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
+        motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
         ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotion(motion);
         motionSensorRemote.requestData().get();

@@ -34,6 +34,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -113,6 +114,7 @@ public class BatteryRemoteTest {
     @Test(timeout = 60000)
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
+        batteryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         double level = 34.0;
         BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
         ((BatteryController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(batteryRemote.getId())).updateBattery(state);

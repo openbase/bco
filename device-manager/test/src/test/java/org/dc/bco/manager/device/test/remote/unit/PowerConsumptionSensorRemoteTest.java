@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -117,6 +118,7 @@ public class PowerConsumptionSensorRemoteTest {
         double consumption = 200d;
         double voltage = 100d;
         double current = 2d;
+        powerConsumptionRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
         ((PowerConsumptionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(state);
         powerConsumptionRemote.requestData().get();

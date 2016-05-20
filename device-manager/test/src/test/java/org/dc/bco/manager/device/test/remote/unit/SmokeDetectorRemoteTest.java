@@ -32,6 +32,7 @@ import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -111,6 +112,7 @@ public class SmokeDetectorRemoteTest {
     @Test(timeout = 60000)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
+        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeAlarmState(alarmState);
         smokeDetectorRemote.requestData().get();
@@ -123,6 +125,7 @@ public class SmokeDetectorRemoteTest {
     @Test(timeout = 60000)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
+        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();
         ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeState(smokeState);
         smokeDetectorRemote.requestData().get();

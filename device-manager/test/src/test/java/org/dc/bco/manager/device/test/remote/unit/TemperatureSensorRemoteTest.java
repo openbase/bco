@@ -34,6 +34,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -115,6 +116,7 @@ public class TemperatureSensorRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
+        temperatureSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((TemperatureSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperature(temperature);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);
@@ -128,6 +130,7 @@ public class TemperatureSensorRemoteTest {
     @Test(timeout = 60000)
     public void testGetTemperatureAlarmState() throws Exception {
         System.out.println("getTemperatureAlarmState");
+        temperatureSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         ((TemperatureSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperatureAlarmState(alarmState);
         temperatureSensorRemote.requestData().get();

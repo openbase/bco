@@ -22,7 +22,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * #L%
  */
 import org.dc.bco.dal.lib.data.Location;
-import org.dc.bco.dal.lib.layer.unit.TemperatureSensorController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
@@ -34,6 +33,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -113,7 +113,7 @@ public class TemperatureControllerRemoteTest {
     public void testSetTargetTemperature() throws Exception {
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
-        temperatureControllerRemote.setTargetTemperature(temperature);
+        temperatureControllerRemote.setTargetTemperature(temperature).get();
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperature(), 0.1);
     }
@@ -127,6 +127,7 @@ public class TemperatureControllerRemoteTest {
     public void testGetTargetTemperature() throws Exception {
         System.out.println("getTargetTemperature");
         double temperature = 3.141F;
+        temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperature(temperature);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperature(), 0.1);
@@ -141,6 +142,7 @@ public class TemperatureControllerRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
+        temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperature(temperature);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperature(), 0.1);

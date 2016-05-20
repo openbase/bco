@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -106,7 +107,7 @@ public class LightRemoteTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        lightRemote.setPower(state);
+        lightRemote.setPower(state).get();
         lightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state, lightRemote.getData().getPowerState());
     }
@@ -120,6 +121,7 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        lightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePower(state);
         lightRemote.requestData().get();
         assertEquals("Light has not been set in time!", state, lightRemote.getPower());

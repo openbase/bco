@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
@@ -113,6 +114,7 @@ public class TamperSwitchRemoteTest {
     @Test(timeout = 60000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
+        tamperSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         ((TamperSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperSwitchRemote.getId())).updateTamper(tamperState);
         tamperSwitchRemote.requestData().get();

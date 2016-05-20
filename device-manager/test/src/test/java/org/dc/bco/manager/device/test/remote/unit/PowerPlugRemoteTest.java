@@ -33,6 +33,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -106,7 +107,7 @@ public class PowerPlugRemoteTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        powerPlugRemote.setPower(state);
+        powerPlugRemote.setPower(state).get();
         powerPlugRemote.requestData().get();
         assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState());
     }
@@ -120,6 +121,7 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        powerPlugRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePower(state);
         powerPlugRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());

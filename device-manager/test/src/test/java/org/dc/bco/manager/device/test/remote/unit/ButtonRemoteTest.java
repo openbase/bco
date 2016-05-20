@@ -33,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -113,6 +114,7 @@ public class ButtonRemoteTest {
     @Test(timeout = 60000)
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
+        buttonRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
         ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButton(buttonState);
         buttonRemote.requestData().get();
