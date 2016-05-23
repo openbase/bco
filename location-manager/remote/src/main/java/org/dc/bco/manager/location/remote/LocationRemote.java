@@ -120,6 +120,10 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
         return getData().getOpeningRatio();
     }
 
+    public void setPower(PowerState.State state) throws CouldNotPerformException {
+        setPower(PowerState.newBuilder().setValue(state).build());
+    }
+
     @Override
     public void setPower(PowerState state) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(state, this);

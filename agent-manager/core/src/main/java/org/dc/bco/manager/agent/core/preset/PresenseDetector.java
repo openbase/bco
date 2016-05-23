@@ -21,12 +21,10 @@ package org.dc.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.iface.Activatable;
 import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.schedule.Timeout;
 import java.util.ArrayList;
@@ -34,7 +32,11 @@ import java.util.Collection;
 import java.util.List;
 import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
 import org.dc.bco.dal.remote.unit.MotionSensorRemote;
+import org.dc.bco.manager.location.remote.LocationRemote;
+import org.dc.jul.exception.InitializationException;
+import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
+import org.dc.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
@@ -44,12 +46,13 @@ import rst.homeautomation.unit.MotionSensorType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
+import rst.spatial.LocationDataType;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class MotionStateFutionProvider extends ObservableImpl<MotionState> implements MotionProvider, Activatable {
+public class PresenseDetector extends ObservableImpl<MotionState> implements MotionProvider, Manageable<LocationRemote> {
 
     /**
      * Default 3 minute window of no movement unit the state switches to NO_MOTION.
@@ -58,44 +61,36 @@ public class MotionStateFutionProvider extends ObservableImpl<MotionState> imple
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private MotionStateType.MotionState.Builder motionState;
-    private final Timeout motionTimeout;
     private final List<MotionSensorRemote> motionSensorList;
+    private MotionStateType.MotionState.Builder motionState;
+    private Timeout motionTimeout;
 
-    public MotionStateFutionProvider(Collection<UnitConfig> motionUnitConfigs) throws InstantiationException, InterruptedException {
-        this(motionUnitConfigs, MOTION_TIMEOUT);
+    public PresenseDetector() {
+        this.motionSensorList = new ArrayList<>();
     }
 
-    public MotionStateFutionProvider(final Collection<UnitConfig> motionUnitConfigs, final long motionTimeout) throws InstantiationException, InterruptedException {
-        try {
-            this.motionSensorList = new ArrayList<>();
-            this.motionState = MotionState.newBuilder();
-            this.motionTimeout = new Timeout(motionTimeout) {
+    @Override
+    public void init(final LocationRemote locationRemote) throws InitializationException, InterruptedException {
+        init(locationRemote, MOTION_TIMEOUT);
+    }
+    
+    public void init(final LocationRemote locationRemote, final long motionTimeout) throws InitializationException, InterruptedException {
+        this.motionState = MotionState.newBuilder();
+        this.motionTimeout = new Timeout(motionTimeout) {
 
-                @Override
-                public void expired() {
-                    updateMotionState(MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOVEMENT));
-                }
-            };
-
-            MotionSensorRemote motionSensorRemote;
-            for (UnitConfigType.UnitConfig unitConfig : motionUnitConfigs) {
-                if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR) {
-                    logger.warn("Skip Unit[" + unitConfig.getId() + "] because its not of Type[" + UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR + "]!");
-                    continue;
-                }
-
-                motionSensorRemote = new MotionSensorRemote();
-                motionSensorRemote.init(unitConfig);
-                motionSensorList.add(motionSensorRemote);
-                motionSensorRemote.addObserver((Observable<MotionSensorType.MotionSensor> source, MotionSensorType.MotionSensor data) -> {
-                    updateMotionState(data.getMotionState());
-                });
-
+            @Override
+            public void expired() {
+                updateMotionState(MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOVEMENT));
             }
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        };
+
+        locationRemote.addObserver(new Observer<LocationDataType.LocationData>() {
+
+            @Override
+            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
+                updateMotionState(data.getMotionState());
+            }
+        });
     }
 
     @Override

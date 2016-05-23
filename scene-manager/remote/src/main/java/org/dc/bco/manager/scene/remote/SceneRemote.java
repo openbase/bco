@@ -32,25 +32,26 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConfig> implements Scene {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
     }
-    
+
     @Override
     public void notifyUpdated(SceneData data) throws CouldNotPerformException {
-       
+
     }
 
     public void setActivationState(ActivationState.State activationState) throws CouldNotPerformException {

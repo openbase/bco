@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>org.dc.bco</groupId>
-            <artifactId>manager.location.lib</artifactId>
+            <artifactId>manager.location.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -21,34 +21,55 @@ package org.dc.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
 import org.dc.bco.manager.agent.core.AbstractAgent;
 import org.dc.bco.manager.location.remote.LocationRemote;
 import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.pattern.Observable;
+import org.dc.jul.schedule.SyncObject;
+import org.dc.jul.schedule.Timeout;
+import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.state.MotionStateType.MotionState;
-import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
-import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class PersonLightProviderAgent extends AbstractAgent {
+public class StandbyAgent extends AbstractAgent {
 
-    public static final double MINIMUM_LIGHT_THRESHOLD = 100;
+    public static final long TIEMOUT = 900000;
     private LocationRemote locationRemote;
     private PresenseDetector presenseDetector;
+    private final Timeout timeout;
+    private final SyncObject standbySync = new SyncObject("StandbySync");
+    private boolean standby;
 
-    public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
+    private SceneConfigType.SceneConfig snapshot;
+
+    public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(false);
+
+        this.standby = false;
+
+        this.timeout = new Timeout(TIEMOUT) {
+
+            @Override
+            public void expired() throws InterruptedException {
+                try {
+                    standby();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        };
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel()+ "]");
+        logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = new LocationRemote();
         locationRemote.init(CachedLocationRegistryRemote.getLocationRegistry().getLocationConfigById(getConfig().getLocationId()));
         locationRemote.activate();
@@ -57,8 +78,16 @@ public class PersonLightProviderAgent extends AbstractAgent {
         presenseDetector.init(locationRemote);
 
         this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
-            notifyMotionStateChanged(data);
+            if (data.getValue().equals(MotionState.State.MOVEMENT)) {
+                timeout.restart();
+                synchronized (standbySync) {
+                    if (standby) {
+                        wakeUp();
+                    }
+                }
+            }
         });
+
         super.activate();
     }
 
@@ -66,28 +95,48 @@ public class PersonLightProviderAgent extends AbstractAgent {
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         locationRemote.deactivate();
-        presenseDetector.shutdown();
+        presenseDetector.deactivate();
         super.deactivate();
+
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         presenseDetector.activate();
         locationRemote.activate();
+        timeout.start();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
+        timeout.cancel();
         presenseDetector.deactivate();
         locationRemote.deactivate();
     }
 
-    private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
-        if (motionState.getValue() == MotionState.State.MOVEMENT) {
-            locationRemote.setPower(PowerState.State.ON);
-        } else {
-            locationRemote.setPower(PowerState.State.OFF);
+    private void standby() throws CouldNotPerformException, InterruptedException {
+        synchronized (standbySync) {
+            try {
+                if (snapshot == null) {
+                    return;
+                }
+                snapshot = locationRemote.recordSnaphot().get();
+                standby = true;
+            } catch (ExecutionException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Standby failed!", ex);
+            }
         }
-        logger.info("detect: " + motionState.getValue());
+    }
+
+    private void wakeUp() throws CouldNotPerformException, InterruptedException {
+        synchronized (standbySync) {
+            try {
+                locationRemote.restoreSnapshot(snapshot).get();
+                snapshot = null;
+                standby = false;
+            } catch (ExecutionException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("WakeUp failed!", ex);
+            }
+        }
     }
 }
