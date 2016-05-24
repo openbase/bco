@@ -23,6 +23,8 @@ package org.dc.bco.registry.device.lib;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -114,6 +116,16 @@ public interface DeviceRegistry {
 
     public Boolean isDeviceConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isDeviceConfigRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
+
     public Boolean containsUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
 
     public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
@@ -133,7 +145,7 @@ public interface DeviceRegistry {
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
     /**
-     * Method return the unit config which is registerd for the given scope. A
+     * Method return the unit config which is registered for the given scope. A
      * NotAvailableException is thrown if no unit config is registered for the
      * given scope.
      *
@@ -143,9 +155,22 @@ public interface DeviceRegistry {
      */
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
-    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
-
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
     public void shutdown();
+
+    public default void waitForConsistency() throws InterruptedException {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                if (isDeviceClassRegistryConsistent()
+                        && isDeviceConfigRegistryConsistent()
+                        && isUnitGroupConfigRegistryConsistent()
+                        && isUnitTemplateRegistryConsistent()) {
+                    return;
+                }
+            } catch (CouldNotPerformException ex) {
+                Thread.sleep(1000);
+            }
+        }
+    }
 }

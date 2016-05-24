@@ -23,8 +23,12 @@ package org.dc.bco.registry.device.remote;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -899,5 +903,81 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             }
         }
         return unitTypes;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
+        try {
+            //TODO: Shout be cached via synchronized data type and not requested via rpc.
+            return (Boolean) RPCHelper.callRemoteMethod(this).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        } catch (TimeoutException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException {
+        try {
+            //TODO: Shout be cached via synchronized data type and not requested via rpc.
+            return (Boolean) RPCHelper.callRemoteMethod(this).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        } catch (TimeoutException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isDeviceConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            //TODO: Shout be cached via synchronized data type and not requested via rpc.
+            return (Boolean) RPCHelper.callRemoteMethod(this).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        } catch (TimeoutException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            //TODO: Shout be cached via synchronized data type and not requested via rpc.
+            return (Boolean) RPCHelper.callRemoteMethod(this).get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        } catch (TimeoutException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
     }
 }

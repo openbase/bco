@@ -66,12 +66,11 @@ public class MockRegistryTest {
      * Test of MockRegistry creation.
      */
     @Test
-    public void testMcokRegistryCreation() {
-        System.out.println("testMcokRegistryCreation");
-        MockRegistry registry;
+    public void testMockRegistryCreation() {
+        System.out.println("testMockRegistryCreation");
         try {
-            registry = MockRegistryHolder.newMockRegistry();
-            registry.shutdown();
+            MockRegistryHolder.newMockRegistry();
+            MockRegistryHolder.shutdownMockRegistry();
         } catch (org.dc.jul.exception.InstantiationException ex) {
             fail("Could not instantiate mock registry");
         }

@@ -21,6 +21,9 @@ package org.dc.bco.registry.device.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
@@ -31,8 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class CachedDeviceRegistryRemote {
 
@@ -51,12 +53,21 @@ public class CachedDeviceRegistryRemote {
         });
     }
 
+    public static void reinitialize() throws InterruptedException, CouldNotPerformException {
+        try {
+            getRegistry();
+            deviceRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
+        } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not reinitialize " + CachedDeviceRegistryRemote.class.getSimpleName() + "!", ex);
+        }
+    }
+
     /**
      *
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static DeviceRegistry getDeviceRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static DeviceRegistry getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");

@@ -706,6 +706,61 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        return unitGroupConfigRegistry.isReadOnly();
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
+        return unitTemplateRegistry.isConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException {
+        return deviceClassRegistry.isConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public Boolean isDeviceConfigRegistryConsistent() throws CouldNotPerformException {
+        return deviceConfigRegistry.isConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
+        return unitGroupConfigRegistry.isConsistent();
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
      * @param type
      * @return
      * @throws CouldNotPerformException
@@ -923,16 +978,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return unitConfigs;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return unitGroupConfigRegistry.isReadOnly();
-    }
+    
 
     /**
      * {@inheritDoc}

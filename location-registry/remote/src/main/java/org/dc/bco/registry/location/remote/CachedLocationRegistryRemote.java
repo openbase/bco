@@ -21,6 +21,10 @@ package org.dc.bco.registry.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
@@ -51,12 +55,21 @@ public class CachedLocationRegistryRemote {
         });
     }
 
+    public static void reinitialize() throws InterruptedException, CouldNotPerformException {
+        try {
+            getRegistry();
+            locationRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
+        } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not reinitialize " + CachedDeviceRegistryRemote.class.getSimpleName() + "!", ex);
+        }
+    }
+
     /**
      *
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static LocationRegistry getLocationRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static LocationRegistry getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");

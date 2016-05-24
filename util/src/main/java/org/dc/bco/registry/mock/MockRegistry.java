@@ -23,22 +23,30 @@ package org.dc.bco.registry.mock;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.bco.registry.agent.core.AgentRegistryLauncher;
+import org.dc.bco.registry.agent.lib.AgentRegistry;
 import org.dc.bco.registry.app.core.AppRegistryLauncher;
+import org.dc.bco.registry.app.lib.AppRegistry;
 import org.dc.bco.registry.device.core.DeviceRegistryLauncher;
+import org.dc.bco.registry.device.lib.DeviceRegistry;
 import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
-import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
 import org.dc.bco.registry.location.core.LocationRegistryLauncher;
+import org.dc.bco.registry.location.lib.LocationRegistry;
 import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.bco.registry.scene.core.SceneRegistryLauncher;
+import org.dc.bco.registry.scene.lib.SceneRegistry;
 import org.dc.bco.registry.user.core.UserRegistryLauncher;
-import org.dc.bco.registry.user.remote.UserRegistryRemote;
+import org.dc.bco.registry.user.lib.UserRegistry;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.dc.jul.schedule.GlobalExecuterService;
 import org.slf4j.LoggerFactory;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.geometry.PoseType.Pose;
@@ -91,17 +99,23 @@ public class MockRegistry {
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
 
-    private static DeviceRegistryLauncher deviceRegistry;
-    private static LocationRegistryLauncher locationRegistry;
-    private static AgentRegistryLauncher agentRegistry;
-    private static AppRegistryLauncher appRegistry;
-    private static SceneRegistryLauncher sceneRegistry;
-    private static UserRegistryLauncher userRegistry;
+    private static DeviceRegistryLauncher deviceRegistryLauncher;
+    private static LocationRegistryLauncher locationRegistryLauncher;
+    private static AgentRegistryLauncher agentRegistryLauncher;
+    private static AppRegistryLauncher appRegistryLauncher;
+    private static SceneRegistryLauncher sceneRegistryLauncher;
+    private static UserRegistryLauncher userRegistryLauncher;
 
-    private final DeviceRegistryRemote deviceRemote;
-    private final LocationRegistryRemote locationRemote;
-    private final UserRegistryRemote userRemote;
+    private static DeviceRegistry deviceRegistry;
+    private static LocationRegistry locationRegistry;
+    private static AgentRegistry agentRegistry;
+    private static AppRegistry appRegistry;
+    private static SceneRegistry sceneRegistry;
+    private static UserRegistry userRegisty;
 
+//    private final DeviceRegistryRemote deviceRegistry;
+//    private final LocationRegistryRemote locationRemote;
+//    private final UserRegistryRemote userRemote;
     private static LocationConfig paradise;
 
     public enum MockUnitTemplate {
@@ -150,143 +164,123 @@ public class MockRegistry {
 
     public MockRegistry() throws InstantiationException {
         try {
-//            String user = ScopeGenerator.convertIntoValidScopeComponent(System.getProperty("user.name"));
-//            JPService.registerProperty(JPInitializeDB.class, true);
             JPService.setupJUnitTestMode();
-
-            Thread deviceRegistryThread = new Thread(new Runnable() {
+            List<Future<Void>> registryStartupTasks = new ArrayList<>();
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     try {
-                        deviceRegistry = new DeviceRegistryLauncher();
+                        deviceRegistryLauncher = new DeviceRegistryLauncher();
+                        deviceRegistry = deviceRegistryLauncher.getDeviceRegistry();
+                        // load templates
+                        for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                            deviceRegistry.updateUnitTemplate(template.getTemplate()).get();
+                        }
+                        registerDevices();
+//                        deviceRegistry.waitForConsistency();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
+                    return null;
                 }
-            });
+            }));
 
-            Thread locationRegistryThread = new Thread(new Runnable() {
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     try {
-                        locationRegistry = new LocationRegistryLauncher();
+                        locationRegistryLauncher = new LocationRegistryLauncher();
+                        locationRegistry = locationRegistryLauncher.getLocationRegistry();
+                        registerLocations();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
+                    return null;
                 }
-            });
+            }));
 
-            Thread agentRegistryThread = new Thread(new Runnable() {
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     try {
-                        agentRegistry = new AgentRegistryLauncher();
+                        agentRegistryLauncher = new AgentRegistryLauncher();
+                        agentRegistry = agentRegistryLauncher.getAgentRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
+                    return null;
                 }
-            });
-
-            Thread appRegistryThread = new Thread(new Runnable() {
+            }));
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     try {
-                        appRegistry = new AppRegistryLauncher();
+                        appRegistryLauncher = new AppRegistryLauncher();
+                        appRegistry = appRegistryLauncher.getAppRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
+                    return null;
                 }
-            });
-
-            Thread sceneRegistryThread = new Thread(new Runnable() {
+            }));
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     try {
-                        sceneRegistry = new SceneRegistryLauncher();
+                        sceneRegistryLauncher = new SceneRegistryLauncher();
+                        sceneRegistry = sceneRegistryLauncher.getSceneRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
+                    return null;
                 }
-            });
+            }));
 
-            Thread userRegistryThread = new Thread(new Runnable() {
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     try {
-                        userRegistry = new UserRegistryLauncher();
+                        userRegistryLauncher = new UserRegistryLauncher();
+                        userRegisty = userRegistryLauncher.getUserRegistry();
+                        registerUser();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
+                    return null;
                 }
-            });
+            }));
 
-            deviceRegistryThread.start();
-            locationRegistryThread.start();
-            agentRegistryThread.start();
-            appRegistryThread.start();
-            sceneRegistryThread.start();
-            userRegistryThread.start();
-
-            deviceRegistryThread.join();
-            locationRegistryThread.join();
-            agentRegistryThread.join();
-            appRegistryThread.join();
-            sceneRegistryThread.join();
-            userRegistryThread.join();
-
-            deviceRemote = new DeviceRegistryRemote();
-            locationRemote = new LocationRegistryRemote();
-            userRemote = new UserRegistryRemote();
-
-            deviceRemote.init();
-            locationRemote.init();
-            userRemote.init();
-
-            deviceRemote.activate();
-            locationRemote.activate();
-            userRemote.activate();
-
-            deviceRemote.waitForData();
-            locationRemote.waitForData();
-            userRemote.waitForData();
-
-            for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                deviceRemote.updateUnitTemplate(template.getTemplate()).get();
+            // wait for initialization
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
             }
-            registerUser();
-            registerLocations();
-            registerDevices();
-
-            Thread.sleep(2000);
+            CachedDeviceRegistryRemote.reinitialize();
+            CachedLocationRegistryRemote.reinitialize();
         } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     public void shutdown() {
-        deviceRemote.shutdown();
-        locationRemote.shutdown();
-        userRemote.shutdown();
-        deviceRegistry.shutdown();
-        locationRegistry.shutdown();
-        agentRegistry.shutdown();
-        appRegistry.shutdown();
-        sceneRegistry.shutdown();
-        userRegistry.shutdown();
+        deviceRegistryLauncher.shutdown();
+        locationRegistryLauncher.shutdown();
+        agentRegistryLauncher.shutdown();
+        appRegistryLauncher.shutdown();
+        sceneRegistryLauncher.shutdown();
+        userRegistryLauncher.shutdown();
         CachedDeviceRegistryRemote.shutdown();
         CachedLocationRegistryRemote.shutdown();
-        int i = 0;
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
-            paradise = locationRemote.registerLocationConfig(LocationConfig.newBuilder().setLabel("Paradise").build()).get();
+            paradise = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel("Paradise").build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -296,7 +290,7 @@ public class MockRegistry {
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
         config.setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
         try {
-            testUser = userRemote.registerUserConfig(config.build()).get();
+            testUser = userRegisty.registerUserConfig(config.build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -307,73 +301,73 @@ public class MockRegistry {
 
         try {
             // ambient light
-            DeviceClass ambientLightClass = deviceRemote.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.AMBIENT_LIGHT)).get();
+            DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.AMBIENT_LIGHT)).get();
             units.add(getUnitConfig(UnitType.AMBIENT_LIGHT, AMBIENT_LIGHT_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units)).get();
 
             units.clear();
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
-            DeviceClass motionSensorClass = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_SENSOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_SWITCH)).get();
+            DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_SENSOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_SWITCH)).get();
             units.add(getUnitConfig(UnitType.MOTION_SENSOR, MOTION_SENSOR_LABEL));
             units.add(getUnitConfig(UnitType.BATTERY, BATTERY_LABEL));
             units.add(getUnitConfig(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL));
             units.add(getUnitConfig(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL));
             units.add(getUnitConfig(UnitType.TAMPER_SWITCH, TAMPER_SWITCH_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units)).get();
 
             units.clear();
             // button
-            DeviceClass buttonClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
+            DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.BUTTON, BUTTON_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass, units)).get();
 
             units.clear();
             // dimmer
-            DeviceClass dimmerClass = deviceRemote.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
+            DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.DIMMER, DIMMER_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units)).get();
 
             units.clear();
             // handle
-            DeviceClass handleClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE_SENSOR)).get();
+            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE_SENSOR)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE_SENSOR, HANDLE_SENSOR_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units)).get();
             units.clear();
             // light
-            DeviceClass lightClass = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
+            DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.LIGHT, LIGHT_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units)).get();
 
             units.clear();
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = deviceRemote.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_PLUG, UnitType.POWER_CONSUMPTION_SENSOR)).get();
+            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_PLUG, UnitType.POWER_CONSUMPTION_SENSOR)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.POWER_PLUG, POWER_PLUG_LABEL));
             units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units)).get();
 
             units.clear();
             // reedSwitch
-            DeviceClass reedSwitchClass = deviceRemote.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_SWITCH)).get();
+            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_SWITCH)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.REED_SWITCH, REED_SWITCH_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units)).get();
 
             units.clear();
             // rollershutter
-            DeviceClass rollershutterClass = deviceRemote.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLERSHUTTER)).get();
+            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLERSHUTTER)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.ROLLERSHUTTER, ROLLERSHUTTER_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units)).get();
 
             units.clear();
             // smoke detector
-            DeviceClass smokeDetector = deviceRemote.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
+            DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units)).get();
 
             units.clear();
             // temperature controller
-            DeviceClass temperatureControllerClass = deviceRemote.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
+            DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
             units.add(getUnitConfig(UnitTemplate.UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL));
-            deviceRemote.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass, units)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass, units)).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }

@@ -21,6 +21,8 @@ package org.dc.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.schedule.SyncObject;
@@ -52,6 +54,11 @@ public class MockRegistryHolder {
             }
             mockRegistry.shutdown();
             mockRegistry = null;
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MockRegistryHolder.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
