@@ -178,7 +178,7 @@ public class MockRegistry {
                             deviceRegistry.updateUnitTemplate(template.getTemplate()).get();
                         }
                         registerDevices();
-//                        deviceRegistry.waitForConsistency();
+                        deviceRegistry.waitForConsistency();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
