@@ -171,21 +171,21 @@ public class MockRegistry {
                 @Override
                 public Void call() throws Exception {
                     try {
-                        deviceRegistryLauncher = new DeviceRegistryLauncher();
-                        deviceRegistry = deviceRegistryLauncher.getDeviceRegistry();
-                        // load templates
-                        for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                            deviceRegistry.updateUnitTemplate(template.getTemplate()).get();
-                        }
-                        registerDevices();
-                        deviceRegistry.waitForConsistency();
+                        userRegistryLauncher = new UserRegistryLauncher();
+                        userRegisty = userRegistryLauncher.getUserRegistry();
+                        registerUser();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                     return null;
                 }
             }));
-
+            
+            // wait for initialization
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
+            
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
@@ -200,6 +200,36 @@ public class MockRegistry {
                     return null;
                 }
             }));
+            
+            // wait for initialization
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
+            
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        deviceRegistryLauncher = new DeviceRegistryLauncher();
+                        deviceRegistry = deviceRegistryLauncher.getDeviceRegistry();
+                        // load templates
+                        for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                            deviceRegistry.updateUnitTemplate(template.getTemplate()).get();
+                        }
+                        registerDevices();
+                        deviceRegistry.waitForConsistency();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
+                    }
+                    return null;
+                }
+            }));
+            
+            // wait for initialization
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
 
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
@@ -241,20 +271,7 @@ public class MockRegistry {
                 }
             }));
 
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    try {
-                        userRegistryLauncher = new UserRegistryLauncher();
-                        userRegisty = userRegistryLauncher.getUserRegistry();
-                        registerUser();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
-                    }
-                    return null;
-                }
-            }));
+            
 
             // wait for initialization
             for (Future<Void> task : registryStartupTasks) {
