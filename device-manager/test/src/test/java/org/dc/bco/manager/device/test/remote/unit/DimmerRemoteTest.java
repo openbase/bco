@@ -62,7 +62,7 @@ public class DimmerRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, org.dc.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+        MockRegistryHolder.newMockRegistry();
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
@@ -82,9 +82,7 @@ public class DimmerRemoteTest {
         if (dimmerRemote != null) {
             dimmerRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

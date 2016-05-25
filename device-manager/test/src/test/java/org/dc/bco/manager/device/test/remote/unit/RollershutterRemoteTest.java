@@ -84,9 +84,7 @@ public class RollershutterRemoteTest {
         if (rollershutterRemote != null) {
             rollershutterRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

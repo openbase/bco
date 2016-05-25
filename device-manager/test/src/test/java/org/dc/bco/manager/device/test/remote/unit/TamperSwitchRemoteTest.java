@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
@@ -68,7 +67,6 @@ public class TamperSwitchRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.TAMPER_SWITCH_LABEL;
@@ -86,9 +84,7 @@ public class TamperSwitchRemoteTest {
         if (tamperSwitchRemote != null) {
             tamperSwitchRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

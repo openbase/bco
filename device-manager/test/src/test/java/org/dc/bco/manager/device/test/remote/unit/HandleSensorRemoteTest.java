@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.HandleSensorController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -67,7 +66,6 @@ public class HandleSensorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         location = new Location(registry.getLocation());
 
@@ -84,9 +82,7 @@ public class HandleSensorRemoteTest {
         if (handleSensorRemote != null) {
             handleSensorRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -116,6 +112,6 @@ public class HandleSensorRemoteTest {
         HandleState.State state = HandleState.State.TILTED;
         ((HandleSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleSensorRemote.getId())).updateHandle(state);
         handleSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the handle state returns the wrong value!",state, handleSensorRemote.getHandle().getValue());
+        Assert.assertEquals("The getter for the handle state returns the wrong value!", state, handleSensorRemote.getHandle().getValue());
     }
 }

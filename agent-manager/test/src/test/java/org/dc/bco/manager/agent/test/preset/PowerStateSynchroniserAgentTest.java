@@ -38,8 +38,6 @@ import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.extension.rsb.com.RPCHelper;
-import org.dc.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -82,9 +80,9 @@ public class PowerStateSynchroniserAgentTest {
     @BeforeClass
     public static void setUpClass() throws CouldNotPerformException, InstantiationException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-//        JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.DEFAULT);
+        
         registry = MockRegistryHolder.newMockRegistry();
-
+        
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
 
@@ -121,9 +119,7 @@ public class PowerStateSynchroniserAgentTest {
         if (locationRemote != null) {
             locationRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

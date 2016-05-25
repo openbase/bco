@@ -87,7 +87,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     @Override
     public void init(SceneConfig config) throws InitializationException, InterruptedException {
         try {
-            this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+            this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

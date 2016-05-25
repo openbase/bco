@@ -85,9 +85,7 @@ public class PowerPlugRemoteTest {
         if (powerPlugRemote != null) {
             powerPlugRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

@@ -84,9 +84,7 @@ public class TemperatureControllerRemoteTest {
         if (temperatureControllerRemote != null) {
             temperatureControllerRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

@@ -35,7 +35,6 @@ import java.awt.Color;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.bco.registry.mock.MockRegistryHolder;
-import org.dc.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,18 +51,18 @@ import rst.vision.HSVColorType.HSVColor;
  * @author thuxohl
  */
 public class AmbientLightRemoteTest {
-    
+
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
-    
+
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static AmbientLightRemote ambientLightRemote;
     private static MockRegistry registry;
     private static Location location;
     private static String label;
-    
+
     public AmbientLightRemoteTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
@@ -73,15 +72,15 @@ public class AmbientLightRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
+
         location = new Location(registry.getLocation());
         label = MockRegistry.AMBIENT_LIGHT_LABEL;
-        
+
         ambientLightRemote = new AmbientLightRemote();
         ambientLightRemote.init(label, location);
         ambientLightRemote.activate();
     }
-    
+
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         if (deviceManagerLauncher != null) {
@@ -90,19 +89,17 @@ public class AmbientLightRemoteTest {
         if (ambientLightRemote != null) {
             ambientLightRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
-    
+
     @Before
     public void setUp() throws InitializationException, InvalidStateException {
-        
+
     }
-    
+
     @After
     public void tearDown() throws CouldNotPerformException {
-        
+
     }
 
     /**

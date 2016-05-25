@@ -84,9 +84,7 @@ public class MotionSensorRemoteTest {
         if (motionSensorRemote != null) {
             motionSensorRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

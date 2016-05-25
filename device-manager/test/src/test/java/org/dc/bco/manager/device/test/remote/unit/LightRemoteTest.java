@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.LightController;
@@ -67,7 +66,6 @@ public class LightRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.LIGHT_LABEL;
@@ -85,9 +83,7 @@ public class LightRemoteTest {
         if (lightRemote != null) {
             lightRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

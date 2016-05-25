@@ -95,9 +95,7 @@ public class UnitGroupRemoteTest {
         if (unitGroupRemote != null) {
             unitGroupRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

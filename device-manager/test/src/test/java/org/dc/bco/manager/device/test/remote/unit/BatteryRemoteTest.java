@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.BatteryController;
@@ -86,9 +85,7 @@ public class BatteryRemoteTest {
         if (batteryRemote != null) {
             batteryRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

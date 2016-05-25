@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -68,7 +67,6 @@ public class PowerConsumptionSensorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_CONSUMPTION_LABEL;
@@ -86,9 +84,7 @@ public class PowerConsumptionSensorRemoteTest {
         if (powerConsumptionRemote != null) {
             powerConsumptionRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

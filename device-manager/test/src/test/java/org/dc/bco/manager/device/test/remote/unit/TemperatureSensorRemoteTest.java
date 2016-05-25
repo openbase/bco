@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.TemperatureSensorController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -69,7 +68,6 @@ public class TemperatureSensorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
 
         location = new Location(registry.getLocation());
         label = MockRegistry.TEMPERATURE_SENSOR_LABEL;
@@ -87,9 +85,7 @@ public class TemperatureSensorRemoteTest {
         if (temperatureSensorRemote != null) {
             temperatureSensorRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -121,7 +117,7 @@ public class TemperatureSensorRemoteTest {
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);
     }
-    
+
     /**
      * Test of getTemperatureAlarmState method, of class TemperatureSensorRemote.
      *

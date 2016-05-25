@@ -78,9 +78,7 @@ public class UserRemoteTest {
         if (userRemote != null) {
             userRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
