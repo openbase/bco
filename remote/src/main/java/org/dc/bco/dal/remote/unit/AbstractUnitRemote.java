@@ -49,7 +49,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
-            init(CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigById(id));
+            init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(id));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -58,7 +58,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
-            List<UnitConfig> unitConfigList = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigsByLabel(label);
+            List<UnitConfig> unitConfigList = CachedDeviceRegistryRemote.getRegistry().getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("Unit with Label[" + label + "]");
@@ -77,7 +77,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            init(CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigByScope(scope));
+            init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -111,7 +111,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        unitTemplate = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
+        unitTemplate = CachedDeviceRegistryRemote.getRegistry().getUnitTemplateById(config.getUnitTemplateConfigId());
         return super.applyConfigUpdate(config);
     }
 

@@ -112,7 +112,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
 
         String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
                 + "[" + unitConfig.getLabel() + "]"
-                + " @ " + CachedLocationRegistryRemote.getLocationRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
+                + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
                 + " of " + unitConfig.getDeviceId()
                 + " : " + unitConfig.getDescription();
 
