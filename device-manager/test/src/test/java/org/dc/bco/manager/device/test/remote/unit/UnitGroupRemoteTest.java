@@ -30,6 +30,7 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.bco.dal.remote.unit.UnitGroupRemote;
@@ -71,6 +72,7 @@ public class UnitGroupRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         unitGroupRemote = new UnitGroupRemote();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceType(ServiceType.POWER_SERVICE).setLabel("testGroup");

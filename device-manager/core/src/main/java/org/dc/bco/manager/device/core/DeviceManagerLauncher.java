@@ -49,8 +49,6 @@ public class DeviceManagerLauncher {
         try {
             deviceManagerController = new DeviceManagerController(new ServiceFactoryMock());
             deviceManagerController.init();
-            // TODO: remove later
-            Thread.sleep(3000);
         } catch (CouldNotPerformException ex) {
             deviceManagerController.shutdown();
             throw new org.dc.jul.exception.InstantiationException(this, ex);
@@ -59,12 +57,12 @@ public class DeviceManagerLauncher {
 
     public void shutdown() {
         deviceManagerController.shutdown();
-        try {
-            // TODO: remove later
-            Thread.sleep(3000);
-        } catch (InterruptedException ex) {
-            java.util.logging.Logger.getLogger(DeviceManagerLauncher.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            // TODO: remove later
+//            Thread.sleep(3000);
+//        } catch (InterruptedException ex) {
+//            java.util.logging.Logger.getLogger(DeviceManagerLauncher.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     public DeviceManager getDeviceManager() {

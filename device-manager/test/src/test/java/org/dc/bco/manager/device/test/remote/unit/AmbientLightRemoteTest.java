@@ -32,6 +32,7 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import java.awt.Color;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -72,6 +73,7 @@ public class AmbientLightRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.AMBIENT_LIGHT_LABEL;

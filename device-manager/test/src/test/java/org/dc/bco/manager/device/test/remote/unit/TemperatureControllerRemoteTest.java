@@ -21,6 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
@@ -67,6 +68,7 @@ public class TemperatureControllerRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.TEMPERATURE_CONTROLLER_LABEL;
