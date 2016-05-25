@@ -118,14 +118,14 @@ public class UnitGroupRemoteTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        unitGroupRemote.setPower(state);
+        unitGroupRemote.setPower(state).get();
 
         for (Unit unit : units) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPower(state);
+        unitGroupRemote.setPower(state).get();
         for (Unit unit : units) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
         }
@@ -141,7 +141,7 @@ public class UnitGroupRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPower(state);
+        unitGroupRemote.setPower(state).get();
 //        unitGroupRemote.requestStatus();
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPower());
     }
@@ -157,7 +157,7 @@ public class UnitGroupRemoteTest {
         System.out.println("setBrightness");
         Double brightness = 75d;
         try {
-            unitGroupRemote.setBrightness(brightness);
+            unitGroupRemote.setBrightness(brightness).get();
             fail("Brighntess service has been used even though the group config is only defined for power service");
         } catch (CouldNotPerformException ex) {
         }
