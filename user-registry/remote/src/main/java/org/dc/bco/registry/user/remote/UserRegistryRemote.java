@@ -68,6 +68,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     private final RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistry.Builder> groupConfigRemoteRegistry;
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
+        super(UserRegistry.class);
         try {
             userConfigRemoteRegistry = new RemoteRegistry<>();
             groupConfigRemoteRegistry = new RemoteRegistry<>();
@@ -129,7 +130,6 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
 //            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.WARN);
 //        }
 //    }
-    
     /**
      * {@inheritDoc}
      */

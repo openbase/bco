@@ -27,8 +27,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
@@ -79,6 +77,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     private final RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupRemoteRegistry;
 
     public DeviceRegistryRemote() throws InstantiationException {
+        super(DeviceRegistry.class);
         try {
             unitTemplateRemoteRegistry = new RemoteRegistry<>();
             deviceClassRemoteRegistry = new RemoteRegistry<>();

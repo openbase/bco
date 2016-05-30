@@ -60,6 +60,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> agentConfigRemoteRegistry;
 
     public AgentRegistryRemote() throws InstantiationException, InterruptedException {
+        super(AgentRegistry.class);
         try {
             agentConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {

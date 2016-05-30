@@ -22,7 +22,6 @@ package org.dc.bco.registry.app.remote;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.dc.bco.registry.app.lib.jp.JPAppRegistryScope;
@@ -35,7 +34,6 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import static org.dc.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
@@ -63,6 +61,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     private final RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> appConfigRemoteRegistry;
 
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
+        super(AppRegistry.class);
         try {
             appConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
