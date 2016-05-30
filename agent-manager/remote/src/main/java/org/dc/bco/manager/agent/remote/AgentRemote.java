@@ -43,6 +43,10 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    public AgentRemote() {
+        super(AgentData.class, AgentConfig.class);
+    }
+
     @Override
     public void notifyDataUpdate(AgentData data) throws CouldNotPerformException {
 

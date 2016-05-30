@@ -21,8 +21,6 @@ package org.dc.bco.manager.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.bco.manager.location.lib.Connection;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -44,6 +42,10 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
+    }
+
+    public ConnectionRemote() {
+        super(ConnectionData.class, ConnectionConfig.class);
     }
 
     @Override

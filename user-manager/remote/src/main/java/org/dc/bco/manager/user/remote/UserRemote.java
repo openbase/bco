@@ -46,6 +46,10 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    public UserRemote() {
+        super(UserData.class, UserConfig.class);
+    }
+
     @Override
     public void notifyDataUpdate(final UserData data) throws CouldNotPerformException {
     }

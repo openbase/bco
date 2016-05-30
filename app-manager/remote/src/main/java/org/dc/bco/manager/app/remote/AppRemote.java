@@ -43,6 +43,10 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    public AppRemote() {
+        super(AppData.class, AppConfig.class);
+    }
+
     @Override
     public void notifyDataUpdate(AppData data) throws CouldNotPerformException {
 

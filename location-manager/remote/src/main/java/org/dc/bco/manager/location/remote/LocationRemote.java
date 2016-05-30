@@ -61,6 +61,10 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
     }
 
+    public LocationRemote() {
+        super(LocationData.class, LocationConfig.class);
+    }
+
     @Override
     public void notifyDataUpdate(LocationData data) throws CouldNotPerformException {
     }

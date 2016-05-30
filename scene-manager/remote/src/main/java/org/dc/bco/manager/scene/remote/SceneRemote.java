@@ -42,7 +42,11 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
-    
+
+    public SceneRemote() {
+        super(SceneData.class, SceneConfig.class);
+    }
+
     @Override
     public void notifyDataUpdate(SceneData data) throws CouldNotPerformException {
        

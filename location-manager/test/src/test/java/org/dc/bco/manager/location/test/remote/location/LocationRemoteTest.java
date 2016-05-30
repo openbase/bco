@@ -76,7 +76,7 @@ public class LocationRemoteTest {
         LocationRegistryRemote locationRegistryRemote = new LocationRegistryRemote();
         locationRegistryRemote.init();
         locationRegistryRemote.activate();
-
+        locationRegistryRemote.requestData().get();
         LocationRemote locationRemote = new LocationRemote();
         locationRemote.init(locationRegistryRemote.getLocationConfigsByLabel("Bath").get(0));
         locationRemote.activate();
