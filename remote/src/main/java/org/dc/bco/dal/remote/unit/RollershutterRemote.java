@@ -43,6 +43,7 @@ public class RollershutterRemote extends AbstractUnitRemote<Rollershutter> imple
     }
 
     public RollershutterRemote() {
+        super(Rollershutter.class);
     }
 
     @Override

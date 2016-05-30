@@ -42,6 +42,10 @@ public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetector> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
+    public SmokeDetectorRemote() {
+        super(SmokeDetector.class);
+    }
+
     @Override
     public void notifyDataUpdate(SmokeDetector data) throws CouldNotPerformException {
     }

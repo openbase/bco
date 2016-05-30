@@ -43,6 +43,7 @@ public class LightRemote extends AbstractUnitRemote<Light> implements LightInter
     }
 
     public LightRemote() {
+        super(Light.class);
     }
 
     @Override

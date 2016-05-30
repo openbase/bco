@@ -70,6 +70,8 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     private DeviceRegistryRemote deviceRegistryRemote;
 
     public UnitGroupRemote() throws InstantiationException {
+        //TODO: why is the group config used as data type? May we should use a configurable remote instead?
+        super(UnitGroupConfig.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
     }
 

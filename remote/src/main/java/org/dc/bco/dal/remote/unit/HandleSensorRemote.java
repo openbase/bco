@@ -41,6 +41,7 @@ public class HandleSensorRemote extends AbstractUnitRemote<HandleSensor> impleme
     }
 
     public HandleSensorRemote() {
+        super(HandleSensor.class);
     }
 
     @Override

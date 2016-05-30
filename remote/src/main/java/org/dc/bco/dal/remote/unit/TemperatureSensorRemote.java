@@ -21,9 +21,6 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.NotActiveException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.bco.dal.lib.layer.unit.TemperatureSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -44,6 +41,7 @@ public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSenso
     }
 
     public TemperatureSensorRemote() {
+        super(TemperatureSensor.class);
     }
 
     @Override

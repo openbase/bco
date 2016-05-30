@@ -41,6 +41,7 @@ public class MotionSensorRemote extends AbstractUnitRemote<MotionSensor> impleme
     }
 
     public MotionSensorRemote() {
+        super(MotionSensor.class);
     }
 
     @Override

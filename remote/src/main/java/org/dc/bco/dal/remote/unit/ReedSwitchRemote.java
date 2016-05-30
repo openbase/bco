@@ -41,6 +41,7 @@ public class ReedSwitchRemote extends AbstractUnitRemote<ReedSwitch> implements 
     }
 
     public ReedSwitchRemote() {
+        super(ReedSwitch.class);
     }
 
     @Override

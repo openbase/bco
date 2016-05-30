@@ -43,6 +43,7 @@ public class DimmerRemote extends AbstractUnitRemote<Dimmer> implements DimmerIn
     }
 
     public DimmerRemote() {
+        super(Dimmer.class);
     }
 
     @Override

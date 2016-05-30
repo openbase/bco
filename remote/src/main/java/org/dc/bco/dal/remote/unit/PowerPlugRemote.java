@@ -43,6 +43,7 @@ public class PowerPlugRemote extends AbstractUnitRemote<PowerPlug> implements Po
     }
 
     public PowerPlugRemote() {
+        super(PowerPlug.class);
     }
 
     @Override

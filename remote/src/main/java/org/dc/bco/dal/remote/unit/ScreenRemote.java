@@ -31,12 +31,13 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.unit.ScreenType;
+import rst.homeautomation.unit.ScreenType.Screen;
 
 /**
  *
  * @author mpohling
  */
-public class ScreenRemote extends AbstractUnitRemote<ScreenType.Screen> implements ScreenInterface {
+public class ScreenRemote extends AbstractUnitRemote<Screen> implements ScreenInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ScreenType.Screen.getDefaultInstance()));
@@ -45,6 +46,7 @@ public class ScreenRemote extends AbstractUnitRemote<ScreenType.Screen> implemen
     }
 
     public ScreenRemote() {
+        super(Screen.class);
     }
 
     @Override

@@ -27,18 +27,20 @@ import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BrightnessSensorType;
+import rst.homeautomation.unit.BrightnessSensorType.BrightnessSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorType.BrightnessSensor> implements BrightnessSensorInterface {
+public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensor> implements BrightnessSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
     }
 
     public BrightnessSensorRemote() {
+        super(BrightnessSensor.class);
     }
 
     @Override

@@ -41,6 +41,7 @@ public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsum
     }
 
     public PowerConsumptionSensorRemote() {
+        super(PowerConsumptionSensor.class);
     }
 
     @Override

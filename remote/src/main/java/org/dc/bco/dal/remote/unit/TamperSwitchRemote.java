@@ -41,6 +41,7 @@ public class TamperSwitchRemote extends AbstractUnitRemote<TamperSwitch> impleme
     }
 
     public TamperSwitchRemote() {
+        super(TamperSwitch.class);
     }
 
     @Override

@@ -41,6 +41,7 @@ public class BatteryRemote extends AbstractUnitRemote<Battery> implements Batter
     }
 
     public BatteryRemote() {
+        super(Battery.class);
     }
 
     @Override

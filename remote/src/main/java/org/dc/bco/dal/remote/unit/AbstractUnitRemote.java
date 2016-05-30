@@ -46,6 +46,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     private UnitTemplateType.UnitTemplate unitTemplate;
 
+    public AbstractUnitRemote(final Class<M> dataClass) {
+        super(dataClass, UnitConfig.class);
+    }
+
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {

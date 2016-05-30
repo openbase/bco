@@ -41,6 +41,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     public TemperatureControllerRemote() {
+        super(TemperatureController.class);
     }
 
     @Override

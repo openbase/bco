@@ -47,6 +47,7 @@ public class AmbientLightRemote extends AbstractUnitRemote<AmbientLightType.Ambi
     }
 
     public AmbientLightRemote() {
+        super(AmbientLightType.AmbientLight.class);
     }
 
     public Future<Void> setColor(final java.awt.Color color) throws CouldNotPerformException {

@@ -41,6 +41,7 @@ public class ButtonRemote extends AbstractUnitRemote<Button> implements ButtonIn
     }
 
     public ButtonRemote() {
+        super(Button.class);
     }
 
     @Override
