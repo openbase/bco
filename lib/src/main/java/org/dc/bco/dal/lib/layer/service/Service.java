@@ -43,7 +43,7 @@ public interface Service {
      * This method returns the service base name of the given service type.
      * 
      * The base name is the service name without service suffix. 
-     * e.g. PowerStateProviderService -> PowerState
+     * e.g. the base name of service PowerStateProviderService is PowerState.
      * 
      * @param serviceType the service type to extract the base name.
      * @return the service base name.
