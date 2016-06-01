@@ -114,7 +114,7 @@ public class MotionSensorRemoteTest {
         System.out.println("getMotionState");
         motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
-        ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotion(motion);
+        ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotionProvider(motion);
         motionSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionSensorRemote.getMotion().getValue());
     }

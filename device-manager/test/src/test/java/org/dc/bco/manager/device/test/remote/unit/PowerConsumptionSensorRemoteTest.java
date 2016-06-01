@@ -118,7 +118,7 @@ public class PowerConsumptionSensorRemoteTest {
         double current = 2d;
         powerConsumptionRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
-        ((PowerConsumptionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumption(state);
+        ((PowerConsumptionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumptionProvider(state);
         powerConsumptionRemote.requestData().get();
         Assert.assertEquals("The getter for the power consumption returns the wrong value!", state, powerConsumptionRemote.getPowerConsumption());
     }

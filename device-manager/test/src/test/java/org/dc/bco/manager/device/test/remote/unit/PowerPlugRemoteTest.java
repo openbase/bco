@@ -122,7 +122,7 @@ public class PowerPlugRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         powerPlugRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePower(state);
+        ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePowerProvider(state);
         powerPlugRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
     }
