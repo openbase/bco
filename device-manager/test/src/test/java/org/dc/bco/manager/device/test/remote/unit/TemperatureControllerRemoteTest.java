@@ -128,7 +128,7 @@ public class TemperatureControllerRemoteTest {
         System.out.println("getTargetTemperature");
         double temperature = 3.141F;
         temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperature(temperature);
+        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperatureProvider(temperature);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperature(), 0.1);
     }
@@ -143,7 +143,7 @@ public class TemperatureControllerRemoteTest {
         System.out.println("getTemperature");
         double temperature = 37.0F;
         temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperature(temperature);
+        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperatureProvider(temperature);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperature(), 0.1);
     }

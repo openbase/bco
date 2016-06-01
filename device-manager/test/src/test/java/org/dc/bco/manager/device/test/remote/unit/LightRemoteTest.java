@@ -120,7 +120,7 @@ public class LightRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         lightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePower(state);
+        ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePowerProvider(state);
         lightRemote.requestData().get();
         assertEquals("Light has not been set in time!", state, lightRemote.getPower());
     }

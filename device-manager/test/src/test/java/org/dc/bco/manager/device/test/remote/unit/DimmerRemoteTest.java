@@ -124,7 +124,7 @@ public class DimmerRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePower(state);
+        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePowerProvider(state);
         dimmerRemote.requestData().get();
         assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
     }
@@ -149,7 +149,7 @@ public class DimmerRemoteTest {
         System.out.println("getBrightness");
         Double brightness = 70.0d;
         dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateBrightness(brightness);
+        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateBrightnessProvider(brightness);
         dimmerRemote.requestData().get();
         assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getBrightness());
     }
