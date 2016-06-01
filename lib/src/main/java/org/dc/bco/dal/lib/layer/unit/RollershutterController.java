@@ -64,7 +64,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         }
     }
 
-    public void updateShutter(final ShutterState value) throws CouldNotPerformException {
+    public void updateShutterProvider(final ShutterState value) throws CouldNotPerformException {
         logger.debug("Apply shutter Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {
@@ -89,7 +89,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         }
     }
 
-    public void updateOpeningRatio(final Double value) throws CouldNotPerformException {
+    public void updateOpeningRatioProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply opening ratio Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {

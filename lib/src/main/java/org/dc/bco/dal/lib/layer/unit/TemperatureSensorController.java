@@ -47,7 +47,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         super(TemperatureSensorController.class, unitHost, builder);
     }
 
-    public void updateTemperature(final Double value) throws CouldNotPerformException {
+    public void updateTemperatureProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
@@ -66,7 +66,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         }
     }
 
-    public void updateTemperatureAlarmState(final AlarmState value) throws CouldNotPerformException {
+    public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {

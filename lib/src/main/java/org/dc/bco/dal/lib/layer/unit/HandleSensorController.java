@@ -47,7 +47,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         super(HandleSensorController.class, unitHost, builder);
     }
 
-    public void updateHandle(final HandleState.State value) throws CouldNotPerformException {
+    public void updateHandleProvider(final HandleState.State value) throws CouldNotPerformException {
         logger.debug("Apply handle state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<HandleSensor.Builder> dataBuilder = getDataBuilder(this)) {

@@ -47,7 +47,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
 
-    public void updatePowerConsumption(final PowerConsumptionState state) throws CouldNotPerformException {
+    public void updatePowerConsumptionProvider(final PowerConsumptionState state) throws CouldNotPerformException {
         logger.debug("Apply power consumption Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<PowerConsumptionSensor.Builder> dataBuilder = getDataBuilder(this)) {

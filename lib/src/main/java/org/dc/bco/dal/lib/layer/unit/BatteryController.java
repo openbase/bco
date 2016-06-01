@@ -45,7 +45,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
         super(BatteryController.class, unitHost, builder);
     }
 
-    public void updateBattery(final BatteryState value) throws CouldNotPerformException {
+    public void updateBatteryProvider(final BatteryState value) throws CouldNotPerformException {
         logger.debug("Apply battery Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Battery.Builder> dataBuilder = getDataBuilder(this)) {

@@ -48,7 +48,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
         super(SmokeDetectorController.class, unitHost, builder);
     }
 
-    public void updateSmokeAlarmState(final AlarmState value) throws CouldNotPerformException {
+    public void updateSmokeAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<SmokeDetector.Builder> dataBuilder = getDataBuilder(this)) {
@@ -67,7 +67,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
         }
     }
 
-    public void updateSmokeState(final SmokeState value) throws CouldNotPerformException {
+    public void updateSmokeStateProvider(final SmokeState value) throws CouldNotPerformException {
         logger.debug("Apply smoke state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<SmokeDetector.Builder> dataBuilder = getDataBuilder(this)) {

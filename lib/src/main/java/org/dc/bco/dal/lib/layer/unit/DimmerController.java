@@ -63,7 +63,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         }
     }
 
-    public void updatePower(final PowerState value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
@@ -88,7 +88,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         }
     }
 
-    public void updateBrightness(final Double value) throws CouldNotPerformException {
+    public void updateBrightnessProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply dim Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {

@@ -76,7 +76,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         }
     }
 
-    public void updateTargetTemperature(final Double value) throws CouldNotPerformException {
+    public void updateTargetTemperatureProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply target temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
@@ -86,7 +86,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         }
     }
 
-    public void updateTemperature(final Double value) throws CouldNotPerformException {
+    public void updateTemperatureProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply actual temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {

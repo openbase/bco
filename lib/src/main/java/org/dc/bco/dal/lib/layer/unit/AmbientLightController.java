@@ -70,7 +70,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         }
     }
 
-    public void updatePower(final PowerState value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
@@ -95,7 +95,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         }
     }
 
-    public void updateColor(final HSVColor value) throws CouldNotPerformException {
+    public void updateColorProvider(final HSVColor value) throws CouldNotPerformException {
         logger.debug("Apply color Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
@@ -121,7 +121,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         }
     }
 
-    public void updateBrightness(Double value) throws CouldNotPerformException {
+    public void updateBrightnessProvider(Double value) throws CouldNotPerformException {
         logger.debug("Apply brightness Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {

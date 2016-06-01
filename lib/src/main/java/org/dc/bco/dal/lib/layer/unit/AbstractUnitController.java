@@ -320,7 +320,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public Method getUpdateMethod(final ServiceTemplate.ServiceType serviceType, Class serviceArgumentClass) throws CouldNotPerformException {
         try {
             Method updateMethod;
-            String updateMethodName = Service.UPDATE_METHOD_PREFIX + Service.getServiceBaseName(serviceType);
+            String updateMethodName = Service.UPDATE_METHOD_PREFIX + Service.getServiceBaseName(serviceType).replace("Service", "Provider");
             try {
                 updateMethod = getClass().getMethod(updateMethodName, serviceArgumentClass);
                 if (updateMethod == null) {

@@ -48,7 +48,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         super(TamperSwitchController.class, unitHost, builder);
     }
 
-    public void updateTamper(final TamperState state) throws CouldNotPerformException {
+    public void updateTamperProvider(final TamperState state) throws CouldNotPerformException {
         
         logger.debug("Apply tamper Update[" + state + "] for " + this + ".");
         

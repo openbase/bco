@@ -66,7 +66,7 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
         }
     }
 
-    public void updatePower(final PowerState.State value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState.State value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Screen.Builder> dataBuilder = getDataBuilder(this)) {
@@ -103,6 +103,16 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
             return getData().getStandbyState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("standby", ex);
+        }
+    }
+    
+    public void updateStandbyProvider(final StandbyState.State value) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<Screen.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getStandbyStateBuilder().setValue(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply standby Update[" + value + "] for " + this + "!", ex);
         }
     }
 }

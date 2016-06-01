@@ -48,7 +48,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
         super(ButtonController.class, unitHost, builder);
     }
 
-    public void updateButton(final ButtonState state) throws CouldNotPerformException {
+    public void updateButtonProvider(final ButtonState state) throws CouldNotPerformException {
 
         logger.debug("Apply button Update[" + state + "] for " + this + ".");
 

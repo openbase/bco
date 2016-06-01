@@ -61,7 +61,7 @@ public class PowerPlugController extends AbstractUnitController<PowerPlug, Power
         }
     }
 
-    public void updatePower(final PowerState value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<PowerPlug.Builder> dataBuilder = getDataBuilder(this)) {

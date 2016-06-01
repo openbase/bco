@@ -47,7 +47,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         super(MotionSensorController.class, unitHost, builder);
     }
 
-    public void updateMotion(MotionState state) throws CouldNotPerformException {
+    public void updateMotionProvider(MotionState state) throws CouldNotPerformException {
         
         logger.debug("Apply motion Update[" + state + "] for " + this + ".");
         
