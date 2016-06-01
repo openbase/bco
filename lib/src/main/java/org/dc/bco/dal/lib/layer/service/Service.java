@@ -51,6 +51,4 @@ public interface Service {
     public static String getServiceBaseName(ServiceTemplate.ServiceType serviceType) {
         return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.PROVIDER_SERVICE_LABEL, "").replaceAll(Service.CONSUMER_SERVICE_LABEL, "").replaceAll(Service.OPERATION_SERVICE_LABEL, "");
     }
-    
-    
 }

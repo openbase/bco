@@ -33,25 +33,5 @@ import rst.homeautomation.state.PowerStateType.PowerState;
 public interface PowerOperationService extends OperationService, PowerProviderService {
 
     public Future<Void> setPower(final PowerState state) throws CouldNotPerformException;
-
-//    public class SetPowerCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetPowerCallback.class);
-//
-//        private final PowerService service;
-//
-//        public SetPowerCallback(final PowerService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setPower(((PowerState) request.getData()));
-//                return new Event(Void.class);
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//        }
-//    }
+    
 }

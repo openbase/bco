@@ -62,7 +62,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
         }
 
         this.remoteService = remoteService;
-        remoteService.addObserver(this);
+        remoteService.addDataObserver(this);
     }
 
     public synchronized void shutdown() {

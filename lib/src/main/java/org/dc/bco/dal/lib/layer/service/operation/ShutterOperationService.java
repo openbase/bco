@@ -21,7 +21,6 @@ package org.dc.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.provider.ShutterProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -35,24 +34,4 @@ public interface ShutterOperationService extends OperationService, ShutterProvid
 
     public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException;
 
-//    public class SetShutterCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetShutterCallback.class);
-//
-//        private final ShutterService service;
-//
-//        public SetShutterCallback(final ShutterService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setShutter(((ShutterState) request.getData()));
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//            return new Event(Void.class);
-//        }
-//    }
 }

@@ -34,26 +34,4 @@ public interface ColorOperationService extends OperationService, ColorProviderSe
 
     public Future<Void> setColor(final HSVColorType.HSVColor color) throws CouldNotPerformException;
 
-//    public class SetColorCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetColorCallback.class);
-//
-//        private final ColorService service;
-//
-//        public SetColorCallback(final ColorService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setColor(((HSVColorType.HSVColor) request.getData())).get();
-//                return new Event(Void.class);
-//            } catch (InterruptedException ex) {
-//                Thread.currentThread().interrupt();
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//        }
-//    }
 }

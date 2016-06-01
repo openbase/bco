@@ -21,7 +21,6 @@ package org.dc.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.provider.TargetTemperatureProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -34,24 +33,4 @@ public interface TargetTemperatureOperationService extends OperationService, Tar
 
     public Future<Void> setTargetTemperature(final Double value) throws CouldNotPerformException;
 
-//    public class SetTargetTemperatureCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetTargetTemperatureCallback.class);
-//
-//        private final TargetTemperatureService service;
-//
-//        public SetTargetTemperatureCallback(final TargetTemperatureService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setTargetTemperature(((Double) request.getData()));
-//                return new Event(Void.class);
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//        }
-//    }
 }

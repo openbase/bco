@@ -33,26 +33,4 @@ public interface BrightnessOperationService extends OperationService, Brightness
 
     public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException;
 
-//    public class SetBrightnessCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetBrightnessCallback.class);
-//
-//        private final BrightnessOperationService service;
-//
-//        public SetBrightnessCallback(final BrightnessOperationService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setBrightness(((double) request.getData())).get();
-//            } catch (InterruptedException ex) {
-//                Thread.currentThread().interrupt();
-//            } catch (CouldNotPerformException | ExecutionException ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//            return new Event(Void.class);
-//        }
-//    }
 }

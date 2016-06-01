@@ -34,26 +34,5 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
 public interface StandbyOperationService extends OperationService, StandbyProviderService {
 
     public Future<Void> setStandby(final StandbyState state) throws CouldNotPerformException;
-//
-//    public class SetStandbyCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetStandbyCallback.class);
-//
-//        private final StandbyService service;
-//
-//        public SetStandbyCallback(final StandbyService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setStandby(((StandbyState) request.getData()));
-//                return new Event(Void.class);
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//        }
-//    }
 
 }

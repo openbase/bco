@@ -50,7 +50,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class ObserveServiceStateChangesViaViaRSB {
+public class ObserveServiceStateChangesViaRSB {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(DeviceConfig.getDefaultInstance()));
@@ -60,7 +60,7 @@ public class ObserveServiceStateChangesViaViaRSB {
 
     public static final String APP_NAME = "CollectionServiceDataViaRemoteLib";
 
-    private static final Logger logger = LoggerFactory.getLogger(ObserveServiceStateChangesViaViaRSB.class);
+    private static final Logger logger = LoggerFactory.getLogger(ObserveServiceStateChangesViaRSB.class);
 
     /**
      * @param args the command line arguments

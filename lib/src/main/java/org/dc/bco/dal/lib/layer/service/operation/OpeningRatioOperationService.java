@@ -21,7 +21,6 @@ package org.dc.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.provider.OpeningRatioProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -33,25 +32,4 @@ import org.dc.jul.exception.CouldNotPerformException;
 public interface OpeningRatioOperationService extends OperationService, OpeningRatioProviderService {
 
     public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException;
-
-//    public class SetOpeningRatioCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(SetOpeningRatioCallback.class);
-//
-//        private final OpeningRatioService service;
-//
-//        public SetOpeningRatioCallback(final OpeningRatioService service) {
-//            this.service = service;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                service.setOpeningRatio(((double) request.getData()));
-//                return new Event(Void.class);
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, service, ex)), logger);
-//            }
-//        }
-//    }
 }
