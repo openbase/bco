@@ -39,9 +39,18 @@ public interface Service {
     public static final String CONSUMER_SERVICE_LABEL = ConsumerService.class.getSimpleName();
     public static final String OPERATION_SERVICE_LABEL = OperationService.class.getSimpleName();
 
-    public static final String UPDATE_METHOD_PREFIX = "update";
-
+    /**
+     * This method returns the service base name of the given service type.
+     * 
+     * The base name is the service name without service suffix. 
+     * e.g. PowerStateProviderService -> PowerState
+     * 
+     * @param serviceType the service type to extract the base name.
+     * @return the service base name.
+     */
     public static String getServiceBaseName(ServiceTemplate.ServiceType serviceType) {
         return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.PROVIDER_SERVICE_LABEL, "").replaceAll(Service.CONSUMER_SERVICE_LABEL, "").replaceAll(Service.OPERATION_SERVICE_LABEL, "");
     }
+    
+    
 }

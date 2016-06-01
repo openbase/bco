@@ -33,7 +33,6 @@ import java.util.Map.Entry;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.service.ServiceFactoryProvider;
-import org.dc.bco.dal.lib.layer.service.ServiceType;
 import org.dc.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.dc.bco.dal.lib.layer.service.operation.OperationService;
 import org.dc.bco.dal.lib.layer.service.provider.ProviderService;
@@ -45,6 +44,7 @@ import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.NotSupportedException;
+import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableController;
 import org.dc.jul.extension.rsb.com.RPCHelper;
@@ -85,10 +85,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             this.serviceList = new ArrayList<>();
 
             try {
-                validateUpdateServices();
-            } catch (MultiException ex) {
-                logger.error(this + " is not valid!", ex);
-                ex.printExceptionStack();
+                verifyUpdateMethods();
+            } catch (VerificationFailedException ex) {
+                ExceptionPrinter.printHistory(new InvalidStateException(this + " is not valid!", ex), logger);
             }
 
         } catch (CouldNotPerformException ex) {
@@ -320,7 +319,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public Method getUpdateMethod(final ServiceTemplate.ServiceType serviceType, Class serviceArgumentClass) throws CouldNotPerformException {
         try {
             Method updateMethod;
-            String updateMethodName = Service.UPDATE_METHOD_PREFIX + Service.getServiceBaseName(serviceType).replace("Service", "Provider");
+            String updateMethodName = ProviderService.getUpdateMethodName(serviceType);
             try {
                 updateMethod = getClass().getMethod(updateMethodName, serviceArgumentClass);
                 if (updateMethod == null) {
@@ -336,38 +335,49 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     /**
-     * *
-     *
-     * @throws MultiException
+     * Verify if all provider service update methods are registered.
+     * @throws VerificationFailedException is thrown if the check fails or at least on update method is not available.
      */
-    private void validateUpdateServices() throws MultiException {
-        logger.debug("Validating unit update methods...");
+    private void verifyUpdateMethods() throws VerificationFailedException {
+        try {
+            logger.debug("Validating unit update methods...");
 
-        MultiException.ExceptionStack exceptionStack = null;
-        List<String> unitMethods = new ArrayList<>();
+            MultiException.ExceptionStack exceptionStack = null;
+            List<String> unitMethods = new ArrayList<>();
+            String updateMethod;
 
-        // === Transform unit methods into string list. ===
-        for (Method medhod : getClass().getMethods()) {
-            unitMethods.add(medhod.getName());
-        }
+            // === Load unit methods. ===
+            for (Method medhod : getClass().getMethods()) {
+                unitMethods.add(medhod.getName());
+            }
 
-        // === Validate if all update methods are registrated. ===
-        for (ServiceType service : ServiceType.getServiceTypeList(this)) {
-            for (String serviceMethod : service.getUpdateMethods()) {
-                if (!unitMethods.contains(serviceMethod)) {
-                    exceptionStack = MultiException.push(service, null, exceptionStack);
+            // === Verify if all update methods are registered. ===
+            for (ServiceTemplate.ServiceType service : getTemplate().getServiceTypeList()) {
+
+                // TODO: replace by service type filer if availbale.
+                // filter other services than provider
+                if (!service.name().contains("Provider")) {
+                    continue;
+                }
+
+                // verify
+                updateMethod = ProviderService.getUpdateMethodName(service);
+                if (!unitMethods.contains(updateMethod)) {
+                    exceptionStack = MultiException.push(service, new NotAvailableException("Method", updateMethod), exceptionStack);
                 }
             }
-        }
 
-        // === throw multi exception in error case. ===
-        MultiException.checkAndThrow("Update service not valid!", exceptionStack);
+            // === throw multi exception in error case. ===
+            MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            throw new VerificationFailedException(ex);
+        }
     }
 
     @Override
     public String toString() {
         try {
-            return getClass().getSimpleName() + "[" + getConfig().getType() + "[" + getConfig().getLabel() + "]]";
+            return getClass().getSimpleName() + "[" + getConfig().getType() + "[" + getLabel() + "]]";
         } catch (NotAvailableException e) {
             return getClass().getSimpleName() + "[?]";
         }
