@@ -99,6 +99,8 @@ public class LocationManagerController implements LocationManager {
             this.locationRegistryRemote.activate();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
+            this.locationRegistryRemote.waitForData();
+            this.deviceRegistryRemote.waitForData();
             this.locationRegistrySynchronizer.init();
             this.connectionRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {

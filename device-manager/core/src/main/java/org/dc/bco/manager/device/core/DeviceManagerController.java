@@ -87,6 +87,8 @@ public class DeviceManagerController implements DeviceManager {
             locationRegistry.activate();
             deviceRegistry.init();
             deviceRegistry.activate();
+            deviceRegistry.waitForData();
+            locationRegistry.waitForData();
             deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

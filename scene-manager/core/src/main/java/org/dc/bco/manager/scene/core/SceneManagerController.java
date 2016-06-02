@@ -80,6 +80,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
         try {
             this.sceneRegistryRemote.init();
             this.sceneRegistryRemote.activate();
+            this.sceneRegistryRemote.waitForData();
             this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

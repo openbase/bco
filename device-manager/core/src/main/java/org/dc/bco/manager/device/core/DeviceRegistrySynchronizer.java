@@ -21,7 +21,6 @@ package org.dc.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.manager.device.lib.Device;
 import org.dc.bco.manager.device.lib.DeviceFactory;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.state.InventoryStateType;
 
-/** 
+/**
  *
  * @author mpohling
  */
@@ -47,12 +46,8 @@ public class DeviceRegistrySynchronizer extends RegistrySynchronizer<String, Dev
 
     public DeviceRegistrySynchronizer(final DeviceManagerController deviceManagerController, final DeviceFactory deviceFactory) throws InstantiationException {
         super(deviceManagerController.getDeviceControllerRegistry(), deviceManagerController.getDeviceRegistry().getDeviceConfigRemoteRegistry(), deviceFactory);
-//        try {
-            this.deviceManagerController = deviceManagerController;
-            this.remoteRegistryRemote = deviceManagerController.getDeviceRegistry();
-//        } catch (CouldNotPerformException ex) {
-//            throw new InstantiationException(this, ex);
-//        }
+        this.deviceManagerController = deviceManagerController;
+        this.remoteRegistryRemote = deviceManagerController.getDeviceRegistry();
     }
 
     @Override
@@ -63,11 +58,11 @@ public class DeviceRegistrySynchronizer extends RegistrySynchronizer<String, Dev
             try {
                 remoteRegistryRemote.containsDeviceClassById(config.getDeviceClassId());
             } catch (CouldNotPerformException ex) {
-                throw new VerificationFailedException("DeviceClass["+config.getDeviceClassId()+"] of Device[" + config.getId() + "] is not supported yet!", ex);
+                throw new VerificationFailedException("DeviceClass[" + config.getDeviceClassId() + "] of Device[" + config.getId() + "] is not supported yet!", ex);
             }
 
             // verify device manager support.
-            if(!deviceManagerController.isSupported(config)) {
+            if (!deviceManagerController.isSupported(config)) {
                 return false;
             }
 

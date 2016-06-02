@@ -89,6 +89,8 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
             this.agentRegistryRemote.activate();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
+            this.agentRegistryRemote.waitForData();
+            this.deviceRegistryRemote.waitForData();
             this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

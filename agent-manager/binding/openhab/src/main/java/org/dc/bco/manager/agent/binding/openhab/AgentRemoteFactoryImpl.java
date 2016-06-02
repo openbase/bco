@@ -55,7 +55,7 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, AgentConfig>
     public AgentRemote newInstance(AgentConfig config) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         AgentRemote agentRemote = new AgentRemote();
         try {
-            agentRemote.addObserver(new Observer<AgentData>() {
+            agentRemote.addDataObserver(new Observer<AgentData>() {
 
                 @Override
                 public void update(final Observable<AgentData> source, AgentData data) throws Exception {

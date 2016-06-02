@@ -83,6 +83,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
         try {
             this.userRegistryRemote.init();
             this.userRegistryRemote.activate();
+            this.userRegistryRemote.waitForData();
             this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

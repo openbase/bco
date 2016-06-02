@@ -88,6 +88,8 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
             this.appRegistryRemote.activate();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
+            this.appRegistryRemote.waitForData();
+            this.deviceRegistryRemote.waitForData();
             this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
