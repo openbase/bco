@@ -121,7 +121,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
         try {
             super.activate();
             locationRegistryRemote.activate();
-            locationRegistryRemote.addObserver(locationRegistryUpdateObserver);
+            locationRegistryRemote.waitForData();
+            locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }

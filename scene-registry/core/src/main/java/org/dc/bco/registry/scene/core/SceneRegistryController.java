@@ -44,6 +44,7 @@ import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
+import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -118,7 +119,8 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
         try {
             super.activate();
             locationRegistryRemote.activate();
-            locationRegistryRemote.addObserver(locationRegistryUpdateObserver);
+            locationRegistryRemote.waitForData();
+            locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }

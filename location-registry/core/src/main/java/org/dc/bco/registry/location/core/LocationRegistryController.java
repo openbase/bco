@@ -176,7 +176,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         try {
             super.activate();
             deviceRegistryRemote.activate();
-            deviceRegistryRemote.addObserver(deviceRegistryUpdateObserver);
+            deviceRegistryRemote.waitForData();
+            deviceRegistryRemote.addDataObserver(deviceRegistryUpdateObserver);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }

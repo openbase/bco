@@ -248,6 +248,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             super.activate();
             locationRegistryRemote.activate();
             userRegistryRemote.activate();
+            locationRegistryRemote.waitForData();
+            userRegistryRemote.waitForData();
             locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
             userRegistryRemote.addDataObserver(userRegistryUpdateObserver);
         } catch (CouldNotPerformException ex) {
@@ -279,9 +281,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
 
         try {
-            logger.info("register transformation plugin");
             deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationRegistryRemote));
-            logger.info("registered transformation plugin");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load all plugins!", ex), logger, LogLevel.ERROR);
         }
