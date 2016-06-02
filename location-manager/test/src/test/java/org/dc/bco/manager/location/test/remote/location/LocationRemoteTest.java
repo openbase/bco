@@ -71,7 +71,7 @@ public class LocationRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 3000)
     public void testLocation() throws Exception {
         LocationRegistryRemote locationRegistryRemote = new LocationRegistryRemote();
         locationRegistryRemote.init();
