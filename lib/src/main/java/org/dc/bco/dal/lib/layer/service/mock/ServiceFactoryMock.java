@@ -176,7 +176,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
             String methodName;
             try {
-                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update");
+                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update") + "Provider";
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not detect update method name!", ex);
             }

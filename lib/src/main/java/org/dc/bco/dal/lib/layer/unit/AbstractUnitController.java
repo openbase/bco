@@ -84,12 +84,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             this.serviceFactory = unitHost.getServiceFactory();
             this.serviceList = new ArrayList<>();
 
-            try {
-                verifyUpdateMethods();
-            } catch (VerificationFailedException ex) {
-                ExceptionPrinter.printHistory(new InvalidStateException(this + " is not valid!", ex), logger);
-            }
-
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -145,6 +139,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
 
             super.init(config);
+            try {
+                verifyUnitConfig();
+            } catch (VerificationFailedException ex) {
+                ExceptionPrinter.printHistory(new InvalidStateException(this + " is not valid!", ex), logger);
+            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -335,10 +334,11 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     /**
-     * Verify if all provider service update methods are registered.
+     * Verify if all provider service update methods are registered for given configuration.
+     *
      * @throws VerificationFailedException is thrown if the check fails or at least on update method is not available.
      */
-    private void verifyUpdateMethods() throws VerificationFailedException {
+    private void verifyUnitConfig() throws VerificationFailedException {
         try {
             logger.debug("Validating unit update methods...");
 
@@ -370,7 +370,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             // === throw multi exception in error case. ===
             MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
         } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException(ex);
+            throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
         }
     }
 
