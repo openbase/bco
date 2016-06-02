@@ -201,10 +201,10 @@ public class MockRegistry {
                 }
             }));
             
-            // wait for initialization
-            for (Future<Void> task : registryStartupTasks) {
-                task.get();
-            }
+//            // wait for initialization
+//            for (Future<Void> task : registryStartupTasks) {
+//                task.get();
+//            }
             
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 

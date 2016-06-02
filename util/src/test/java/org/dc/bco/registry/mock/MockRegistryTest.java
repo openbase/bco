@@ -65,7 +65,7 @@ public class MockRegistryTest {
     /**
      * Test of MockRegistry creation.
      */
-    @Test
+    @Test (timeout = 10000)
     public void testMockRegistryCreation() {
         System.out.println("testMockRegistryCreation");
         try {
