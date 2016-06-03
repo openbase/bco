@@ -91,7 +91,7 @@ public class DalSceneEditor extends javax.swing.JFrame {
             genericUnitCollectionPanel.init();
             sceneCreationPanel.init();
 
-            ForkJoinPool.commonPool().submit(() -> {
+            GlobalExecutionService.submit(() -> {
                 try {
                     sceneCreationPanel.init();
                 } catch (CouldNotPerformException ex) {
