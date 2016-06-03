@@ -110,7 +110,7 @@ public class TemperatureSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
@@ -125,7 +125,7 @@ public class TemperatureSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTemperatureAlarmState() throws Exception {
         System.out.println("getTemperatureAlarmState");
         temperatureSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

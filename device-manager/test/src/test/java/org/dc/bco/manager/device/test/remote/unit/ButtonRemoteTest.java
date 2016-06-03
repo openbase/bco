@@ -109,7 +109,7 @@ public class ButtonRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
         buttonRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

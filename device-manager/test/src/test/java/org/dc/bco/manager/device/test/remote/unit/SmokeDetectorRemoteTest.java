@@ -107,7 +107,7 @@ public class SmokeDetectorRemoteTest {
     /**
      * Test of getSmokeAlarmState method, of class SmokeDetectorRemote.
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
         smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
@@ -120,7 +120,7 @@ public class SmokeDetectorRemoteTest {
     /**
      * Test of getSmokeState method, of class SmokeDetectorRemote.
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
         smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

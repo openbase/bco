@@ -108,7 +108,7 @@ public class BrightnessSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         brightnessSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

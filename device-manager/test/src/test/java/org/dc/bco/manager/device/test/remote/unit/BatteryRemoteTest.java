@@ -110,7 +110,7 @@ public class BatteryRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
         batteryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

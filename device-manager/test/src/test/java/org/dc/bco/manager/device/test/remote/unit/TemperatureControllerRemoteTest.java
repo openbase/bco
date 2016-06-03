@@ -109,7 +109,7 @@ public class TemperatureControllerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetTargetTemperature() throws Exception {
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
@@ -123,7 +123,7 @@ public class TemperatureControllerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTargetTemperature() throws Exception {
         System.out.println("getTargetTemperature");
         double temperature = 3.141F;
@@ -138,7 +138,7 @@ public class TemperatureControllerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;

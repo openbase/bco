@@ -109,7 +109,7 @@ public class MotionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

@@ -107,7 +107,7 @@ public class HandleSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         handleSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

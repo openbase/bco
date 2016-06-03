@@ -109,7 +109,7 @@ public class TamperSwitchRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         tamperSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);

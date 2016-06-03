@@ -110,7 +110,7 @@ public class PowerConsumptionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         double consumption = 200d;

@@ -102,7 +102,7 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
@@ -116,7 +116,7 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
@@ -131,7 +131,7 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetOpeningRatio() throws Exception {
         System.out.println("setOpeningRatio");
         double openingRatio = 34.0D;
@@ -145,7 +145,7 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;

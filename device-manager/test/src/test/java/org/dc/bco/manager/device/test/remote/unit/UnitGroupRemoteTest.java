@@ -115,8 +115,7 @@ public class UnitGroupRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //    @Test(timeout = 60000)
-    @Test
+    @Test(timeout = 10000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
@@ -138,13 +137,11 @@ public class UnitGroupRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //    @Test(timeout = 60000)
-    @Test
+    @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPower(state).get();
-//        unitGroupRemote.requestStatus();
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPower());
     }
 
@@ -153,8 +150,7 @@ public class UnitGroupRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //    @Test(timeout = 60000)
-    @Test
+    @Test(timeout = 10000)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 75d;
