@@ -54,11 +54,6 @@ public class MockRegistryHolder {
             }
             mockRegistry.shutdown();
             mockRegistry = null;
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(MockRegistryHolder.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }
 }

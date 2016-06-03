@@ -185,6 +185,7 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            logger.info("User registry started!");
 
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
@@ -222,16 +223,20 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            logger.info("Location & Device registry started!");
 
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
                     try {
+                        logger.info("Register locations...");
                         registerLocations();
                         // TODO need to be implemented.
                         // locationRegistry.waitForConsistency();
+                        logger.info("Register devices...");
                         registerDevices();
+                        logger.info("Wait for consistency");
                         deviceRegistry.waitForConsistency();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
@@ -242,8 +247,10 @@ public class MockRegistry {
 
             // wait for initialization
             for (Future<Void> task : registryStartupTasks) {
+                logger.info("Wait for device & location registration...");
                 task.get();
             }
+            logger.info("Devices & Location registered!");
 
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
@@ -297,6 +304,7 @@ public class MockRegistry {
     }
 
     public void shutdown() {
+        System.out.println("Shutdown MockRegistry");
         deviceRegistryLauncher.shutdown();
         locationRegistryLauncher.shutdown();
         agentRegistryLauncher.shutdown();
@@ -305,6 +313,7 @@ public class MockRegistry {
         userRegistryLauncher.shutdown();
         CachedDeviceRegistryRemote.shutdown();
         CachedLocationRegistryRemote.shutdown();
+        System.out.println("Mockregistry shutdown successfully!");
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {

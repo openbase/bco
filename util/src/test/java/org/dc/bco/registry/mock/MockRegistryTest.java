@@ -26,7 +26,6 @@ package org.dc.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jps.core.JPService;
 import org.dc.jps.exception.JPServiceException;
 import org.junit.After;
@@ -65,12 +64,26 @@ public class MockRegistryTest {
     /**
      * Test of MockRegistry creation.
      */
-    @Test (timeout = 10000)
+    @Test(timeout = 10000)
     public void testMockRegistryCreation() {
         System.out.println("testMockRegistryCreation");
         try {
             MockRegistryHolder.newMockRegistry();
             MockRegistryHolder.shutdownMockRegistry();
+        } catch (org.dc.jul.exception.InstantiationException ex) {
+            fail("Could not instantiate mock registry");
+        }
+    }
+
+    @Test
+    public void testMockRegistryStartup() {
+        System.out.println("testMockRegistryStartup");
+        int startNumber = 30;
+        try {
+            for (int i = 0; i < startNumber; ++i) {
+                MockRegistryHolder.newMockRegistry();
+                MockRegistryHolder.shutdownMockRegistry();
+            }
         } catch (org.dc.jul.exception.InstantiationException ex) {
             fail("Could not instantiate mock registry");
         }
