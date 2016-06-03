@@ -23,7 +23,6 @@ package org.dc.bco.registry.app.core;
  */
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.app.core.consistency.LabelConsistencyHandler;
 import org.dc.bco.registry.app.core.consistency.ScopeConsistencyHandler;
@@ -44,6 +43,7 @@ import org.dc.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.dc.jul.iface.Manageable;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
+import org.dc.jul.schedule.GlobalExecutionService;
 import org.dc.jul.storage.file.ProtoBufJSonFileProvider;
 import org.dc.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
