@@ -201,7 +201,7 @@ public class LocationRegistryTest {
         time = System.currentTimeMillis();
         LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot).get();
         System.out.println("Time for removal [" + (System.currentTimeMillis() - time) + "]");
-//        remote.requestData().get();
+        remote.requestData().get();
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", remote.getLocationConfigById(registeredChild.getId()).getRoot());
     }
