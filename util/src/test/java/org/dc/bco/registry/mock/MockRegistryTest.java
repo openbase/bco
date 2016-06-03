@@ -74,18 +74,4 @@ public class MockRegistryTest {
             fail("Could not instantiate mock registry");
         }
     }
-
-    @Test
-    public void testMockRegistryStartup() {
-        System.out.println("testMockRegistryStartup");
-        int startNumber = 30;
-        try {
-            for (int i = 0; i < startNumber; ++i) {
-                MockRegistryHolder.newMockRegistry();
-                MockRegistryHolder.shutdownMockRegistry();
-            }
-        } catch (org.dc.jul.exception.InstantiationException ex) {
-            fail("Could not instantiate mock registry");
-        }
-    }
 }
