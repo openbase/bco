@@ -25,6 +25,7 @@ package org.dc.bco.registry.location.core.consistency;
 import java.util.ArrayList;
 import java.util.List;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.protobuf.IdentifiableMessage;
 import org.dc.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.dc.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -59,6 +60,7 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         }
     }
 
+    //TODO tamino: please reimplement more intuitive. May with a treemap where the key is the distance and the value the path.
     private LocationConfig getLowestCommonParentLocation(List<String> locationIds, ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry) throws CouldNotPerformException {
         // list that contains a list of location configs from the root location to one of the given locations in order
         List<List<LocationConfig>> pathToRootLists = new ArrayList<>();
@@ -80,7 +82,7 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         }
 
         if (shortestList == 0) {
-            return null;
+            throw new NotAvailableException("LowestCommonParentLocation");
         }
 
         for (int i = 0; i < shortestList; i++) {
