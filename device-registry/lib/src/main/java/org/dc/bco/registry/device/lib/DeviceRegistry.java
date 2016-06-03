@@ -23,8 +23,6 @@ package org.dc.bco.registry.device.lib;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -159,6 +157,7 @@ public interface DeviceRegistry {
 
     public void shutdown();
 
+    @Deprecated
     public default void waitForConsistency() throws InterruptedException {
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -169,8 +168,9 @@ public interface DeviceRegistry {
                     return;
                 }
             } catch (CouldNotPerformException ex) {
-                Thread.sleep(1000);
             }
+            Thread.sleep(1000);
+            System.out.println("wait for consistency...");
         }
     }
 }

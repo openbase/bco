@@ -138,11 +138,6 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public void activate() throws InterruptedException, CouldNotPerformException {
         deviceRegistryRemote.activate();
         super.activate();
-//        try {
-//            waitForData();
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger);
-//        }
     }
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
