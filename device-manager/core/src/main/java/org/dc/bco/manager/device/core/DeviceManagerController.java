@@ -21,14 +21,19 @@ package org.dc.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.bco.manager.device.lib.DeviceManager;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.dc.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.dc.bco.manager.device.lib.DeviceControllerRegistry;
 import org.dc.bco.manager.device.lib.DeviceFactory;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -41,24 +46,24 @@ import rst.homeautomation.device.DeviceConfigType;
  * Threepwood</a>
  */
 public class DeviceManagerController implements DeviceManager {
-    
+
     private static DeviceManagerController instance;
-    
+
     private final DeviceFactory deviceFactory;
     private final ServiceFactory serviceFactory;
-    
+
     private final LocationRegistryRemote locationRegistry;
     private final DeviceRegistryRemote deviceRegistry;
-    
+
     private final DeviceRegistrySynchronizer deviceRegistrySynchronizer;
-    
+
     private final DeviceControllerRegistryImpl deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
-    
+
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.dc.jul.exception.InstantiationException {
         this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
     }
-    
+
     public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceFactory deviceFactory) throws org.dc.jul.exception.InstantiationException {
         try {
             this.instance = this;
@@ -67,34 +72,42 @@ public class DeviceManagerController implements DeviceManager {
             this.deviceControllerRegistry = new DeviceControllerRegistryImpl();
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.locationRegistry = new LocationRegistryRemote();
+//            this.locationRegistry = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
             this.deviceRegistry = new DeviceRegistryRemote();
+//            this.deviceRegistry = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
             this.deviceRegistrySynchronizer = new DeviceRegistrySynchronizer(this, deviceFactory);
         } catch (CouldNotPerformException ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
         }
     }
-    
+
     public static DeviceManager getDeviceManager() throws NotAvailableException {
         if (instance == null) {
             throw new NotAvailableException(DeviceManager.class);
         }
         return instance;
     }
-    
+
     public void init() throws InitializationException, InterruptedException {
         try {
-            locationRegistry.init();
-            locationRegistry.activate();
+            System.out.println("Init & activate device registry");
             deviceRegistry.init();
             deviceRegistry.activate();
+            System.out.println("Wait for device data");
             deviceRegistry.waitForData();
+
+            System.out.println("Init & activate location registry");
+            locationRegistry.init();
+            locationRegistry.activate();
+            System.out.println("Wait for location data");
             locationRegistry.waitForData();
+            System.out.println("Init registry syncroniser...");
             deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
-    
+
     public void shutdown() {
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
@@ -103,32 +116,34 @@ public class DeviceManagerController implements DeviceManager {
         deviceRegistrySynchronizer.shutdown();
         instance = null;
     }
-    
+
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException {
+        System.out.println("Wait for init");
         locationRegistry.waitForData(timeout, timeUnit);
         deviceRegistry.waitForData(timeout, timeUnit);
+        System.out.println("Wait for init finished!");
     }
-    
+
     @Override
     public DeviceRegistryRemote getDeviceRegistry() {
         return deviceRegistry;
     }
-    
+
     @Override
     public LocationRegistryRemote getLocationRegistry() {
         return locationRegistry;
     }
-    
+
     @Override
     public DeviceControllerRegistry getDeviceControllerRegistry() {
         return deviceControllerRegistry;
     }
-    
+
     public DeviceControllerRegistryImpl getDeviceControllerRegistryImpl() {
         return deviceControllerRegistry;
     }
-    
+
     @Override
     public UnitControllerRegistry getUnitControllerRegistry() {
         return unitControllerRegistry;
@@ -146,12 +161,12 @@ public class DeviceManagerController implements DeviceManager {
     public boolean isSupported(DeviceConfigType.DeviceConfig config) throws CouldNotPerformException {
         return true;
     }
-    
+
     @Override
     public ServiceFactory getServiceFactory() throws NotAvailableException {
         return serviceFactory;
     }
-    
+
     @Override
     public DeviceFactory getDeviceFactory() throws NotAvailableException {
         return deviceFactory;

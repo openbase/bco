@@ -47,8 +47,11 @@ public class DeviceManagerLauncher {
     
     public void launch() throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
+            logger.info("Launching device manager...");
             deviceManagerController = new DeviceManagerController(new ServiceFactoryMock());
+            logger.info("Init device manager controller...");
             deviceManagerController.init();
+            logger.info("Device manager launched!");
         } catch (CouldNotPerformException ex) {
             deviceManagerController.shutdown();
             throw new org.dc.jul.exception.InstantiationException(this, ex);
@@ -57,12 +60,6 @@ public class DeviceManagerLauncher {
 
     public void shutdown() {
         deviceManagerController.shutdown();
-//        try {
-//            // TODO: remove later
-//            Thread.sleep(3000);
-//        } catch (InterruptedException ex) {
-//            java.util.logging.Logger.getLogger(DeviceManagerLauncher.class.getName()).log(Level.SEVERE, null, ex);
-//        }
     }
 
     public DeviceManager getDeviceManager() {
