@@ -169,7 +169,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
     @Override
     public Future<SceneConfig> registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> sceneConfigRegistry.register(sceneConfig));
+        return GlobalExecutionService.submit(() -> sceneConfigRegistry.register(sceneConfig));
     }
 
     @Override
@@ -189,12 +189,12 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
     @Override
     public Future<SceneConfig> updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> sceneConfigRegistry.update(sceneConfig));
+        return GlobalExecutionService.submit(() -> sceneConfigRegistry.update(sceneConfig));
     }
 
     @Override
     public Future<SceneConfig> removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> sceneConfigRegistry.remove(sceneConfig));
+        return GlobalExecutionService.submit(() -> sceneConfigRegistry.remove(sceneConfig));
     }
 
     @Override

@@ -266,7 +266,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> locationConfigRegistry.register(locationConfig));
+        return GlobalExecutionService.submit(() -> locationConfigRegistry.register(locationConfig));
     }
 
     /**
@@ -330,7 +330,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<LocationConfig> updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> locationConfigRegistry.update(locationConfig));
+        return GlobalExecutionService.submit(() -> locationConfigRegistry.update(locationConfig));
     }
 
     /**
@@ -340,7 +340,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<LocationConfig> removeLocationConfig(LocationConfig locationConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> locationConfigRegistry.remove(locationConfig));
+        return GlobalExecutionService.submit(() -> locationConfigRegistry.remove(locationConfig));
     }
 
     /**
@@ -515,7 +515,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<ConnectionConfig> registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> connectionConfigRegistry.register(connectionConfig));
+        return GlobalExecutionService.submit(() -> connectionConfigRegistry.register(connectionConfig));
     }
 
     /**
@@ -567,7 +567,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<ConnectionConfig> updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> connectionConfigRegistry.update(connectionConfig));
+        return GlobalExecutionService.submit(() -> connectionConfigRegistry.update(connectionConfig));
     }
 
     /**
@@ -577,7 +577,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public Future<ConnectionConfig> removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> connectionConfigRegistry.remove(connectionConfig));
+        return GlobalExecutionService.submit(() -> connectionConfigRegistry.remove(connectionConfig));
     }
 
     /**

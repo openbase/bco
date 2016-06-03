@@ -167,7 +167,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
 
     @Override
     public Future<AppConfig> registerAppConfig(AppConfig appConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> appConfigRegistry.register(appConfig));
+        return GlobalExecutionService.submit(() -> appConfigRegistry.register(appConfig));
     }
 
     @Override
@@ -187,12 +187,12 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
 
     @Override
     public Future<AppConfig> updateAppConfig(AppConfig appConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> appConfigRegistry.update(appConfig));
+        return GlobalExecutionService.submit(() -> appConfigRegistry.update(appConfig));
     }
 
     @Override
     public Future<AppConfig> removeAppConfig(AppConfig appConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> appConfigRegistry.remove(appConfig));
+        return GlobalExecutionService.submit(() -> appConfigRegistry.remove(appConfig));
     }
 
     @Override

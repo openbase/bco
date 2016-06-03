@@ -368,7 +368,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<DeviceConfig> registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> deviceConfigRegistry.register(deviceConfig));
+        return GlobalExecutionService.submit(() -> deviceConfigRegistry.register(deviceConfig));
     }
 
     /**
@@ -503,7 +503,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> unitTemplateRegistry.update(unitTemplate));
+        return GlobalExecutionService.submit(() -> unitTemplateRegistry.update(unitTemplate));
     }
 
     /**
@@ -515,7 +515,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<DeviceConfig> updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> deviceConfigRegistry.update(deviceConfig));
+        return GlobalExecutionService.submit(() -> deviceConfigRegistry.update(deviceConfig));
     }
 
     /**
@@ -527,7 +527,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<DeviceConfig> removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> deviceConfigRegistry.remove(deviceConfig));
+        return GlobalExecutionService.submit(() -> deviceConfigRegistry.remove(deviceConfig));
     }
 
     /**
@@ -539,7 +539,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> deviceClassRegistry.register(deviceClass));
+        return GlobalExecutionService.submit(() -> deviceClassRegistry.register(deviceClass));
     }
 
     /**
@@ -575,7 +575,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<DeviceClass> updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> deviceClassRegistry.update(deviceClass));
+        return GlobalExecutionService.submit(() -> deviceClassRegistry.update(deviceClass));
     }
 
     /**
@@ -587,7 +587,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<DeviceClass> removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> deviceClassRegistry.remove(deviceClass));
+        return GlobalExecutionService.submit(() -> deviceClassRegistry.remove(deviceClass));
     }
 
     /**
@@ -823,7 +823,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<UnitGroupConfig> registerUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> unitGroupConfigRegistry.register(groupConfig));
+        return GlobalExecutionService.submit(() -> unitGroupConfigRegistry.register(groupConfig));
     }
 
     /**
@@ -859,7 +859,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<UnitGroupConfig> updateUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> unitGroupConfigRegistry.update(groupConfig));
+        return GlobalExecutionService.submit(() -> unitGroupConfigRegistry.update(groupConfig));
     }
 
     /**
@@ -871,7 +871,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public Future<UnitGroupConfig> removeUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> unitGroupConfigRegistry.remove(groupConfig));
+        return GlobalExecutionService.submit(() -> unitGroupConfigRegistry.remove(groupConfig));
     }
 
     /**

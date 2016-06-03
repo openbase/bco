@@ -187,7 +187,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public Future<UserConfig> registerUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> userRegistry.register(userConfig));
+        return GlobalExecutionService.submit(() -> userRegistry.register(userConfig));
     }
 
     @Override
@@ -202,12 +202,12 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public Future<UserConfig> updateUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> userRegistry.update(userConfig));
+        return GlobalExecutionService.submit(() -> userRegistry.update(userConfig));
     }
 
     @Override
     public Future<UserConfig> removeUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> userRegistry.remove(userConfig));
+        return GlobalExecutionService.submit(() -> userRegistry.remove(userConfig));
     }
 
     @Override
@@ -241,7 +241,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public Future<UserGroupConfig> registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> userGroupRegistry.register(groupConfig));
+        return GlobalExecutionService.submit(() -> userGroupRegistry.register(groupConfig));
     }
 
     @Override
@@ -256,12 +256,12 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public Future<UserGroupConfig> updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> userGroupRegistry.update(groupConfig));
+        return GlobalExecutionService.submit(() -> userGroupRegistry.update(groupConfig));
     }
 
     @Override
     public Future<UserGroupConfig> removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> userGroupRegistry.remove(groupConfig));
+        return GlobalExecutionService.submit(() -> userGroupRegistry.remove(groupConfig));
     }
 
     @Override

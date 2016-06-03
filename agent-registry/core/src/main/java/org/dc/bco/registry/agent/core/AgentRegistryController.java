@@ -170,7 +170,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
     @Override
     public Future<AgentConfig> registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> agentConfigRegistry.register(agentConfig));
+        return GlobalExecutionService.submit(() -> agentConfigRegistry.register(agentConfig));
     }
 
     @Override
@@ -190,12 +190,12 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
     @Override
     public Future<AgentConfig> updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> agentConfigRegistry.update(agentConfig));
+        return GlobalExecutionService.submit(() -> agentConfigRegistry.update(agentConfig));
     }
 
     @Override
     public Future<AgentConfig> removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return ForkJoinPool.commonPool().submit(() -> agentConfigRegistry.remove(agentConfig));
+        return GlobalExecutionService.submit(() -> agentConfigRegistry.remove(agentConfig));
     }
 
     @Override

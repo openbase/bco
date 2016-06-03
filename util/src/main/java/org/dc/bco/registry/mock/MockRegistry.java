@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dc.bco.registry.agent.core.AgentRegistryLauncher;
 import org.dc.bco.registry.agent.lib.AgentRegistry;
 import org.dc.bco.registry.app.core.AppRegistryLauncher;
@@ -46,7 +44,7 @@ import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.schedule.GlobalExecuterService;
+import org.dc.jul.schedule.GlobalExecutionService;
 import org.slf4j.LoggerFactory;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.geometry.PoseType.Pose;
@@ -166,7 +164,7 @@ public class MockRegistry {
         try {
             JPService.setupJUnitTestMode();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
@@ -186,7 +184,7 @@ public class MockRegistry {
                 task.get();
             }
 
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
@@ -200,7 +198,7 @@ public class MockRegistry {
                 }
             }));
 
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
@@ -223,7 +221,7 @@ public class MockRegistry {
                 task.get();
             }
 
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
@@ -245,7 +243,7 @@ public class MockRegistry {
                 task.get();
             }
 
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
@@ -258,7 +256,7 @@ public class MockRegistry {
                     return null;
                 }
             }));
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
@@ -271,7 +269,7 @@ public class MockRegistry {
                     return null;
                 }
             }));
-            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
                 public Void call() throws Exception {
