@@ -27,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import org.dc.jul.extension.rsb.com.AbstractIdentifiableRemote;
+import org.dc.bco.dal.remote.unit.UnitRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.manager.agent.core.AbstractAgent;
@@ -71,8 +71,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
      * OFF when all targets are off. ON when at least one target is one.
      */
     private PowerState.State targetLatestPowerState;
-    private final List<AbstractIdentifiableRemote> targetRemotes = new ArrayList<>();
-    private AbstractIdentifiableRemote sourceRemote;
+    private final List<UnitRemote> targetRemotes = new ArrayList<>();
+    private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private final UnitRemoteFactory factory;
     private final DeviceRegistry deviceRegistry;
@@ -96,13 +96,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 //            deviceRegistryRemote.activate();
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
-            sourceRemote = factory.createAndInitUnitRemote(deviceRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+            sourceRemote = factory.newInitializedInstance(deviceRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
             int i = 1;
             String unitId;
             try {
                 while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
                     logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
-                    targetRemotes.add(factory.createAndInitUnitRemote(deviceRegistry.getUnitConfigById(unitId)));
+                    targetRemotes.add(factory.newInitializedInstance(deviceRegistry.getUnitConfigById(unitId)));
                     i++;
                 }
             } catch (NotAvailableException ex) {
@@ -123,7 +123,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     }
 
     private void initObserver() {
-        sourceRemote.addObserver(new Observer<GeneratedMessage>() {
+        sourceRemote.addDataObserver(new Observer<GeneratedMessage>() {
 
             @Override
             public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
@@ -131,7 +131,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                 logger.info("Recieved new value [" + sourceLatestPowerState + "] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
-                        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
+                        for (UnitRemote targetRemote : targetRemotes) {
                             invokeSetPower(targetRemote, OFF);
                         }
                     }
@@ -139,14 +139,14 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                     switch (targetBehaviour) {
                         case OFF:
                             if (targetLatestPowerState != PowerState.State.OFF) {
-                                for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
+                                for (UnitRemote targetRemote : targetRemotes) {
                                     invokeSetPower(targetRemote, OFF);
                                 }
                             }
                             break;
                         case ON:
                             if (targetLatestPowerState != PowerState.State.ON) {
-                                for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
+                                for (UnitRemote targetRemote : targetRemotes) {
                                     invokeSetPower(targetRemote, ON);
                                 }
                             }
@@ -158,13 +158,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             }
         });
 
-        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
-            targetRemote.addObserver(new Observer<GeneratedMessage>() {
+        for (UnitRemote targetRemote : targetRemotes) {
+            targetRemote.addDataObserver(new Observer<GeneratedMessage>() {
 
                 @Override
                 public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                     PowerState.State newPowerState = invokeGetPowerState(data).getValue();
-                    logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + ((AbstractIdentifiableRemote) source).getId() + "]");
+                    logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + source + "]");
                     if (!updateLatestTargetPowerState(newPowerState)) {
                         return;
                     }
@@ -211,7 +211,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
         if (targetLatestPowerState == PowerState.State.ON && powerState == PowerState.State.OFF) {
             targetLatestPowerState = PowerState.State.OFF;
-            for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
+            for (UnitRemote targetRemote : targetRemotes) {
                 if (invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
                     targetLatestPowerState = PowerState.State.ON;
                     break;
@@ -223,7 +223,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         return false;
     }
 
-    private void invokeSetPower(AbstractIdentifiableRemote remote, PowerState powerState) {
+    private void invokeSetPower(UnitRemote remote, PowerState powerState) {
         try {
             Method method = remote.getClass().getMethod("setPower", PowerState.class);
             method.invoke(remote, powerState);
@@ -234,7 +234,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         }
     }
 
-    private PowerState invokeGetPowerState(GeneratedMessage message) throws CouldNotPerformException {
+    private PowerState invokeGetPowerState(Object message) throws CouldNotPerformException {
         try {
             Method method = message.getClass().getMethod("getPowerState");
             return (PowerState) method.invoke(message);
@@ -259,10 +259,12 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Executing PowerStateSynchroniser agent");
         sourceRemote.activate();
+        sourceRemote.waitForData();
         String targetIds = "";
         targetLatestPowerState = PowerState.State.UNKNOWN;
-        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
+        for (UnitRemote targetRemote : targetRemotes) {
             targetRemote.activate();
+            targetRemote.waitForData();
             targetIds += "[" + targetRemote.getId() + "]";
             if ((targetLatestPowerState == PowerState.State.OFF || targetLatestPowerState == PowerState.State.UNKNOWN) && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
                 targetLatestPowerState = PowerState.State.ON;
@@ -278,16 +280,16 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         sourceRemote.deactivate();
-        for (AbstractIdentifiableRemote targetRemote : targetRemotes) {
+        for (UnitRemote targetRemote : targetRemotes) {
             targetRemote.deactivate();
         }
     }
 
-    public AbstractIdentifiableRemote getSourceRemote() {
+    public UnitRemote getSourceRemote() {
         return sourceRemote;
     }
 
-    public List<AbstractIdentifiableRemote> getTargetRemotes() {
+    public List<UnitRemote> getTargetRemotes() {
         return targetRemotes;
     }
 

@@ -160,7 +160,9 @@ public class PowerStateSynchroniserAgentTest {
         ambientLightRemote.activate();
         powerPlugRemote.activate();
 
-        Thread.sleep(2000);
+        dimmerRemote.waitForData();
+        ambientLightRemote.waitForData();
+        powerPlugRemote.waitForData();
 
         logger.info("Dimmer id [" + sourceId + "]");
         logger.info("Ambient light id [" + ambientLightRemote.getId() + "]");
