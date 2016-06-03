@@ -142,6 +142,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         try {
+            System.out.println("Deactivate location registry remote...");
             deviceRegistryRemote.deactivate();
         } finally {
             super.deactivate();
@@ -154,6 +155,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public void shutdown() {
         try {
+            System.out.println("Shutdown location registry remote...");
             deviceRegistryRemote.shutdown();
             locationConfigRemoteRegistry.shutdown();
             connectionConfigRemoteRegistry.shutdown();

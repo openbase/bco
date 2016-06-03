@@ -294,8 +294,11 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            
+            logger.info("Started app/agent/scene registries!");
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
+            logger.info("Reinitialized remotes!");
         } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
