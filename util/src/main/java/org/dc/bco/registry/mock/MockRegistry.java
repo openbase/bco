@@ -180,12 +180,12 @@ public class MockRegistry {
                     return null;
                 }
             }));
-            
+
             // wait for initialization
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
-            
+
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
@@ -193,19 +193,13 @@ public class MockRegistry {
                     try {
                         locationRegistryLauncher = new LocationRegistryLauncher();
                         locationRegistry = locationRegistryLauncher.getLocationRegistry();
-                        registerLocations();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
                     }
                     return null;
                 }
             }));
-            
-//            // wait for initialization
-//            for (Future<Void> task : registryStartupTasks) {
-//                task.get();
-//            }
-            
+
             registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
 
                 @Override
@@ -217,6 +211,26 @@ public class MockRegistry {
                         for (MockUnitTemplate template : MockUnitTemplate.values()) {
                             deviceRegistry.updateUnitTemplate(template.getTemplate()).get();
                         }
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.dc.jul.exception.printer.LogLevel.ERROR);
+                    }
+                    return null;
+                }
+            }));
+
+            // wait for initialization
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
+
+            registryStartupTasks.add(GlobalExecuterService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        registerLocations();
+                        // TODO need to be implemented.
+                        // locationRegistry.waitForConsistency();
                         registerDevices();
                         deviceRegistry.waitForConsistency();
                     } catch (CouldNotPerformException | InterruptedException ex) {
@@ -225,7 +239,7 @@ public class MockRegistry {
                     return null;
                 }
             }));
-            
+
             // wait for initialization
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
@@ -270,8 +284,6 @@ public class MockRegistry {
                     return null;
                 }
             }));
-
-            
 
             // wait for initialization
             for (Future<Void> task : registryStartupTasks) {
