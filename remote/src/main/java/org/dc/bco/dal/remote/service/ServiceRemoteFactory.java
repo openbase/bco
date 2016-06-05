@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -29,8 +24,8 @@ package org.dc.bco.dal.remote.service;
 
 import java.util.Collection;
 import org.dc.jul.exception.CouldNotPerformException;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -46,6 +41,7 @@ public interface ServiceRemoteFactory {
      * @param unitConfigs
      * @return the new created service remote.
      * @throws CouldNotPerformException
+     * @throws java.lang.InterruptedException
      */
     public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException;
 
@@ -57,6 +53,7 @@ public interface ServiceRemoteFactory {
      * @param unitConfig
      * @return the new created service remote.
      * @throws CouldNotPerformException
+     * @throws java.lang.InterruptedException
      */
     public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 

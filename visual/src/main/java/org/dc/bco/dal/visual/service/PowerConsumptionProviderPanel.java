@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -27,7 +22,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
 import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -43,7 +38,7 @@ import rst.vision.HSVColorType;
  *
  * @author mpohling
  */
-public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionProvider> {
+public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionProviderService> {
 
     private DecimalFormat numberFormat = new DecimalFormat("#.##");
     private Color currentColor = Color.BLACK;

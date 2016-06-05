@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -78,7 +73,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         String remoteClassName = AbstractServiceRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + "Remote";
         try {
             return (Class<? extends AbstractServiceRemote>) ServiceRemoteFactoryImpl.class.getClassLoader().loadClass(remoteClassName);
-        } catch (Exception ex) {
+        } catch (NullPointerException | ClassNotFoundException ex) {
             throw new CouldNotPerformException("Could not detect service remote class for ServiceType[" + serviceType.name() + "]!", ex);
         }
     }
@@ -87,7 +82,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         try {
             AbstractServiceRemote remote = serviceRemoteClass.newInstance();
             return remote;
-        } catch (Exception ex) {
+        } catch (InstantiationException | IllegalAccessException ex) {
             throw new org.dc.jul.exception.InstantiationException("Could not instantiate service remote out of Class[" + serviceRemoteClass.getName() + "]", ex);
         }
     }

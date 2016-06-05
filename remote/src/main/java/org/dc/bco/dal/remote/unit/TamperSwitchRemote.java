@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.TamperSwitchInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperStateType.TamperState;
@@ -42,18 +37,24 @@ public class TamperSwitchRemote extends AbstractUnitRemote<TamperSwitch> impleme
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperSwitch.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
 
     public TamperSwitchRemote() {
+        super(TamperSwitch.class);
     }
 
     @Override
-    public void notifyUpdated(TamperSwitch data) {
+    public void notifyDataUpdate(TamperSwitch data) {
     }
 
     @Override
-    public TamperState getTamper() throws CouldNotPerformException {
-        return getData().getTamperState();
+    public TamperState getTamper() throws NotAvailableException {
+        try {
+            return getData().getTamperState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("TamperState", ex);
+        }
     }
 
 }

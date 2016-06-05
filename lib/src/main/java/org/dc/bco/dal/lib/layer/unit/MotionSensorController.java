@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -35,7 +30,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.unit.MotionSensorType.MotionSensor;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
 
 /**
@@ -53,7 +47,7 @@ public class MotionSensorController extends AbstractUnitController<MotionSensor,
         super(MotionSensorController.class, unitHost, builder);
     }
 
-    public void updateMotion(MotionState state) throws CouldNotPerformException {
+    public void updateMotionProvider(MotionState state) throws CouldNotPerformException {
         
         logger.debug("Apply motion Update[" + state + "] for " + this + ".");
         

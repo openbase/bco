@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -27,13 +22,13 @@ package org.dc.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface DimmerInterface extends PowerService, DimService {
+public interface DimmerInterface extends PowerOperationService, BrightnessOperationService {
     
 }

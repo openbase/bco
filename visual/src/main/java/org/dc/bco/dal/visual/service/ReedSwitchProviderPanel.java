@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -27,7 +22,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -39,7 +34,7 @@ import java.awt.Color;
  *
  * @author kengelma
  */
-public class ReedSwitchProviderPanel extends AbstractServicePanel<ReedSwitchProvider> {
+public class ReedSwitchProviderPanel extends AbstractServicePanel<ReedSwitchProviderService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel

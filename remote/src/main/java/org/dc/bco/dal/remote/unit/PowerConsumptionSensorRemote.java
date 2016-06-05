@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.PowerConsumptionSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
@@ -46,14 +41,19 @@ public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsum
     }
 
     public PowerConsumptionSensorRemote() {
+        super(PowerConsumptionSensor.class);
     }
 
     @Override
-    public void notifyUpdated(PowerConsumptionSensor data) {
+    public void notifyDataUpdate(PowerConsumptionSensor data) {
     }
 
     @Override
-    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
-        return getData().getPowerConsumptionState();
+    public PowerConsumptionState getPowerConsumption() throws NotAvailableException {
+        try {
+            return getData().getPowerConsumptionState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerConsumptionState", ex);
+        }
     }
 }

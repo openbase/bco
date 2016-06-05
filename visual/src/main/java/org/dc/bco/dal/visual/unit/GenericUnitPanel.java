@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.unit;
 
 /*
@@ -117,7 +112,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
 
         String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
                 + "[" + unitConfig.getLabel() + "]"
-                + " @ " + CachedLocationRegistryRemote.getLocationRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
+                + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
                 + " of " + unitConfig.getDeviceId()
                 + " : " + unitConfig.getDescription();
 

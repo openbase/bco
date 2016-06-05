@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
@@ -26,34 +21,38 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface ReedSwitchStateProviderServiceCollection extends ReedSwitchProvider {
+public interface ReedSwitchStateProviderServiceCollection extends ReedSwitchProviderService {
 
     /**
      * Returns open if at least one of the reed switch providers returns open
      * and else no closed.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        for (ReedSwitchProvider provider : getReedSwitchStateProviderServices()) {
-            if (provider.getReedSwitch().getValue() == ReedSwitchState.State.OPEN) {
-                return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.OPEN).build();
+    default public ReedSwitchState getReedSwitch() throws NotAvailableException {
+        try {
+            for (ReedSwitchProviderService provider : getReedSwitchStateProviderServices()) {
+                if (provider.getReedSwitch().getValue() == ReedSwitchState.State.OPEN) {
+                    return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.OPEN).build();
+                }
             }
+            return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.CLOSED).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ReedSwitchState", ex);
         }
-        return ReedSwitchState.newBuilder().setValue(ReedSwitchState.State.CLOSED).build();
     }
 
-    public Collection<ReedSwitchProvider> getReedSwitchStateProviderServices();
+    public Collection<ReedSwitchProviderService> getReedSwitchStateProviderServices() throws CouldNotPerformException;
 }

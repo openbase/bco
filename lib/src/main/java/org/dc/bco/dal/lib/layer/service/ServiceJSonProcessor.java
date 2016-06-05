@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service;
 
 /*
@@ -190,7 +185,7 @@ public class ServiceJSonProcessor {
                     throw new CouldNotPerformException("Could not invoke constructor of class [" + className + "] with [" + jsonStringRep + "] as the argument", ex);
                 }
             }
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException | NullPointerException ex) {
             throw new CouldNotPerformException("Could not deserialize json String[" + jsonStringRep + "] into ServiceAttributeType[" + serviceAttributeType + "]!", ex);
         }
     }

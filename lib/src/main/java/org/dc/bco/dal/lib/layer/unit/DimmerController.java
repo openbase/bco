@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -26,8 +21,9 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -49,8 +45,8 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
-    private PowerService powerService;
-    private DimService dimmService;
+    private PowerOperationService powerService;
+    private BrightnessOperationService brightnessService;
 
     public DimmerController(final UnitHost unitHost, Dimmer.Builder builder) throws org.dc.jul.exception.InstantiationException, CouldNotPerformException {
         super(DimmerController.class, unitHost, builder);
@@ -61,13 +57,13 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         super.init(config);
         try {
             this.powerService = getServiceFactory().newPowerService(this);
-            this.dimmService = getServiceFactory().newDimmService(this);
+            this.brightnessService = getServiceFactory().newBrightnessService(this);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    public void updatePower(final PowerState value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
@@ -78,9 +74,9 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     }
 
     @Override
-    public void setPower(final PowerState state) throws CouldNotPerformException {
+    public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
-        powerService.setPower(state);
+        return powerService.setPower(state);
     }
 
     @Override
@@ -92,7 +88,7 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
         }
     }
 
-    public void updateDim(final Double value) throws CouldNotPerformException {
+    public void updateBrightnessProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply dim Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Dimmer.Builder> dataBuilder = getDataBuilder(this)) {
@@ -108,16 +104,16 @@ public class DimmerController extends AbstractUnitController<Dimmer, Dimmer.Buil
     }
 
     @Override
-    public void setDim(Double dimm) throws CouldNotPerformException {
-        dimmService.setDim(dimm);
+    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
+        return brightnessService.setBrightness(brightness);
     }
 
     @Override
-    public Double getDim() throws NotAvailableException {
+    public Double getBrightness() throws NotAvailableException {
         try {
             return getData().getValue();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("dim", ex);
+            throw new NotAvailableException("brightness", ex);
         }
     }
 }

@@ -21,7 +21,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.storage.registry.Registry;
 import org.dc.jul.storage.registry.RegistryImpl;
 
@@ -29,6 +28,6 @@ import org.dc.jul.storage.registry.RegistryImpl;
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface UnitControllerRegistry extends Registry<String, Unit, RegistryImpl<String, Unit>>{
+public interface UnitControllerRegistry extends Registry<String, UnitController, RegistryImpl<String, UnitController>> {
 
 }

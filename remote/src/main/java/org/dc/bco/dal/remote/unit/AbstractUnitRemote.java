@@ -22,7 +22,6 @@ package org.dc.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
@@ -53,10 +52,14 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     private UnitTemplateType.UnitTemplate template;
     protected DeviceRegistry deviceRegistry;
 
+    public AbstractUnitRemote(final Class<M> dataClass) {
+        super(dataClass, UnitConfig.class);
+    }
+
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
-            init(CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigById(id));
+            init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(id));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -65,7 +68,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
-            List<UnitConfig> unitConfigList = CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigsByLabel(label);
+            List<UnitConfig> unitConfigList = CachedDeviceRegistryRemote.getRegistry().getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("Unit with Label[" + label + "]");
@@ -84,7 +87,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            init(CachedDeviceRegistryRemote.getDeviceRegistry().getUnitConfigByScope(scope));
+            init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -110,7 +113,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
-            init(ScopeGenerator.generateScope(label, detectMessageClass().getSimpleName(), location.getScope()));
+            init(ScopeGenerator.generateScope(label, getDataClass().getSimpleName(), location.getScope()));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -119,23 +122,17 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
-            deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+            deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    /**
-     *
-     * @param config
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
-     */
     @Override
-    public UnitConfig updateConfig(UnitConfig config) throws CouldNotPerformException, NotAvailableException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        // todo check if type or id is the right template access!
         template = deviceRegistry.getUnitTemplateById(config.getUnitTemplateConfigId());
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override
@@ -148,20 +145,20 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     @Override
+    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
+        if (template == null) {
+            throw new NotAvailableException("UnitTemplate");
+        }
+        return template;
+    }
+
+    @Override
     public String getLabel() throws NotAvailableException {
         try {
             return getConfig().getLabel();
         } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit label", ex);
         }
-    }
-
-    @Override
-    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
-        if (template == null) {
-            throw new NotAvailableException("UnitTemplate");
-        }
-        return template;
     }
 
     @Override
@@ -175,11 +172,11 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     @Override
     public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionConfig, this);
+        return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
     }
 
     @Override
     public Future<SceneConfigType.SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(this);
+        return RPCHelper.callRemoteMethod(this, SceneConfigType.SceneConfig.class);
     }
 }

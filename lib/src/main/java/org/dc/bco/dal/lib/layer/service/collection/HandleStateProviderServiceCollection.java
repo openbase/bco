@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
@@ -26,17 +21,17 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface HandleStateProviderServiceCollection extends HandleProvider {
+public interface HandleStateProviderServiceCollection extends HandleProviderService {
 
     /**
      * If at least one handle state provider returns open than that is returned.
@@ -44,24 +39,28 @@ public interface HandleStateProviderServiceCollection extends HandleProvider {
      * is returned.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public HandleState getHandle() throws CouldNotPerformException {
-        boolean tilted = false;
-        for (HandleProvider provider : getHandleStateProviderServices()) {
-            if (provider.getHandle().getValue() == HandleState.State.OPEN) {
-                return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();
+    default public HandleState getHandle() throws NotAvailableException {
+        try {
+            boolean tilted = false;
+            for (HandleProviderService provider : getHandleStateProviderServices()) {
+                if (provider.getHandle().getValue() == HandleState.State.OPEN) {
+                    return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();
+                }
+                if (provider.getHandle().getValue() == HandleState.State.TILTED) {
+                    tilted = true;
+                }
             }
-            if (provider.getHandle().getValue() == HandleState.State.TILTED) {
-                tilted = true;
+            if (tilted) {
+                return HandleState.newBuilder().setValue(HandleState.State.TILTED).build();
             }
+            return HandleState.newBuilder().setValue(HandleState.State.CLOSED).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HandleState", ex);
         }
-        if (tilted) {
-            return HandleState.newBuilder().setValue(HandleState.State.TILTED).build();
-        }
-        return HandleState.newBuilder().setValue(HandleState.State.CLOSED).build();
     }
 
-    public Collection<HandleProvider> getHandleStateProviderServices();
+    public Collection<HandleProviderService> getHandleStateProviderServices() throws CouldNotPerformException;
 }

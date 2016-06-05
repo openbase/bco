@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,23 +21,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
 import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.collection.ReedSwitchStateProviderServiceCollection;
-import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ReedSwitchProviderRemote extends AbstractServiceRemote<ReedSwitchProvider> implements ReedSwitchStateProviderServiceCollection {
+public class ReedSwitchProviderRemote extends AbstractServiceRemote<ReedSwitchProviderService> implements ReedSwitchStateProviderServiceCollection {
 
     public ReedSwitchProviderRemote() {
         super(ServiceType.REED_SWITCH_PROVIDER);
     }
 
     @Override
-    public Collection<ReedSwitchProvider> getReedSwitchStateProviderServices() {
+    public Collection<ReedSwitchProviderService> getReedSwitchStateProviderServices() {
         return getServices();
     }
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -50,7 +45,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
 		super(BrightnessSensorController.class, unitHost, builder);
 	}
 
-	public void updateBrightness(final Double value) throws CouldNotPerformException {
+	public void updateBrightnessProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply brightness Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<BrightnessSensor.Builder> dataBuilder = getDataBuilder(this)) {

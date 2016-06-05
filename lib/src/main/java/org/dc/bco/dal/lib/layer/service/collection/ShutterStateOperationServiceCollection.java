@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
@@ -26,23 +21,28 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
+import java.util.concurrent.Future;
+import static javafx.scene.paint.Color.color;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
+import static rst.homeautomation.state.ShutterStateType.ShutterState.State.DOWN;
+import static rst.homeautomation.state.ShutterStateType.ShutterState.State.STOP;
+import static rst.homeautomation.state.ShutterStateType.ShutterState.State.UP;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface ShutterStateOperationServiceCollection extends ShutterService {
+public interface ShutterStateOperationServiceCollection extends ShutterOperationService {
 
     @Override
-    default public void setShutter(ShutterState state) throws CouldNotPerformException {
-        for (ShutterService service : getShutterStateOperationServices()) {
-            service.setShutter(state);
-        }
+    default public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((ShutterOperationService input) -> input.setShutter(state), getShutterStateOperationServices());
     }
 
     /**
@@ -50,22 +50,26 @@ public interface ShutterStateOperationServiceCollection extends ShutterService {
      * state of the first shutter.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public ShutterState getShutter() throws CouldNotPerformException {
-        for (ShutterService service : getShutterStateOperationServices()) {
-            switch (service.getShutter().getValue()) {
-                case DOWN:
-                    return ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
-                case STOP:
-                    return ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
-                case UP:
-                default:
+    default public ShutterState getShutter() throws NotAvailableException {
+        try {
+            for (ShutterOperationService service : getShutterStateOperationServices()) {
+                switch (service.getShutter().getValue()) {
+                    case DOWN:
+                        return ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
+                    case STOP:
+                        return ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
+                    case UP:
+                    default:
+                }
             }
+            return ShutterState.newBuilder().setValue(ShutterState.State.UP).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ShutterState", ex);
         }
-        return ShutterState.newBuilder().setValue(ShutterState.State.UP).build();
     }
 
-    public Collection<ShutterService> getShutterStateOperationServices();
+    public Collection<ShutterOperationService> getShutterStateOperationServices() throws CouldNotPerformException;
 }

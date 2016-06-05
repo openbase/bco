@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -36,7 +31,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperStateType.TamperState;
 import rst.homeautomation.unit.TamperSwitchType.TamperSwitch;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.timing.TimestampType;
 
 /**
@@ -54,7 +48,7 @@ public class TamperSwitchController extends AbstractUnitController<TamperSwitch,
         super(TamperSwitchController.class, unitHost, builder);
     }
 
-    public void updateTamper(final TamperState state) throws CouldNotPerformException {
+    public void updateTamperProvider(final TamperState state) throws CouldNotPerformException {
         
         logger.debug("Apply tamper Update[" + state + "] for " + this + ".");
         

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.HandleSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.HandleStateType.HandleState;
@@ -46,15 +41,20 @@ public class HandleSensorRemote extends AbstractUnitRemote<HandleSensor> impleme
     }
 
     public HandleSensorRemote() {
+        super(HandleSensor.class);
     }
 
     @Override
-    public void notifyUpdated(HandleSensor data) {
+    public void notifyDataUpdate(HandleSensor data) {
     }
 
     @Override
-    public HandleState getHandle() throws CouldNotPerformException {
-        return getData().getHandleState();
+    public HandleState getHandle() throws NotAvailableException {
+        try {
+            return getData().getHandleState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HandleState", ex);
+        }
     }
 
 }

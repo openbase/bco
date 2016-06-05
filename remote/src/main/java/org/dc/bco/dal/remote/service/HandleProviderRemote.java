@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,23 +21,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
 import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
-import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class HandleProviderRemote extends AbstractServiceRemote<HandleProvider> implements HandleStateProviderServiceCollection {
+public class HandleProviderRemote extends AbstractServiceRemote<HandleProviderService> implements HandleStateProviderServiceCollection {
 
     public HandleProviderRemote() {
         super(ServiceType.HANDLE_PROVIDER);
     }
 
     @Override
-    public Collection<HandleProvider> getHandleStateProviderServices() {
+    public Collection<HandleProviderService> getHandleStateProviderServices() {
         return getServices();
     }
 }

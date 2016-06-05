@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,23 +21,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import java.util.Collection;
 import org.dc.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
-import org.dc.bco.dal.lib.layer.service.provider.SmokeAlarmStateProvider;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class SmokeAlarmStateProviderRemote extends AbstractServiceRemote<SmokeAlarmStateProvider> implements SmokeAlarmStateProviderServiceCollection {
+public class SmokeAlarmStateProviderRemote extends AbstractServiceRemote<SmokeAlarmStateProviderService> implements SmokeAlarmStateProviderServiceCollection {
 
     public SmokeAlarmStateProviderRemote() {
         super(ServiceType.SMOKE_ALARM_STATE_PROVIDER);
     }
 
     @Override
-    public Collection<SmokeAlarmStateProvider> getSmokeAlarmStateProviderServices() {
+    public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
         return getServices();
     }
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -26,9 +21,10 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -54,9 +50,9 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
-    private ColorService colorService;
-    private BrightnessService brightnessService;
-    private PowerService powerService;
+    private ColorOperationService colorService;
+    private BrightnessOperationService brightnessService;
+    private PowerOperationService powerService;
 
     public AmbientLightController(final UnitHost unitHost, final AmbientLight.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(AmbientLightController.class, unitHost, builder);
@@ -74,7 +70,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         }
     }
 
-    public void updatePower(final PowerState value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
@@ -85,9 +81,9 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     }
 
     @Override
-    public void setPower(final PowerState state) throws CouldNotPerformException {
+    public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
-        powerService.setPower(state);
+        return powerService.setPower(state);
     }
 
     @Override
@@ -99,7 +95,7 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
         }
     }
 
-    public void updateColor(final HSVColor value) throws CouldNotPerformException {
+    public void updateColorProvider(final HSVColor value) throws CouldNotPerformException {
         logger.debug("Apply color Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
@@ -111,23 +107,22 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     }
 
     @Override
-    public void setColor(final HSVColor color) throws CouldNotPerformException {
+    public Future<Void> setColor(final HSVColor color) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to HSVColor[" + color.getHue() + "|" + color.getSaturation() + "|" + color.getValue() + "]");
-        colorService.setColor(color);
+        return colorService.setColor(color);
     }
 
     @Override
     public HSVColor getColor() throws NotAvailableException {
         try {
-            logger.info("===================== getcolor request");
             return getData().getColor();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("color", ex);
         }
     }
 
-    public void updateBrightness(Double value) throws CouldNotPerformException {
-        logger.info("Apply brightness Update[" + value + "] for " + this + ".");
+    public void updateBrightnessProvider(Double value) throws CouldNotPerformException {
+        logger.debug("Apply brightness Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<AmbientLight.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColor(dataBuilder.getInternalBuilder().getColor().toBuilder().setValue(value).build());
@@ -142,9 +137,9 @@ public class AmbientLightController extends AbstractUnitController<AmbientLight,
     }
 
     @Override
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
+    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to Brightness[" + brightness + "]");
-        brightnessService.setBrightness(brightness);
+        return brightnessService.setBrightness(brightness);
     }
 
     @Override

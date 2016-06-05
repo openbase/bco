@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,11 +21,10 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.unit.PowerPlugInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -49,10 +43,11 @@ public class PowerPlugRemote extends AbstractUnitRemote<PowerPlug> implements Po
     }
 
     public PowerPlugRemote() {
+        super(PowerPlug.class);
     }
 
     @Override
-    public void notifyUpdated(PowerPlug data) {
+    public void notifyDataUpdate(PowerPlug data) {
     }
 
     public void setPower(final PowerState.State value) throws CouldNotPerformException {
@@ -60,19 +55,17 @@ public class PowerPlugRemote extends AbstractUnitRemote<PowerPlug> implements Po
     }
 
     @Override
-    public void setPower(PowerState value) throws CouldNotPerformException {
-        try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(PowerPlugRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(PowerPlugRemote.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public Future<Void> setPower(PowerState value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
     }
 
     @Override
-    public PowerState getPower() throws CouldNotPerformException {
-        return getData().getPowerState();
+    public PowerState getPower() throws NotAvailableException {
+        try {
+            return getData().getPowerState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerState", ex);
+        }
     }
 
 }

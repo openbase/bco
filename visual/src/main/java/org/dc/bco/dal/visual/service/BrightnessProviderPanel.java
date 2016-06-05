@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -27,7 +22,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.provider.BrightnessProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BrightnessProviderService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
@@ -38,7 +33,7 @@ import java.text.DecimalFormat;
  *
  * @author mpohling
  */
-public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessProvider> {
+public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessProviderService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 

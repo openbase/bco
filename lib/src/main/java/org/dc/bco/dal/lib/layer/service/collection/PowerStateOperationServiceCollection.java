@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
@@ -26,40 +21,44 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface PowerStateOperationServiceCollection extends PowerService {
+public interface PowerStateOperationServiceCollection extends PowerOperationService {
 
     @Override
-    default public void setPower(final PowerState state) throws CouldNotPerformException {
-        for (PowerService service : getPowerStateOperationServices()) {
-            service.setPower(state);
-        }
+    default public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((PowerOperationService input) -> input.setPower(state), getPowerStateOperationServices());
     }
 
     /**
      * Returns on if at least one of the power services is on and else off.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public PowerState getPower() throws CouldNotPerformException {
-        for (PowerService service : getPowerStateOperationServices()) {
-            if (service.getPower().getValue() == PowerState.State.ON) {
-                return PowerState.newBuilder().setValue(PowerState.State.ON).build();
+    default public PowerState getPower() throws NotAvailableException {
+        try {
+            for (PowerOperationService service : getPowerStateOperationServices()) {
+                if (service.getPower().getValue() == PowerState.State.ON) {
+                    return PowerState.newBuilder().setValue(PowerState.State.ON).build();
+                }
             }
+            return PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerState", ex);
         }
-        return PowerState.newBuilder().setValue(PowerState.State.OFF).build();
     }
 
-    public Collection<PowerService> getPowerStateOperationServices();
+    public Collection<PowerOperationService> getPowerStateOperationServices() throws CouldNotPerformException;
 }

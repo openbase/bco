@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.control.action;
 
 /*
@@ -74,7 +69,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
         try {
             this.config = config.toBuilder();
-            this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+            this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
             this.serviceRemote = serviceRemoteFactory.createAndInitServiceRemote(config.getServiceType(), deviceRegistry.getUnitConfigById(config.getServiceHolder()));
             serviceRemote.activate();

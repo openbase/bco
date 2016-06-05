@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
@@ -26,22 +21,22 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface BrightnessStateOperationServiceCollection extends BrightnessService {
+public interface BrightnessStateOperationServiceCollection extends BrightnessOperationService {
 
     @Override
-    default public void setBrightness(Double brightness) throws CouldNotPerformException {
-        for (BrightnessService service : getBrightnessStateOperationServices()) {
-            service.setBrightness(brightness);
-        }
+    default public Future<Void> setBrightness(final Double brightness) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((BrightnessOperationService input) -> input.setBrightness(brightness), getBrightnessStateOperationServices());
     }
 
     /**
@@ -49,17 +44,21 @@ public interface BrightnessStateOperationServiceCollection extends BrightnessSer
      * services.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws org.dc.jul.exception.NotAvailableException
      */
     @Override
-    default public Double getBrightness() throws CouldNotPerformException {
-        Double average = 0d;
-        for (BrightnessService service : getBrightnessStateOperationServices()) {
-            average += service.getBrightness();
+    default public Double getBrightness() throws NotAvailableException {
+        try {
+            Double average = 0d;
+            for (BrightnessOperationService service : getBrightnessStateOperationServices()) {
+                average += service.getBrightness();
+            }
+            average /= getBrightnessStateOperationServices().size();
+            return average;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Brightness", ex);
         }
-        average /= getBrightnessStateOperationServices().size();
-        return average;
     }
 
-    public Collection<BrightnessService> getBrightnessStateOperationServices();
+    public Collection<BrightnessOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException;
 }

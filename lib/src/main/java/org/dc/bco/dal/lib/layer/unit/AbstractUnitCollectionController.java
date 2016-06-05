@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -210,7 +205,7 @@ public abstract class AbstractUnitCollectionController<M extends GeneratedMessag
     @Override
     public String toString() {
         try {
-            if (hasField(TYPE_FIELD_ID)) {
+            if (hasDataField(TYPE_FIELD_ID)) {
                 return getClass().getSimpleName() + "[" + getId() + "]";
             }
         } catch (CouldNotPerformException ex) {

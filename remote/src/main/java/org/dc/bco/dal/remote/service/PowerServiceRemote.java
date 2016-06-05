@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,8 +21,8 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.PowerService;
 import org.dc.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
@@ -35,14 +30,14 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * @author mpohling
  */
-public class PowerServiceRemote extends AbstractServiceRemote<PowerService> implements PowerStateOperationServiceCollection {
+public class PowerServiceRemote extends AbstractServiceRemote<PowerOperationService> implements PowerStateOperationServiceCollection {
 
     public PowerServiceRemote() {
         super(ServiceType.POWER_SERVICE);
     }
 
     @Override
-    public Collection<PowerService> getPowerStateOperationServices() {
+    public Collection<PowerOperationService> getPowerStateOperationServices() {
         return getServices();
     }
 }

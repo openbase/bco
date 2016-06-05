@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,8 +21,8 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
 import org.dc.bco.dal.lib.layer.service.collection.OpeningRatioStateOperationServiceCollection;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
@@ -35,14 +30,14 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioService> implements OpeningRatioStateOperationServiceCollection {
+public class OpeningRatioServiceRemote extends AbstractServiceRemote<OpeningRatioOperationService> implements OpeningRatioStateOperationServiceCollection {
 
     public OpeningRatioServiceRemote() {
         super(ServiceType.OPENING_RATIO_SERVICE);
     }
 
     @Override
-    public Collection<OpeningRatioService> getOpeningRatioStateOperationServices() {
+    public Collection<OpeningRatioOperationService> getOpeningRatioStateOperationServices() {
         return getServices();
     }
 }

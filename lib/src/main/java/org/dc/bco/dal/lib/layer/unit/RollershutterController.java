@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -26,8 +21,9 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -50,8 +46,8 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ShutterState.getDefaultInstance()));
     }
 
-    private ShutterService shutterService;
-    private OpeningRatioService openingRatioService;
+    private ShutterOperationService shutterService;
+    private OpeningRatioOperationService openingRatioService;
 
     public RollershutterController(final UnitHost unitHost, final Rollershutter.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(RollershutterController.class, unitHost, builder);
@@ -61,14 +57,14 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            this.shutterService = getServiceFactory().newShutterService(this);
-            this.openingRatioService = getServiceFactory().newOpeningRatioService(this);
+            shutterService = getServiceFactory().newShutterService(this);
+            openingRatioService = getServiceFactory().newOpeningRatioService(this);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    public void updateShutter(final ShutterState value) throws CouldNotPerformException {
+    public void updateShutterProvider(final ShutterState value) throws CouldNotPerformException {
         logger.debug("Apply shutter Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {
@@ -79,9 +75,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     @Override
-    public void setShutter(final ShutterState state) throws CouldNotPerformException {
+    public Future<Void> setShutter(final ShutterState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to ShutterState [" + state + "]");
-        this.shutterService.setShutter(state);
+        return shutterService.setShutter(state);
     }
 
     @Override
@@ -93,7 +89,7 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
         }
     }
 
-    public void updateOpeningRatio(final Double value) throws CouldNotPerformException {
+    public void updateOpeningRatioProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply opening ratio Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Rollershutter.Builder> dataBuilder = getDataBuilder(this)) {
@@ -104,9 +100,9 @@ public class RollershutterController extends AbstractUnitController<Rollershutte
     }
 
     @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to OpeningRatio [" + openingRatio + "]");
-        this.openingRatioService.setOpeningRatio(openingRatio);
+        return openingRatioService.setOpeningRatio(openingRatio);
     }
 
     @Override

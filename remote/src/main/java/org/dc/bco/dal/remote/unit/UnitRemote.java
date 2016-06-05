@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -45,8 +40,6 @@ public interface UnitRemote<M, CONFIG> extends Unit, Service, ConfigurableRemote
     void init(ScopeType.Scope scope) throws InitializationException, InterruptedException;
 
     void init(Scope scope) throws InitializationException, InterruptedException;
-
-    void init(String scope) throws InitializationException, InterruptedException;
 
     void initById(final String id) throws InitializationException, InterruptedException;
 

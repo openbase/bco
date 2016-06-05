@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -26,7 +21,7 @@ package org.dc.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.StandbyService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InvalidStateException;
@@ -39,7 +34,7 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
  *
  * @author mpohling
  */
-public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
+public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationService> {
 
     private static final StandbyState RUNNING = StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
     private static final StandbyState STANDBY = StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
@@ -150,8 +145,6 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyService> {
 
     @Override
     protected void updateDynamicComponents() {
-        System.out.println("updateDynamicComponents");
-
         try {
             switch (getService().getStandby().getValue()) {
                 case STANDBY:

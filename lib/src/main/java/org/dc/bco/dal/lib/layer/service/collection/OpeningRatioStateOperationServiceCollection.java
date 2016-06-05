@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service.collection;
 
 /*
@@ -26,22 +21,22 @@ package org.dc.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.processing.FutureProcessor;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface OpeningRatioStateOperationServiceCollection extends OpeningRatioService {
+public interface OpeningRatioStateOperationServiceCollection extends OpeningRatioOperationService {
 
     @Override
-    default public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        for (OpeningRatioService service : getOpeningRatioStateOperationServices()) {
-            service.setOpeningRatio(openingRatio);
-        }
+    default public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+        return FutureProcessor.toForkJoinTask((OpeningRatioOperationService input) -> input.setOpeningRatio(openingRatio), getOpeningRatioStateOperationServices());
     }
 
     /**
@@ -49,17 +44,21 @@ public interface OpeningRatioStateOperationServiceCollection extends OpeningRati
      * services.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws NotAvailableException
      */
     @Override
-    default public Double getOpeningRatio() throws CouldNotPerformException {
-        Double average = 0d;
-        for (OpeningRatioService service : getOpeningRatioStateOperationServices()) {
-            average += service.getOpeningRatio();
+    default public Double getOpeningRatio() throws NotAvailableException {
+        try {
+            Double average = 0d;
+            for (OpeningRatioOperationService service : getOpeningRatioStateOperationServices()) {
+                average += service.getOpeningRatio();
+            }
+            average /= getOpeningRatioStateOperationServices().size();
+            return average;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("OpeningRatio", ex);
         }
-        average /= getOpeningRatioStateOperationServices().size();
-        return average;
     }
 
-    public Collection<OpeningRatioService> getOpeningRatioStateOperationServices();
+    public Collection<OpeningRatioOperationService> getOpeningRatioStateOperationServices() throws CouldNotPerformException;
 }

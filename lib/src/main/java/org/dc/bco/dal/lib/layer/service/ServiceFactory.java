@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.service;
 
 /*
@@ -27,6 +22,13 @@ package org.dc.bco.dal.lib.layer.service;
  * #L%
  */
 
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.InstantiationException;
 
@@ -36,20 +38,18 @@ import org.dc.jul.exception.InstantiationException;
  */
 public interface ServiceFactory {
 
-    public abstract <UNIT extends BrightnessService & Unit> BrightnessService newBrightnessService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends ColorService & Unit> ColorService newColorService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends ColorOperationService & Unit> ColorOperationService newColorService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends PowerService & Unit> PowerService newPowerService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends PowerOperationService & Unit> PowerOperationService newPowerService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends OpeningRatioService & Unit> OpeningRatioService newOpeningRatioService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends ShutterService & Unit> ShutterService newShutterService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends DimService & Unit> DimService newDimmService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends StandbyService & Unit> StandbyService newStandbyService(UNIT unit) throws InstantiationException;
-
-    public abstract <UNIT extends TargetTemperatureService & Unit> TargetTemperatureService newTargetTemperatureService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends TargetTemperatureOperationService & Unit> TargetTemperatureOperationService newTargetTemperatureService(UNIT unit) throws InstantiationException;
 
 }

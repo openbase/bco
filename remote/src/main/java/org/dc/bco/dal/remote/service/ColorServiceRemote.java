@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,23 +21,23 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.ColorService;
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ColorServiceRemote extends AbstractServiceRemote<ColorService> implements ColorStateOperationServiceCollection {
+public class ColorServiceRemote extends AbstractServiceRemote<ColorOperationService> implements ColorStateOperationServiceCollection {
 
     public ColorServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE);
     }
 
     @Override
-    public Collection<ColorService> getColorStateOperationServices() {
+    public Collection<ColorOperationService> getColorStateOperationServices() {
         return getServices();
     }
 }

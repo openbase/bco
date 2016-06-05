@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -52,7 +47,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         super(TemperatureSensorController.class, unitHost, builder);
     }
 
-    public void updateTemperature(final Double value) throws CouldNotPerformException {
+    public void updateTemperatureProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
@@ -71,7 +66,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
         }
     }
 
-    public void updateTemperatureAlarmState(final AlarmState value) throws CouldNotPerformException {
+    public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
@@ -82,7 +77,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
     }
 
     @Override
-    public AlarmState getTemperatureAlarmState() throws CouldNotPerformException {
+    public AlarmState getTemperatureAlarmState() throws NotAvailableException {
         try {
             return getData().getTemperatureAlarmState();
         } catch (CouldNotPerformException ex) {

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -28,7 +23,8 @@ package org.dc.bco.dal.lib.layer.unit;
  */
 
 
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -48,8 +44,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureController.getDefaultInstance()));
     }
 
-    private TargetTemperatureService targetTemperatureService;
-
+    private TargetTemperatureOperationService targetTemperatureService;
 
     public TemperatureControllerController(final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureControllerController.class, unitHost, builder);
@@ -67,13 +62,13 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
 
 
     @Override
-    public void setTargetTemperature(final Double value) throws CouldNotPerformException {
+    public Future<Void> setTargetTemperature(final Double value) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to target temperature [" + value + "]");
-        targetTemperatureService.setTargetTemperature(value);
+        return targetTemperatureService.setTargetTemperature(value);
     }
 
     @Override
-    public Double getTargetTemperature() throws CouldNotPerformException {
+    public Double getTargetTemperature() throws NotAvailableException {
         try {
             return getData().getTargetTemperature();
         } catch (CouldNotPerformException ex) {
@@ -81,7 +76,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         }
     }
 
-    public void updateTargetTemperature(final Double value) throws CouldNotPerformException {
+    public void updateTargetTemperatureProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply target temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
@@ -90,8 +85,8 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
             throw new CouldNotPerformException("Could not apply target temperature Update[" + value + "] for " + this + "!", ex);
         }
     }
-    
-    public void updateTemperature(final Double value) throws CouldNotPerformException {
+
+    public void updateTemperatureProvider(final Double value) throws CouldNotPerformException {
         logger.debug("Apply actual temperature Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
@@ -102,7 +97,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
     }
 
     @Override
-    public Double getTemperature() throws CouldNotPerformException {
+    public Double getTemperature() throws NotAvailableException {
         try {
             return getData().getActualTemperature();
         } catch (CouldNotPerformException ex) {

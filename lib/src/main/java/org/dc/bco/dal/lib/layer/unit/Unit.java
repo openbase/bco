@@ -21,8 +21,6 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.Service;
@@ -50,8 +48,18 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiable<String>, ConfigProvider<UnitConfig>, Snapshotable<SceneConfig> {
 
+    /**
+     * Returns the unit type.
+     * @return UnitType
+     * @throws NotAvailableException
+     */
     public UnitType getType() throws NotAvailableException;
 
+    /**
+     * Returns the related template for this unit.
+     * @return UnitTemplate
+     * @throws NotAvailableException in case the unit template is not available.
+     */
     public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException;
 
     @Override

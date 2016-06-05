@@ -3,11 +3,14 @@ package org.dc.bco.dal.lib.layer.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotSupportedException;
-import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
+import org.dc.bco.dal.lib.layer.service.operation.OperationService;
+import org.dc.bco.dal.lib.layer.service.provider.ProviderService;
+import org.dc.jul.processing.StringProcessor;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 
 /*
@@ -37,6 +40,11 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
  */
 public interface Service {
 
+    public static final String SERVICE_LABEL = Service.class.getSimpleName();
+    public static final String PROVIDER_SERVICE_LABEL = ProviderService.class.getSimpleName();
+    public static final String CONSUMER_SERVICE_LABEL = ConsumerService.class.getSimpleName();
+    public static final String OPERATION_SERVICE_LABEL = OperationService.class.getSimpleName();
+
     //TODO add to rst
     public enum ServiceBaseType {
 
@@ -44,6 +52,19 @@ public interface Service {
     };
 
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * This method returns the service base name of the given service type.
+     *
+     * The base name is the service name without service suffix.
+     * e.g. the base name of service PowerStateProviderService is PowerState.
+     *
+     * @param serviceType the service type to extract the base name.
+     * @return the service base name.
+     */
+    public static String getServiceBaseName(ServiceTemplate.ServiceType serviceType) {
+        return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.PROVIDER_SERVICE_LABEL, "").replaceAll(Service.CONSUMER_SERVICE_LABEL, "").replaceAll(Service.OPERATION_SERVICE_LABEL, "");
+    }
 
     public static ServiceBaseType detectServiceBaseType(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
         if (serviceType.name().endsWith(ServiceBaseType.PROVIDER.name())) {

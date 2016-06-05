@@ -21,20 +21,19 @@ package org.dc.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.visual.util.StatusPanel;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.LogLevel;
-import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.schedule.SyncObject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.dc.bco.dal.lib.layer.service.Service;
+import org.dc.bco.dal.remote.unit.UnitRemote;
 import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,14 +51,14 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
 
     private S service;
     private ServiceConfig serviceConfig;
-    private Observable observable;
+    private UnitRemote unitRemote;
     private final Observer observer;
     protected StatusPanel statusPanel;
     private ScheduledExecutorService serviceExecuterService;
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
     private ServiceTemplateType.ServiceTemplate.ServiceType serviceType;
-    
+
     /**
      * Creates new form AbstractServiceView
      *
@@ -151,15 +150,15 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     public void setServiceType(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
         this.serviceType = serviceType;
     }
-    
-    public void initService(ServiceConfig serviceConfig, S service, Observable observable) {
-        if (this.observable != null) {
-            observable.removeObserver(observer);
+
+    public void initService(ServiceConfig serviceConfig, S service, UnitRemote unitRemote) {
+        if (this.unitRemote != null) {
+            unitRemote.removeDataObserver(observer);
         }
-        this.observable = observable;
+        this.unitRemote = unitRemote;
         this.service = service;
         this.serviceConfig = serviceConfig;
-        observable.addObserver(observer);
+        unitRemote.addDataObserver(observer);
         updateDynamicComponents();
     }
 

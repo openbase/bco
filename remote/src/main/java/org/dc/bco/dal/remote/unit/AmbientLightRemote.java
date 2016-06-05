@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,18 +21,14 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.unit.AmbientLightInterface;
 import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.AmbientLightType;
 import rst.vision.HSVColorType;
@@ -56,65 +47,52 @@ public class AmbientLightRemote extends AbstractUnitRemote<AmbientLightType.Ambi
     }
 
     public AmbientLightRemote() {
+        super(AmbientLightType.AmbientLight.class);
     }
 
-    public void setColor(final java.awt.Color color) throws CouldNotPerformException {
+    public Future<Void> setColor(final java.awt.Color color) throws CouldNotPerformException {
+        return setColor(HSVColorToRGBColorTransformer.transform(color));
+    }
+
+    @Override
+    public Future<Void> setColor(final HSVColor value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    }
+
+    @Override
+    public Future<Void> setBrightness(Double value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    }
+
+    @Override
+    public PowerState getPower() throws NotAvailableException {
         try {
-            setColor(HSVColorToRGBColorTransformer.transform(color));
+            return getData().getPowerState();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Could not set color!", ex);
+            throw new NotAvailableException("PowerState", ex);
         }
     }
 
     @Override
-    public void setColor(final HSVColor value) throws CouldNotPerformException {
+    public Future<Void> setPower(PowerState value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    }
+
+    @Override
+    public HSVColor getColor() throws NotAvailableException {
         try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+            return getData().getColor();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Color", ex);
         }
     }
 
     @Override
-    public void notifyUpdated(AmbientLightType.AmbientLight data) {
-    }
-
-    @Override
-    public void setBrightness(Double value) throws CouldNotPerformException {
+    public Double getBrightness() throws NotAvailableException {
         try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
+            return this.getData().getColor().getValue();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("rightness", ex);
         }
-    }
-
-    @Override
-    public PowerState getPower() throws CouldNotPerformException {
-        return this.getData().getPowerState();
-    }
-
-    @Override
-    public void setPower(PowerState value) throws CouldNotPerformException {
-        try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(AmbientLightRemote.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @Override
-    public HSVColor getColor() throws CouldNotPerformException {
-        return this.getData().getColor();
-    }
-
-    @Override
-    public Double getBrightness() throws CouldNotPerformException {
-        return this.getData().getColor().getValue();
     }
 }

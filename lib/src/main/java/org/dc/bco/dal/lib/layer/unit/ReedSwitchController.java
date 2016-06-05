@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -52,7 +47,7 @@ public class ReedSwitchController extends AbstractUnitController<ReedSwitch, Ree
         super(ReedSwitchController.class, unitHost, builder);
     }
 
-    public void updateReedSwitch(final ReedSwitchState.State value) throws CouldNotPerformException {
+    public void updateReedSwitchProvider(final ReedSwitchState.State value) throws CouldNotPerformException {
         logger.debug("Apply reed switch Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<ReedSwitch.Builder> dataBuilder = getDataBuilder(this)) {

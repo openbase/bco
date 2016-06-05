@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.jp;
 
 /*
@@ -27,9 +22,9 @@ package org.dc.bco.dal.lib.jp;
  * #L%
  */
 
-import org.dc.jps.core.AbstractJavaProperty;
 import java.util.ArrayList;
 import java.util.List;
+import org.dc.jps.core.AbstractJavaProperty;
 
 /**
  *

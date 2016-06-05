@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -26,7 +21,7 @@ package org.dc.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.InvalidStateException;
@@ -39,7 +34,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  *
  * @author mpohling
  */
-public class PowerServicePanel extends AbstractServicePanel<PowerService> {
+public class PowerServicePanel extends AbstractServicePanel<PowerOperationService> {
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();

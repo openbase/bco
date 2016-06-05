@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,12 +21,10 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.unit.TemperatureControllerInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -48,30 +41,33 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     public TemperatureControllerRemote() {
+        super(TemperatureController.class);
     }
 
     @Override
-    public void notifyUpdated(TemperatureController data) throws CouldNotPerformException {
+    public void notifyDataUpdate(TemperatureController data) throws CouldNotPerformException {
     }
 
     @Override
-    public Double getTemperature() throws CouldNotPerformException {
-        return getData().getActualTemperature();
-    }
-
-    @Override
-    public void setTargetTemperature(Double value) throws CouldNotPerformException {
+    public Double getTemperature() throws NotAvailableException {
         try {
-            RPCHelper.callRemoteMethod(value, this).get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(TemperatureControllerRemote.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(TemperatureControllerRemote.class.getName()).log(Level.SEVERE, null, ex);
+            return getData().getActualTemperature();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Temperature", ex);
         }
     }
 
     @Override
-    public Double getTargetTemperature() throws CouldNotPerformException {
-        return getData().getTargetTemperature();
+    public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    }
+
+    @Override
+    public Double getTargetTemperature() throws NotAvailableException {
+        try {
+            return getData().getTargetTemperature();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("TargetTemperature", ex);
+        }
     }
 }

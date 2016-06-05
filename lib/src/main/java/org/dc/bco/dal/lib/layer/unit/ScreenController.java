@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -26,8 +21,9 @@ package org.dc.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.dal.lib.layer.service.PowerService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
+import java.util.concurrent.Future;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -52,8 +48,8 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
     }
 
-    private PowerService powerService;
-    private StandbyService standbyService;
+    private PowerOperationService powerService;
+    private StandbyOperationService standbyService;
 
     public ScreenController(final UnitHost unitHost, final Screen.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ScreenController.class, unitHost, builder);
@@ -70,7 +66,7 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
         }
     }
 
-    public void updatePower(final PowerState.State value) throws CouldNotPerformException {
+    public void updatePowerProvider(final PowerState.State value) throws CouldNotPerformException {
         logger.debug("Apply power Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<Screen.Builder> dataBuilder = getDataBuilder(this)) {
@@ -81,9 +77,9 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
     }
 
     @Override
-    public void setPower(final PowerState state) throws CouldNotPerformException {
+    public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
-        powerService.setPower(state);
+        return powerService.setPower(state);
     }
 
     @Override
@@ -96,17 +92,27 @@ public class ScreenController extends AbstractUnitController<Screen, Screen.Buil
     }
 
     @Override
-    public void setStandby(StandbyState state) throws CouldNotPerformException {
+    public Future<Void> setStandby(StandbyState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
-        standbyService.setStandby(state);
+        return standbyService.setStandby(state);
     }
 
     @Override
-    public StandbyState getStandby() throws CouldNotPerformException {
+    public StandbyState getStandby() throws NotAvailableException {
         try {
             return getData().getStandbyState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("standby", ex);
+        }
+    }
+    
+    public void updateStandbyProvider(final StandbyState.State value) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<Screen.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().getStandbyStateBuilder().setValue(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply standby Update[" + value + "] for " + this + "!", ex);
         }
     }
 }

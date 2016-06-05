@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -27,7 +22,7 @@ package org.dc.bco.dal.visual.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.util.concurrent.Callable;
@@ -36,7 +31,7 @@ import java.util.concurrent.Callable;
  *
  * @author mpohling
  */
-public class BrightnessServicePanel extends AbstractServicePanel<BrightnessService> {
+public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOperationService> {
 
     /**
      * Creates new form BrightnessService
@@ -94,7 +89,6 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessServi
     }// </editor-fold>//GEN-END:initComponents
 
     private void brightnessSliderPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_brightnessSliderPropertyChange
-        System.out.println("brightnessSliderPropertyChange");
     }//GEN-LAST:event_brightnessSliderPropertyChange
 
     private void brightnessSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_brightnessSliderStateChanged

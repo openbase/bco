@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.util;
 
 /*
@@ -27,7 +22,6 @@ package org.dc.bco.dal.visual.util;
  * #L%
  */
 
-import org.dc.jul.exception.NotAvailableException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.Timer;
+import org.dc.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +89,7 @@ public class StatusPanel extends javax.swing.JPanel {
     public void setWarning(final String message) {
         setStatus(message, StatusType.WARN, 5);
     }
-    
+
     public void setError(Exception ex) {
         setStatus(ex.getLocalizedMessage(), StatusType.ERROR, 5);
     }
@@ -128,20 +123,16 @@ public class StatusPanel extends javax.swing.JPanel {
         cancelButton.setEnabled(true);
         progressBar.setIndeterminate(true);
         setText(text, type);
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    future.get();
-                    reset();
-                } catch (CancellationException ex) {
-                    setStatus("Canceled by user!", StatusType.WARN, 1);
-                } catch (ExecutionException | InterruptedException ex) {
-                    setError(ex);
-                }
-                cancelButton.setEnabled(false);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                future.get();
+                reset();
+            } catch (CancellationException ex) {
+                setStatus("Canceled by user!", StatusType.WARN, 1);
+            } catch (ExecutionException | InterruptedException ex) {
+                setError(ex);
             }
+            cancelButton.setEnabled(false);
         });
 
     }

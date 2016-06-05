@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -35,12 +30,12 @@ import org.dc.jul.storage.registry.RegistryImpl;
  *
  * @author Divine Threepwood
  */
-public class UnitControllerRegistryImpl extends RegistryImpl<String, Unit> implements UnitControllerRegistry {
+public class UnitControllerRegistryImpl extends RegistryImpl<String, UnitController> implements UnitControllerRegistry {
 
     public UnitControllerRegistryImpl() throws InstantiationException {
     }
 
-    public UnitControllerRegistryImpl(HashMap<String, Unit> entryMap) throws InstantiationException {
+    public UnitControllerRegistryImpl(HashMap<String, UnitController> entryMap) throws InstantiationException {
         super(entryMap);
     }
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,32 +21,38 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.BrightnessSensorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.unit.BrightnessSensorType;
+import rst.homeautomation.unit.BrightnessSensorType.BrightnessSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorType.BrightnessSensor> implements BrightnessSensorInterface {
+public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensor> implements BrightnessSensorInterface {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
     }
 
     public BrightnessSensorRemote() {
+        super(BrightnessSensor.class);
     }
 
     @Override
-    public void notifyUpdated(BrightnessSensorType.BrightnessSensor data) {
+    public void notifyDataUpdate(BrightnessSensorType.BrightnessSensor data) {
     }
 
     @Override
-    public Double getBrightness() throws CouldNotPerformException {
-        return getData().getBrightness();
+    public Double getBrightness() throws NotAvailableException {
+        try {
+            return getData().getBrightness();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Brightness", ex);
+        }
     }
 }

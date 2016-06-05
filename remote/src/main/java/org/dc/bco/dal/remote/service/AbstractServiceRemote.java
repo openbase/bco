@@ -106,7 +106,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     }
 
     @Override
-    public void activate() throws InterruptedException, MultiException {
+    public void activate() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         for (UnitRemote remote : unitRemoteMap.values()) {
             try {
@@ -133,12 +133,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
 
     @Override
     public boolean isActive() {
-        for (UnitRemote remote : unitRemoteMap.values()) {
-            if (!remote.isActive()) {
-                return false;
-            }
-        }
-        return true;
+        return unitRemoteMap.values().stream().allMatch((remote) -> (remote.isActive()));
     }
 
     public UnitRemoteFactory getFactory() {

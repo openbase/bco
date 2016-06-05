@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.unit;
 
 /*
@@ -26,9 +21,9 @@ package org.dc.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.dc.bco.dal.lib.layer.unit.SmokeDetectorInterface;
 import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
@@ -47,17 +42,29 @@ public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetector> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
-    @Override
-    public void notifyUpdated(SmokeDetector data) throws CouldNotPerformException {
+    public SmokeDetectorRemote() {
+        super(SmokeDetector.class);
     }
 
     @Override
-    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        return getData().getSmokeAlarmState();
+    public void notifyDataUpdate(SmokeDetector data) throws CouldNotPerformException {
     }
 
     @Override
-    public SmokeState getSmokeState() throws CouldNotPerformException {
-        return getData().getSmokeState();
+    public AlarmState getSmokeAlarmState() throws NotAvailableException {
+        try {
+            return getData().getSmokeAlarmState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AlarmState", ex);
+        }
+    }
+
+    @Override
+    public SmokeState getSmokeState() throws NotAvailableException {
+        try {
+            return getData().getSmokeState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SmokeState", ex);
+        }
     }
 }

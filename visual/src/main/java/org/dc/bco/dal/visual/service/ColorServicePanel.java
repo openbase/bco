@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual.service;
 
 /*
@@ -26,15 +21,14 @@ package org.dc.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
 import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
+import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +36,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class ColorServicePanel extends AbstractServicePanel<ColorService> {
+public class ColorServicePanel extends AbstractServicePanel<ColorOperationService> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

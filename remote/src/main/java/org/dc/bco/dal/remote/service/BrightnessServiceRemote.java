@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.remote.service;
 
 /*
@@ -26,23 +21,24 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import java.util.Collection;
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
 import org.dc.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
+import org.dc.jul.exception.CouldNotPerformException;
 import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessService> implements BrightnessStateOperationServiceCollection {
+public class BrightnessServiceRemote extends AbstractServiceRemote<BrightnessOperationService> implements BrightnessStateOperationServiceCollection {
 
     public BrightnessServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
     }
-
+    
     @Override
-    public Collection<BrightnessService> getBrightnessStateOperationServices() {
+    public Collection<BrightnessOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
         return getServices();
     }
 }

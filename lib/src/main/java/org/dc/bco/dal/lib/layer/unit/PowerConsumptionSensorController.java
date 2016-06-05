@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -36,7 +31,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -53,7 +47,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
 
-    public void updatePowerConsumption(final PowerConsumptionState state) throws CouldNotPerformException {
+    public void updatePowerConsumptionProvider(final PowerConsumptionState state) throws CouldNotPerformException {
         logger.debug("Apply power consumption Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<PowerConsumptionSensor.Builder> dataBuilder = getDataBuilder(this)) {

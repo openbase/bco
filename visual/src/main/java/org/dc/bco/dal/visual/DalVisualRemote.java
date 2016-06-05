@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.visual;
 
 /*
@@ -27,17 +22,17 @@ package org.dc.bco.dal.visual;
  * #L%
  */
 
-import org.dc.bco.dal.visual.util.StatusPanel;
-import org.dc.jps.core.JPService;
-import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.dc.jul.exception.InstantiationException;
-import org.dc.jul.exception.NotAvailableException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
+import org.dc.bco.dal.visual.util.StatusPanel;
+import org.dc.jps.core.JPService;
+import org.dc.jul.exception.CouldNotPerformException;
+import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -64,10 +59,10 @@ public class DalVisualRemote extends javax.swing.JFrame {
     public DalVisualRemote() throws InstantiationException, InterruptedException {
         try {
             instance = this;
-            
+
             initComponents();
             loadImage();
-            
+
             selectorPanel.addObserver(genericUnitPanel.getUnitConfigObserver());
             init();
         } catch (Exception ex) {
@@ -181,7 +176,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {
             try {
-                new DalVisualRemote().setVisible(true);;
+                new DalVisualRemote().setVisible(true);
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(ex, logger);
                 System.exit(1);

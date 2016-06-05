@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.dal.lib.layer.unit;
 
 /*
@@ -36,7 +31,6 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.homeautomation.unit.HandleSensorType.HandleSensor;
-import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
@@ -53,7 +47,7 @@ public class HandleSensorController extends AbstractUnitController<HandleSensor,
         super(HandleSensorController.class, unitHost, builder);
     }
 
-    public void updateHandle(final HandleState.State value) throws CouldNotPerformException {
+    public void updateHandleProvider(final HandleState.State value) throws CouldNotPerformException {
         logger.debug("Apply handle state Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<HandleSensor.Builder> dataBuilder = getDataBuilder(this)) {
