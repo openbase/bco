@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,7 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.MotionSensorController;
@@ -38,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -72,7 +68,7 @@ public class MotionSensorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.MOTION_SENSOR_LABEL;
@@ -90,9 +86,7 @@ public class MotionSensorRemoteTest {
         if (motionSensorRemote != null) {
             motionSensorRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -115,11 +109,13 @@ public class MotionSensorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
+        motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
-        ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotion(motion);
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionSensorRemote.requestStatus().getMotionState().getValue());
+        ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotionProvider(motion);
+        motionSensorRemote.requestData().get();
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionSensorRemote.getMotion().getValue());
     }
 }

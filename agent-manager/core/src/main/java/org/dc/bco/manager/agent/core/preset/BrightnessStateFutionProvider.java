@@ -21,7 +21,6 @@ package org.dc.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
@@ -31,7 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.dc.bco.dal.lib.layer.service.provider.BrightnessProvider;
+import org.dc.bco.dal.lib.layer.service.provider.BrightnessProviderService;
 import org.dc.bco.dal.remote.unit.BrightnessSensorRemote;
 import org.dc.jul.pattern.Observable;
 import org.slf4j.Logger;
@@ -43,9 +42,10 @@ import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public class BrightnessStateFutionProvider extends ObservableImpl<Double> implements BrightnessProvider {
+public class BrightnessStateFutionProvider extends ObservableImpl<Double> implements BrightnessProviderService {
 //
 //    /**
 //     * Default 3 minute window of no movement unit the state switches to NO_MOTION.
@@ -53,7 +53,8 @@ public class BrightnessStateFutionProvider extends ObservableImpl<Double> implem
 //    public static final long MOTION_TIMEOUT = 900;
 
     /**
-     * Measurement time window within the max, min and average updates are performed.
+     * Measurement time window within the max, min and average updates are
+     * performed.
      */
     public static final long DEFAULT_MEASUREMENT_TIME_WINDOW = 900;
 
@@ -122,8 +123,8 @@ public class BrightnessStateFutionProvider extends ObservableImpl<Double> implem
     }
 
     @Override
-    public Double getBrightness() throws CouldNotPerformException {
-        try {
+    public Double getBrightness() throws NotAvailableException {
+//        try {
             if (brightnessAverageState == UNKNOWN_VALUE) {
                 if (brightnessLastStates.isEmpty()) {
                     throw new NotAvailableException("brightness");
@@ -131,9 +132,9 @@ public class BrightnessStateFutionProvider extends ObservableImpl<Double> implem
                 return brightnessLastStates.values().stream().findFirst().get();
             }
             return brightnessAverageState;
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not return brightness!", ex);
-        }
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not return brightness!", ex);
+//        }
     }
 
     public Double getBrightnessMinState() {

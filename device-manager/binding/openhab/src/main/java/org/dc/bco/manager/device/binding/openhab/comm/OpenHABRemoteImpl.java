@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.binding.openhab.comm;
 
 /*
@@ -64,6 +59,9 @@ public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
     public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
         try {
             //Ignore commands that are not for the device manager but for example for the scene registry
+            if(!command.getItemBindingConfig().isEmpty()) {
+                return;
+            }
             commandExecutor.receiveUpdate(command);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + OpenhabCommandTransformer.getCommandData(command) + "]!", ex);

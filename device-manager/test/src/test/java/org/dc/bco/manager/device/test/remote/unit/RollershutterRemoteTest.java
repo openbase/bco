@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,6 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.RollershutterController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -37,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -71,6 +68,7 @@ public class RollershutterRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.ROLLERSHUTTER_LABEL;
@@ -88,9 +86,7 @@ public class RollershutterRemoteTest {
         if (rollershutterRemote != null) {
             rollershutterRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -106,12 +102,12 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
-        rollershutterRemote.setShutter(state);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.setShutter(state).get();
+        rollershutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState());
     }
 
@@ -120,12 +116,13 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
-        ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutter(state);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutterProvider(state);
+        rollershutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
     }
 
@@ -134,12 +131,12 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetOpeningRatio() throws Exception {
         System.out.println("setOpeningRatio");
         double openingRatio = 34.0D;
-        rollershutterRemote.setOpeningRatio(openingRatio);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.setOpeningRatio(openingRatio).get();
+        rollershutterRemote.requestData().get();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getData().getOpeningRatio(), 0.1);
     }
 
@@ -148,12 +145,13 @@ public class RollershutterRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
-        ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateOpeningRatio(openingRatio);
-        rollershutterRemote.requestStatus();
+        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateOpeningRatioProvider(openingRatio);
+        rollershutterRemote.requestData().get();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getOpeningRatio());
     }
 

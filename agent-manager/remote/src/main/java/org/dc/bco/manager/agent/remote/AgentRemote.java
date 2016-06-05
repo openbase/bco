@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.agent.remote;
 
 /*
@@ -48,8 +43,12 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    public AgentRemote() {
+        super(AgentData.class, AgentConfig.class);
+    }
+
     @Override
-    public void notifyUpdated(AgentData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(AgentData data) throws CouldNotPerformException {
 
     }
 
@@ -57,5 +56,10 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         logger.info("Calling remote setActivationState to [" + activation + "] for agent");
         RPCHelper.callRemoteMethod(activation, this);
+    }
+
+    @Override
+    public AgentConfig applyConfigUpdate(AgentConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

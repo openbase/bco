@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,7 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.ReedSwitchController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -38,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -72,7 +68,7 @@ public class ReedSwitchRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.REED_SWITCH_LABEL;
@@ -90,9 +86,7 @@ public class ReedSwitchRemoteTest {
         if (reedSwitchRemote != null) {
             reedSwitchRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -115,12 +109,13 @@ public class ReedSwitchRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
+        reedSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
-        ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitch(state);
-        reedSwitchRemote.requestStatus();
+        ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitchProvider(state);
+        reedSwitchRemote.requestData().get();
         Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch().getValue());
     }
 }

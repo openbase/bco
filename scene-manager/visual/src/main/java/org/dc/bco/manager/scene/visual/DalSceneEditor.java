@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.scene.visual;
 
 /*
@@ -32,7 +27,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import javax.swing.JComponent;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -46,6 +40,7 @@ import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.dc.jul.processing.StringProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionAuthorityType.ActionAuthority;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
@@ -94,13 +89,13 @@ public class DalSceneEditor extends javax.swing.JFrame {
             genericUnitCollectionPanel.init();
             sceneCreationPanel.init();
 
-            CompletableFuture.runAsync(() -> {
+            GlobalExecutionService.submit(() -> {
                 try {
-                    sceneSelectorPanel.init();
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
+                    sceneCreationPanel.init();
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
                 }
             });
         } catch (CouldNotPerformException ex) {

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,8 +21,8 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
-import org.dc.bco.dal.lib.layer.unit.TemperatureSensorController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
 import org.dc.jps.core.JPService;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
@@ -39,6 +34,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -72,6 +68,7 @@ public class TemperatureControllerRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.TEMPERATURE_CONTROLLER_LABEL;
@@ -89,9 +86,7 @@ public class TemperatureControllerRemoteTest {
         if (temperatureControllerRemote != null) {
             temperatureControllerRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -114,12 +109,12 @@ public class TemperatureControllerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetTargetTemperature() throws Exception {
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
-        temperatureControllerRemote.setTargetTemperature(temperature);
-        temperatureControllerRemote.requestStatus();
+        temperatureControllerRemote.setTargetTemperature(temperature).get();
+        temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperature(), 0.1);
     }
 
@@ -128,12 +123,13 @@ public class TemperatureControllerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTargetTemperature() throws Exception {
         System.out.println("getTargetTemperature");
         double temperature = 3.141F;
-        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperature(temperature);
-        temperatureControllerRemote.requestStatus();
+        temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperatureProvider(temperature);
+        temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperature(), 0.1);
     }
 
@@ -142,12 +138,13 @@ public class TemperatureControllerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
-        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperature(temperature);
-        temperatureControllerRemote.requestStatus();
+        temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperatureProvider(temperature);
+        temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperature(), 0.1);
     }
 }

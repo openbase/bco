@@ -23,9 +23,7 @@ package org.dc.bco.manager.device.test;
  */
 
 
-import org.dc.bco.manager.device.core.DeviceManagerController;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
-import org.dc.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;

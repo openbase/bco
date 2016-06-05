@@ -42,8 +42,7 @@ import rst.homeautomation.state.EnablingStateType.EnablingState;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
 
@@ -109,6 +108,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory.init(openHABRemote);
             appRegistryRemote.init();
             appRegistryRemote.activate();
+            appRegistryRemote.waitForData();
             registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

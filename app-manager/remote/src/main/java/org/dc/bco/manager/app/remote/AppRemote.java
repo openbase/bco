@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.app.remote;
 
 /*
@@ -48,13 +43,22 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    public AppRemote() {
+        super(AppData.class, AppConfig.class);
+    }
+
     @Override
-    public void notifyUpdated(AppData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(AppData data) throws CouldNotPerformException {
 
     }
 
     @Override
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(activation, this);
+    }
+
+    @Override
+    public AppConfig applyConfigUpdate(AppConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -21,14 +21,19 @@ package org.dc.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dc.bco.manager.device.lib.DeviceManager;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
 import org.dc.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.dc.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.dc.bco.manager.device.lib.DeviceControllerRegistry;
 import org.dc.bco.manager.device.lib.DeviceFactory;
+import org.dc.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.dc.bco.registry.device.remote.DeviceRegistryRemote;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -37,7 +42,8 @@ import rst.homeautomation.device.DeviceConfigType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
 public class DeviceManagerController implements DeviceManager {
 
@@ -66,7 +72,9 @@ public class DeviceManagerController implements DeviceManager {
             this.deviceControllerRegistry = new DeviceControllerRegistryImpl();
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.locationRegistry = new LocationRegistryRemote();
+//            this.locationRegistry = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
             this.deviceRegistry = new DeviceRegistryRemote();
+//            this.deviceRegistry = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
             this.deviceRegistrySynchronizer = new DeviceRegistrySynchronizer(this, deviceFactory);
         } catch (CouldNotPerformException ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
@@ -82,10 +90,18 @@ public class DeviceManagerController implements DeviceManager {
 
     public void init() throws InitializationException, InterruptedException {
         try {
-            locationRegistry.init();
-            locationRegistry.activate();
+            System.out.println("Init & activate device registry");
             deviceRegistry.init();
             deviceRegistry.activate();
+            System.out.println("Wait for device data");
+            deviceRegistry.waitForData();
+
+            System.out.println("Init & activate location registry");
+            locationRegistry.init();
+            locationRegistry.activate();
+            System.out.println("Wait for location data");
+            locationRegistry.waitForData();
+            System.out.println("Init registry syncroniser...");
             deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -99,6 +115,14 @@ public class DeviceManagerController implements DeviceManager {
         deviceRegistry.shutdown();
         deviceRegistrySynchronizer.shutdown();
         instance = null;
+    }
+
+    @Override
+    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException {
+        System.out.println("Wait for init");
+        locationRegistry.waitForData(timeout, timeUnit);
+        deviceRegistry.waitForData(timeout, timeUnit);
+        System.out.println("Wait for init finished!");
     }
 
     @Override
@@ -126,7 +150,8 @@ public class DeviceManagerController implements DeviceManager {
     }
 
     /**
-     * All devices will be supported by default. Feel free to overwrite method to changing this behavior.
+     * All devices will be supported by default. Feel free to overwrite method
+     * to changing this behavior.
      *
      * @param config
      * @return

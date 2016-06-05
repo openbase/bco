@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.user.core;
 
 /*
@@ -84,9 +79,9 @@ public class UserControllerImpl extends AbstractConfigurableController<UserDataT
     }
 
     @Override
-    public UserConfig updateConfig(UserConfig config) throws CouldNotPerformException, InterruptedException {
-        setField(TYPE_FIELD_USER_NAME, config.getUserName());
-        return super.updateConfig(config);
+    public UserConfig applyConfigUpdate(UserConfig config) throws CouldNotPerformException, InterruptedException {
+        setDataField(TYPE_FIELD_USER_NAME, config.getUserName());
+        return super.applyConfigUpdate(config);
     }
 
     @Override

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -35,7 +30,8 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import java.util.List;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import java.util.concurrent.TimeUnit;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.bco.dal.remote.unit.UnitGroupRemote;
 import org.dc.bco.manager.device.core.DeviceManagerLauncher;
@@ -76,6 +72,7 @@ public class UnitGroupRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         unitGroupRemote = new UnitGroupRemote();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceType(ServiceType.POWER_SERVICE).setLabel("testGroup");
@@ -100,9 +97,7 @@ public class UnitGroupRemoteTest {
         if (unitGroupRemote != null) {
             unitGroupRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -120,21 +115,20 @@ public class UnitGroupRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //    @Test(timeout = 60000)
-    @Test
+    @Test(timeout = 10000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        unitGroupRemote.setPower(state);
+        unitGroupRemote.setPower(state).get();
 
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPower(state);
+        unitGroupRemote.setPower(state).get();
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerService) unit).getPower());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
         }
     }
 
@@ -143,13 +137,11 @@ public class UnitGroupRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //    @Test(timeout = 60000)
-    @Test
+    @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPower(state);
-//        unitGroupRemote.requestStatus();
+        unitGroupRemote.setPower(state).get();
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPower());
     }
 
@@ -158,13 +150,12 @@ public class UnitGroupRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //    @Test(timeout = 60000)
-    @Test
+    @Test(timeout = 10000)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 75d;
         try {
-            unitGroupRemote.setBrightness(brightness);
+            unitGroupRemote.setBrightness(brightness).get();
             fail("Brighntess service has been used even though the group config is only defined for power service");
         } catch (CouldNotPerformException ex) {
         }

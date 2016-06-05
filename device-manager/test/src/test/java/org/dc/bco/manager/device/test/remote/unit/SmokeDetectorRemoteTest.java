@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,7 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.SmokeDetectorController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -37,6 +32,7 @@ import org.dc.bco.manager.device.core.DeviceManagerLauncher;
 import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -72,7 +68,7 @@ public class SmokeDetectorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
         label = MockRegistry.SMOKE_DETECTOR_LABEL;
@@ -90,9 +86,7 @@ public class SmokeDetectorRemoteTest {
         if (smokeDetectorRemote != null) {
             smokeDetectorRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -113,24 +107,26 @@ public class SmokeDetectorRemoteTest {
     /**
      * Test of getSmokeAlarmState method, of class SmokeDetectorRemote.
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
+        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-        ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeAlarmState(alarmState);
-        smokeDetectorRemote.requestStatus();
+        ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeAlarmStateProvider(alarmState);
+        smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke alarm state returns the wrong value!", alarmState, smokeDetectorRemote.getSmokeAlarmState());
     }
 
     /**
      * Test of getSmokeState method, of class SmokeDetectorRemote.
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
+        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();
-        ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeState(smokeState);
-        smokeDetectorRemote.requestStatus();
+        ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeStateProvider(smokeState);
+        smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState, smokeDetectorRemote.getSmokeState());
     }
 

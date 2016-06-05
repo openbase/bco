@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.location.remote;
 
 /*
@@ -49,8 +44,12 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
     }
 
+    public ConnectionRemote() {
+        super(ConnectionData.class, ConnectionConfig.class);
+    }
+
     @Override
-    public void notifyUpdated(ConnectionData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(ConnectionData data) throws CouldNotPerformException {
     }
 
     @Override
@@ -66,12 +65,25 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     @Override
-    public HandleState getHandle() throws CouldNotPerformException {
-        return getData().getHandleState();
+    public HandleState getHandle() throws NotAvailableException {
+        try {
+            return getData().getHandleState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HandleState", ex);
+        }
     }
 
     @Override
-    public ReedSwitchState getReedSwitch() throws CouldNotPerformException {
-        return getData().getReedSwitchState();
+    public ReedSwitchState getReedSwitch() throws NotAvailableException {
+        try {
+            return getData().getReedSwitchState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ReedSwitchState", ex);
+        }
+    }
+
+    @Override
+    public ConnectionConfig applyConfigUpdate(ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

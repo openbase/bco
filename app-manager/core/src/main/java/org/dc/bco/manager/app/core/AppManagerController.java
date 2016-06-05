@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.app.core;
 
 /*
@@ -93,6 +88,8 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
             this.appRegistryRemote.activate();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
+            this.appRegistryRemote.waitForData();
+            this.deviceRegistryRemote.waitForData();
             this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

@@ -23,6 +23,7 @@ package org.dc.bco.manager.scene.core;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.remote.control.action.Action;
 import org.dc.bco.dal.remote.unit.ButtonRemote;
 import org.dc.bco.manager.scene.lib.Scene;
@@ -86,9 +87,9 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public void init(SceneConfig config) throws InitializationException, InterruptedException {
+    public void init(final SceneConfig config) throws InitializationException, InterruptedException {
         try {
-            this.deviceRegistry = CachedDeviceRegistryRemote.getDeviceRegistry();
+            this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -96,14 +97,14 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public SceneConfig updateConfig(SceneConfig config) throws CouldNotPerformException, InterruptedException {
+    public SceneConfig applyConfigUpdate(final SceneConfig config) throws CouldNotPerformException, InterruptedException {
         try {
 
             synchronized (triggerListSync) {
                 try {
                     for (ButtonRemote buttonRemote : buttonRemoteList) {
                         buttonRemote.deactivate();
-                        buttonRemote.removeObserver(buttonObserver);
+                        buttonRemote.removeDataObserver(buttonObserver);
                     }
                     buttonRemoteList.clear();
                     ButtonRemote buttonRemote;
@@ -124,7 +125,12 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                     if (isEnabled()) {
                         for (ButtonRemote button : buttonRemoteList) {
                             button.activate();
-                            button.addObserver(buttonObserver);
+                            try {
+                                button.waitForData(2, TimeUnit.SECONDS);
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory(new CouldNotPerformException("Initial button sync failed!", ex), logger);
+                            }
+                            button.addDataObserver(buttonObserver);
                         }
                     }
                 } catch (CouldNotPerformException ex) {
@@ -144,7 +150,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update scene config!");
         }
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override
@@ -153,7 +159,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         super.enable();
         for (ButtonRemote button : buttonRemoteList) {
             button.activate();
-            button.addObserver(buttonObserver);
+            button.addDataObserver(buttonObserver);
         }
     }
 
@@ -161,7 +167,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     public void disable() throws CouldNotPerformException, InterruptedException {
         logger.info("disable " + getConfig().getLabel());
         for (ButtonRemote button : buttonRemoteList) {
-            button.removeObserver(buttonObserver);
+            button.removeDataObserver(buttonObserver);
             button.deactivate();
         }
         super.disable();

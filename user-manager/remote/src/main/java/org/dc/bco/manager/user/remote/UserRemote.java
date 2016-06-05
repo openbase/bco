@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.user.remote;
 
 /*
@@ -51,8 +46,12 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
+    public UserRemote() {
+        super(UserData.class, UserConfig.class);
+    }
+
     @Override
-    public void notifyUpdated(final UserData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final UserData data) throws CouldNotPerformException {
     }
 
     @Override

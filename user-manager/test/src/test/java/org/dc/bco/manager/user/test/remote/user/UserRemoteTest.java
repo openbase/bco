@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.user.test.remote.user;
 
 /*
@@ -83,9 +78,7 @@ public class UserRemoteTest {
         if (userRemote != null) {
             userRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -105,7 +98,7 @@ public class UserRemoteTest {
      */
     @Test
     public void testGetUserName() throws Exception {
-        userRemote.requestStatus();
+        userRemote.requestData().get();
         assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
         logger.info("User activity [" + userRemote.getUserActivity() + "]");
         logger.info("User presence [" + userRemote.getUserPresenceState() + "]");

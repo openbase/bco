@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,6 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.DimmerController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -37,6 +33,7 @@ import org.dc.bco.registry.mock.MockRegistry;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -66,10 +63,11 @@ public class DimmerRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, org.dc.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+        MockRegistryHolder.newMockRegistry();
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         location = new Location(registry.getLocation());
 
@@ -86,9 +84,7 @@ public class DimmerRemoteTest {
         if (dimmerRemote != null) {
             dimmerRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -111,48 +107,50 @@ public class DimmerRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        dimmerRemote.setPower(state);
-        dimmerRemote.requestStatus();
+        dimmerRemote.setPower(state).get();
+        dimmerRemote.requestData().get();
         assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState());
     }
 
     /**
      * Test of getPower method, of class DimmerRemote.
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePower(state);
-        dimmerRemote.requestStatus();
+        dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePowerProvider(state);
+        dimmerRemote.requestData().get();
         assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
     }
 
     /**
      * Test of setDimm method, of class DimmerRemote.
      */
-    @Test(timeout = 60000)
-    public void testSetDim() throws Exception {
-        System.out.println("setDim");
-        Double dim = 66d;
-        dimmerRemote.setDim(dim);
-        dimmerRemote.requestStatus();
-        assertEquals("Dimm has not been set in time!", dim, dimmerRemote.getData().getValue(), 0.1);
+    @Test(timeout = 10000)
+    public void testSetBrightness() throws Exception {
+        System.out.println("setBrightness");
+        Double brightness = 66d;
+        dimmerRemote.setBrightness(brightness).get();
+        dimmerRemote.requestData().get();
+        assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getData().getValue(), 0.1);
     }
 
     /**
      * Test of getDimm method, of class DimmerRemote.
      */
-    @Test(timeout = 60000)
-    public void testGetDimm() throws Exception {
-        System.out.println("getDimm");
-        Double dimm = 70.0d;
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateDim(dimm);
-        dimmerRemote.requestStatus();
-        assertEquals("Dimm has not been set in time!", dimm, dimmerRemote.getDim());
+    @Test(timeout = 10000)
+    public void testGetBrightness() throws Exception {
+        System.out.println("getBrightness");
+        Double brightness = 70.0d;
+        dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateBrightnessProvider(brightness);
+        dimmerRemote.requestData().get();
+        assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getBrightness());
     }
 }

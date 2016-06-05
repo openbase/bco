@@ -37,6 +37,7 @@ import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.pattern.Observer;
+import org.dc.jul.pattern.Remote;
 import org.dc.jul.storage.registry.RegistryImpl;
 import org.dc.jul.storage.registry.RegistrySynchronizer;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
@@ -113,6 +114,7 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory.init(openHABRemote);
             sceneRegistryRemote.init();
             sceneRegistryRemote.activate();
+            sceneRegistryRemote.waitForData();
             registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

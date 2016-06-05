@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.location.test.remote.location;
 
 /*
@@ -26,8 +21,6 @@ package org.dc.bco.manager.location.test.remote.location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.dc.bco.manager.location.remote.LocationRemote;
-import org.dc.bco.registry.location.remote.LocationRegistryRemote;
 import org.dc.jps.exception.JPServiceException;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
@@ -37,10 +30,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.vision.HSVColorType.HSVColor;
 
 /**
  *
@@ -69,29 +59,5 @@ public class LocationRemoteTest {
     @After
     public void tearDown() throws CouldNotPerformException {
 
-    }
-
-    /**
-     * Used to test the activation of a scene via a button
-     *
-     * @throws java.lang.Exception
-     */
-    @Test
-    public void testLocation() throws Exception {
-        LocationRegistryRemote locationRegistryRemote = new LocationRegistryRemote();
-        locationRegistryRemote.init();
-        locationRegistryRemote.activate();
-
-        LocationRemote locationRemote = new LocationRemote();
-        locationRemote.init(locationRegistryRemote.getLocationConfigsByLabel("Bath").get(0));
-        locationRemote.activate();
-
-        locationRemote.setPower(PowerState.newBuilder().setValue(PowerState.State.ON).build());
-        locationRemote.setColor(HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(100).build());
-//        Double brighntess = 40d;
-//        locationRemote.setBrightness(brighntess);
-//
-//        Thread.sleep(500);
-//        assertEquals(brighntess, locationRemote.getBrightness());
     }
 }

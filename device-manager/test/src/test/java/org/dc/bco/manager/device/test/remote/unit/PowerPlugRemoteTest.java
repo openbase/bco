@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.test.remote.unit;
 
 /*
@@ -26,6 +21,7 @@ package org.dc.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.data.Location;
 import org.dc.bco.dal.lib.layer.unit.PowerPlugController;
 import org.dc.bco.registry.mock.MockRegistryHolder;
@@ -38,6 +34,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
+import org.dc.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -72,6 +69,7 @@ public class PowerPlugRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
+        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_PLUG_LABEL;
@@ -89,9 +87,7 @@ public class PowerPlugRemoteTest {
         if (powerPlugRemote != null) {
             powerPlugRemote.shutdown();
         }
-        if (registry != null) {
-            MockRegistryHolder.shutdownMockRegistry();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -107,12 +103,12 @@ public class PowerPlugRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        powerPlugRemote.setPower(state);
-        powerPlugRemote.requestStatus();
+        powerPlugRemote.setPower(state).get();
+        powerPlugRemote.requestData().get();
         assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState());
     }
 
@@ -121,12 +117,13 @@ public class PowerPlugRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePower(state);
-        powerPlugRemote.requestStatus();
+        powerPlugRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePowerProvider(state);
+        powerPlugRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
     }
 

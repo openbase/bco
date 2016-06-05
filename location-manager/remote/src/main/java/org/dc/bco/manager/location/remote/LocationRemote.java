@@ -1,7 +1,6 @@
 package org.dc.bco.manager.location.remote;
 
 import java.util.concurrent.Future;
-import static javafx.scene.input.KeyCode.T;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
@@ -64,8 +63,12 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColor.getDefaultInstance()));
     }
 
+    public LocationRemote() {
+        super(LocationData.class, LocationConfig.class);
+    }
+
     @Override
-    public void notifyUpdated(LocationData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(LocationData data) throws CouldNotPerformException {
     }
 
     @Override
@@ -81,43 +84,45 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     }
 
     @Override
-    public void setBrightness(Double brightness) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(brightness, this);
+    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(brightness, this, Void.class);
     }
 
     @Override
-    public Double getBrightness() throws CouldNotPerformException {
-        return getData().getBrightness();
+    public Double getBrightness() throws NotAvailableException {
+        try {
+            return getData().getBrightness();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Brightness", ex);
+        }
     }
 
     @Override
-    public void setColor(HSVColor color) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(color, this);
+    public Future<Void> setColor(HSVColor color) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(color, this, Void.class);
     }
 
     @Override
-    public HSVColor getColor() throws CouldNotPerformException {
-        return getData().getColor();
+    public HSVColor getColor() throws NotAvailableException {
+        try {
+            return getData().getColor();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Color", ex);
+        }
     }
 
     @Override
-    public void setDim(Double dim) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(dim, this);
+    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(openingRatio, this, Void.class);
     }
 
     @Override
-    public Double getDim() throws CouldNotPerformException {
-        return getData().getDimValue();
-    }
-
-    @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(openingRatio, this);
-    }
-
-    @Override
-    public Double getOpeningRatio() throws CouldNotPerformException {
-        return getData().getOpeningRatio();
+    public Double getOpeningRatio() throws NotAvailableException {
+        try {
+            return getData().getOpeningRatio();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("OpeningRatio", ex);
+        }
     }
 
     public void setPower(PowerState.State state) throws CouldNotPerformException {
@@ -125,87 +130,127 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     }
 
     @Override
-    public void setPower(PowerState state) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(state, this);
+    public Future<Void> setPower(PowerState state) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(state, this, Void.class);
     }
 
     @Override
-    public PowerState getPower() throws CouldNotPerformException {
-        return getData().getPowerState();
+    public PowerState getPower() throws NotAvailableException {
+        try {
+            return getData().getPowerState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerState", ex);
+        }
     }
 
     @Override
-    public void setShutter(ShutterState state) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(state, this);
+    public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(state, this, Void.class);
     }
 
     @Override
-    public ShutterState getShutter() throws CouldNotPerformException {
-        return getData().getShutterState();
+    public ShutterState getShutter() throws NotAvailableException {
+        try {
+            return getData().getShutterState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ShutterState", ex);
+        }
     }
 
     @Override
-    public void setStandby(StandbyState state) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(state, this);
+    public Future<Void> setStandby(StandbyState state) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(state, this, Void.class);
     }
 
     @Override
-    public StandbyState getStandby() throws CouldNotPerformException {
-        return getData().getStandbyState();
+    public StandbyState getStandby() throws NotAvailableException {
+        try {
+            return getData().getStandbyState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("StandbyState", ex);
+        }
     }
 
     @Override
-    public void setTargetTemperature(Double value) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(value, this);
+    public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(value, this, Void.class);
     }
 
     @Override
-    public Double getTargetTemperature() throws CouldNotPerformException {
-        return getData().getTargetTemperature();
+    public Double getTargetTemperature() throws NotAvailableException {
+        try {
+            return getData().getTargetTemperature();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("TargetTemperature", ex);
+        }
     }
 
     @Override
-    public MotionState getMotion() throws CouldNotPerformException {
-        return getData().getMotionState();
+    public MotionState getMotion() throws NotAvailableException {
+        try {
+            return getData().getMotionState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("MotionState", ex);
+        }
     }
 
     @Override
-    public AlarmState getSmokeAlarmState() throws CouldNotPerformException {
-        return getData().getSmokeAlarmState();
+    public AlarmState getSmokeAlarmState() throws NotAvailableException {
+        try {
+            return getData().getSmokeAlarmState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AlarmState", ex);
+        }
     }
 
     @Override
-    public SmokeState getSmokeState() throws CouldNotPerformException {
-        return getData().getSmokeState();
+    public SmokeState getSmokeState() throws NotAvailableException {
+        try {
+            return getData().getSmokeState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SmokeState", ex);
+        }
     }
 
     @Override
-    public Double getTemperature() throws CouldNotPerformException {
-        return getData().getTemperature();
+    public Double getTemperature() throws NotAvailableException {
+        try {
+            return getData().getTemperature();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Temperature", ex);
+        }
     }
 
     @Override
-    public PowerConsumptionState getPowerConsumption() throws CouldNotPerformException {
-        return getData().getPowerConsumptionState();
+    public PowerConsumptionState getPowerConsumption() throws NotAvailableException {
+        try {
+            return getData().getPowerConsumptionState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerConsumptionState", ex);
+        }
     }
 
     @Override
-    public TamperState getTamper() throws CouldNotPerformException {
-        return getData().getTamperState();
+    public TamperState getTamper() throws NotAvailableException {
+        try {
+            return getData().getTamperState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("TamperState", ex);
+        }
     }
 
     @Override
     public Future<SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(this);
+        return RPCHelper.callRemoteMethod(this, SceneConfig.class);
     }
 
     @Override
     public Future<Void> restoreSnapshot(final SceneConfig snapshot) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(snapshot, this);
+        return RPCHelper.callRemoteMethod(snapshot, this, Void.class);
     }
 
     @Override
     public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionConfig, this);
+        return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
     }
 }

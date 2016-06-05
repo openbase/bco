@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.binding.openhab.service;
 
 /*
@@ -27,31 +22,32 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 
 /**
  *
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class OpeningRatioServiceImpl<ST extends OpeningRatioService & Unit>  extends OpenHABService<ST> implements OpeningRatioService {
+public class OpeningRatioServiceImpl<ST extends OpeningRatioOperationService & Unit>  extends OpenHABService<ST> implements OpeningRatioOperationService {
 
     public OpeningRatioServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public void setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newPercentCommand(openingRatio));
+    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newPercentCommand(openingRatio));
     }
 
     @Override
-    public Double getOpeningRatio() throws CouldNotPerformException {
+    public Double getOpeningRatio() throws NotAvailableException {
         return unit.getOpeningRatio();
     }
 }

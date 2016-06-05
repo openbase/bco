@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.lib;
 
 /*
@@ -27,6 +22,7 @@ package org.dc.bco.manager.device.lib;
  * #L%
  */
 
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.dc.bco.dal.lib.layer.service.ServiceFactoryProvider;
 import org.dc.bco.registry.device.lib.provider.DeviceRegistryProvider;
@@ -47,4 +43,5 @@ public interface DeviceManager extends LocationRegistryProvider, DeviceRegistryP
 
     public boolean isSupported(final DeviceConfigType.DeviceConfig config) throws CouldNotPerformException;
 
+    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException;
 }

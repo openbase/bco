@@ -71,7 +71,7 @@ public class StandbyAgent extends AbstractAgent {
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = new LocationRemote();
-        locationRemote.init(CachedLocationRegistryRemote.getLocationRegistry().getLocationConfigById(getConfig().getLocationId()));
+        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getLocationId()));
         locationRemote.activate();
 
         this.presenseDetector = new PresenseDetector();

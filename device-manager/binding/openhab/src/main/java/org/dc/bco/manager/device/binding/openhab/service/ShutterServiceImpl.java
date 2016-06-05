@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.binding.openhab.service;
 
 /*
@@ -26,12 +21,13 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.dc.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.dc.bco.manager.device.lib.Device;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InstantiationException;
+import org.dc.jul.exception.NotAvailableException;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
 
 /**
@@ -39,19 +35,19 @@ import rst.homeautomation.state.ShutterStateType.ShutterState;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class ShutterServiceImpl<ST extends ShutterService & Unit> extends OpenHABService<ST> implements ShutterService {
+public class ShutterServiceImpl<ST extends ShutterOperationService & Unit> extends OpenHABService<ST> implements ShutterOperationService {
 
     public ShutterServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public void setShutter(ShutterState state) throws CouldNotPerformException {
-        executeCommand(OpenHABCommandFactory.newUpDownCommand(state.getValue()));
+    public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newUpDownCommand(state.getValue()));
     }
 
     @Override
-    public ShutterState getShutter() throws CouldNotPerformException {
+    public ShutterState getShutter() throws NotAvailableException {
         return unit.getShutter();
     }
 

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.device.binding.openhab.service;
 
 /*
@@ -27,15 +22,14 @@ package org.dc.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
-import org.dc.bco.dal.lib.layer.service.BrightnessService;
-import org.dc.bco.dal.lib.layer.service.ColorService;
-import org.dc.bco.dal.lib.layer.service.PowerService;
+import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.bco.dal.lib.layer.service.ServiceFactory;
-import org.dc.bco.dal.lib.layer.service.DimService;
-import org.dc.bco.dal.lib.layer.service.OpeningRatioService;
-import org.dc.bco.dal.lib.layer.service.ShutterService;
-import org.dc.bco.dal.lib.layer.service.StandbyService;
-import org.dc.bco.dal.lib.layer.service.TargetTemperatureService;
+import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.bco.dal.lib.layer.unit.Unit;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotSupportedException;
@@ -53,42 +47,37 @@ public class OpenhabServiceFactory implements ServiceFactory {
     }
 
     @Override
-    public <UNIT extends BrightnessService & Unit> BrightnessService newBrightnessService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(final UNIT unit) throws InstantiationException {
         return new BrightnessServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends ColorService & Unit> ColorService newColorService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends ColorOperationService & Unit> ColorOperationService newColorService(final UNIT unit) throws InstantiationException {
         return new ColorServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends PowerService & Unit> PowerService newPowerService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends PowerOperationService & Unit> PowerOperationService newPowerService(final UNIT unit) throws InstantiationException {
         return new PowerServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends OpeningRatioService & Unit> OpeningRatioService newOpeningRatioService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(final UNIT unit) throws InstantiationException {
         return new OpeningRatioServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends ShutterService & Unit> ShutterService newShutterService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(final UNIT unit) throws InstantiationException {
         return new ShutterServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends DimService & Unit> DimService newDimmService(final UNIT unit) throws InstantiationException {
-        return new DimServiceImpl(unit);
+    public <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(final UNIT unit) throws InstantiationException {
+        throw new InstantiationException(this, new NotSupportedException(StandbyOperationService.class, this));
     }
 
     @Override
-    public <UNIT extends StandbyService & Unit> StandbyService newStandbyService(final UNIT unit) throws InstantiationException {
-        throw new InstantiationException(this, new NotSupportedException(StandbyService.class, this));
-    }
-
-    @Override
-    public <UNIT extends TargetTemperatureService & Unit> TargetTemperatureService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends TargetTemperatureOperationService & Unit> TargetTemperatureOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
         return new TargetTemperatureServiceImpl(unit);
     }
 }

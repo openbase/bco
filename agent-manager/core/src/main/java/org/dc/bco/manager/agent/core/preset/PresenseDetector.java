@@ -22,19 +22,18 @@ package org.dc.bco.manager.agent.core.preset;
  * #L%
  */
 import org.dc.jul.exception.CouldNotPerformException;
-import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.pattern.ObservableImpl;
 import org.dc.jul.schedule.Timeout;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import org.dc.bco.dal.lib.layer.service.provider.MotionProvider;
+import org.dc.bco.dal.lib.layer.service.provider.MotionProviderService;
 import org.dc.bco.dal.remote.unit.MotionSensorRemote;
 import org.dc.bco.manager.location.remote.LocationRemote;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.iface.Manageable;
+import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.pattern.Observable;
 import org.dc.jul.pattern.Observer;
 import org.slf4j.Logger;
@@ -42,20 +41,18 @@ import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
-import rst.homeautomation.unit.MotionSensorType;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
 import rst.spatial.LocationDataType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
-public class PresenseDetector extends ObservableImpl<MotionState> implements MotionProvider, Manageable<LocationRemote> {
+public class PresenseDetector extends ObservableImpl<MotionState> implements MotionProviderService, Manageable<LocationRemote> {
 
     /**
-     * Default 3 minute window of no movement unit the state switches to NO_MOTION.
+     * Default 3 minute window of no movement unit the state switches to
+     * NO_MOTION.
      */
     public static final long MOTION_TIMEOUT = 10000;
 
@@ -149,7 +146,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
     }
 
     @Override
-    public MotionState getMotion() throws CouldNotPerformException {
+    public MotionState getMotion() throws NotAvailableException {
         return this.motionState.build();
     }
 }

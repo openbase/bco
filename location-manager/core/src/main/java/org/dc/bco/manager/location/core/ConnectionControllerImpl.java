@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.location.core;
 
 /*
@@ -32,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.lib.layer.service.provider.HandleProvider;
-import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProvider;
+import org.dc.bco.dal.lib.layer.service.provider.HandleProviderService;
+import org.dc.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
 import org.dc.bco.dal.remote.unit.UnitRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -102,8 +97,8 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         // and the update can be realized with reflections or the setField method and a notify
         switch (serviceType) {
             case HANDLE_PROVIDER:
-                ((ArrayList<HandleProvider>) serviceMap.get(ServiceType.HANDLE_PROVIDER)).add((HandleProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                ((ArrayList<HandleProviderService>) serviceMap.get(ServiceType.HANDLE_PROVIDER)).add((HandleProviderService) unitRemote);
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -117,8 +112,8 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 });
                 break;
             case REED_SWITCH_PROVIDER:
-                ((ArrayList<ReedSwitchProvider>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER)).add((ReedSwitchProvider) unitRemote);
-                unitRemote.addObserver(new Observer() {
+                ((ArrayList<ReedSwitchProviderService>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER)).add((ReedSwitchProviderService) unitRemote);
+                unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
@@ -164,7 +159,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public ConnectionConfig updateConfig(final ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
+    public ConnectionConfig applyConfigUpdate(final ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
         List<String> newUnitIdList = new ArrayList<>(config.getUnitIdList());
         for (String originalId : originalUnitIdList) {
             if (config.getUnitIdList().contains(originalId)) {
@@ -205,7 +200,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             getCurrentStatus();
         }
         originalUnitIdList = config.getUnitIdList();
-        return super.updateConfig(config);
+        return super.applyConfigUpdate(config);
     }
 
     @Override
@@ -257,12 +252,12 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public Collection<HandleProvider> getHandleStateProviderServices() {
-        return (Collection<HandleProvider>) serviceMap.get(ServiceType.HANDLE_PROVIDER);
+    public Collection<HandleProviderService> getHandleStateProviderServices() {
+        return (Collection<HandleProviderService>) serviceMap.get(ServiceType.HANDLE_PROVIDER);
     }
 
     @Override
-    public Collection<ReedSwitchProvider> getReedSwitchStateProviderServices() {
-        return (Collection<ReedSwitchProvider>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER);
+    public Collection<ReedSwitchProviderService> getReedSwitchStateProviderServices() {
+        return (Collection<ReedSwitchProviderService>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER);
     }
 }

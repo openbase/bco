@@ -88,7 +88,6 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
             @Override
             public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
                 try {
-
                     if (!command.hasOnOff() || !command.getOnOff().hasState()) {
                         throw new CouldNotPerformException("Command does not have an onOff value required for agents");
                     }
@@ -109,6 +108,7 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory.init(openHABRemote);
             agentRegistryRemote.init();
             agentRegistryRemote.activate();
+            agentRegistryRemote.waitForData();
             registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.location.core;
 
 /*
@@ -104,6 +99,8 @@ public class LocationManagerController implements LocationManager {
             this.locationRegistryRemote.activate();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
+            this.locationRegistryRemote.waitForData();
+            this.deviceRegistryRemote.waitForData();
             this.locationRegistrySynchronizer.init();
             this.connectionRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {

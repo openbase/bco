@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.dc.bco.manager.scene.remote;
 
 /*
@@ -49,9 +44,13 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
     }
 
-    @Override
-    public void notifyUpdated(SceneData data) throws CouldNotPerformException {
 
+    public SceneRemote() {
+        super(SceneData.class, SceneConfig.class);
+    }
+
+    @Override
+    public void notifyDataUpdate(SceneData data) throws CouldNotPerformException {
     }
 
     public void setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
@@ -61,5 +60,10 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
     @Override
     public void setActivationState(ActivationState activation) throws CouldNotPerformException {
         RPCHelper.callRemoteMethod(activation, this);
+    }
+
+    @Override
+    public SceneConfig applyConfigUpdate(SceneConfig config) throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
