@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.PowerOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
@@ -37,7 +37,7 @@ public interface PowerStateOperationServiceCollection extends PowerOperationServ
 
     @Override
     default public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((PowerOperationService input) -> input.setPower(state), getPowerStateOperationServices());
+        return GlobalExecutionService.allOf((PowerOperationService input) -> input.setPower(state), getPowerStateOperationServices());
     }
 
     /**

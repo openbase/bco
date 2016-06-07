@@ -23,12 +23,10 @@ package org.dc.bco.dal.lib.layer.service.collection;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
-import static javafx.scene.paint.Color.color;
-import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ShutterOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import rst.homeautomation.state.ShutterStateType.ShutterState;
 import static rst.homeautomation.state.ShutterStateType.ShutterState.State.DOWN;
 import static rst.homeautomation.state.ShutterStateType.ShutterState.State.STOP;
@@ -42,7 +40,7 @@ public interface ShutterStateOperationServiceCollection extends ShutterOperation
 
     @Override
     default public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((ShutterOperationService input) -> input.setShutter(state), getShutterStateOperationServices());
+        return GlobalExecutionService.allOf((ShutterOperationService input) -> input.setShutter(state), getShutterStateOperationServices());
     }
 
     /**
