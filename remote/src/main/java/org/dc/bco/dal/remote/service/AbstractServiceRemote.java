@@ -21,14 +21,14 @@ package org.dc.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.Service;
-import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.remote.unit.UnitRemote;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactory;
 import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -37,7 +37,7 @@ import org.dc.jul.exception.MultiException;
 import org.dc.jul.exception.NotSupportedException;
 import org.dc.jul.exception.VerificationFailedException;
 import org.dc.jul.iface.Activatable;
-import org.dc.jul.processing.StringProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType;
@@ -162,13 +162,15 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
+
+            List<Future> actionFutureList = new ArrayList<>();
+
             for (UnitRemote remote : getInternalUnits()) {
-                remote.applyAction(actionConfig);
+                actionFutureList.add(remote.applyAction(actionConfig));
 //                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
 //                        ServiceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType()));
             }
-            // TODO Should be asynchron!
-            return CompletableFuture.completedFuture(null);
+            return GlobalExecutionService.allOf(actionFutureList, (Void) null);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

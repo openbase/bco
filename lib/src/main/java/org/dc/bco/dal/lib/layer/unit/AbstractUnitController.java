@@ -381,6 +381,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
+            logger.info("applyAction: "+actionConfig.getLabel());
             Object attribute = ServiceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
             Service.invokeServiceMethod(actionConfig.getServiceType(), this, attribute);
             return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
