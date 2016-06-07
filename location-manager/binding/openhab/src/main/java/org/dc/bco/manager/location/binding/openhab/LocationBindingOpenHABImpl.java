@@ -24,6 +24,7 @@ package org.dc.bco.manager.location.binding.openhab;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.bco.manager.location.remote.ConnectionRemote;
 import org.dc.bco.manager.location.remote.LocationRemote;
@@ -34,13 +35,13 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import static org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
-import org.dc.jul.iface.Processable;
 import org.dc.jul.processing.StringProcessor;
 import org.dc.jul.schedule.GlobalExecutionService;
 import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
@@ -59,7 +60,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     //TODO: Should be declared in the openhab config generator and used from there
     public static final String LOCATION_MANAGER_ITEM_FILTER = "bco.manager.location";
-    
+
     private final LocationRegistryRemote locationRegistryRemote;
     private final LocationRemoteFactoryImpl locationRemoteFactory;
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
@@ -68,7 +69,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RegistryImpl<String, LocationRemote> locationRegistry;
     private final RegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
-    
+
     public LocationBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
@@ -78,29 +79,29 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         locationRemoteFactory = new LocationRemoteFactoryImpl();
         connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
         this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, LocationConfig, LocationConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory) {
-            
+
             @Override
             public boolean activationCondition(LocationConfig config) {
                 return true;
             }
         };
         this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, ConnectionConfig, ConnectionConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
-            
+
             @Override
             public boolean activationCondition(ConnectionConfig config) {
                 return true;
             }
         };
     }
-    
+
     public void init() throws InitializationException, InterruptedException {
         init(LOCATION_MANAGER_ITEM_FILTER, new AbstractOpenHABRemote(hardwareSimulationMode) {
-            
+
             @Override
             public void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException {
                 logger.debug("Ignore update for location manager openhab binding.");
             }
-            
+
             @Override
             public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
                 //TODO:paramite; compare this to the implementation in the device manager openhab binding
@@ -113,11 +114,11 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                         logger.debug("Received command for connection [" + command.getItem() + "] from openhab");
                         remote = connectionRegistry.get(getIdFromOpenHABCommand(command));
                     }
-                    
+
                     if (remote == null) {
                         throw new NotAvailableException("No remote for item [" + command.getItem() + "] found");
                     }
-                    
+
                     Future returnValue;
                     ServiceType serviceType = getServiceTypeForCommand(command);
                     String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
@@ -131,7 +132,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                     } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
                         throw new NotAvailableException("Method " + remote + "." + methodName + "(" + serviceData.getClass() + ")", ex);
                     }
-                    
+
                     try {
                         returnValue = (Future) relatedMethod.invoke(remote, serviceData);
                     } catch (IllegalAccessException ex) {
@@ -141,35 +142,26 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                     } catch (InvocationTargetException ex) {
                         throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
                     }
-                    
-                    long timeout = 30;
-                    try {
-                        GlobalExecutionService.applyErrorHandling(returnValue, 30, new Processable<Exception, Void>() {
-                            
-                            @Override
-                            public Void process(Exception input) throws CouldNotPerformException, InterruptedException {
-                                logger.info("Waiting for result on method failed with exception", input);
-                                return null;
-                            }
-                        });
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        logger.debug("Catched an exception thrown by a self implemented processor that does not throw exceptions...", ex);
-                    }
+
+                    GlobalExecutionService.applyErrorHandling(returnValue, (Exception input) -> {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Waiting for result on method failed with exception", input), logger);
+                        return null;
+                    }, 30, TimeUnit.SECONDS);
                 } catch (NotAvailableException ex) {
                     throw new CouldNotPerformException(ex);
                 }
             }
         });
     }
-    
+
     private String getIdFromOpenHABCommand(OpenhabCommand command) {
         return command.getItemBindingConfig().split(":")[1];
     }
-    
+
     private ServiceType getServiceTypeForCommand(OpenhabCommand command) {
         return ServiceType.valueOf(StringProcessor.transformToUpperCase(command.getItem().split(ITEM_SEGMENT_DELIMITER)[1]));
     }
-    
+
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         super.init(itemFilter, openHABRemote);

@@ -74,8 +74,7 @@ import rst.vision.HSVColorType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, LocationConfig> implements LocationController {
 
