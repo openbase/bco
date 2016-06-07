@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 
 /**
  *
@@ -36,7 +36,7 @@ public interface OpeningRatioStateOperationServiceCollection extends OpeningRati
 
     @Override
     default public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((OpeningRatioOperationService input) -> input.setOpeningRatio(openingRatio), getOpeningRatioStateOperationServices());
+        return GlobalExecutionService.allOf((OpeningRatioOperationService input) -> input.setOpeningRatio(openingRatio), getOpeningRatioStateOperationServices());
     }
 
     /**

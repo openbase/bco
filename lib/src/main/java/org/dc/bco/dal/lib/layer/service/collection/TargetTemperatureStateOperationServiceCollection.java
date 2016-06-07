@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 
 /**
  *
@@ -36,7 +36,7 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
 
     @Override
     default public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((TargetTemperatureOperationService input) -> input.setTargetTemperature(value), getTargetTemperatureStateOperationServices());
+        return GlobalExecutionService.allOf((TargetTemperatureOperationService input) -> input.setTargetTemperature(value), getTargetTemperatureStateOperationServices());
     }
 
     /**

@@ -28,7 +28,7 @@ import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
 import org.dc.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import rst.vision.HSVColorType.HSVColor;
 
 /**
@@ -46,7 +46,7 @@ public interface ColorStateOperationServiceCollection extends ColorOperationServ
      */
     @Override
     default public Future<Void> setColor(final HSVColor color) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((ColorOperationService input) -> input.setColor(color), getColorStateOperationServices());
+        return GlobalExecutionService.allOf((ColorOperationService input) -> input.setColor(color), getColorStateOperationServices());
     }
 
     /**

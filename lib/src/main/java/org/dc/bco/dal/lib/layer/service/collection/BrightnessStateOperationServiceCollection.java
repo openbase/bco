@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 
 /**
  *
@@ -36,7 +36,7 @@ public interface BrightnessStateOperationServiceCollection extends BrightnessOpe
 
     @Override
     default public Future<Void> setBrightness(final Double brightness) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((BrightnessOperationService input) -> input.setBrightness(brightness), getBrightnessStateOperationServices());
+        return GlobalExecutionService.allOf((BrightnessOperationService input) -> input.setBrightness(brightness), getBrightnessStateOperationServices());
     }
 
     /**

@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.dc.bco.dal.lib.layer.service.operation.StandbyOperationService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
-import org.dc.jul.processing.FutureProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
@@ -37,7 +37,7 @@ public interface StandbyStateOperationServiceCollection extends StandbyOperation
 
     @Override
     default public Future<Void> setStandby(StandbyState state) throws CouldNotPerformException {
-        return FutureProcessor.toForkJoinTask((StandbyOperationService input) -> input.setStandby(state), getStandbyStateOperationServices());
+        return GlobalExecutionService.allOf((StandbyOperationService input) -> input.setStandby(state), getStandbyStateOperationServices());
     }
 
     /**
