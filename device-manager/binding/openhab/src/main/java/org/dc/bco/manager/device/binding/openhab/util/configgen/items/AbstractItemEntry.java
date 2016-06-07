@@ -187,6 +187,7 @@ public abstract class AbstractItemEntry implements ItemEntry {
             case COLOR_SERVICE:
                 return "Color";
             case OPENING_RATIO_PROVIDER:
+            case OPENING_RATIO_SERVICE:
             case POWER_CONSUMPTION_PROVIDER:
             case TEMPERATURE_PROVIDER:
             case MOTION_PROVIDER:

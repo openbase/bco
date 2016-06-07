@@ -23,6 +23,8 @@ package org.dc.bco.manager.location.binding.openhab;
  */
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.dc.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.dc.bco.manager.location.remote.ConnectionRemote;
 import org.dc.bco.manager.location.remote.LocationRemote;
@@ -33,6 +35,7 @@ import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
+import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import static org.dc.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
@@ -40,9 +43,9 @@ import org.dc.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.dc.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import org.dc.jul.processing.StringProcessor;
+import org.dc.jul.schedule.GlobalExecutionService;
 import org.dc.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.dc.jul.storage.registry.RegistryImpl;
-import org.dc.jul.storage.registry.RegistrySynchronizer;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -116,6 +119,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                         throw new NotAvailableException("No remote for item [" + command.getItem() + "] found");
                     }
 
+                    Future returnValue;
                     ServiceType serviceType = getServiceTypeForCommand(command);
                     String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
                     Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceType);
@@ -130,7 +134,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                     }
 
                     try {
-                        relatedMethod.invoke(remote, serviceData);
+                        returnValue = (Future) relatedMethod.invoke(remote, serviceData);
                     } catch (IllegalAccessException ex) {
                         throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
                     } catch (IllegalArgumentException ex) {
@@ -138,6 +142,11 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                     } catch (InvocationTargetException ex) {
                         throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
                     }
+
+                    GlobalExecutionService.applyErrorHandling(returnValue, (Exception input) -> {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Waiting for result on method failed with exception", input), logger);
+                        return null;
+                    }, 30, TimeUnit.SECONDS);
                 } catch (NotAvailableException ex) {
                     throw new CouldNotPerformException(ex);
                 }
