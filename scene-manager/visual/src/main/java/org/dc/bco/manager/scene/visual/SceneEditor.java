@@ -33,6 +33,7 @@ import org.dc.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.dc.bco.dal.visual.service.AbstractServicePanel;
 import org.dc.bco.dal.visual.unit.GenericUnitPanel;
 import org.dc.bco.dal.visual.unit.RemovableGenericUnitPanel;
+import org.dc.jps.core.JPService;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
@@ -51,19 +52,19 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DalSceneEditor extends javax.swing.JFrame {
+public class SceneEditor extends javax.swing.JFrame {
 
-    protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(DalSceneEditor.class);
+    protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneEditor.class);
 
     /**
      * Creates new form DalSceneEditor
      *
      */
-    public DalSceneEditor() {
+    public SceneEditor() {
         initComponents();
     }
 
-    public DalSceneEditor init() throws InitializationException, InterruptedException {
+    public SceneEditor init() throws InitializationException, InterruptedException {
         try {
             sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
 
@@ -249,20 +250,24 @@ public class DalSceneEditor extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DalSceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DalSceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DalSceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DalSceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SceneEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
 
+        JPService.setApplicationName("scene-remote");
+        JPService.parseAndExitOnError(args);
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             try {
-                new DalSceneEditor().init().setVisible(true);
+                new SceneEditor().init().setVisible(true);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             } catch (CouldNotPerformException ex) {

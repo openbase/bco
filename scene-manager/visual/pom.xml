@@ -78,7 +78,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.scene.visual.DalSceneEditor</mainClass>
+                            <mainClass>org.dc.bco.manager.scene.visual.SceneEditor</mainClass>
                             <id>scene-editor</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -94,7 +94,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.dc.bco.manager.scene.visual.DalSceneEditor</mainClass>
+                            <mainClass>org.dc.bco.manager.scene.visual.SceneEditor</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

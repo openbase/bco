@@ -31,6 +31,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.dc.bco.dal.visual.util.StatusPanel;
 import org.dc.bco.manager.scene.remote.SceneRemote;
 import org.dc.bco.manager.scene.visual.LocationSelectorPanel.LocationConfigHolder;
 import org.dc.bco.registry.scene.remote.SceneRegistryRemote;
@@ -79,10 +80,12 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneRegistryRemote.init();
         sceneRegistryRemote.activate();
         initDynamicComponents();
+        updateDynamicComponents();
+        StatusPanel.getInstance().setStatus("Wait for scene manager connection...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
     }
 
     private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {
-        sceneRegistryRemote.addObserver(new Observer<SceneRegistryType.SceneRegistry>() {
+        sceneRegistryRemote.addDataObserver(new Observer<SceneRegistryType.SceneRegistry>() {
 
             @Override
             public void update(final Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
@@ -101,11 +104,14 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         });
         // init locationSelectorPanel after registering the observer so that the selected location is recieved from the start
         locationSelectorPanel.init(false);
-
-        updateDynamicComponents();
     }
 
     private void updateDynamicComponents() throws CouldNotPerformException {
+        
+        if(!sceneRegistryRemote.isDataAvailable()) {
+            return;
+        }
+        
         ArrayList<SceneConfigHolder> sceneConfigHolderList = new ArrayList<>();
         for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
             sceneConfigHolderList.add(new SceneConfigHolder(sceneConfig));
@@ -162,7 +168,6 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         locationSelectorPanel = new org.dc.bco.manager.scene.visual.LocationSelectorPanel();
         applyUpdateButton = new javax.swing.JButton();
 
-        sceneSelectionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         sceneSelectionComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sceneSelectionComboBoxActionPerformed(evt);
