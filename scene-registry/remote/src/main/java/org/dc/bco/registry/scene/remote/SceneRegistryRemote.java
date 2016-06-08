@@ -34,7 +34,6 @@ import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
-import org.dc.jul.exception.printer.LogLevel;
 import org.dc.jul.extension.rsb.com.RPCHelper;
 import org.dc.jul.extension.rsb.com.RSBRemoteService;
 import static org.dc.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
