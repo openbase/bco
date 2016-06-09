@@ -57,7 +57,10 @@ import org.dc.jul.extension.rsb.scope.ScopeTransformer;
 import org.dc.jul.extension.rst.iface.ScopeProvider;
 import org.dc.jul.processing.StringProcessor;
 import rsb.Scope;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType;
+import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -70,6 +73,11 @@ import rst.rsb.ScopeType;
  * @param <MB> Message related builder.
  */
 public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractConfigurableController<M, MB, UnitConfig> implements UnitController, ServiceFactoryProvider {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
+    }
+
 
     private final UnitHost unitHost;
     private final List<Service> serviceList;
