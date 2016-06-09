@@ -85,7 +85,6 @@ public class DALRemote {
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                 throw new CouldNotPerformException("Could not invoke remote method!", ex);
             }
-//            Thread.sleep(5000);
             remote.shutdown();
         } catch (Exception ex) {
             throw new InitializationException(this, ex);
