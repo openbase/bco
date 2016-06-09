@@ -147,7 +147,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                 }
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update scene config!");
+            throw new CouldNotPerformException("Could not update scene config!", ex);
         }
         return super.applyConfigUpdate(config);
     }

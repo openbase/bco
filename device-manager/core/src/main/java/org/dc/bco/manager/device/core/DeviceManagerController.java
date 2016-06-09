@@ -52,29 +52,29 @@ public class DeviceManagerController implements DeviceManager {
     private final DeviceFactory deviceFactory;
     private final ServiceFactory serviceFactory;
 
-    private final LocationRegistryRemote locationRegistry;
-    private final DeviceRegistryRemote deviceRegistry;
+    private final LocationRegistryRemote locationRegistryRemote;
+    private final DeviceRegistryRemote deviceRegistryRemote;
 
     private final DeviceRegistrySynchronizer deviceRegistrySynchronizer;
 
     private final DeviceControllerRegistryImpl deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
 
-    public DeviceManagerController(final ServiceFactory serviceFactory) throws org.dc.jul.exception.InstantiationException {
+    public DeviceManagerController(final ServiceFactory serviceFactory) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
     }
 
-    public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceFactory deviceFactory) throws org.dc.jul.exception.InstantiationException {
+    public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceFactory deviceFactory) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;
             this.deviceFactory = deviceFactory;
             this.serviceFactory = serviceFactory;
             this.deviceControllerRegistry = new DeviceControllerRegistryImpl();
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
-            this.locationRegistry = new LocationRegistryRemote();
-//            this.locationRegistry = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
-            this.deviceRegistry = new DeviceRegistryRemote();
-//            this.deviceRegistry = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
+//            this.locationRegistryRemote = new LocationRegistryRemote();
+            this.locationRegistryRemote = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
+//            this.deviceRegistryRemote = new DeviceRegistryRemote();
+            this.deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
             this.deviceRegistrySynchronizer = new DeviceRegistrySynchronizer(this, deviceFactory);
         } catch (CouldNotPerformException ex) {
             throw new org.dc.jul.exception.InstantiationException(this, ex);
@@ -91,16 +91,16 @@ public class DeviceManagerController implements DeviceManager {
     public void init() throws InitializationException, InterruptedException {
         try {
             System.out.println("Init & activate device registry");
-            deviceRegistry.init();
-            deviceRegistry.activate();
+            deviceRegistryRemote.init();
+            deviceRegistryRemote.activate();
             System.out.println("Wait for device data");
-            deviceRegistry.waitForData();
+            deviceRegistryRemote.waitForData();
 
             System.out.println("Init & activate location registry");
-            locationRegistry.init();
-            locationRegistry.activate();
+            locationRegistryRemote.init();
+            locationRegistryRemote.activate();
             System.out.println("Wait for location data");
-            locationRegistry.waitForData();
+            locationRegistryRemote.waitForData();
             System.out.println("Init registry syncroniser...");
             deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
@@ -111,8 +111,6 @@ public class DeviceManagerController implements DeviceManager {
     public void shutdown() {
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
-        locationRegistry.shutdown();
-        deviceRegistry.shutdown();
         deviceRegistrySynchronizer.shutdown();
         instance = null;
     }
@@ -120,19 +118,19 @@ public class DeviceManagerController implements DeviceManager {
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException {
         System.out.println("Wait for init");
-        locationRegistry.waitForData(timeout, timeUnit);
-        deviceRegistry.waitForData(timeout, timeUnit);
+        locationRegistryRemote.waitForData(timeout, timeUnit);
+        deviceRegistryRemote.waitForData(timeout, timeUnit);
         System.out.println("Wait for init finished!");
     }
 
     @Override
     public DeviceRegistryRemote getDeviceRegistry() {
-        return deviceRegistry;
+        return deviceRegistryRemote;
     }
 
     @Override
     public LocationRegistryRemote getLocationRegistry() {
-        return locationRegistry;
+        return locationRegistryRemote;
     }
 
     @Override
