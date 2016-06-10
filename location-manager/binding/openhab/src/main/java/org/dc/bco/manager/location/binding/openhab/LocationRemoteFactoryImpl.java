@@ -55,12 +55,13 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
     public LocationRemote newInstance(LocationConfig config) throws org.dc.jul.exception.InstantiationException, InterruptedException {
         LocationRemote locationRemote = new LocationRemote();
         try {
-            locationRemote.addObserver(new Observer<LocationData>() {
+            locationRemote.addDataObserver(new Observer<LocationData>() {
 
                 @Override
                 public void update(final Observable<LocationData> source, LocationData data) throws Exception {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColor()).setItem(generateItemId(config, ServiceType.COLOR_SERVICE)).build());
                     openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(config, ServiceType.POWER_SERVICE)).build());
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(config, ServiceType.POWER_CONSUMPTION_PROVIDER)).build());
                 }
             });
             locationRemote.init(config);
