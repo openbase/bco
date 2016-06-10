@@ -21,7 +21,6 @@ package org.dc.bco.registry.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.jul.exception.CouldNotPerformException;
@@ -60,8 +59,8 @@ public interface LocationRegistry {
     public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
 
     /**
-     * Method returns all location configs which are assigned to the given label.
-     * Label resolving is done case insensitive!
+     * Method returns all location configs which are assigned to the given
+     * label. Label resolving is done case insensitive!
      *
      * @param locationLabel
      * @return
@@ -131,8 +130,7 @@ public interface LocationRegistry {
     /**
      * Method returns all unit configurations which are direct or recursive
      * related to the given location label which can represent more than one
-     * location.
-     * Label resolving is done case insensitive!
+     * location. Label resolving is done case insensitive!
      *
      * @param locationLabel
      * @return A collection of unit configs.
@@ -144,8 +142,7 @@ public interface LocationRegistry {
     /**
      * Method returns all unit configurations with a given type which are direct
      * or recursive related to the given location label which can represent more
-     * than one location.
-     * Label resolving is done case insensitive!
+     * than one location. Label resolving is done case insensitive!
      *
      * @param unitType
      * @param locationLabel
@@ -157,8 +154,8 @@ public interface LocationRegistry {
 
     /**
      * Method returns a collection of unit configs which are located within the
-     * defined location and match the given unit label.
-     * Label resolving is done case insensitive!
+     * defined location and match the given unit label. Label resolving is done
+     * case insensitive!
      *
      * @param unitLabel
      * @param locationId
@@ -361,5 +358,15 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      */
     public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns all neighbor tiles for a tile. If the given locationId
+     * does not belong to a tile, the could not perform exception is thrown.
+     *
+     * @param locationId the id of the location which neighbors you want to get
+     * @return all neighbor tiles
+     * @throws CouldNotPerformException
+     */
+    public List<LocationConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
 
 }
