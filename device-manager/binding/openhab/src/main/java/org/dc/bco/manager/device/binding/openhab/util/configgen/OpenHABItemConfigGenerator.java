@@ -200,7 +200,7 @@ public class OpenHABItemConfigGenerator {
                     }
                 }
                 for (ServiceType serviceType : serviceTypesOnLocation) {
-                    if (serviceType == ServiceType.COLOR_SERVICE || serviceType == ServiceType.POWER_SERVICE) {
+                    if (serviceType == ServiceType.COLOR_SERVICE || serviceType == ServiceType.POWER_SERVICE || serviceType == ServiceType.POWER_CONSUMPTION_PROVIDER) {
                         LocationItemEntry entry = new LocationItemEntry(locationConfig, serviceType);
                         itemEntryList.add(entry);
                         logger.info("Added location entry [" + entry.buildStringRep() + "]");
