@@ -49,6 +49,7 @@ import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.bco.manager.location.lib.LocationController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
@@ -204,7 +205,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply power consumption data change!", ex);
                         }
-                        logger.info("Received powerConsumption[" + powerConsumption.getConsumption() + "] update for location [" + getLabel() + "]");
+//                        logger.info("Received powerConsumption[" + powerConsumption.getConsumption() + "] update for location [" + getLabel() + "]");
                     }
                 });
                 break;
@@ -570,5 +571,14 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     @Override
     public Future<Void> applyAction(ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         return unitRemoteMap.get(actionConfig.getServiceHolder()).applyAction(actionConfig);
+    }
+
+    @Override
+    public List<String> getNeighborLocationIds() throws CouldNotPerformException {
+        List<String> neighborIdList = new ArrayList<>();
+        for (LocationConfig locationConfig : LocationManagerController.getInstance().getLocationRegistry().getNeighborLocations(getId())) {
+            neighborIdList.add(locationConfig.getId());
+        }
+        return neighborIdList;
     }
 }

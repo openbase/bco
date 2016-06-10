@@ -2,6 +2,7 @@ package org.dc.bco.manager.location.lib;
 
 import org.dc.bco.registry.device.lib.provider.DeviceRegistryProvider;
 import org.dc.bco.registry.location.lib.provider.LocationRegistryProvider;
+import org.dc.jul.storage.registry.RegistryImpl;
 
 /*
  * #%L
@@ -30,4 +31,7 @@ import org.dc.bco.registry.location.lib.provider.LocationRegistryProvider;
  */
 public interface LocationManager extends LocationRegistryProvider, DeviceRegistryProvider {
 
+    public RegistryImpl<String, LocationController> getLocationControllerRegistry();
+    
+    public RegistryImpl<String, ConnectionController> getConnectionControllerRegistry();
 }

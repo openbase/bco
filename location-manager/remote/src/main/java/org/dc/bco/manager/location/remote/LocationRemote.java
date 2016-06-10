@@ -1,7 +1,10 @@
 package org.dc.bco.manager.location.remote;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import org.dc.bco.manager.location.lib.Location;
+import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.NotAvailableException;
 import org.dc.jul.extension.rsb.com.AbstractConfigurableRemote;
@@ -252,5 +255,18 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     @Override
     public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
+    }
+
+    @Override
+    public List<String> getNeighborLocationIds() throws CouldNotPerformException {
+        List<String> neighborIdList = new ArrayList<>();
+        try {
+            for (LocationConfig locationConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
+                neighborIdList.add(locationConfig.getId());
+            }
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Could not get CachedLocationRegistryRemote!", ex);
+        }
+        return neighborIdList;
     }
 }

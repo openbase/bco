@@ -125,4 +125,14 @@ public class LocationManagerController implements LocationManager {
     public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
         return deviceRegistryRemote;
     }
+
+    @Override
+    public RegistryImpl<String, LocationController> getLocationControllerRegistry() {
+        return locationRegistry;
+    }
+
+    @Override
+    public RegistryImpl<String, ConnectionController> getConnectionControllerRegistry() {
+        return connectionRegistry;
+    }
 }
