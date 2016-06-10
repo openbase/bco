@@ -65,43 +65,39 @@ public class SceneEditor extends javax.swing.JFrame {
     }
 
     public SceneEditor init() throws InitializationException, InterruptedException {
-        try {
-            sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
+        sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
 
-                @Override
-                public void update(final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
-                    genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
-                }
-            });
-            sceneCreationPanel.addObserver(new Observer<List<ActionConfig>>() {
+            @Override
+            public void update(final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
+                genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
+            }
+        });
+        sceneCreationPanel.addObserver(new Observer<List<ActionConfig>>() {
 
-                @Override
-                public void update(final Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
+            @Override
+            public void update(final Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
 //                    logger.info("Update through new scene selected!");
-                    genericUnitCollectionPanel.clearUnitPanel();
+                genericUnitCollectionPanel.clearUnitPanel();
 //                    logger.info("Cleared unit collection panel!");
-                    for (ActionConfig action : data) {
+                for (ActionConfig action : data) {
 //                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
-                        Object value = ServiceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
-                        genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
-                    }
+                    Object value = ServiceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
+                    genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
                 }
-            });
-            genericUnitCollectionPanel.init();
-            sceneCreationPanel.init();
+            }
+        });
 
-            GlobalExecutionService.submit(() -> {
-                try {
-                    sceneCreationPanel.init();
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-            });
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+        GlobalExecutionService.submit(() -> {
+            try {
+                genericUnitCollectionPanel.init();
+                sceneSelectorPanel.init();
+                sceneCreationPanel.init();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        });
         return this;
     }
 
@@ -263,7 +259,7 @@ public class SceneEditor extends javax.swing.JFrame {
 
         JPService.setApplicationName("scene-remote");
         JPService.parseAndExitOnError(args);
-        
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             try {
