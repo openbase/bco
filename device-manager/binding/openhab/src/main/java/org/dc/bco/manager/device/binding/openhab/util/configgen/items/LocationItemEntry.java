@@ -44,7 +44,10 @@ public class LocationItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(locationConfig, serviceType);
             this.icon = "";
             this.commandType = getDefaultCommand(serviceType);
-            this.label = locationConfig.getLabel();
+            this.label = locationConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name());
+            if("Number".equals(commandType)) {
+                label += " [%.0f]";
+            }
             this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + locationConfig.getId() + "\"";
             groups.add(LOCATION_GROUP_LABEL);
             groups.add(GroupEntry.generateGroupID(locationConfig));
