@@ -124,7 +124,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
-        locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
+        locationRegistryRemote.addDataObserver(new Observer<LocationRegistryType.LocationRegistry>() {
 
             @Override
             public void update(final Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
@@ -137,7 +137,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             }
         });
 
-        deviceRegistryRemote.addObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
+        deviceRegistryRemote.addDataObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
 
             @Override
             public void update(final Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
@@ -189,7 +189,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         if (!init) {
             return;
         }
-
+        logger.info("Update selectorPanel!");
         try {
             if (locationComboBox.getSelectedIndex() != -1) {
                 selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();

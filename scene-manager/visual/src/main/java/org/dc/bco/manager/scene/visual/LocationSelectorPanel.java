@@ -89,7 +89,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() {
-        locationRegistryRemote.addObserver(new Observer<LocationRegistry>() {
+        locationRegistryRemote.addDataObserver(new Observer<LocationRegistry>() {
 
             @Override
             public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
@@ -105,13 +105,17 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         }
 
         if (locationComboBox.isEnabled()) {
-            try {
-                selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
-            } catch (Exception ex) {
-                if (enableAllLocation) {
-                    selectedLocationConfigHolder = ALL_LOCATION;
+            if (!(locationComboBox.getSelectedItem() instanceof LocationConfigHolder)) {
+                selectedLocationConfigHolder = ALL_LOCATION;
+            } else {
+                try {
+                    selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+                } catch (Exception ex) {
+                    if (enableAllLocation) {
+                        selectedLocationConfigHolder = ALL_LOCATION;
+                    }
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
                 }
-                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
         } else {
             if (enableAllLocation) {
@@ -215,6 +219,10 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     public void updateSelection(String locationId) {
         LocationConfigHolder select = null;
         for (int i = 0; i < locationComboBox.getItemCount(); i++) {
+            if(!(locationComboBox.getItemAt(i) instanceof LocationConfigHolder)) {
+                // combo box has not really been initalized yet
+                return;
+            }
             if (((LocationConfigHolder) locationComboBox.getItemAt(i)).getConfig().getId().equals(locationId)) {
                 select = (LocationConfigHolder) locationComboBox.getItemAt(i);
             }
