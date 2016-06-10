@@ -196,6 +196,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case POWER_CONSUMPTION_PROVIDER:
+                logger.info("Adding powerConsumptionRemote");
                 ((ArrayList<PowerConsumptionProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).add((PowerConsumptionProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
