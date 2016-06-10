@@ -106,19 +106,19 @@ public class OpenHABConfigGenerator {
         appRegistryRemote.activate();
         itemConfigGenerator.init();
 
-        this.deviceRegistryRemote.addObserver((Observable<DeviceRegistry> source, DeviceRegistry data) -> {
+        this.deviceRegistryRemote.addDataObserver((Observable<DeviceRegistry> source, DeviceRegistry data) -> {
             generate();
         });
-        this.locationRegistryRemote.addObserver((Observable<LocationRegistry> source, LocationRegistry data) -> {
+        this.locationRegistryRemote.addDataObserver((Observable<LocationRegistry> source, LocationRegistry data) -> {
             generate();
         });
-        this.sceneRegistryRemote.addObserver((Observable<SceneRegistry> source, SceneRegistry data) -> {
+        this.sceneRegistryRemote.addDataObserver((Observable<SceneRegistry> source, SceneRegistry data) -> {
             generate();
         });
-        this.agentRegistryRemote.addObserver((Observable<AgentRegistry> source, AgentRegistry data) -> {
+        this.agentRegistryRemote.addDataObserver((Observable<AgentRegistry> source, AgentRegistry data) -> {
             generate();
         });
-        this.appRegistryRemote.addObserver((Observable<AppRegistry> source, AppRegistry data) -> {
+        this.appRegistryRemote.addDataObserver((Observable<AppRegistry> source, AppRegistry data) -> {
             generate();
         });
     }
