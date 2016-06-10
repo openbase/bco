@@ -60,6 +60,7 @@ public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
         try {
             //Ignore commands that are not for the device manager but for example for the scene registry
             if(!command.getItemBindingConfig().isEmpty()) {
+                logger.debug("Ignoring item ["+command.getItem()+"] because itemBindingConfig ["+command.getItemBindingConfig()+"] is not empty");
                 return;
             }
             commandExecutor.receiveUpdate(command);
@@ -70,6 +71,11 @@ public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
 
     @Override
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
+        //TODO: this is just a hack
+        // Why do all items from knx publish their new values as commands, check if this is configurable in ets
+//        if(command.getItem().startsWith("Hager") || command.getItem().startsWith("Gire")) {
+//            internalReceiveUpdate(command);
+//        }
         // do nothing...
     }
 }

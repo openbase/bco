@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.dc.bco.dal.lib.layer.service.Service;
 import org.dc.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.dc.bco.dal.lib.layer.service.operation.ColorOperationService;
@@ -146,7 +144,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
                         }
-                        logger.info("new brighntess value for location [" + getLabel() + "] [" + brightness + "]");
                     }
                 });
                 break;
@@ -196,7 +193,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 });
                 break;
             case POWER_CONSUMPTION_PROVIDER:
-                logger.info("Adding powerConsumptionRemote");
                 ((ArrayList<PowerConsumptionProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).add((PowerConsumptionProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
@@ -208,7 +204,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply power consumption data change!", ex);
                         }
-                        logger.info("new powerConsumption value for location [" + getLabel() + "] [" + powerConsumption + "]");
+                        logger.info("Received powerConsumption[" + powerConsumption.getConsumption() + "] update for location [" + getLabel() + "]");
                     }
                 });
                 break;
