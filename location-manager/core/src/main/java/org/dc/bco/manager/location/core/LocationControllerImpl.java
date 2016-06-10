@@ -49,7 +49,6 @@ import org.dc.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.dc.bco.manager.location.lib.Location;
 import org.dc.bco.manager.location.lib.LocationController;
 import org.dc.bco.registry.device.lib.DeviceRegistry;
-import org.dc.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.dc.jul.exception.CouldNotPerformException;
 import org.dc.jul.exception.InitializationException;
 import org.dc.jul.exception.InstantiationException;
