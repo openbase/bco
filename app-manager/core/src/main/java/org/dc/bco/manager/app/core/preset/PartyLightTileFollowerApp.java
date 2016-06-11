@@ -18,6 +18,7 @@ import org.dc.jul.exception.InstantiationException;
 import org.dc.jul.exception.InvalidStateException;
 import org.dc.jul.exception.printer.ExceptionPrinter;
 import org.dc.jul.schedule.GlobalExecutionService;
+import rst.homeautomation.unit.UnitTemplateType;
 import rst.spatial.LocationConfigType;
 import rst.vision.HSVColorType;
 
@@ -46,16 +47,16 @@ import rst.vision.HSVColorType;
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class PartyLightTileFollowerApp extends AbstractApp {
-    
+
     private Map<String, LocationRemote> locationRemoteMap;
     private LocationRegistry locationRegistry;
-    
+
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
         super(true);
         try {
             this.locationRegistry = CachedLocationRegistryRemote.getRegistry();
             this.locationRemoteMap = new HashMap<>();
-            
+
             LocationRemote locationRemote;
             // init tile remotes
             for (LocationConfigType.LocationConfig locationConfig : locationRegistry.getLocationConfigs()) {
@@ -67,12 +68,12 @@ public class PartyLightTileFollowerApp extends AbstractApp {
                 locationRemote.init(locationConfig);
                 locationRemote.activate();
             }
-            
+
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     @Override
     public void shutdown() throws InterruptedException {
         // shutdown tile remotes
@@ -81,16 +82,15 @@ public class PartyLightTileFollowerApp extends AbstractApp {
         });
         super.shutdown();
     }
-    
+
     private double brightness = 50;
     private HSVColorType.HSVColor[] colors = {
         HSVColorType.HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(brightness).build(),
         HSVColorType.HSVColor.newBuilder().setHue(290).setSaturation(100).setValue(brightness).build(),
-        HSVColorType.HSVColor.newBuilder().setHue(30).setSaturation(100).setValue(brightness).build(),
-    };
-    
+        HSVColorType.HSVColor.newBuilder().setHue(30).setSaturation(100).setValue(brightness).build(),};
+
     private Future<Void> tileFollowerFuture;
-    
+
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
 
@@ -105,9 +105,9 @@ public class PartyLightTileFollowerApp extends AbstractApp {
             return;
         }
         tileFollowerFuture = GlobalExecutionService.submit(new TileFollower());
-        
+
     }
-    
+
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         if (tileFollowerFuture != null) {
@@ -115,67 +115,72 @@ public class PartyLightTileFollowerApp extends AbstractApp {
             tileFollowerFuture = null;
         }
     }
-    
+
     public class TileFollower implements Callable<Void> {
-        
+
         private List<String> processedLocations = new ArrayList<>();
-        
+
         @Override
         public Void call() throws CouldNotPerformException, InterruptedException {
             logger.info("Execute " + this);
             if (locationRemoteMap.isEmpty()) {
                 throw new CouldNotPerformException("No Locations found!");
             }
-            
+
             LocationRemote locationRemote;
-            
+
             int colorIndex = 0;
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     // apply updates for next iteration
                     colorIndex = ++colorIndex % colors.length;
-                    System.out.println("color index:"+colorIndex);
+                    System.out.println("color index:" + colorIndex);
                     processedLocations.clear();
 
                     // select inital room
                     locationRemote = locationRemoteMap.get(getConfig().getLocationId());
-                    
+
                     processRoom(locationRemote, colors[colorIndex]);
-                    
+
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Skip animation run!", ex), logger);
                 }
-                
+
                 logger.info("#########################");
-                
+
             }
             return null;
         }
-        
+
         public void processRoom(final LocationRemote locationRemote, final HSVColorType.HSVColor color) throws CouldNotPerformException, InterruptedException {
             logger.info("Set " + locationRemote + " to " + color + "...");
             try {
-                
-                try {
-                    locationRemote.setColor(color).get(1, TimeUnit.SECONDS);
-                } catch (TimeoutException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color!", ex), logger);
+
+                // skip if no ambi light is present
+                if (!locationRegistry.getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.AMBIENT_LIGHT, locationRemote.getId()).isEmpty()) {
+                    try {
+                        locationRemote.setColor(color).get(1, TimeUnit.SECONDS);
+                    } catch (TimeoutException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color!", ex), logger);
+                    }
+                    Thread.sleep(500);
                 }
 
                 // mark as prcessed        
                 processedLocations.add(locationRemote.getId());
-                
-                Thread.sleep(3000);
 
                 // process neighbors
+                LocationRemote neighborRemote;
                 for (String neighborsId : locationRemote.getNeighborLocationIds()) {
                     // skip if already processed
                     if (processedLocations.contains(neighborsId)) {
                         continue;
                     }
 
+                    neighborRemote = locationRemoteMap.get(neighborsId);
+
                     // process remote 
-                    processRoom(locationRemoteMap.get(neighborsId), color);
+                    processRoom(neighborRemote, color);
                 }
             } catch (CouldNotPerformException | ExecutionException ex) {
                 throw new CouldNotPerformException("Could not process room of " + locationRemote);
