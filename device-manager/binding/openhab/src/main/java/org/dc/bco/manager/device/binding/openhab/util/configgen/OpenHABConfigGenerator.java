@@ -105,7 +105,13 @@ public class OpenHABConfigGenerator {
         appRegistryRemote.init();
         appRegistryRemote.activate();
         itemConfigGenerator.init();
-
+        
+        deviceRegistryRemote.waitForData();
+        locationRegistryRemote.waitForData();
+        sceneRegistryRemote.waitForData();
+        agentRegistryRemote.waitForData();
+        appRegistryRemote.waitForData();
+        
         this.deviceRegistryRemote.addDataObserver((Observable<DeviceRegistry> source, DeviceRegistry data) -> {
             generate();
         });
