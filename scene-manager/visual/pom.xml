@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>manager.scene.visual</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA SceneManager Visualisation</name>
     
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>manager.scene</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>    
     
-    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.manager/wiki</url>
 
     <licenses>
         <license>
@@ -78,7 +78,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.scene.visual.SceneEditor</mainClass>
+                            <mainClass>org.openbase.bco.manager.scene.visual.SceneEditor</mainClass>
                             <id>scene-editor</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -94,7 +94,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.dc.bco.manager.scene.visual.SceneEditor</mainClass>
+                            <mainClass>org.openbase.bco.manager.scene.visual.SceneEditor</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -128,12 +128,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>dal.visual</artifactId>
             <version>${dependency.bco.dal.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.scene.remote</artifactId>
             <version>${project.version}</version>
         </dependency>

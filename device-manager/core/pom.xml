@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>manager.device.core</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA DeviceManager Core</name>
     
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>manager.device</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
     
-    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.manager/wiki</url>
 
     <licenses>
         <license>
@@ -49,7 +49,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.core.DeviceManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.manager.device.core.DeviceManagerLauncher</mainClass>
                             <id>device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -93,7 +93,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.device.lib</artifactId>
             <version>${project.version}</version>
         </dependency>

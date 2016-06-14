@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>manager.device.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA DeviceManager Binding OpenHAB</name>
     
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>manager.device.binding</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>    
     
-    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.manager/wiki</url>
 
     <licenses>
         <license>
@@ -62,21 +62,21 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
+                            <mainClass>org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
                             <id>binding-openhab-config-generator</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.binding.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
+                            <mainClass>org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
                             <id>binding-openhab-habmin-zwave-config-updater</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.dc.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher</mainClass>
+                            <mainClass>org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher</mainClass>
                             <id>binding-openhab-device-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -120,7 +120,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.device.core</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -151,14 +151,14 @@
         </dependency>
         <dependency>
             <!-- for openhab binding -->
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rst.processing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <!-- for openhab binding -->
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.openhab</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>

@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>manager.location.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA LocationManager Binding OpenHAB</name>
     
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>manager.location.binding</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>    
     
-    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.manager/wiki</url>
 
     <licenses>
         <license>
@@ -62,7 +62,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher</mainClass>
+                            <mainClass>org.openbase.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher</mainClass>
                             <id>binding-openhab-location-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -106,7 +106,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.location.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -118,14 +118,14 @@
         </dependency>
         <dependency>
             <!-- for openhab binding -->
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rst.processing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <!-- for openhab binding -->
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.openhab</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>

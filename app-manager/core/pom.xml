@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>manager.app.core</artifactId>
     <packaging>jar</packaging>
 
     <name>COMA AppManager Core</name>
     
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>manager.app</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
     
-    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.manager/wiki</url>
 
     <licenses>
         <license>
@@ -49,7 +49,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.dc.bco.manager.app.core.AppManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.manager.app.core.AppManagerLauncher</mainClass>
                             <id>app-manager</id>
                             <platforms>
                                 <platform>unix</platform>
@@ -93,24 +93,24 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.app.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.agent.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>manager.location.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rst.processing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>

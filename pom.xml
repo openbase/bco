@@ -6,7 +6,7 @@
         <maven>3.0</maven>
     </prerequisites>
     
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>manager</artifactId>
     <version>1.1-SNAPSHOT</version>
     <name>COMA</name>
@@ -14,11 +14,11 @@
     <inceptionYear>2015</inceptionYear>
     <description>Core Manager Collection</description>
 
-    <url>https://github.com/divinecooperation/bco.manager/wiki</url>
+    <url>https://github.com/openbase/bco.manager/wiki</url>
     
     <organization>
-        <name>DivineCooperation</name>
-        <url>https://github.com/divinecooperation</url>
+        <name>openbase.org</name>
+        <url>https://github.com/openbase</url>
     </organization>
     <developers>
         <developer>
@@ -27,8 +27,8 @@
 
             <email>divinethreepwood@gmail.com</email>
             <url>https://github.com/DivineThreepwood</url>
-            <organization>DivineCooperation</organization>
-            <organizationUrl>https://github.com/divinecooperation</organizationUrl>
+            <organization>openbase.org</organization>
+            <organizationUrl>https://github.com/openbase</organizationUrl>
             <roles>
                 <role>architect</role>
                 <role>developer</role>
@@ -40,8 +40,8 @@
             <name>Tamino Huxohl</name>
             <email>taminoh@ymail.com</email>
             <url>https://github.com/pLeminoq</url>
-            <organization>DivineCooperation</organization>
-            <organizationUrl>https://github.com/divinecooperation</organizationUrl>
+            <organization>openbase.org</organization>
+            <organizationUrl>https://github.com/openbase</organizationUrl>
             <roles>
                 <role>architect</role>
                 <role>developer</role>
@@ -51,9 +51,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com/divinecooperation/bco.manager.gitt</connection>
-        <developerConnection>scm:git:git@github.com/divinecooperation/bco.manager.git</developerConnection>
-        <url>git@github.com/divinecooperation/bco.manager.git</url>
+        <connection>scm:git:git@github.com/openbase/bco.manager.gitt</connection>
+        <developerConnection>scm:git:git@github.com/openbase/bco.manager.git</developerConnection>
+        <url>git@github.com/openbase/bco.manager.git</url>
     </scm>
     
     <properties>
@@ -137,7 +137,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.exception</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
