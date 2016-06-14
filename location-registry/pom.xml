@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>registry.location</artifactId>
     <name>REM LocationRegistry</name>
     <description>LocationRegistry</description>
@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>registry</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
