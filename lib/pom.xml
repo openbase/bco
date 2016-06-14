@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>dal.lib</artifactId>
     <packaging>jar</packaging>
 
     <name>DAL Library</name>
     
     <parent>
-        <groupId>org.dc.bco</groupId>
+        <groupId>org.openbase.bco</groupId>
         <artifactId>dal</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>    
     
-    <url>https://github.com/divinecooperation/bco.dal/wiki</url>
+    <url>https://github.com/openbase/bco.dal/wiki</url>
     
     <licenses>
         <license>
@@ -68,59 +68,59 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.agent.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.app.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.device.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.location.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.scene.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc.bco</groupId>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.user.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.storage</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.com</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.processing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.interface</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.protobuf</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>

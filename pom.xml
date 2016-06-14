@@ -6,7 +6,7 @@
         <maven>3.0</maven>
     </prerequisites>
     
-    <groupId>org.dc.bco</groupId>
+    <groupId>org.openbase.bco</groupId>
     <artifactId>dal</artifactId>
     <version>1.1-SNAPSHOT</version>
     <name>DAL</name>
@@ -14,11 +14,11 @@
     
     <description>Domotic Abstraction Layer</description>
 
-    <url>https://github.com/divinecooperation/bco.dal/wiki</url>
+    <url>https://github.com/openbase/bco.dal/wiki</url>
     
     <organization>
-        <name>DivineCooperation</name>
-        <url>https://github.com/divinecooperation</url>
+        <name>openbase.org</name>
+        <url>https://github.com/openbase</url>
     </organization>
     
     <developers>
@@ -28,8 +28,8 @@
 
             <email>divinethreepwood@gmail.com</email>
             <url>https://github.com/DivineThreepwood</url>
-            <organization>DivineCooperation</organization>
-            <organizationUrl>https://github.com/divinecooperation</organizationUrl>
+            <organization>openbase.org</organization>
+            <organizationUrl>https://github.com/openbase</organizationUrl>
             <roles>
                 <role>architect</role>
                 <role>developer</role>
@@ -41,8 +41,8 @@
             <name>Tamino Huxohl</name>
             <email>taminoh@ymail.com</email>
             <url>https://github.com/pLeminoq</url>
-            <organization>DivineCooperation</organization>
-            <organizationUrl>https://github.com/divinecooperation</organizationUrl>
+            <organization>openbase.org</organization>
+            <organizationUrl>https://github.com/openbase</organizationUrl>
             <roles>
                 <role>architect</role>
                 <role>developer</role>
@@ -52,9 +52,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com/divinecooperation/bco.dal.git</connection>
-        <developerConnection>scm:git:git@github.com/divinecooperation/bco.dal.git</developerConnection>
-        <url>git@github.com/divinecooperation/bco.dal.git</url>
+        <connection>scm:git:git@github.com/openbase/bco.dal.git</connection>
+        <developerConnection>scm:git:git@github.com/openbase/bco.dal.git</developerConnection>
+        <url>git@github.com/openbase/bco.dal.git</url>
     </scm>
     
     <packaging>pom</packaging>
@@ -148,12 +148,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.dc</groupId>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rst.container</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
