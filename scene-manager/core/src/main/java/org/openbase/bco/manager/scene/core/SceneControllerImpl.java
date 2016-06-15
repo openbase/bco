@@ -46,7 +46,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
-import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonType;
