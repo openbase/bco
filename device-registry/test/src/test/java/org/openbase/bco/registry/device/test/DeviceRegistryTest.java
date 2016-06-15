@@ -293,10 +293,13 @@ public class DeviceRegistryTest {
 
         deviceRegistry.registerDeviceConfig(deviceWithLabel1);
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             deviceRegistry.registerDeviceConfig(deviceWithLabel2);
             fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
         } catch (Exception ex) {
             assertTrue(true);
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
 
@@ -488,9 +491,12 @@ public class DeviceRegistryTest {
         deviceConfig = deviveConfigBuilder.build();
 
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             deviceRegistry.updateDeviceConfig(deviceConfig).get();
             fail("No exception thrown after updating a device with 2 units in the same location with the same label");
         } catch (Exception ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
 
         assertEquals("DeviceConfig has been although the sandbox has rejected an update", original, deviceRegistry.getDeviceConfigById(deviceConfig.getId()));
