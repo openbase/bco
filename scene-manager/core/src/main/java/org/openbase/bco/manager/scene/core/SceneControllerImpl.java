@@ -32,7 +32,9 @@ import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
@@ -98,58 +100,59 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
     @Override
     public SceneConfig applyConfigUpdate(final SceneConfig config) throws CouldNotPerformException, InterruptedException {
-        try {
-
-            synchronized (triggerListSync) {
-                try {
-                    for (ButtonRemote buttonRemote : buttonRemoteList) {
-                        buttonRemote.deactivate();
-                        buttonRemote.removeDataObserver(buttonObserver);
-                    }
-                    buttonRemoteList.clear();
-                    ButtonRemote buttonRemote;
-
-                    for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(config.getLabel())) {
-                        //TODO implement deviceregistry method get unit by label and type.
-                        if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
-                            continue;
-                        }
-                        try {
-                            buttonRemote = new ButtonRemote();
-                            buttonRemote.init(unitConfig);
-                            buttonRemoteList.add(buttonRemote);
-                        } catch (InitializationException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
-                        }
-                    }
-                    if (isEnabled()) {
-                        for (ButtonRemote button : buttonRemoteList) {
-                            button.activate();
-                            try {
-                                button.waitForData(2, TimeUnit.SECONDS);
-                            } catch (CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory(new CouldNotPerformException("Initial button sync failed!", ex), logger);
-                            }
-                            button.addDataObserver(buttonObserver);
-                        }
-                    }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
+        synchronized (triggerListSync) {
+            try {
+                for (ButtonRemote buttonRemote : buttonRemoteList) {
+                    buttonRemote.deactivate();
+                    buttonRemote.removeDataObserver(buttonObserver);
                 }
-            }
+                buttonRemoteList.clear();
+                ButtonRemote buttonRemote;
 
-            synchronized (actionListSync) {
-                actionList.clear();
-                Action action;
-                for (ActionConfig actionConfig : config.getActionConfigList()) {
-                    action = new Action();
+                for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(config.getLabel())) {
+                    //TODO implement deviceregistry method get unit by label and type.
+                    if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
+                        continue;
+                    }
+                    try {
+                        buttonRemote = new ButtonRemote();
+                        buttonRemote.init(unitConfig);
+                        buttonRemoteList.add(buttonRemote);
+                    } catch (InitializationException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
+                    }
+                }
+                if (isEnabled()) {
+                    for (ButtonRemote button : buttonRemoteList) {
+                        button.activate();
+                        try {
+                            button.waitForData(2, TimeUnit.SECONDS);
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial button sync failed!", ex), logger);
+                        }
+                        button.addDataObserver(buttonObserver);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
+            }
+        }
+
+        MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
+        synchronized (actionListSync) {
+            actionList.clear();
+            Action action;
+            for (ActionConfig actionConfig : config.getActionConfigList()) {
+                action = new Action();
+                try {
                     action.init(actionConfig);
                     actionList.add(action);
+                } catch (CouldNotPerformException ex) {
+                    exceptionStack.push(action, ex);
                 }
             }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update scene config!", ex);
         }
+        ExceptionPrinter.printHistory(new MultiException("Could not activate service remotes for some actions", exceptionStack), logger, LogLevel.WARN);
         return super.applyConfigUpdate(config);
     }
 
