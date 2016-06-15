@@ -216,7 +216,7 @@ public class LocationRegistryTest {
         LocationConfig registeredRootLocationConfig = remote.registerLocationConfig(rootLocationConfigBuilder.build()).get();
         LocationConfig.Builder registeredLivingBuilder = remote.getLocationConfigById(registeredLiving.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
-        remote.updateLocationConfig(registeredLivingBuilder.build());
+        remote.updateLocationConfig(registeredLivingBuilder.build()).get();
         remote.requestData().get();
         assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
 

@@ -35,7 +35,8 @@ import rst.spatial.PlacementConfigType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
 public class LocationUtils {
 
