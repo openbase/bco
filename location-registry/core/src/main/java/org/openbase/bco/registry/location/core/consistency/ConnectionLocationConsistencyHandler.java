@@ -21,7 +21,6 @@ package org.openbase.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -53,7 +52,12 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
     public void processData(String id, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry, ProtoBufMessageMapInterface<String, ConnectionConfig, ConnectionConfig.Builder> entryMap, ProtoBufRegistryInterface<String, ConnectionConfig, ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         ConnectionConfig connection = entry.getMessage();
 
-        String locationId = getLowestCommonParentLocation(connection.getTileIdList(), locationConfigRegistry).getId();
+        String locationId;
+        try {
+            locationId = getLowestCommonParentLocation(connection.getTileIdList(), locationConfigRegistry).getId();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not find parent location for connection [" + connection + "]", ex);
+        }
         if (!locationId.equals(connection.getPlacementConfig().getLocationId())) {
             PlacementConfig.Builder placement = connection.getPlacementConfig().toBuilder().setLocationId(locationId);
             throw new EntryModification(entry.setMessage(connection.toBuilder().setPlacementConfig(placement).build()), this);
@@ -95,7 +99,16 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
                 }
             }
         }
-        return pathToRootLists.get(shortestIndex).get(pathToRootLists.get(shortestIndex).size() - 1);
+        try {
+            return pathToRootLists.get(shortestIndex).get(pathToRootLists.get(shortestIndex).size() - 1);
+        } catch (IndexOutOfBoundsException ex) {
+            String tiles = "[";
+            for (String id : locationIds) {
+                tiles += id + "; ";
+            }
+            tiles += "]";
+            throw new CouldNotPerformException("Could not find lowest common parent for tiles " + tiles);
+        }
     }
 
     @Override

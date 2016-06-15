@@ -156,10 +156,10 @@ public class LocationRegistryTest {
 
     @Before
     public void setUp() throws CouldNotPerformException {
-        deviceRegistry.getDeviceConfigRegistry().clear();
         deviceRegistry.getUnitGroupRegistry().clear();
-        locationRegistry.getLocationConfigRegistry().clear();
+        deviceRegistry.getDeviceConfigRegistry().clear();
         locationRegistry.getConnectionConfigRegistry().clear();
+        locationRegistry.getLocationConfigRegistry().clear();
         userRegistry.getUserRegistry().clear();
     }
 
@@ -175,32 +175,21 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testRootConsistency() throws Exception {
-        long time = System.currentTimeMillis();
         System.out.println("TestRootConsisntency");
         LocationConfig root = LocationConfig.newBuilder().setLabel("TestRootLocation").build();
         LocationConfig registeredRoot = remote.registerLocationConfig(root).get();
-        System.out.println("Time for registration [" + (System.currentTimeMillis() - time) + "]");
-        System.out.println("Root location succesfully registered!");
-        time = System.currentTimeMillis();
         remote.requestData().get();
-        System.out.println("Time for request data [" + (System.currentTimeMillis() - time) + "]");
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getRoot());
         assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
 
         LocationConfig child = LocationConfig.newBuilder().setLabel("TestChildLocation").setPlacementConfig(PlacementConfig.newBuilder().setLocationId(registeredRoot.getId()).build()).build();
-        time = System.currentTimeMillis();
         LocationConfig registeredChild = remote.registerLocationConfig(child).get();
-        System.out.println("Time for registration [" + (System.currentTimeMillis() - time) + "]");
         assertTrue("The new location isn't registered as a child location.", !registeredChild.getRoot());
-        time = System.currentTimeMillis();
         remote.requestData().get();
-        System.out.println("Time for request data [" + (System.currentTimeMillis() - time) + "]");
         assertTrue("The child location isn't represented in its parent.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdList().contains(registeredChild.getId()));
         assertTrue("The root node contains more than one child.", remote.getLocationConfigById(registeredRoot.getId()).getChildIdCount() == 1);
 
-        time = System.currentTimeMillis();
         LocationConfig removedLocation = remote.removeLocationConfig(registeredRoot).get();
-        System.out.println("Time for removal [" + (System.currentTimeMillis() - time) + "]");
         remote.requestData().get();
         assertFalse("The deleted root location is still available.", remote.containsLocationConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", remote.getLocationConfigById(registeredChild.getId()).getRoot());
@@ -214,6 +203,7 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testChildConsistency() throws Exception {
+        System.out.println("TestChildConsistency");
         String label = "Test2Living";
         LocationConfig living = LocationConfig.newBuilder().setLabel(label).build();
         LocationConfig registeredLiving = remote.registerLocationConfig(living).get();
@@ -245,6 +235,7 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testParentIDUpdateConsistency() throws Exception {
+        System.out.println("TestParentIDUpdateConsistency");
 
         String rootLocationConfigLabel = "Test3RootLocation";
         LocationConfig.Builder rootLocationConfigBuilder = LocationConfig.newBuilder();
@@ -274,18 +265,23 @@ public class LocationRegistryTest {
 
     @Test(timeout = 5000)
     public void testGetUnitConfigs() throws Exception {
+        System.out.println("TestGetUnitConfigs");
+
         try {
             remote.getUnitConfigsByLocation(UnitTemplate.UnitType.UNKNOWN, locationConfig.getId());
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
-            // this should happen id unit type is unknown!
+            // this should not happen id unit type is unknown!
         }
 
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             remote.getUnitConfigsByLocation(UnitTemplate.UnitType.AMBIENT_LIGHT, "Quark");
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
 
@@ -297,6 +293,8 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testLoopConsistency() throws Exception {
+        System.out.println("TestLoopConsistency");
+
         String rootLabel = "Root";
         String firstChildLabel = "FirstChild";
         String SecondChildLabel = "SecondChild";
@@ -314,9 +312,12 @@ public class LocationRegistryTest {
             root = remote.getLocationConfigById(root.getId());
             LocationConfig.Builder rootBuilder = root.toBuilder();
             rootBuilder.getPlacementConfigBuilder().setLocationId(secondChild.getId());
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             remote.registerLocationConfig(rootBuilder.build()).get();
             Assert.fail("No exception when registering location with a loop [" + secondChild + "]");
         } catch (Exception ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
 
@@ -328,6 +329,8 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testChildWithSameLabelConsistency() throws Exception {
+        System.out.println("TestChildWithSameLabelConsistency");
+
         String rootLabel = "RootWithChildrenWithSameLabel";
         String childLabel = "childWithSameLabel";
         LocationConfig root = LocationConfig.newBuilder().setLabel(rootLabel).build();
@@ -338,9 +341,12 @@ public class LocationRegistryTest {
 
         try {
             LocationConfig secondChild = LocationConfig.newBuilder().setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             secondChild = remote.registerLocationConfig(secondChild).get();
             Assert.fail("No exception thrown when registering a second child with the same label");
         } catch (Exception ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
 
@@ -351,6 +357,8 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testConnectionLocationAndScopeAndLabelConsistency() throws Exception {
+        System.out.println("TestConnectionLocationAndScopeAndLabelConsistency");
+
         String rootLabel = "RootZoneForConnectionTest";
         String zoneLabel = "SubZone";
         String tile1Label = "Tile1";
@@ -375,9 +383,12 @@ public class LocationRegistryTest {
 
         ConnectionConfig connection3 = ConnectionConfig.newBuilder().setLabel(connection2Label).setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             remote.registerConnectionConfig(connection3).get();
             Assert.fail("No exception thrown when registering a second connection at the same location with the same label");
-        } catch (ExecutionException ex) {
+        } catch (Exception ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
 
@@ -388,6 +399,8 @@ public class LocationRegistryTest {
      */
     @Test(timeout = 5000)
     public void testConnectionTilesConsistency() throws Exception {
+        System.out.println("TestConnectionTilesConsistency");
+
         String rootLabel = "ConnectionTestRootZone";
         String noTileLabel = "NoTile";
         String tile1Label = "RealTile1";
@@ -401,9 +414,12 @@ public class LocationRegistryTest {
         String connectionLabel = "TilesTestConnection";
         ConnectionConfig connectionFail = ConnectionConfig.newBuilder().setLabel(connectionFailLabel).setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile2.getId()).build();
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             remote.registerConnectionConfig(connectionFail).get();
             Assert.fail("Registered connection with less than one tile");
         } catch (ExecutionException ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
 
         ConnectionConfig.Builder connectionBuilder = ConnectionConfig.newBuilder().setLabel(connectionLabel).setType(ConnectionConfig.ConnectionType.WINDOW);
