@@ -3,6 +3,10 @@ language: java
 jdk:
   - oraclejdk8
 
+cache:
+  directories:
+  - $HOME/.m2
+
 install:
   - mvn --settings .travis/settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
@@ -12,15 +16,15 @@ before_install:
 
 deploy:
   - provider: script
-    script: .travis/deploy.sh
-    on:
-      repo: openbase/bco.dal
-      branch: master
-      jdk: oraclejdk8
+        script: .travis/deploy.sh
+        on:
+            repo: openbase/bco.dal
+            branch: master
+            jdk: oraclejdk8
   - provider: script
-    script: .travis/deploy.sh
-    on:
-      repo: openbase/bco.dal
-      tags: true
-      jdk: oraclejdk8
+        script: .travis/deploy.sh
+        on:
+            repo: openbase/bco.dal
+            tags: true
+            jdk: oraclejdk8
 
