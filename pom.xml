@@ -2,15 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
-    
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager</artifactId>
     <version>1.1-SNAPSHOT</version>
+
     <name>COMA</name>
-    
     <inceptionYear>2015</inceptionYear>
     <description>Core Manager Collection</description>
 
@@ -20,11 +16,11 @@
         <name>openbase.org</name>
         <url>https://github.com/openbase</url>
     </organization>
+
     <developers>
         <developer>
             <id>DivineThreepwood</id>
             <name>Marian Pohling</name>
-
             <email>divinethreepwood@gmail.com</email>
             <url>https://github.com/DivineThreepwood</url>
             <organization>openbase.org</organization>
@@ -50,33 +46,6 @@
         </developer>
     </developers>
 
-    <scm>
-        <connection>scm:git:git@github.com/openbase/bco.manager.gitt</connection>
-        <developerConnection>scm:git:git@github.com/openbase/bco.manager.git</developerConnection>
-        <url>git@github.com/openbase/bco.manager.git</url>
-    </scm>
-    
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <skipTests>false</skipTests>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <dependency.bco.registry.version>1.1-SNAPSHOT</dependency.bco.registry.version>
-        <dependency.bco.dal.version>1.1-SNAPSHOT</dependency.bco.dal.version>
-        <dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>
-    </properties>
-    
-    <packaging>pom</packaging>
-    
-    <modules>
-        <module>device-manager</module>
-        <module>location-manager</module>
-        <module>scene-manager</module>
-        <module>agent-manager</module>
-        <module>app-manager</module>
-        <module>user-manager</module>
-    </modules>
-
     <licenses>
         <license>
             <name>LGPLv3</name>
@@ -88,38 +57,20 @@
         </license>
     </licenses>
 
+    <packaging>pom</packaging>
+
+    <scm>
+        <connection>scm:git:git@github.com/openbase/bco.manager.gitt</connection>
+        <developerConnection>scm:git:git@github.com/openbase/bco.manager.git</developerConnection>
+        <url>git@github.com/openbase/bco.manager.git</url>
+    </scm>
+
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.8</version>
+                <version>1.9</version>
                 <configuration>
                     <verbose>false</verbose>
                 </configuration>
@@ -132,8 +83,106 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>true</useReleaseProfile>
+                    <releaseProfiles>deploy</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.4</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sonatype</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <modules>
+        <module>device-manager</module>
+        <module>location-manager</module>
+        <module>scene-manager</module>
+        <module>agent-manager</module>
+        <module>app-manager</module>
+        <module>user-manager</module>
+    </modules>
+    
+    <properties>
+        <skipTests>false</skipTests>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <dependency.bco.registry.version>1.1-SNAPSHOT</dependency.bco.registry.version>
+        <dependency.bco.dal.version>1.1-SNAPSHOT</dependency.bco.dal.version>
+        <dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version>
+    </properties>
     
     <dependencies>
         <dependency>
@@ -142,4 +191,16 @@
             <version>${dependency.jul.version}</version>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+    
 </project>
