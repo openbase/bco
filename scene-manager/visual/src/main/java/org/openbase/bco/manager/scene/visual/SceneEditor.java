@@ -55,12 +55,14 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
 public class SceneEditor extends javax.swing.JFrame {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneEditor.class);
+    private final ServiceJSonProcessor serviceJSonProcessor;
 
     /**
      * Creates new form DalSceneEditor
      *
      */
     public SceneEditor() {
+        this.serviceJSonProcessor = new ServiceJSonProcessor();
         initComponents();
     }
 
@@ -81,7 +83,7 @@ public class SceneEditor extends javax.swing.JFrame {
 //                    logger.info("Cleared unit collection panel!");
                 for (ActionConfig action : data) {
 //                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
-                    Object value = ServiceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
+                    Object value = serviceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
                     genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
                 }
             }
@@ -201,8 +203,8 @@ public class SceneEditor extends javax.swing.JFrame {
                 try {
                     ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
                     Object value = getServiceValue(panel.getService(), panel.getServiceType());
-                    actionConfig.setServiceAttribute(ServiceJSonProcessor.serialize(value));
-                    actionConfig.setServiceAttributeType(ServiceJSonProcessor.getServiceAttributeType(value));
+                    actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(value));
+                    actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(value));
                     actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
                     actionConfigs.add(actionConfig.build());
                 } catch (CouldNotPerformException ex) {

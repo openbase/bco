@@ -243,7 +243,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     }
 
     @Override
-    public Future<SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
+    public Future<SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, SceneConfig.class);
     }
 
