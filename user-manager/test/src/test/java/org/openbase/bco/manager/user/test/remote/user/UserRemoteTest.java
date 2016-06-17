@@ -110,8 +110,8 @@ public class UserRemoteTest {
     public void testSetUserValues() throws Exception {
         System.out.println("testSetUserValues");
 
-        UserActivity activity = UserActivity.getDefaultInstance();
-        UserPresenceState presenceState = UserPresenceState.getDefaultInstance();
+        UserActivity activity = UserActivity.newBuilder().setCurrentActivity(Activity.EATING).setLastActivity(Activity.COOKING).setNextActivity(Activity.RELAXING).build();;
+        UserPresenceState presenceState = UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build();
 
         userRemote.setUserActivity(activity).get();
         userRemote.setUserPresenceState(presenceState).get();
