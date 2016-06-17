@@ -21,22 +21,24 @@ package org.openbase.bco.manager.user.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.Future;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.bco.manager.user.lib.User;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserActivityType;
+import rst.authorization.UserActivityType.UserActivity;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserDataType.UserData;
-import rst.authorization.UserPresenceStateType;
+import rst.authorization.UserPresenceStateType.UserPresenceState;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig> implements User {
 
@@ -67,7 +69,7 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
     }
 
     @Override
-    public UserActivityType.UserActivity getUserActivity() throws NotAvailableException {
+    public UserActivity getUserActivity() throws NotAvailableException {
         try {
             return getData().getUserActivity();
         } catch (CouldNotPerformException ex) {
@@ -76,11 +78,21 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
     }
 
     @Override
-    public UserPresenceStateType.UserPresenceState getUserPresenceState() throws NotAvailableException {
+    public UserPresenceState getUserPresenceState() throws NotAvailableException {
         try {
             return getData().getUserPresenceState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user presence state", ex);
         }
+    }
+
+    @Override
+    public Future<Void> setUserActivity(UserActivity userActivity) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(userActivity, this, Void.class);
+    }
+
+    @Override
+    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
     }
 }
