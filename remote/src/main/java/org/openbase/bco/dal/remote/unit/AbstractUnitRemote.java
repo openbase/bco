@@ -176,7 +176,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     @Override
-    public Future<SceneConfigType.SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
+    public Future<SceneConfigType.SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, SceneConfigType.SceneConfig.class);
     }
 }

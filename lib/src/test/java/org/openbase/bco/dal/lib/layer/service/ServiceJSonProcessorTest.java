@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor.JavaTypeToProto;
 import rst.homeautomation.state.PowerStateType;
 
 /**
@@ -35,7 +36,10 @@ import rst.homeautomation.state.PowerStateType;
  */
 public class ServiceJSonProcessorTest {
 
+    private final ServiceJSonProcessor serviceJSonProcessor;
+    
     public ServiceJSonProcessorTest() {
+        this.serviceJSonProcessor = new ServiceJSonProcessor();
     }
 
     @BeforeClass
@@ -63,35 +67,35 @@ public class ServiceJSonProcessorTest {
     public void testGetServiceAttributeType() throws Exception {
         System.out.println("getServiceAttributeType");
         Object serviceAttribute = 3.141d;
-        assertEquals(ServiceJSonProcessor.JavaTypeToProto.DOUBLE.getProtoType().toString(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(JavaTypeToProto.DOUBLE.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = true;
-        assertEquals(ServiceJSonProcessor.JavaTypeToProto.BOOLEAN.getProtoType().toString(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(JavaTypeToProto.BOOLEAN.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = 2.7f;
-        assertEquals(ServiceJSonProcessor.JavaTypeToProto.FLOAT.getProtoType().toString(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(JavaTypeToProto.FLOAT.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = 12;
-        assertEquals(ServiceJSonProcessor.JavaTypeToProto.INTEGER.getProtoType().toString(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(JavaTypeToProto.INTEGER.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = 42l;
-        assertEquals(ServiceJSonProcessor.JavaTypeToProto.LONG.getProtoType().toString(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(JavaTypeToProto.LONG.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = "This is a test!";
-        assertEquals(ServiceJSonProcessor.JavaTypeToProto.STRING.getProtoType().toString(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(JavaTypeToProto.STRING.getProtoType().toString(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build();
-        assertEquals(serviceAttribute.getClass().getName(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(serviceAttribute.getClass().getName(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
         serviceAttribute = PowerStateType.PowerState.State.OFF;
-        assertEquals(serviceAttribute.getClass().getName(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        assertEquals(serviceAttribute.getClass().getName(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
-        serviceAttribute = ServiceJSonProcessor.JavaTypeToProto.BOOLEAN;
-        assertEquals(serviceAttribute.getClass().getName(), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+        serviceAttribute = JavaTypeToProto.BOOLEAN;
+        assertEquals(serviceAttribute.getClass().getName(), serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
     }
 
     /**
-     * Test of de-/serialize methods, of class ServiceJSonProcessor.
+     * Test of de-/serialize methods, of class serviceJSonProcessor.
      *
      * @throws java.lang.Exception
      */
@@ -99,30 +103,30 @@ public class ServiceJSonProcessorTest {
     public void testSerializationPipeline() throws Exception {
         System.out.println("SerializationPipeline");
         Object serviceAttribute = 3.141d;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = true;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = 2.7f;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = 12;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = 42l;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = "This is a test!";
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = PowerStateType.PowerState.newBuilder().setValue(PowerStateType.PowerState.State.ON).build();
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
         serviceAttribute = PowerStateType.PowerState.State.OFF;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
 
-        serviceAttribute = ServiceJSonProcessor.JavaTypeToProto.BOOLEAN;
-        assertEquals(serviceAttribute, ServiceJSonProcessor.deserialize(ServiceJSonProcessor.serialize(serviceAttribute), ServiceJSonProcessor.getServiceAttributeType(serviceAttribute)));
+        serviceAttribute = JavaTypeToProto.BOOLEAN;
+        assertEquals(serviceAttribute, serviceJSonProcessor.deserialize(serviceJSonProcessor.serialize(serviceAttribute), serviceJSonProcessor.getServiceAttributeType(serviceAttribute)));
     }
 }

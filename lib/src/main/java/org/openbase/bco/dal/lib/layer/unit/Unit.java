@@ -63,7 +63,7 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
     public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException;
 
     @Override
-    public default Future<SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
+    public default Future<SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         SceneConfig.Builder snapshotBuilder = SceneConfig.newBuilder();
         for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : getTemplate().getServiceTypeList()) {
@@ -79,8 +79,9 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
                 Object serviceAttribute = Service.invokeServiceMethod(Service.getProviderForOperationService(serviceType), this);
 
                 // fill action config
-                actionConfig.setServiceAttribute(ServiceJSonProcessor.serialize(serviceAttribute));
-                actionConfig.setServiceAttributeType(ServiceJSonProcessor.getServiceAttributeType(serviceAttribute));
+                final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
+                actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
                 actionConfig.setActionAuthority(ActionAuthorityType.ActionAuthority.newBuilder().setAuthority(ActionAuthorityType.ActionAuthority.Authority.USER)).setActionPriority(ActionPriorityType.ActionPriority.newBuilder().setPriority(ActionPriorityType.ActionPriority.Priority.NORMAL));
 
                 // add action config

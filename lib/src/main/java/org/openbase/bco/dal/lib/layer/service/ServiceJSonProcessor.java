@@ -24,8 +24,11 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.googlecode.protobuf.format.JsonFormat;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
@@ -36,8 +39,10 @@ import org.slf4j.LoggerFactory;
  */
 public class ServiceJSonProcessor {
 
+    private static final String UTF8 = "UTF8";
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceJSonProcessor.class);
     private static final String javaPrimitvePrefix = "java.lang.";
+    private final JsonFormat jsonFormat;
 
     /**
      * Enumeration that map from java primitives to proto field descriptor
@@ -64,7 +69,8 @@ public class ServiceJSonProcessor {
         }
     }
 
-    private ServiceJSonProcessor() {
+    public ServiceJSonProcessor() {
+        this.jsonFormat = new JsonFormat();
     }
 
     /**
@@ -76,10 +82,10 @@ public class ServiceJSonProcessor {
      * @return
      * @throws CouldNotPerformException
      */
-    public static String serialize(final Object serviceAttribute) throws CouldNotPerformException {
+    public String serialize(final Object serviceAttribute) throws CouldNotPerformException {
         if (serviceAttribute instanceof Message) {
             try {
-                String jsonStringRep = JsonFormat.printToString((Message) serviceAttribute);
+                String jsonStringRep = jsonFormat.printToString((Message) serviceAttribute);
 
                 // formatting only adds empty lines
                 // format
@@ -102,7 +108,7 @@ public class ServiceJSonProcessor {
      * @return a string representation of the serviceAttribute type
      * @throws CouldNotPerformException
      */
-    public static String getServiceAttributeType(final Object serviceAttribute) throws CouldNotPerformException {
+    public String getServiceAttributeType(final Object serviceAttribute) throws CouldNotPerformException {
         if (serviceAttribute.getClass().getName().startsWith("rst")) {
             return serviceAttribute.getClass().getName();
         }
@@ -136,7 +142,7 @@ public class ServiceJSonProcessor {
      * @return the deserialized value
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
+    public Object deserialize(String jsonStringRep, String serviceAttributeType) throws CouldNotPerformException {
         try {
             if (serviceAttributeType.startsWith("rst")) {
                 try {
@@ -145,11 +151,11 @@ public class ServiceJSonProcessor {
                         return attibuteClass.getMethod("valueOf", String.class).invoke(null, jsonStringRep);
                     }
                     Message.Builder builder = (Message.Builder) attibuteClass.getMethod("newBuilder").invoke(null);
-                    JsonFormat.merge(jsonStringRep, builder);
+                    jsonFormat.merge(new ByteArrayInputStream(jsonStringRep.getBytes(Charset.forName(UTF8))), builder);
                     return builder.build();
                 } catch (ClassNotFoundException ex) {
                     throw new CouldNotPerformException("Could not find class for serviceAttributeType [" + serviceAttributeType + "]", ex);
-                } catch (JsonFormat.ParseException ex) {
+                } catch (IOException ex) {
                     throw new CouldNotPerformException("Could not merge [" + jsonStringRep + "] into builder", ex);
                 } catch (NoSuchMethodException | SecurityException ex) {
                     throw new CouldNotPerformException("Could not find or acces newBuilder method for rst type [" + serviceAttributeType + "]", ex);
@@ -190,12 +196,12 @@ public class ServiceJSonProcessor {
         }
     }
 
-    public static String getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
+    public String getJavaPrimitiveClassName(Descriptors.FieldDescriptor.Type protoType) {
         switch (protoType.getJavaType()) {
-        case INT:
-            return javaPrimitvePrefix + "Integer";
-        default:
-            return javaPrimitvePrefix + StringProcessor.transformUpperCaseToCamelCase(protoType.getJavaType().name());
+            case INT:
+                return javaPrimitvePrefix + "Integer";
+            default:
+                return javaPrimitvePrefix + StringProcessor.transformUpperCaseToCamelCase(protoType.getJavaType().name());
         }
     }
 }

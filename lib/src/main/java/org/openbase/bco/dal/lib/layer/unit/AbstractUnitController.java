@@ -83,6 +83,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final List<Service> serviceList;
     private final ServiceFactory serviceFactory;
     private UnitTemplate template;
+    private final ServiceJSonProcessor serviceJSonProcessor;
 
     public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
@@ -91,7 +92,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             if (unitHost.getServiceFactory() == null) {
                 throw new NotAvailableException("service factory");
             }
-
+            this.serviceJSonProcessor = new ServiceJSonProcessor();
             this.unitHost = unitHost;
             this.serviceFactory = unitHost.getServiceFactory();
             this.serviceList = new ArrayList<>();
@@ -390,7 +391,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             logger.info("applyAction: "+actionConfig.getLabel());
-            Object attribute = ServiceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+            Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
             Service.invokeServiceMethod(actionConfig.getServiceType(), this, attribute);
             return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
         } catch (CouldNotPerformException ex) {
