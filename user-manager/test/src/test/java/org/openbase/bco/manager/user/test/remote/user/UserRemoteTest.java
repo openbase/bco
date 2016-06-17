@@ -39,6 +39,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
+import rst.authorization.UserActivityType.UserActivity;
+import rst.authorization.UserActivityType.UserActivity.Activity;
+import rst.authorization.UserPresenceStateType.UserPresenceState;
 import rst.authorization.UserConfigType.UserConfig;
 
 /**
@@ -96,11 +99,24 @@ public class UserRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testGetUserName() throws Exception {
+        System.out.println("testGetUserName");
         userRemote.requestData().get();
         assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
-        logger.info("User activity [" + userRemote.getUserActivity() + "]");
-        logger.info("User presence [" + userRemote.getUserPresenceState() + "]");
+    }
+
+    @Test(timeout = 5000)
+    public void testSetUserValues() throws Exception {
+        System.out.println("testSetUserValues");
+
+        UserActivity activity = UserActivity.newBuilder().setCurrentActivity(Activity.EATING).setLastActivity(Activity.COOKING).setNextActivity(Activity.RELAXING).build();;
+        UserPresenceState presenceState = UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build();
+
+        userRemote.setUserActivity(activity).get();
+        userRemote.setUserPresenceState(presenceState).get();
+
+        assertEquals("UserActivity has not been set!", activity, userRemote.getUserActivity());
+        assertEquals("UserPresenceState has not been set!", presenceState, userRemote.getUserPresenceState());
     }
 }

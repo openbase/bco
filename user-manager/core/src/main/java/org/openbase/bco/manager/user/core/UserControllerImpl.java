@@ -21,28 +21,29 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.openbase.bco.manager.user.lib.User;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserActivityType;
+import rst.authorization.UserActivityType.UserActivity;
 import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserDataType;
 import rst.authorization.UserDataType.UserData;
-import rst.authorization.UserPresenceStateType;
+import rst.authorization.UserPresenceStateType.UserPresenceState;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
  * Threepwood</a>
  */
-public class UserControllerImpl extends AbstractConfigurableController<UserDataType.UserData, UserDataType.UserData.Builder, UserConfig> implements UserController {
+public class UserControllerImpl extends AbstractConfigurableController<UserData, UserData.Builder, UserConfig> implements UserController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -53,7 +54,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserDataT
     protected UserConfig config;
 
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(UserDataType.UserData.newBuilder());
+        super(UserData.newBuilder());
     }
 
     @Override
@@ -114,7 +115,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserDataT
     }
 
     @Override
-    public UserActivityType.UserActivity getUserActivity() throws NotAvailableException {
+    public UserActivity getUserActivity() throws NotAvailableException {
         try {
             return getData().getUserActivity();
         } catch (CouldNotPerformException ex) {
@@ -123,11 +124,31 @@ public class UserControllerImpl extends AbstractConfigurableController<UserDataT
     }
 
     @Override
-    public UserPresenceStateType.UserPresenceState getUserPresenceState() throws NotAvailableException {
+    public UserPresenceState getUserPresenceState() throws NotAvailableException {
         try {
             return getData().getUserPresenceState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user presence state", ex);
         }
+    }
+
+    @Override
+    public Future<Void> setUserActivity(UserActivity userActivity) throws CouldNotPerformException {
+        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setUserActivity(userActivity);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not set user activity to [" + userActivity + "] for " + this + "!", ex);
+        }
+        return null;
+    }
+
+    @Override
+    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
+        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setUserPresenceState(userPresenceState);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not set user presence state to [" + userPresenceState + "] for " + this + "!", ex);
+        }
+        return null;
     }
 }
