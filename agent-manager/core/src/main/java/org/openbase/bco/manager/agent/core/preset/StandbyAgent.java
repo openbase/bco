@@ -120,7 +120,7 @@ public class StandbyAgent extends AbstractAgent {
                 if (snapshot == null) {
                     return;
                 }
-                snapshot = locationRemote.recordSnaphot().get();
+                snapshot = locationRemote.recordSnapshot().get();
                 standby = true;
             } catch (ExecutionException | CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Standby failed!", ex);

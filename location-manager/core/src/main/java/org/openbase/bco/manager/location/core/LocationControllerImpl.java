@@ -545,11 +545,11 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Future<SceneConfigType.SceneConfig> recordSnaphot() throws CouldNotPerformException, InterruptedException {
+    public Future<SceneConfigType.SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         try {
             SceneConfig.Builder snapshotBuilder = SceneConfig.newBuilder();
             for (UnitRemote remote : unitRemoteMap.values()) {
-                snapshotBuilder.addAllActionConfig(remote.recordSnaphot().get().getActionConfigList());
+                snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get().getActionConfigList());
             }
             return CompletableFuture.completedFuture(snapshotBuilder.build());
         } catch (final ExecutionException | CouldNotPerformException ex) {
