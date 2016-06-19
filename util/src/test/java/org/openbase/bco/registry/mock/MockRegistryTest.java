@@ -34,6 +34,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 
 /**
  *
@@ -63,15 +65,18 @@ public class MockRegistryTest {
 
     /**
      * Test of MockRegistry creation.
+     * @throws org.openbase.jul.exception.InstantiationException
      */
     @Test(timeout = 10000)
-    public void testMockRegistryCreation() {
+    public void testMockRegistryCreation() throws InstantiationException {
         System.out.println("testMockRegistryCreation");
         try {
+            System.out.println("start mock registry");
             MockRegistryHolder.newMockRegistry();
+            System.out.println("shutdown mock registry");
             MockRegistryHolder.shutdownMockRegistry();
         } catch (org.openbase.jul.exception.InstantiationException ex) {
-            fail("Could not instantiate mock registry");
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
         }
     }
 }

@@ -170,7 +170,6 @@ public interface DeviceRegistry {
                 }
             } catch (CouldNotPerformException ex) {
             }
-            Thread.sleep(1000);
             System.out.println("wait for consistency...");
         }
     }

@@ -43,20 +43,18 @@ import org.openbase.jul.pattern.Remote;
  */
 public class RemoteTest {
 
-    private static MockRegistry registry;
-
     public RemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-        registry = MockRegistryHolder.newMockRegistry();
+        MockRegistryHolder.newMockRegistry();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        registry.shutdown();
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

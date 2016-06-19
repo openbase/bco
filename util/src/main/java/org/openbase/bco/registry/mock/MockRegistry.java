@@ -160,7 +160,7 @@ public class MockRegistry {
         }
     }
 
-    public MockRegistry() throws InstantiationException {
+    protected MockRegistry() throws InstantiationException {
         try {
             JPService.setupJUnitTestMode();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
@@ -304,7 +304,7 @@ public class MockRegistry {
         }
     }
 
-    public void shutdown() {
+    protected void shutdown() {
         System.out.println("Shutdown MockRegistry");
         deviceRegistryLauncher.shutdown();
         locationRegistryLauncher.shutdown();
