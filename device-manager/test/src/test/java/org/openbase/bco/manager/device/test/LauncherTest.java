@@ -24,7 +24,6 @@ package org.openbase.bco.manager.device.test;
 
 
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -35,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
@@ -47,21 +47,17 @@ public class LauncherTest {
 
     private static final Logger logger = LoggerFactory.getLogger(LauncherTest.class);
 
-    private static MockRegistry registry;
-
     public LauncherTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws org.openbase.jul.exception.InstantiationException, JPServiceException {
-        registry = new MockRegistry();
+        MockRegistryHolder.newMockRegistry();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        if (registry != null) {
-            registry.shutdown();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

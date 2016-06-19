@@ -69,7 +69,6 @@ public class AmbientLightRemoteTest {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
 //        JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SOCKET);
         registry = MockRegistryHolder.newMockRegistry();
-//        Thread.sleep(2000);
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();

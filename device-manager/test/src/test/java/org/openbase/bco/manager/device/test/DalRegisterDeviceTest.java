@@ -22,27 +22,16 @@ package org.openbase.bco.manager.device.test;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import java.util.ArrayList;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.state.PowerStateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
 
 /**
  *
@@ -52,22 +41,18 @@ public class DalRegisterDeviceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DalRegisterDeviceTest.class);
 
-    private static MockRegistry registry;
-
     public DalRegisterDeviceTest() {
 
     }
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, JPServiceException {
-        registry = new MockRegistry();
+        MockRegistryHolder.newMockRegistry();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        if (registry != null) {
-            registry.shutdown();
-        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
