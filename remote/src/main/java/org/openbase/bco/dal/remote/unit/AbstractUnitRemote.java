@@ -28,7 +28,7 @@ import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.InvalidStateException;    
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -56,6 +56,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         super(dataClass, UnitConfig.class);
     }
 
+    /**
+     * {@inheritDoc}
+     * @param id
+     * @throws org.openbase.jul.exception.InitializationException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
@@ -65,6 +71,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param label
+     * @throws org.openbase.jul.exception.InitializationException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
@@ -84,6 +96,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param scope
+     * @throws org.openbase.jul.exception.InitializationException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
@@ -93,6 +111,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param scope
+     * @throws org.openbase.jul.exception.InitializationException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public void init(Scope scope) throws InitializationException, InterruptedException {
         try {
@@ -102,6 +126,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param scope
+     * @throws org.openbase.jul.exception.InitializationException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public void init(String scope) throws InitializationException, InterruptedException {
         try {
@@ -119,6 +149,11 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws org.openbase.jul.exception.InitializationException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
@@ -128,6 +163,13 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param config
+     * @return 
+     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         // todo check if type or id is the right template access!
@@ -135,6 +177,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         return super.applyConfigUpdate(config);
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException
+     */
     @Override
     public UnitTemplateType.UnitTemplate.UnitType getType() throws NotAvailableException {
         try {
@@ -144,6 +190,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException
+     */
     @Override
     public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
         if (template == null) {
@@ -152,6 +202,11 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         return template;
     }
 
+    /**
+     * {@inheritDoc}
+     * @return 
+     * @throws org.openbase.jul.exception.NotAvailableException
+     */
     @Override
     public String getLabel() throws NotAvailableException {
         try {
@@ -161,6 +216,11 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     */
     @Override
     public ScopeType.Scope getScope() throws NotAvailableException {
         try {
@@ -170,13 +230,27 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * @param actionConfig
+     * @return 
+     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
     }
 
+    /**
+     * {@inheritDoc}
+     * @return 
+     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws java.lang.InterruptedException
+     */
     @Override
     public Future<SceneConfigType.SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        //TODO use another rst container for a sction list.
         return RPCHelper.callRemoteMethod(this, SceneConfigType.SceneConfig.class);
     }
 }

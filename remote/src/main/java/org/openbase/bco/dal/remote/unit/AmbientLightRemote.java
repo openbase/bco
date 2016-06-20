@@ -92,7 +92,7 @@ public class AmbientLightRemote extends AbstractUnitRemote<AmbientLightType.Ambi
         try {
             return this.getData().getColor().getValue();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("rightness", ex);
+            throw new NotAvailableException("Brightness", ex);
         }
     }
 }
