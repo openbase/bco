@@ -14,6 +14,9 @@ before_install:
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
+notifications:
+      slack: openbase-org:$SLACK_ACCESS_TOCKEN
+
 deploy:
   - provider: script
     script: .travis/deploy.sh
@@ -27,4 +30,15 @@ deploy:
         repo: openbase/bco.dal
         tags: true
         jdk: oraclejdk8
+        
+after_deploy:
+   - |
+       if [[ ($TRAVIS_BRANCH == master) &&
+             ($TRAVIS_PULL_REQUEST == false) &&
+             ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
+         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+
+         # trigger upstream projects
+         sh trigger-travis.sh openbase bco.manager $TRAVIS_ACCESS_TOKEN
+       fi
 
