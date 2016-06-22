@@ -77,7 +77,7 @@ public class CachedDeviceRegistryRemote {
                 try {
                     deviceRegistryRemote = new DeviceRegistryRemote();
                     deviceRegistryRemote.init();
-                    deviceRegistryRemote.activate();
+                    deviceRegistryRemote.activate();    
                 } catch (CouldNotPerformException ex) {
                     if (deviceRegistryRemote != null) {
                         deviceRegistryRemote.shutdown();
