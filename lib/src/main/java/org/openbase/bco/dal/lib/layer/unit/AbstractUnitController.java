@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import java.util.Map.Entry;
+import org.openbase.jul.schedule.Stopwatch;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
@@ -78,15 +79,21 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
     }
 
+    public static long registerMethodTime = 0;
+    public static long updateMethodVerificationTime = 0;
+    public static long initTime = 0;
+    public static long constructorTime = 0;
 
     private final UnitHost unitHost;
     private final List<Service> serviceList;
     private final ServiceFactory serviceFactory;
     private UnitTemplate template;
     private final ServiceJSonProcessor serviceJSonProcessor;
+    private final Stopwatch stopWatch = new Stopwatch();
 
     public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
+        stopWatch.start();
         try {
 
             if (unitHost.getServiceFactory() == null) {
@@ -99,6 +106,13 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
+        }
+        try {
+            synchronized (this) {
+                constructorTime += stopWatch.stop();
+            }
+        } catch (CouldNotPerformException ex) {
+
         }
     }
 
@@ -130,6 +144,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
+        Stopwatch stopwatchTmp = new Stopwatch();
+        stopwatchTmp.start();
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
@@ -159,6 +175,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
+        }
+
+        try {
+            synchronized (this) {
+                initTime += stopwatchTmp.stop();
+            }
+        } catch (CouldNotPerformException ex) {
+
         }
     }
 
@@ -230,19 +254,19 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
-
+        stopWatch.start();
         // collect service interface methods
         HashMap<String, ServiceTemplate.ServiceType> serviceInterfaceMap = new HashMap<>();
         for (ServiceTemplate.ServiceType serviceType : getTemplate().getServiceTypeList()) {
             serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceType);
         }
 
+        Class<? extends Service> serviceInterfaceClass = null;
+        Package servicePackage;
         for (Entry<String, ServiceTemplate.ServiceType> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
-            Class<? extends Service> serviceInterfaceClass = null;
 
             try {
                 // Identify package
-                Package servicePackage;
                 if (serviceInterfaceMapEntry.getKey().contains(Service.CONSUMER_SERVICE_LABEL)) {
                     servicePackage = ConsumerService.class.getPackage();
 //                } else if (serviceInterfaceMapEntry.getKey().contains(Service.OPERATION_SERVICE_LABEL)) {
@@ -273,29 +297,18 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
                 if (!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
                     // interface not supported dummy.
+                    throw new CouldNotPerformException("Could not register methods for serviceInterface [" + serviceInterfaceClass.getName() + "]");
                 }
 
-                try {
-                    Class<? extends Service> asSubclass = getClass().asSubclass(serviceInterfaceClass);
-                } catch (ClassCastException ex) {
-                    throw new CouldNotPerformException("Could not register methods for serviceInterface [" + serviceInterfaceClass.getName() + "]", ex);
-                }
-
-//                RPCHelper.registerServiceInterface(serviceInterfaceClass, this, server);
                 RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
         }
-//        for (ServiceType serviceType : ServiceType.getServiceTypeList(this)) {
-//            for (Method method : serviceType.getDeclaredMethods()) {
-//                try {
-//                    server.addMethod(method.getName(), getCallback(method, this, serviceType));
-//                } catch (CouldNotPerformException ex) {
-//                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register callback for service methode " + method.toGenericString(), ex), logger);
-//                }
-//            }
-//        }
+
+        synchronized (this) {
+            registerMethodTime += stopWatch.stop();
+        }
     }
 
     @Override
@@ -347,11 +360,15 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     /**
-     * Verify if all provider service update methods are registered for given configuration.
+     * Verify if all provider service update methods are registered for given
+     * configuration.
      *
-     * @throws VerificationFailedException is thrown if the check fails or at least on update method is not available.
+     * @throws VerificationFailedException is thrown if the check fails or at
+     * least on update method is not available.
      */
     private void verifyUnitConfig() throws VerificationFailedException {
+        stopWatch.start();
+
         try {
             logger.debug("Validating unit update methods...");
 
@@ -385,12 +402,20 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         } catch (CouldNotPerformException ex) {
             throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
         }
+
+        try {
+            synchronized (this) {
+                updateMethodVerificationTime += stopWatch.stop();
+            }
+        } catch (CouldNotPerformException ex) {
+            logger.error("Coul not stop StopWatch");
+        }
     }
 
     @Override
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.info("applyAction: "+actionConfig.getLabel());
+            logger.info("applyAction: " + actionConfig.getLabel());
             Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
             Service.invokeServiceMethod(actionConfig.getServiceType(), this, attribute);
             return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
