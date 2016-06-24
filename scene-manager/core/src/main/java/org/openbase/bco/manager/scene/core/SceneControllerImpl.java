@@ -138,7 +138,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             }
         }
 
-        MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
+        MultiException.ExceptionStack exceptionStack = null;
         synchronized (actionListSync) {
             actionList.clear();
             Action action;
@@ -148,12 +148,14 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                     action.init(actionConfig);
                     actionList.add(action);
                 } catch (CouldNotPerformException ex) {
-                    exceptionStack.push(action, ex);
+                    exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
         }
-        if (!exceptionStack.isEmpty()) {
-            ExceptionPrinter.printHistory(new MultiException("Could not activate service remotes for some actions", exceptionStack), logger, LogLevel.WARN);
+        try {
+            MultiException.checkAndThrow("Could not activate service remotes for some actions", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
         return super.applyConfigUpdate(config);
     }
