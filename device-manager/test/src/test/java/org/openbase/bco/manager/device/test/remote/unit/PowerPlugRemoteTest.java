@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.PowerPlugController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -56,7 +55,6 @@ public class PowerPlugRemoteTest {
     private static PowerPlugRemote powerPlugRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location locaton;
     private static String label;
 
     public PowerPlugRemoteTest() {
@@ -71,12 +69,12 @@ public class PowerPlugRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_PLUG_LABEL;
 
         powerPlugRemote = new PowerPlugRemote();
-        powerPlugRemote.init(label, locaton);
+        powerPlugRemote.initByLabel(label);
         powerPlugRemote.activate();
+        powerPlugRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -121,7 +119,6 @@ public class PowerPlugRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        powerPlugRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePowerProvider(state);
         powerPlugRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());

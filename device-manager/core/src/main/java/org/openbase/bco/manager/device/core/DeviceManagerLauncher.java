@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 
-import java.util.logging.Level;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.manager.device.lib.DeviceManager;

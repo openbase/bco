@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.RollershutterController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -55,7 +54,6 @@ public class RollershutterRemoteTest {
     private static RollershutterRemote rollershutterRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public RollershutterRemoteTest() {
@@ -70,12 +68,12 @@ public class RollershutterRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.ROLLERSHUTTER_LABEL;
 
         rollershutterRemote = new RollershutterRemote();
-        rollershutterRemote.init(label, location);
+        rollershutterRemote.initByLabel(label);
         rollershutterRemote.activate();
+        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -120,7 +118,6 @@ public class RollershutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
-        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutterProvider(state);
         rollershutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
@@ -149,7 +146,6 @@ public class RollershutterRemoteTest {
     public void testGetOpeningRatio() throws Exception {
         System.out.println("getOpeningRatio");
         Double openingRatio = 70.0D;
-        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateOpeningRatioProvider(openingRatio);
         rollershutterRemote.requestData().get();
         assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getOpeningRatio());

@@ -21,15 +21,12 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
-import org.openbase.bco.manager.device.lib.DeviceControllerRegistry;
+import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
@@ -38,7 +35,15 @@ import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.RegistryImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.state.InventoryStateType;
 
 /**
  *
@@ -46,6 +51,8 @@ import rst.homeautomation.device.DeviceConfigType;
  * Threepwood</a>
  */
 public class DeviceManagerController implements DeviceManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(DeviceManagerController.class);
 
     private static DeviceManagerController instance;
 
@@ -55,10 +62,10 @@ public class DeviceManagerController implements DeviceManager {
     private final LocationRegistryRemote locationRegistryRemote;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
-    private final DeviceRegistrySynchronizer deviceRegistrySynchronizer;
-
-    private final DeviceControllerRegistryImpl deviceControllerRegistry;
+    private final ControllerRegistry<String, DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
+
+    private final ActivatableEntryRegistrySynchronizer<String, DeviceController, DeviceConfig, DeviceConfig.Builder> deviceRegistrySynchronizer;
 
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
@@ -67,15 +74,50 @@ public class DeviceManagerController implements DeviceManager {
     public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceFactory deviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;
+
             this.deviceFactory = deviceFactory;
             this.serviceFactory = serviceFactory;
-            this.deviceControllerRegistry = new DeviceControllerRegistryImpl();
+
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
-//            this.locationRegistryRemote = new LocationRegistryRemote();
+            this.deviceControllerRegistry = new ControllerRegistry<>();
+
             this.locationRegistryRemote = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
-//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
-            this.deviceRegistrySynchronizer = new DeviceRegistrySynchronizer(this, deviceFactory);
+
+            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, DeviceConfig, DeviceConfig.Builder>(deviceControllerRegistry, deviceRegistryRemote.getDeviceConfigRemoteRegistry(), deviceFactory) {
+
+                @Override
+                public boolean activationCondition(DeviceConfig config) {
+                    return true;
+                }
+
+                @Override
+                public boolean verifyConfig(final DeviceConfig config) throws VerificationFailedException {
+                    try {
+
+                        // verify device class.
+                        try {
+                            deviceRegistryRemote.containsDeviceClassById(config.getDeviceClassId());
+                        } catch (CouldNotPerformException ex) {
+                            throw new VerificationFailedException("DeviceClass[" + config.getDeviceClassId() + "] of Device[" + config.getId() + "] is not supported yet!", ex);
+                        }
+
+                        // verify device manager support.
+                        if (!DeviceManagerController.this.isSupported(config)) {
+                            return false;
+                        }
+
+                        // verify device state.
+                        if (config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
+                            return false;
+                        }
+                        return true;
+                    } catch (CouldNotPerformException ex) {
+                        throw new VerificationFailedException("Could not verify device config!", ex);
+                    }
+                }
+            };
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -134,11 +176,7 @@ public class DeviceManagerController implements DeviceManager {
     }
 
     @Override
-    public DeviceControllerRegistry getDeviceControllerRegistry() {
-        return deviceControllerRegistry;
-    }
-
-    public DeviceControllerRegistryImpl getDeviceControllerRegistryImpl() {
+    public RegistryImpl<String, DeviceController> getDeviceControllerRegistry() {
         return deviceControllerRegistry;
     }
 

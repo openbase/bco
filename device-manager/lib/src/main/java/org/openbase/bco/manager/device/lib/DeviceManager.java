@@ -29,6 +29,7 @@ import org.openbase.bco.registry.device.lib.provider.DeviceRegistryProvider;
 import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.storage.registry.RegistryImpl;
 import rst.homeautomation.device.DeviceConfigType;
 
 /**
@@ -37,7 +38,7 @@ import rst.homeautomation.device.DeviceConfigType;
  */
 public interface DeviceManager extends LocationRegistryProvider, DeviceRegistryProvider, ServiceFactoryProvider, DeviceFactoryProvider {
 
-    public DeviceControllerRegistry getDeviceControllerRegistry() throws NotAvailableException;
+    public RegistryImpl<String, DeviceController> getDeviceControllerRegistry() throws NotAvailableException;
 
     public UnitControllerRegistry getUnitControllerRegistry() throws NotAvailableException;
 

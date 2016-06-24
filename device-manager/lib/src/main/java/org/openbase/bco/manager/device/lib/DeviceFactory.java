@@ -31,8 +31,8 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
  *
  * @author mpohling
  */
-public interface DeviceFactory extends Factory<Device, DeviceConfig> {
+public interface DeviceFactory extends Factory<DeviceController, DeviceConfig> {
 
-    public Device newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
+    public DeviceController newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
 
 }

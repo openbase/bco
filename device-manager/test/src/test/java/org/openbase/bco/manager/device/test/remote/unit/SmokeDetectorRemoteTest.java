@@ -21,8 +21,8 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.SmokeDetectorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -49,35 +49,34 @@ import rst.homeautomation.state.SmokeStateType.SmokeState;
  * @author thuxohl
  */
 public class SmokeDetectorRemoteTest {
-
+    
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SmokeDetectorRemoteTest.class);
-
+    
     private static SmokeDetectorRemote smokeDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
-
+    
     public SmokeDetectorRemoteTest() {
     }
-
+    
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void setUpClass() throws InstantiationException, CouldNotPerformException, InterruptedException, ExecutionException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockRegistryHolder.newMockRegistry();
-
+        
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.SMOKE_DETECTOR_LABEL;
-
+        
         smokeDetectorRemote = new SmokeDetectorRemote();
-        smokeDetectorRemote.init(label, location);
+        smokeDetectorRemote.initByLabel(label);
         smokeDetectorRemote.activate();
+        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
-
+    
     @AfterClass
     public static void tearDownClass() {
         if (deviceManagerLauncher != null) {
@@ -88,17 +87,18 @@ public class SmokeDetectorRemoteTest {
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
-
+    
     @Before
     public void setUp() {
     }
-
+    
     @After
     public void tearDown() {
     }
 
     /**
      * Test of notifyUpdated method, of class SmokeDetectorRemote.
+     * @throws java.lang.Exception
      */
     @Ignore
     public void testNotifyUpdated() throws Exception {
@@ -106,11 +106,11 @@ public class SmokeDetectorRemoteTest {
 
     /**
      * Test of getSmokeAlarmState method, of class SmokeDetectorRemote.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
-        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeAlarmStateProvider(alarmState);
         smokeDetectorRemote.requestData().get();
@@ -119,15 +119,15 @@ public class SmokeDetectorRemoteTest {
 
     /**
      * Test of getSmokeState method, of class SmokeDetectorRemote.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
-        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();
         ((SmokeDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateSmokeStateProvider(smokeState);
         smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState, smokeDetectorRemote.getSmokeState());
     }
-
+    
 }

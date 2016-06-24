@@ -32,6 +32,7 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
 
     private static AgentManagerController instance;
     private final AgentFactory factory;
-    private final RegistryImpl<String, AgentController> agentRegistry;
+    private final ControllerRegistry<String, AgentController> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AgentController, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder> registrySynchronizer;
     private final DeviceRegistryRemote deviceRegistryRemote;
@@ -59,7 +60,7 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
         try {
             this.instance = this;
             this.factory = AgentFactoryImpl.getInstance();
-            this.agentRegistry = new RegistryImpl<>();
+            this.agentRegistry = new ControllerRegistry<>();
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
 

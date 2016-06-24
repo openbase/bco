@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -55,7 +54,6 @@ public class PowerConsumptionSensorRemoteTest {
     private static PowerConsumptionSensorRemote powerConsumptionRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location locaton;
     private static String label;
 
     public PowerConsumptionSensorRemoteTest() {
@@ -70,12 +68,12 @@ public class PowerConsumptionSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        locaton = new Location(registry.getLocation());
         label = MockRegistry.POWER_CONSUMPTION_LABEL;
 
         powerConsumptionRemote = new PowerConsumptionSensorRemote();
-        powerConsumptionRemote.init(label, locaton);
+        powerConsumptionRemote.initByLabel(label);
         powerConsumptionRemote.activate();
+        powerConsumptionRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -116,7 +114,6 @@ public class PowerConsumptionSensorRemoteTest {
         double consumption = 200d;
         double voltage = 100d;
         double current = 2d;
-        powerConsumptionRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
         ((PowerConsumptionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumptionProvider(state);
         powerConsumptionRemote.requestData().get();

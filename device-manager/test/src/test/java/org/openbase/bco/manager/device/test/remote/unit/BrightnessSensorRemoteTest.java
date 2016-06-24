@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.BrightnessSensorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -54,7 +53,6 @@ public class BrightnessSensorRemoteTest {
     private static BrightnessSensorRemote brightnessSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public BrightnessSensorRemoteTest() {
@@ -69,12 +67,12 @@ public class BrightnessSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
 
         brightnessSensorRemote = new BrightnessSensorRemote();
-        brightnessSensorRemote.init(label, location);
+        brightnessSensorRemote.initByLabel(label);
         brightnessSensorRemote.activate();
+        brightnessSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -111,7 +109,6 @@ public class BrightnessSensorRemoteTest {
     @Test(timeout = 10000)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
-        brightnessSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         double brightness = 0.5;
         ((BrightnessSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightnessProvider(brightness);
         brightnessSensorRemote.requestData().get();

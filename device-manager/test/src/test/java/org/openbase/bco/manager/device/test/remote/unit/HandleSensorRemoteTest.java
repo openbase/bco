@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.HandleSensorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -55,7 +54,6 @@ public class HandleSensorRemoteTest {
     private static HandleSensorRemote handleSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
 
     public HandleSensorRemoteTest() {
     }
@@ -69,11 +67,10 @@ public class HandleSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
-
         handleSensorRemote = new HandleSensorRemote();
-        handleSensorRemote.init(MockRegistry.HANDLE_SENSOR_LABEL, location);
+        handleSensorRemote.initByLabel(MockRegistry.HANDLE_SENSOR_LABEL);
         handleSensorRemote.activate();
+        handleSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -110,7 +107,6 @@ public class HandleSensorRemoteTest {
     @Test(timeout = 10000)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
-        handleSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         HandleState.State state = HandleState.State.TILTED;
         ((HandleSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleSensorRemote.getId())).updateHandleProvider(state);
         handleSensorRemote.requestData().get();

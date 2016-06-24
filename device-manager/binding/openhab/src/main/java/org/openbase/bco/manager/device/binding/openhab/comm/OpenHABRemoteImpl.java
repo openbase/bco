@@ -59,7 +59,7 @@ public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
     public void internalReceiveUpdate(final OpenhabCommand command) throws CouldNotPerformException {
         try {
             //Ignore commands that are not for the device manager but for example for the scene registry
-            if(!command.getItemBindingConfig().isEmpty()) {
+            if(!command.getItemBindingConfig().isEmpty() || command.getItem().startsWith("Location")) {
                 logger.debug("Ignoring item ["+command.getItem()+"] because itemBindingConfig ["+command.getItemBindingConfig()+"] is not empty");
                 return;
             }

@@ -30,7 +30,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.GenericDeviceType.GenericDevice;
 
 /**

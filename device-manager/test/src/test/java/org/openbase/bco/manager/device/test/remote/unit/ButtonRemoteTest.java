@@ -23,7 +23,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.ButtonController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -55,7 +54,6 @@ public class ButtonRemoteTest {
     private static ButtonRemote buttonRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public ButtonRemoteTest() {
@@ -70,12 +68,12 @@ public class ButtonRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.BUTTON_LABEL;
 
         buttonRemote = new ButtonRemote();
-        buttonRemote.init(label, location);
+        buttonRemote.initByLabel(label);
         buttonRemote.activate();
+        buttonRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -112,7 +110,6 @@ public class ButtonRemoteTest {
     @Test(timeout = 10000)
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
-        buttonRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
         ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonProvider(buttonState);
         buttonRemote.requestData().get();

@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -56,7 +55,6 @@ public class TemperatureSensorRemoteTest {
     private static TemperatureSensorRemote temperatureSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public TemperatureSensorRemoteTest() {
@@ -71,12 +69,12 @@ public class TemperatureSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.TEMPERATURE_SENSOR_LABEL;
 
         temperatureSensorRemote = new TemperatureSensorRemote();
-        temperatureSensorRemote.init(label, location);
+        temperatureSensorRemote.initByLabel(label);
         temperatureSensorRemote.activate();
+        temperatureSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -114,21 +112,20 @@ public class TemperatureSensorRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
-        temperatureSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((TemperatureSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperatureProvider(temperature);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);
     }
 
     /**
-     * Test of getTemperatureAlarmState method, of class TemperatureSensorRemote.
+     * Test of getTemperatureAlarmState method, of class
+     * TemperatureSensorRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testGetTemperatureAlarmState() throws Exception {
         System.out.println("getTemperatureAlarmState");
-        temperatureSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         ((TemperatureSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperatureAlarmStateProvider(alarmState);
         temperatureSensorRemote.requestData().get();

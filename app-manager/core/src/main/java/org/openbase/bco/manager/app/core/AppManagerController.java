@@ -32,8 +32,8 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
@@ -49,7 +49,7 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
 
     private static AppManagerController instance;
     private final AppFactory factory;
-    private final RegistryImpl<String, AppController> appRegistry;
+    private final ControllerRegistry<String, AppController> appRegistry;
     private final AppRegistryRemote appRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AppController, AppConfig, AppConfig.Builder> registrySynchronizer;
     private final DeviceRegistryRemote deviceRegistryRemote;
@@ -58,7 +58,7 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
         try {
             this.instance = this;
             this.factory = AppFactoryImpl.getInstance();
-            this.appRegistry = new RegistryImpl<>();
+            this.appRegistry = new ControllerRegistry<>();
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
 

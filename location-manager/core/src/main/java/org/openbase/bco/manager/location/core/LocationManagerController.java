@@ -34,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +54,8 @@ public class LocationManagerController implements LocationManager {
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationFactory locationFactory;
     private final ConnectionFactory connectionFactory;
-    private final RegistryImpl<String, LocationController> locationRegistry;
-    private final RegistryImpl<String, ConnectionController> connectionRegistry;
+    private final ControllerRegistry<String, LocationController> locationRegistry;
+    private final ControllerRegistry<String, ConnectionController> connectionRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
 
@@ -65,8 +66,8 @@ public class LocationManagerController implements LocationManager {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationFactory = LocationFactoryImpl.getInstance();
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
-            this.locationRegistry = new RegistryImpl<>();
-            this.connectionRegistry = new RegistryImpl<>();
+            this.locationRegistry = new ControllerRegistry<>();
+            this.connectionRegistry = new ControllerRegistry<>();
             this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory) {
 
                 @Override

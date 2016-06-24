@@ -23,7 +23,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.LightController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -54,7 +53,6 @@ public class LightRemoteTest {
     private static LightRemote lightRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public LightRemoteTest() {
@@ -69,12 +67,12 @@ public class LightRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.LIGHT_LABEL;
 
         lightRemote = new LightRemote();
-        lightRemote.init(label, location);
+        lightRemote.initByLabel(label);
         lightRemote.activate();
+        lightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -119,7 +117,6 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        lightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePowerProvider(state);
         lightRemote.requestData().get();
         assertEquals("Light has not been set in time!", state, lightRemote.getPower());

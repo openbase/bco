@@ -23,16 +23,17 @@ package org.openbase.bco.manager.agent.lib;
  */
 
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
+import org.openbase.jul.pattern.Controller;
+import rst.homeautomation.control.agent.AgentDataType.AgentData;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface AgentController extends Identifiable<String>, Enableable, Agent {
+public interface AgentController extends Identifiable<String>, Enableable, Agent, Controller<AgentData, AgentData.Builder> {
 
     public void init(final AgentConfig config) throws InitializationException, InterruptedException;
 

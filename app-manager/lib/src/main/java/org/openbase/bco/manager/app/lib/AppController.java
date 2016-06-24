@@ -23,16 +23,17 @@ package org.openbase.bco.manager.app.lib;
  */
 
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
+import org.openbase.jul.pattern.Controller;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.control.app.AppDataType.AppData;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface AppController extends Identifiable<String>, Enableable, App {
+public interface AppController extends Identifiable<String>, Enableable, App, Controller<AppData, AppData.Builder> {
 
     public void init(final AppConfig config) throws InitializationException, InterruptedException;
 

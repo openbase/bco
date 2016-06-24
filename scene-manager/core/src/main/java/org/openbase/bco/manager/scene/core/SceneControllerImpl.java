@@ -23,7 +23,6 @@ package org.openbase.bco.manager.scene.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.remote.control.action.Action;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;

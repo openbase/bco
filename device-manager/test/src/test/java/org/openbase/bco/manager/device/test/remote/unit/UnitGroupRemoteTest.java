@@ -55,7 +55,7 @@ import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
  */
 public class UnitGroupRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AmbientLightRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UnitGroupRemoteTest.class);
 
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static UnitGroupRemote unitGroupRemote;

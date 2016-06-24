@@ -31,8 +31,8 @@ import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.authorization.UserConfigType;
@@ -48,7 +48,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
 
     private static UserManagerController instance;
     private final UserFactory factory;
-    private final RegistryImpl<String, UserController> userRegistry;
+    private final ControllerRegistry<String, UserController> userRegistry;
     private final UserRegistryRemote userRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder> registrySynchronizer;
 
@@ -56,7 +56,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
         try {
             this.instance = this;
             this.factory = UserFactoryImpl.getInstance();
-            this.userRegistry = new RegistryImpl<>();
+            this.userRegistry = new ControllerRegistry<>();
             this.userRegistryRemote = new UserRegistryRemote();
 
             this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {

@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
@@ -36,7 +35,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,7 +54,6 @@ public class TamperSwitchRemoteTest {
     private static TamperSwitchRemote tamperSwitchRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public TamperSwitchRemoteTest() {
@@ -70,12 +68,12 @@ public class TamperSwitchRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.TAMPER_SWITCH_LABEL;
 
         tamperSwitchRemote = new TamperSwitchRemote();
-        tamperSwitchRemote.init(label, location);
+        tamperSwitchRemote.initByLabel(label);
         tamperSwitchRemote.activate();
+        tamperSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -112,10 +110,9 @@ public class TamperSwitchRemoteTest {
     @Test(timeout = 10000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
-        tamperSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         ((TamperSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperSwitchRemote.getId())).updateTamperProvider(tamperState);
         tamperSwitchRemote.requestData().get();
-        assertTrue("The getter for the tamper switch state returns the wrong value!", tamperSwitchRemote.getTamper().getValue().equals(tamperState.getValue()));
+        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperSwitchRemote.getTamper().getValue());
     }
 }

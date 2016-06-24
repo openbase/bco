@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.ReedSwitchController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -55,7 +54,6 @@ public class ReedSwitchRemoteTest {
     private static ReedSwitchRemote reedSwitchRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public ReedSwitchRemoteTest() {
@@ -70,12 +68,12 @@ public class ReedSwitchRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.REED_SWITCH_LABEL;
 
         reedSwitchRemote = new ReedSwitchRemote();
-        reedSwitchRemote.init(label, location);
+        reedSwitchRemote.initByLabel(label);
         reedSwitchRemote.activate();
+        reedSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -112,7 +110,6 @@ public class ReedSwitchRemoteTest {
     @Test(timeout = 10000)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
-        reedSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
         ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitchProvider(state);
         reedSwitchRemote.requestData().get();

@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.core;
  */
 
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.manager.device.lib.Device;
+import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.InstantiationException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
@@ -41,7 +41,7 @@ public class DeviceFactoryImpl extends AbstractDeviceFactory {
     }
 
     @Override
-    public Device newInstance(final DeviceConfig config) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final DeviceConfig config) throws InstantiationException, InterruptedException {
         return newInstance(config, serviceFactory);
     }
 }

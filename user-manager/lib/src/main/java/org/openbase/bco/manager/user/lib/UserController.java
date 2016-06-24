@@ -26,13 +26,15 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
+import org.openbase.jul.pattern.Controller;
 import rst.authorization.UserConfigType.UserConfig;
+import rst.authorization.UserDataType.UserData;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Enableable, User {
+public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Enableable, User, Controller<UserData, UserData.Builder> {
 
     public void init(final UserConfig config) throws InitializationException, InterruptedException;
 

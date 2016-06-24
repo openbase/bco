@@ -23,7 +23,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.BatteryController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -56,7 +55,6 @@ public class BatteryRemoteTest {
     private static BatteryRemote batteryRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public BatteryRemoteTest() {
@@ -71,12 +69,12 @@ public class BatteryRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.BATTERY_LABEL;
 
         batteryRemote = new BatteryRemote();
-        batteryRemote.init(label, location);
+        batteryRemote.initByLabel(label);
         batteryRemote.activate();
+        batteryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -113,7 +111,6 @@ public class BatteryRemoteTest {
     @Test(timeout = 10000)
     public void testGetBatteryLevel() throws Exception {
         System.out.println("getBatteryLevel");
-        batteryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         double level = 34.0;
         BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
         ((BatteryController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(batteryRemote.getId())).updateBatteryProvider(state);

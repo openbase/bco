@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -42,6 +41,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.vision.HSVColorType;
@@ -58,7 +58,6 @@ public class AmbientLightRemoteTest {
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static AmbientLightRemote ambientLightRemote;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public AmbientLightRemoteTest() {
@@ -74,12 +73,12 @@ public class AmbientLightRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.AMBIENT_LIGHT_LABEL;
 
         ambientLightRemote = new AmbientLightRemote();
-        ambientLightRemote.init(label, location);
+        ambientLightRemote.initByLabel(label);
         ambientLightRemote.activate();
+        ambientLightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass

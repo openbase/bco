@@ -22,6 +22,7 @@ package org.openbase.bco.manager.device.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -30,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABBinding;
+import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +41,11 @@ import org.slf4j.LoggerFactory;
  * Threepwood</a>
  */
 public class DeviceBindingOpenHABLauncher {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(DeviceBindingOpenHABLauncher.class);
-
+    
     private DeviceBindingOpenHABImpl openHABBinding;
-
+    
     public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             openHABBinding = new DeviceBindingOpenHABImpl();
@@ -53,11 +55,11 @@ public class DeviceBindingOpenHABLauncher {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
-
+    
     public void shutdown() throws InterruptedException {
         openHABBinding.shutdown();
     }
-
+    
     public DeviceBindingOpenHABImpl getOpenHABBinding() {
         return openHABBinding;
     }
@@ -78,11 +80,19 @@ public class DeviceBindingOpenHABLauncher {
 
         /* Start main app */
         logger.info("Start " + JPService.getApplicationName() + "...");
+        Stopwatch stopWatch = new Stopwatch();
+        stopWatch.start();
+        long time = System.currentTimeMillis();
         try {
             new DeviceBindingOpenHABLauncher().launch();
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+        //logger.info("Activation took " + ControllerManager.activationTime / 1000.0f + "s.");
+        logger.info("Method registration took " + AbstractUnitController.registerMethodTime / 1000.0f + "s.");
+        logger.info("UpdateMethod verification took " + AbstractUnitController.updateMethodVerificationTime / 1000.0f + "s.");
+        logger.info("Init took " + AbstractUnitController.initTime / 1000.0f + "s.");
+        logger.info("Constructor took " + AbstractUnitController.constructorTime / 1000.0f + "s.");
+        logger.info(JPService.getApplicationName() + " successfully started in " + stopWatch.stop() / 1000.0f + "s.");
     }
 }

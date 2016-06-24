@@ -1,4 +1,3 @@
-
 package org.openbase.bco.manager.device.core;
 
 /*
@@ -22,7 +21,6 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
@@ -43,15 +41,10 @@ public abstract class AbstractDeviceController extends AbstractUnitCollectionCon
 
     public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
         super(GenericDevice.newBuilder());
-//        try {
-//        } catch (CouldNotPerformException ex) {
-//            throw new InstantiationException(RSBCommunicationService.class, ex);
-//        }
     }
 
     @Override
     public void init(final DeviceConfig config) throws InitializationException, InterruptedException {
-
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
@@ -90,12 +83,6 @@ public abstract class AbstractDeviceController extends AbstractUnitCollectionCon
         }
     }
 
-//    @Override
-//    public DeviceConfig updateConfig(final DeviceConfig config) throws CouldNotPerformException {
-////        setField(DEVICE_TYPE_FILED_CONFIG, config);
-//        return super.updateConfig(config);
-//    }
-
     @Override
     public final String getId() throws NotAvailableException {
         try {
@@ -129,5 +116,12 @@ public abstract class AbstractDeviceController extends AbstractUnitCollectionCon
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("label", ex);
         }
+    }
+
+    @Override
+    public DeviceConfig applyConfigUpdate(DeviceConfig config) throws CouldNotPerformException, InterruptedException {
+        //TODO: which changes need to be applied here and in the AbstractUnitCollectionController?
+
+        return super.applyConfigUpdate(config); //To change body of generated methods, choose Tools | Templates.
     }
 }

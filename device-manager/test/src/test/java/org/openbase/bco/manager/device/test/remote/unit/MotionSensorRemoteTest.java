@@ -23,7 +23,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.dal.lib.data.Location;
 import org.openbase.bco.dal.lib.layer.unit.MotionSensorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
@@ -55,7 +54,6 @@ public class MotionSensorRemoteTest {
     private static MotionSensorRemote motionSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static Location location;
     private static String label;
 
     public MotionSensorRemoteTest() {
@@ -70,12 +68,12 @@ public class MotionSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        location = new Location(registry.getLocation());
         label = MockRegistry.MOTION_SENSOR_LABEL;
 
         motionSensorRemote = new MotionSensorRemote();
-        motionSensorRemote.init(label, location);
+        motionSensorRemote.initByLabel(label);
         motionSensorRemote.activate();
+        motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -112,7 +110,6 @@ public class MotionSensorRemoteTest {
     @Test(timeout = 10000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
-        motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
         ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotionProvider(motion);
         motionSensorRemote.requestData().get();

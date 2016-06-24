@@ -24,6 +24,7 @@ package org.openbase.bco.manager.device.core;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.manager.device.lib.Device;
+import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,7 +42,7 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
         super();
     }
 
-    public Device newInstance(final DeviceConfig deviceConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final DeviceConfig deviceConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
         try {
             return newInstance(deviceConfig, deviceManager.getServiceFactory());
         } catch (CouldNotPerformException ex) {
@@ -50,7 +51,7 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
     }
 
     @Override
-    public Device newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException {
         try {
             if (deviceConfig == null) {
                 throw new NotAvailableException("deviceConfig");
@@ -75,7 +76,6 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
             final GenericDeviceController genericDeviceController = new GenericDeviceController(serviceFactory);
             genericDeviceController.init(deviceConfig);
             return genericDeviceController;
-
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(Device.class, deviceConfig.getId(), ex);
         }
