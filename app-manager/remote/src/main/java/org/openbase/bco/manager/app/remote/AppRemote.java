@@ -21,6 +21,7 @@ package org.openbase.bco.manager.app.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.bco.manager.app.lib.App;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -53,8 +54,8 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
     }
 
     @Override
-    public void setActivationState(ActivationState activation) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(activation, this);
+    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(activation, this, Void.class);
     }
 
     @Override

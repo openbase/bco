@@ -1,5 +1,6 @@
 package org.openbase.bco.manager.app.lib;
 
+import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Configurable;
 import rst.homeautomation.control.app.AppConfigType;
@@ -32,5 +33,5 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  */
 public interface App extends Configurable<String, AppConfigType.AppConfig> {
 
-    public void setActivationState(ActivationState activation) throws CouldNotPerformException;
+    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException;
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.manager.agent.lib;
  * #L%
  */
 
+import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
@@ -34,5 +35,5 @@ import rst.homeautomation.state.ActivationStateType;
  */
 public interface Agent extends Identifiable<String>, Configurable<String, AgentConfigType.AgentConfig> {
 
-    public void setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
+    public Future<Void> setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
 }

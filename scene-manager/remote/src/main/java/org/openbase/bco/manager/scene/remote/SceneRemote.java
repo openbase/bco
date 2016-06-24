@@ -21,6 +21,7 @@ package org.openbase.bco.manager.scene.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.bco.manager.scene.lib.Scene;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -53,13 +54,13 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
     public void notifyDataUpdate(SceneData data) throws CouldNotPerformException {
     }
 
-    public void setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
-        setActivationState(ActivationState.newBuilder().setValue(activationState).build());
+    public Future<Void> setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
+        return setActivationState(ActivationState.newBuilder().setValue(activationState).build());
     }
 
     @Override
-    public void setActivationState(ActivationState activation) throws CouldNotPerformException {
-        RPCHelper.callRemoteMethod(activation, this);
+    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(activation, this, Void.class);
     }
 
     @Override

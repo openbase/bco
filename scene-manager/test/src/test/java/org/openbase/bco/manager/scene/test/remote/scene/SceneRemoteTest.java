@@ -31,6 +31,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.manager.scene.remote.SceneRemote;
+import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rsb.Event;
 import rsb.Factory;
@@ -39,6 +43,8 @@ import rsb.Scope;
 import rsb.config.ParticipantConfig;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonType.Button;
 
@@ -72,10 +78,11 @@ public class SceneRemoteTest {
     }
 
     /**
-     *  Used to test the activation of a scene via a button
+     * Used to test the activation of a scene via a button
+     *
      * @throws java.lang.Exception
      */
-    @Test
+    //@Test
     public void testScene() throws Exception {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
@@ -92,5 +99,42 @@ public class SceneRemoteTest {
 //        System.out.println("event:"+event);
         informer.send(event);
 
+    }
+
+    /**
+     * ONLY ACTIVATE WHEN USED TO TEST DURING A RUNNING SYSTEM. OTHERWISE IT
+     * WILL FAIL WITH A TIMEOUT.
+     */
+    //@Test(timeout = 5000)
+    public void testTriggerScenePerRemote() throws Exception {
+        SceneRegistryRemote sceneRegistry = new SceneRegistryRemote();
+        sceneRegistry.init();
+        sceneRegistry.activate();
+        sceneRegistry.waitForData();
+
+        SceneConfig config = null;
+        for (SceneConfig sceneConfig : sceneRegistry.getSceneConfigs()) {
+            if (sceneConfig.getLabel().equals("TestScene")) {
+                config = sceneConfig;
+            }
+        }
+
+        if (config == null) {
+            throw new NotAvailableException("ScneConfig with label TestScene");
+        }
+
+        SceneRemote sceneRemote = new SceneRemote();
+        sceneRemote.init(config);
+        sceneRemote.activate();
+        sceneRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        System.out.println("SceneRemote for scene [" + config.getLabel() + "] connected");
+
+        sceneRemote.setActivationState(ActivationStateType.ActivationState.State.ACTIVE).get();
+        System.out.println("Scene Activated");
+
+        Thread.sleep(2000);
+
+        sceneRemote.shutdown();
+        sceneRegistry.shutdown();
     }
 }
