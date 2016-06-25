@@ -541,18 +541,6 @@ public class DeviceRegistryTest {
         System.out.println("registerDeviceClassPerRemote");
         DeviceClass.Builder deviceClassRemoteMessage;
         DeviceConfig.Builder deviceConfigRemoteMessage;
-        remote.addDataObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
-
-            @Override
-            public void update(final Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
-                if (data != null) {
-                    logger.info("Got empty data!");
-                } else {
-                    logger.info("Got data update: " + data);
-                }
-            }
-        });
-
         deviceClassRemoteMessage = DeviceClass.newBuilder().setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
         deviceClassRemoteMessage = remote.registerDeviceClass(deviceClassRemoteMessage.build()).get().toBuilder();
         remote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
