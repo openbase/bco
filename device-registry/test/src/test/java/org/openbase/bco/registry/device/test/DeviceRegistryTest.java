@@ -35,13 +35,12 @@ import org.openbase.bco.registry.location.core.LocationRegistryController;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import org.openbase.bco.registry.user.core.UserRegistryController;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -61,7 +60,6 @@ import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType;
 import rst.homeautomation.service.BindingServiceConfigType.BindingServiceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
@@ -94,7 +92,7 @@ public class DeviceRegistryTest {
     private static LocationRegistryController locationRegistry;
     private static UserRegistryController userRegistry;
 
-    private static DeviceRegistryRemote remote;
+    private static DeviceRegistryRemote deviceRegistryRemote;
 
     public DeviceRegistryTest() {
     }
@@ -170,16 +168,16 @@ public class DeviceRegistryTest {
         deviceConfig.setSerialNumber("0001-0004-2245");
         deviceConfig.setDeviceClassId("TestDeviceClassLabel");
 
-        remote = new DeviceRegistryRemote();
-        remote.init();
-        remote.activate();
+        deviceRegistryRemote = new DeviceRegistryRemote();
+        deviceRegistryRemote.init();
+        deviceRegistryRemote.activate();
 
         LOCATION = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel(LOCATION_LABEL).build()).get();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        remote.shutdown();
+        deviceRegistryRemote.shutdown();
 
         if (locationRegistry != null) {
             locationRegistry.shutdown();
@@ -434,9 +432,14 @@ public class DeviceRegistryTest {
         assertEquals("The device does not have the correct owner id!", owner.getId(), ownerRemovalDeviceConfig.getInventoryState().getOwnerId());
 
         userRegistry.removeUserConfig(owner).get();
-        assertTrue("The owner did not get removed!", !userRegistry.containsUserConfig(owner));
+        // wait until device registry consistency check was triggered by user registry and the owner was removed.
+        try {
+            deviceRegistryRemote.waitForData(100, TimeUnit.MILLISECONDS);
+        } catch (CouldNotPerformException e) {
+            // may data update was received before.
+        }
 
-        remote.requestData().get();
+        assertTrue("The owner did not get removed!", !userRegistry.containsUserConfig(owner));
         ownerRemovalDeviceConfig = deviceRegistry.getDeviceConfigById(ownerRemovalDeviceConfig.getId());
         assertEquals("The owner id did not get removed even though the user got removed!", "", ownerRemovalDeviceConfig.getInventoryState().getOwnerId());
     }
@@ -542,11 +545,11 @@ public class DeviceRegistryTest {
         DeviceClass.Builder deviceClassRemoteMessage;
         DeviceConfig.Builder deviceConfigRemoteMessage;
         deviceClassRemoteMessage = DeviceClass.newBuilder().setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
-        deviceClassRemoteMessage = remote.registerDeviceClass(deviceClassRemoteMessage.build()).get().toBuilder();
-        remote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        deviceClassRemoteMessage = deviceRegistryRemote.registerDeviceClass(deviceClassRemoteMessage.build()).get().toBuilder();
+        deviceRegistryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
         while (true) {
             try {
-                if (remote.containsDeviceClass(deviceClassRemoteMessage.clone().build())) {
+                if (deviceRegistryRemote.containsDeviceClass(deviceClassRemoteMessage.clone().build())) {
                     break;
                 }
             } catch (NotAvailableException ex) {
@@ -554,17 +557,17 @@ public class DeviceRegistryTest {
             }
             Thread.yield();
         }
-        assertTrue(remote.containsDeviceClass(deviceClassRemoteMessage.clone().build()));
+        assertTrue(deviceRegistryRemote.containsDeviceClass(deviceClassRemoteMessage.clone().build()));
 
         deviceConfigRemoteMessage = getDeviceConfig("RemoteTestDeviceConfig", "1123-5813-2134", deviceClassRemoteMessage.build(), null).toBuilder();
-        deviceConfigRemoteMessage = remote.registerDeviceConfig(deviceConfigRemoteMessage.build()).get().toBuilder();
+        deviceConfigRemoteMessage = deviceRegistryRemote.registerDeviceConfig(deviceConfigRemoteMessage.build()).get().toBuilder();
         while (true) {
-            if (remote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build())) {
+            if (deviceRegistryRemote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build())) {
                 break;
             }
             Thread.yield();
         }
-        assertTrue(remote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build()));
+        assertTrue(deviceRegistryRemote.containsDeviceConfig(deviceConfigRemoteMessage.clone().build()));
     }
 
     /**
@@ -573,10 +576,10 @@ public class DeviceRegistryTest {
     @Test(timeout = 3000)
     public void testGetReadOnlyFlag() throws Exception {
         System.out.println("testGetReadOnlyFlag");
-        System.out.println("remote state: " + remote.getConnectionState().name());
-        remote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
-        assertEquals(Boolean.FALSE, remote.isDeviceClassRegistryReadOnly());
-        assertEquals(Boolean.FALSE, remote.isDeviceConfigRegistryReadOnly());
-        assertEquals(Boolean.FALSE, remote.isUnitTemplateRegistryReadOnly());
+        System.out.println("remote state: " + deviceRegistryRemote.getConnectionState().name());
+        deviceRegistryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        assertEquals(Boolean.FALSE, deviceRegistryRemote.isDeviceClassRegistryReadOnly());
+        assertEquals(Boolean.FALSE, deviceRegistryRemote.isDeviceConfigRegistryReadOnly());
+        assertEquals(Boolean.FALSE, deviceRegistryRemote.isUnitTemplateRegistryReadOnly());
     }
 }
