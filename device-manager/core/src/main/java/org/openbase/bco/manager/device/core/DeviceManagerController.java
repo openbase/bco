@@ -80,7 +80,8 @@ public class DeviceManagerController implements DeviceManager {
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.deviceControllerRegistry = new ControllerRegistry<>();
-
+            CachedLocationRegistryRemote.waitForData();
+            CachedDeviceRegistryRemote.waitForData();
             this.locationRegistryRemote = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
             this.deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
 
@@ -158,7 +159,7 @@ public class DeviceManagerController implements DeviceManager {
     }
 
     @Override
-    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException {
+    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         System.out.println("Wait for init");
         locationRegistryRemote.waitForData(timeout, timeUnit);
         deviceRegistryRemote.waitForData(timeout, timeUnit);

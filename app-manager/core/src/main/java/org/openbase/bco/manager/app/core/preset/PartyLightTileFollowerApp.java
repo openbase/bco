@@ -54,6 +54,7 @@ public class PartyLightTileFollowerApp extends AbstractApp {
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
         super(true);
         try {
+            CachedLocationRegistryRemote.waitForData();
             this.locationRegistry = CachedLocationRegistryRemote.getRegistry();
             this.locationRemoteMap = new HashMap<>();
 

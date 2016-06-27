@@ -55,7 +55,7 @@ public class SceneRemoteFactoryImpl implements Factory<SceneRemote, SceneConfig>
     public SceneRemote newInstance(SceneConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         SceneRemote sceneRemote = new SceneRemote();
         try {
-            sceneRemote.addObserver(new Observer<SceneData>() {
+            sceneRemote.addDataObserver(new Observer<SceneData>() {
 
                 @Override
                 public void update(final Observable<SceneData> source, SceneData data) throws Exception {

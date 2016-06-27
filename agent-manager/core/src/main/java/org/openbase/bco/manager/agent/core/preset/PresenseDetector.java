@@ -81,7 +81,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
             }
         };
 
-        locationRemote.addObserver(new Observer<LocationDataType.LocationData>() {
+        locationRemote.addDataObserver(new Observer<LocationDataType.LocationData>() {
 
             @Override
             public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {

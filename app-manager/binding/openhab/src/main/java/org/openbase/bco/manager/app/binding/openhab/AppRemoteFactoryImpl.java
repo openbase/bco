@@ -55,7 +55,7 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, AppConfig> {
     public AppRemote newInstance(AppConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         AppRemote appRemote = new AppRemote();
         try {
-            appRemote.addObserver(new Observer<AppData>() {
+            appRemote.addDataObserver(new Observer<AppData>() {
 
                 @Override
                 public void update(final Observable<AppData> source, AppData data) throws Exception {

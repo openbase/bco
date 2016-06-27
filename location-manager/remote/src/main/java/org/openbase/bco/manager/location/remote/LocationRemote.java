@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.location.lib.Location;
+import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -84,6 +85,12 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("label", ex);
         }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        CachedLocationRegistryRemote.waitForData();
+        super.activate();
     }
 
     @Override

@@ -45,7 +45,7 @@ public class ConnectionRemoteFactoryImpl implements Factory<ConnectionRemote, Co
     public ConnectionRemote newInstance(ConnectionConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         ConnectionRemote connectionRemote = new ConnectionRemote();
         try {
-            connectionRemote.addObserver(new Observer<ConnectionData>() {
+            connectionRemote.addDataObserver(new Observer<ConnectionData>() {
 
                 @Override
                 public void update(final Observable<ConnectionData> source, ConnectionData data) throws Exception {

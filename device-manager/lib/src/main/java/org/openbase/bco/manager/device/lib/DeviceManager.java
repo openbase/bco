@@ -44,5 +44,5 @@ public interface DeviceManager extends LocationRegistryProvider, DeviceRegistryP
 
     public boolean isSupported(final DeviceConfigType.DeviceConfig config) throws CouldNotPerformException;
 
-    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException;
+    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 }

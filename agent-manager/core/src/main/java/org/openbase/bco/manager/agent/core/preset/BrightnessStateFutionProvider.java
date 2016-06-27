@@ -101,7 +101,7 @@ public class BrightnessStateFutionProvider extends ObservableImpl<Double> implem
                 brightnessSensorRemote = new BrightnessSensorRemote();
                 brightnessSensorRemote.init(unitConfig);
                 brightnessSensorList.add(brightnessSensorRemote);
-                brightnessSensorRemote.addObserver((Observable<BrightnessSensorType.BrightnessSensor> source, BrightnessSensorType.BrightnessSensor data) -> {
+                brightnessSensorRemote.addDataObserver((Observable<BrightnessSensorType.BrightnessSensor> source, BrightnessSensorType.BrightnessSensor data) -> {
                     updateBrightnessState(data.getBrightness());
                 });
             }
