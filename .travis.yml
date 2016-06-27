@@ -11,7 +11,9 @@ before_install:
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
 notifications:
-      slack: openbase-org:$SLACK_ACCESS_TOCKEN
+    slack: openbase-org:$SLACK_ACCESS_TOCKEN
+    on_failure: change
+    on_success: change	
 
 deploy:
   - provider: script
