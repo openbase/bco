@@ -65,6 +65,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
+            CachedDeviceRegistryRemote.waitForData();
             init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(id));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -80,6 +81,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
+            CachedDeviceRegistryRemote.waitForData();
             List<UnitConfig> unitConfigList = CachedDeviceRegistryRemote.getRegistry().getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
@@ -105,6 +107,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
+            CachedDeviceRegistryRemote.waitForData();
             init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -157,6 +160,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
+            CachedDeviceRegistryRemote.waitForData();
             deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

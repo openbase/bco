@@ -46,7 +46,7 @@ public abstract class RSBRemoteViewFrame<M extends GeneratedMessage> extends jav
     
     public RSBRemoteViewFrame(RSBRemoteService<M> remoteService) {
         this.remoteService = remoteService;
-        remoteService.addObserver(this);
+        remoteService.addDataObserver(this);
     }
 
     /**

@@ -129,11 +129,11 @@ public class SelectorPanel extends javax.swing.JPanel {
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
-        deviceRegistryRemote.addObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
+        deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
             updateDynamicComponents();
         });
 
-        locationRegistryRemote.addObserver((Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) -> {
+        locationRegistryRemote.addDataObserver((Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) -> {
             updateDynamicComponents();
         });
 

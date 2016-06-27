@@ -109,7 +109,7 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
             };
 
             for (GenericUnitPanel unitPanel : (Collection<GenericUnitPanel>) genericUnitCollectionPanel.add(unitLabelList)) {
-                unitPanel.getRemoteService().addObserver(consumptionUpdateObserver);
+                unitPanel.getRemoteService().addDataObserver(consumptionUpdateObserver);
             }
 
             verifyConsumptionTrigger.start();

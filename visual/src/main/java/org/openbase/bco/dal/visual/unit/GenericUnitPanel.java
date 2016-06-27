@@ -67,6 +67,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
         initComponents();
         autoRemove = true;
         componentList = new ArrayList<>();
+        
     }
 
     public void setAutoRemove(boolean autoRemove) {
@@ -83,6 +84,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
     }
 
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
+        CachedLocationRegistryRemote.waitForData();
         setUnitRemote(unitConfig);
 
         if (autoRemove) {
