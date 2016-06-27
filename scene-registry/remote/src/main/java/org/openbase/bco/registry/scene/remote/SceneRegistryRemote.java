@@ -23,7 +23,6 @@ package org.openbase.bco.registry.scene.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -36,7 +35,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import static org.openbase.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
@@ -142,6 +140,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     /**
      * {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public void notifyDataUpdate(final SceneRegistry data) throws CouldNotPerformException {
@@ -170,22 +169,26 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     /**
      * {@inheritDoc}
+     * @param sceneConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
     public SceneConfig getSceneConfigById(String sceneConfigId) throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return sceneConfigRemoteRegistry.getMessage(sceneConfigId);
     }
 
     @Override
     public Boolean containsSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return sceneConfigRemoteRegistry.contains(sceneConfig);
     }
 
     @Override
     public Boolean containsSceneConfigById(final String sceneConfigId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return sceneConfigRemoteRegistry.contains(sceneConfigId);
     }
 
@@ -209,14 +212,14 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
 
     @Override
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<SceneConfig> messages = sceneConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

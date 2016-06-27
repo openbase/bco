@@ -59,7 +59,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> agentConfigRemoteRegistry;
 
-    public AgentRegistryRemote() throws InstantiationException, InterruptedException {
+    public AgentRegistryRemote() throws InstantiationException {
         super(AgentRegistry.class);
         try {
             agentConfigRemoteRegistry = new RemoteRegistry<>();
@@ -102,7 +102,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
      * Method initializes the remote with the default registry connection scope.
      *
      * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
+     * @throws java.lang.{@inheritDoc}
      */
     public void init() throws InitializationException, InterruptedException {
         try {
@@ -150,19 +150,19 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     @Override
     public AgentConfig getAgentConfigById(String agentConfigId) throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return agentConfigRemoteRegistry.getMessage(agentConfigId);
     }
 
     @Override
     public Boolean containsAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return agentConfigRemoteRegistry.contains(agentConfig);
     }
 
     @Override
     public Boolean containsAgentConfigById(final String agentConfigId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return agentConfigRemoteRegistry.contains(agentConfigId);
     }
 
@@ -186,14 +186,14 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
 
     @Override
     public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<AgentConfig> messages = agentConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

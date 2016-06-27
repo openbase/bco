@@ -24,13 +24,14 @@ package org.openbase.bco.registry.scene.lib;
 import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.iface.Shutdownable;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
 /**
  *
  * @author mpohling
  */
-public interface SceneRegistry {
+public interface SceneRegistry extends Shutdownable {
 
     public Future<SceneConfig> registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
 

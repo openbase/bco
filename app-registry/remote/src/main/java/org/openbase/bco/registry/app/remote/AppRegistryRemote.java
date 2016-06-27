@@ -152,19 +152,19 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public AppConfig getAppConfigById(String appConfigId) throws CouldNotPerformException, NotAvailableException {
+    public AppConfig getAppConfigById(String appConfigId) throws CouldNotPerformException, NotAvailableException, InterruptedException {
         waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return appConfigRemoteRegistry.getMessage(appConfigId);
     }
 
     @Override
-    public Boolean containsAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
+    public Boolean containsAppConfig(final AppConfig appConfig) throws CouldNotPerformException, InterruptedException {
         waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return appConfigRemoteRegistry.contains(appConfig);
     }
 
     @Override
-    public Boolean containsAppConfigById(final String appConfigId) throws CouldNotPerformException {
+    public Boolean containsAppConfigById(final String appConfigId) throws CouldNotPerformException, InterruptedException {
         waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return appConfigRemoteRegistry.contains(appConfigId);
     }
@@ -188,14 +188,14 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    public List<AppConfig> getAppConfigs() throws CouldNotPerformException, NotAvailableException {
+    public List<AppConfig> getAppConfigs() throws CouldNotPerformException, NotAvailableException, InterruptedException {
         waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         List<AppConfig> messages = appConfigRemoteRegistry.getMessages();
         return messages;
     }
 
     @Override
-    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException {
         waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {

@@ -171,6 +171,7 @@ public class DeviceRegistryTest {
         deviceRegistryRemote = new DeviceRegistryRemote();
         deviceRegistryRemote.init();
         deviceRegistryRemote.activate();
+        deviceRegistryRemote.waitForData();
 
         LOCATION = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel(LOCATION_LABEL).build()).get();
     }

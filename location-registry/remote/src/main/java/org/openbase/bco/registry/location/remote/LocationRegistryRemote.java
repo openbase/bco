@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
@@ -41,7 +40,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import static org.openbase.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
@@ -143,6 +141,8 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
 
     /**
      * {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
@@ -208,7 +208,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return locationConfigRemoteRegistry.getMessage(locationId);
     }
 
@@ -219,7 +219,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return locationConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equalsIgnoreCase(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -244,7 +244,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return locationConfigRemoteRegistry.contains(locationConfig);
     }
 
@@ -255,7 +255,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return locationConfigRemoteRegistry.contains(locationId);
     }
 
@@ -295,7 +295,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<LocationConfig> messages = locationConfigRemoteRegistry.getMessages();
         return messages;
     }
@@ -420,7 +420,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         for (LocationConfig locationConfig : locationConfigRemoteRegistry.getMessages()) {
             if (locationConfig.hasRoot() && locationConfig.getRoot()) {
                 return locationConfig;
@@ -436,7 +436,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -469,7 +469,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public ConnectionConfig getConnectionConfigById(String connectionId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return connectionConfigRemoteRegistry.getMessage(connectionId);
     }
 
@@ -480,7 +480,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public List<ConnectionConfig> getConnectionConfigsByLabel(String connectionLabel) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return connectionConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equals(connectionLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -493,7 +493,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Boolean containsConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return connectionConfigRemoteRegistry.contains(connectionConfig);
     }
 
@@ -504,7 +504,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Boolean containsConnectionConfigById(String connectionId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return connectionConfigRemoteRegistry.contains(connectionId);
     }
 
@@ -544,7 +544,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public List<ConnectionConfig> getConnectionConfigs() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<ConnectionConfig> messages = connectionConfigRemoteRegistry.getMessages();
         return messages;
     }
@@ -635,7 +635,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      */
     @Override
     public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;

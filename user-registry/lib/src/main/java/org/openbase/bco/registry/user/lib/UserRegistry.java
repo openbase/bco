@@ -24,6 +24,7 @@ package org.openbase.bco.registry.user.lib;
 import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.iface.Shutdownable;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserGroupConfigType.UserGroupConfig;
 
@@ -31,7 +32,7 @@ import rst.authorization.UserGroupConfigType.UserGroupConfig;
  *
  * @author mpohling
  */
-public interface UserRegistry {
+public interface UserRegistry extends Shutdownable {
 
     public Future<UserConfig> registerUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 
@@ -68,6 +69,4 @@ public interface UserRegistry {
     public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 
     public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException;
-
-    public void shutdown();
 }

@@ -34,19 +34,19 @@ public interface AppRegistry {
 
     public Future<AppConfig> registerAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
-    public Boolean containsAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Boolean containsAppConfig(AppConfig appConfig) throws CouldNotPerformException, InterruptedException;
 
-    public Boolean containsAppConfigById(String appConfigId) throws CouldNotPerformException;
+    public Boolean containsAppConfigById(String appConfigId) throws CouldNotPerformException, InterruptedException;
 
     public Future<AppConfig> updateAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
     public Future<AppConfig> removeAppConfig(AppConfig appConfig) throws CouldNotPerformException;
 
-    public AppConfig getAppConfigById(final String appConfigId) throws CouldNotPerformException;
+    public AppConfig getAppConfigById(final String appConfigId) throws CouldNotPerformException, InterruptedException;
 
-    public List<AppConfig> getAppConfigs() throws CouldNotPerformException;
+    public List<AppConfig> getAppConfigs() throws CouldNotPerformException, InterruptedException;
 
-    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException;
+    public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
 
     public void shutdown();
 }

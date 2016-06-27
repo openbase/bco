@@ -205,7 +205,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();     
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
 
@@ -219,7 +219,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceClassRemoteRegistry.getMessage(deviceClassId);
     }
 
@@ -233,7 +233,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceConfigRemoteRegistry.getMessage(deviceConfigId);
     }
 
@@ -247,7 +247,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getId().equals(unitConfigId)) {
@@ -261,9 +261,9 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
-            for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
+            for (final UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
                 if (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel)) {
                     unitConfigs.add(unitConfig);
                 }
@@ -281,7 +281,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return unitTemplateRemoteRegistry.contains(unitTemplate);
     }
 
@@ -294,7 +294,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return unitTemplateRemoteRegistry.contains(unitTemplateId);
     }
 
@@ -307,7 +307,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceConfigRemoteRegistry.contains(deviceConfig);
     }
 
@@ -320,7 +320,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceConfigRemoteRegistry.contains(deviceConfigId);
     }
 
@@ -397,7 +397,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceClassRemoteRegistry.contains(deviceClass);
     }
 
@@ -410,7 +410,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceClassRemoteRegistry.contains(deviceClassId);
     }
 
@@ -455,7 +455,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             unitConfigs.addAll(deviceConfig.getMessage().getUnitConfigList());
@@ -472,7 +472,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> deviceConfig : deviceConfigRemoteRegistry.getEntries()) {
             for (UnitConfig unitConfig : deviceConfig.getMessage().getUnitConfigList()) {
@@ -530,7 +530,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return unitTemplateRemoteRegistry.getMessages();
     }
 
@@ -543,7 +543,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceClassRemoteRegistry.getMessages();
     }
 
@@ -556,7 +556,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException, NotAvailableException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return deviceConfigRemoteRegistry.getMessages();
     }
 
@@ -569,7 +569,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         for (UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
             if (unitTemplate.getType() == type) {
                 return unitTemplate;
@@ -594,7 +594,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return getData().getUnitTemplateRegistryReadOnly();
     }
 
@@ -614,7 +614,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return getData().getDeviceClassRegistryReadOnly();
     }
 
@@ -634,7 +634,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return getData().getDeviceConfigRegistryReadOnly();
     }
 
@@ -663,7 +663,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsUnitGroupConfig(UnitGroupConfig groupConfig) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return unitGroupRemoteRegistry.contains(groupConfig);
     }
 
@@ -676,7 +676,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return unitGroupRemoteRegistry.contains(groupConfigId);
     }
 
@@ -721,7 +721,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public UnitGroupConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return unitGroupRemoteRegistry.getMessage(groupConfigId);
     }
 
@@ -733,7 +733,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> unitGroup : unitGroupRemoteRegistry.getEntries()) {
             unitGroups.add(unitGroup.getMessage());
@@ -834,7 +834,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return getData().getUnitGroupRegistryReadOnly();
     }
 
