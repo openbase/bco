@@ -71,7 +71,6 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
                     oldID = oldGenerateId(locationConfig);
                     if (!locationLabelIdMap.containsKey(oldID)) {
                         locationLabelIdMap.put(oldID, locationConfig.getId());
-                        System.out.println("register mapping old[" + oldID + "] = new[" + locationConfig.getId() + "]");
                     }
                 }
             } catch (InterruptedException ex) {

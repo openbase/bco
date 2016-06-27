@@ -62,17 +62,17 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  * @author mpohling
  */
 public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> implements org.openbase.bco.registry.location.lib.LocationRegistry, Remote<LocationRegistry> {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
-    
+
     private final RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRemoteRegistry;
     private final RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> connectionConfigRemoteRegistry;
     private final DeviceRegistryRemote deviceRegistryRemote;
-    
+
     public LocationRegistryRemote() throws InstantiationException {
         super(LocationRegistry.class);
         try {
@@ -140,11 +140,13 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         deviceRegistryRemote.activate();
         super.activate();
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         try {
-            System.out.println("Deactivate location registry remote...");
             deviceRegistryRemote.deactivate();
         } finally {
             super.deactivate();
@@ -157,7 +159,6 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     @Override
     public void shutdown() {
         try {
-            System.out.println("Shutdown location registry remote...");
             deviceRegistryRemote.shutdown();
             locationConfigRemoteRegistry.shutdown();
             connectionConfigRemoteRegistry.shutdown();
@@ -177,11 +178,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         locationConfigRemoteRegistry.notifyRegistryUpdate(data.getLocationConfigList());
         connectionConfigRemoteRegistry.notifyRegistryUpdate(data.getConnectionConfigList());
     }
-    
+
     public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRemoteRegistry() {
         return locationConfigRemoteRegistry;
     }
-    
+
     public RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> getConnectionConfigRemoteRegistry() {
         return connectionConfigRemoteRegistry;
     }
@@ -339,7 +340,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -380,7 +381,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -443,7 +444,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-        
+
         return getData().getLocationConfigRegistryReadOnly();
     }
 
@@ -572,7 +573,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public List<UnitConfig> getUnitConfigsByConnection(UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -596,7 +597,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
     public List<UnitConfig> getUnitConfigsByConnection(ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -642,17 +643,22 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-        
+
         return getData().getConnectionConfigRegistryReadOnly();
     }
-    
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<LocationConfig> getNeighborLocations(String locationId) throws CouldNotPerformException {
         LocationConfig locationConfig = getLocationConfigById(locationId);
         if (locationConfig.getType() != LocationConfig.LocationType.TILE) {
             throw new CouldNotPerformException("Id[" + locationId + "] does not belong to a tile and therefore its neighbors aren't defined!");
         }
-        
+
         Map<String, LocationConfig> neighborMap = new HashMap<>();
         for (ConnectionConfig connectionConfig : getConnectionConfigs()) {
             if (connectionConfig.getTileIdList().contains(locationId)) {
@@ -660,12 +666,12 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
                     if (id.equals(locationId)) {
                         continue;
                     }
-                    
+
                     neighborMap.put(id, getLocationConfigById(id));
                 }
             }
         }
-        
+
         return new ArrayList<>(neighborMap.values());
     }
 }
