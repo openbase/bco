@@ -44,6 +44,7 @@ import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
 import org.openbase.bco.dal.remote.service.ShutterServiceRemote;
 import org.openbase.bco.dal.remote.service.StandbyServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureServiceRemote;
+import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -201,15 +202,12 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     public void init(UnitGroupConfig unitGroupConfig) throws InstantiationException, InitializationException, InterruptedException, CouldNotPerformException {
 //        super.init(unitGroupConfig.getScope);
 
-        deviceRegistryRemote = new DeviceRegistryRemote();
-        deviceRegistryRemote.init();
-        deviceRegistryRemote.activate();
+        CachedDeviceRegistryRemote.waitForData();
 
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (String unitConfigId : unitGroupConfig.getMemberIdList()) {
-            unitConfigs.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
+            unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
         }
-        deviceRegistryRemote.deactivate();
 
         List<UnitConfig> unitConfigsByService = new ArrayList<>();
         for (ServiceTemplate.ServiceType serviceType : unitGroupConfig.getServiceTypeList()) {
