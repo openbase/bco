@@ -91,6 +91,20 @@ public class CachedDeviceRegistryRemote {
             throw new NotAvailableException("cached device registry", ex);
         }
     }
+    
+    public static void waitForData() throws InterruptedException, CouldNotPerformException {
+        if (deviceRegistryRemote == null) {
+            getRegistry();
+        }
+        deviceRegistryRemote.waitForData();
+    }
+    
+    public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        if (deviceRegistryRemote == null) {
+            getRegistry();
+        }
+        deviceRegistryRemote.waitForData(timeout, timeUnit);
+    }
 
     public static void shutdown() {
         if (deviceRegistryRemote != null) {

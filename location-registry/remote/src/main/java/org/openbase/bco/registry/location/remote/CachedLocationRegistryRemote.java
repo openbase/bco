@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class CachedLocationRegistryRemote {
 
@@ -92,6 +91,20 @@ public class CachedLocationRegistryRemote {
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached location registry", ex);
         }
+    }
+    
+    public static void waitForData() throws InterruptedException, CouldNotPerformException {
+        if (locationRegistryRemote == null) {
+            getRegistry();
+        }
+        locationRegistryRemote.waitForData();
+    }
+    
+    public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        if (locationRegistryRemote == null) {
+            getRegistry();
+        }
+        locationRegistryRemote.waitForData(timeout, timeUnit);
     }
 
     public static void shutdown() {

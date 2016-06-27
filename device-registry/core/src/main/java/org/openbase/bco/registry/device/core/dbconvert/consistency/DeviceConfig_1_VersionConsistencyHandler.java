@@ -63,6 +63,7 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
         if (locationRegistry == null) {
             logger.info("Connect to location registry....");
             try {
+                CachedLocationRegistryRemote.waitForData();
                 locationRegistry = CachedLocationRegistryRemote.getRegistry();
                 logger.info("Location registry connected.");
                 String oldID;
