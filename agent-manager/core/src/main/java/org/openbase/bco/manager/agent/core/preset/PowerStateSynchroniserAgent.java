@@ -112,8 +112,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
             targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
 
-            System.out.println("### shutdown[" + config.getLabel() + "]");
-
             logger.info("Initializing observers");
             initObserver();
             //TODO mpohling: interrupted should be forwarded! Interface change needed!
