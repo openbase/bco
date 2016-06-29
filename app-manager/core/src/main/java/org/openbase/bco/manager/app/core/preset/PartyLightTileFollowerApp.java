@@ -76,7 +76,7 @@ public class PartyLightTileFollowerApp extends AbstractApp {
     }
 
     @Override
-    public void shutdown() throws InterruptedException {
+    public void shutdown() {
         // shutdown tile remotes
         locationRemoteMap.values().stream().forEach((locationRemote) -> {
             locationRemote.shutdown();

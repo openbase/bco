@@ -73,7 +73,7 @@ public class DeviceManagerController implements DeviceManager {
 
     public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceFactory deviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
+            DeviceManagerController.instance = this;
 
             this.deviceFactory = deviceFactory;
             this.serviceFactory = serviceFactory;
