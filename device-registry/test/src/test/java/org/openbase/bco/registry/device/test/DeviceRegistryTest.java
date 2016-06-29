@@ -194,7 +194,7 @@ public class DeviceRegistryTest {
     /**
      * Test of registerDeviceClass method, of class DeviceRegistryImpl.
      */
-    @Test
+    @Test(timeout = 5000)
     public void testRegisterDeviceClass() throws Exception {
         System.out.println("registerDeviceClass");
         deviceRegistry.registerDeviceClass(deviceClass.clone().build()).get();
@@ -205,7 +205,7 @@ public class DeviceRegistryTest {
     /**
      * Test of registerDeviceConfig method, of class DeviceRegistryImpl.
      */
-//    @Test
+//    @Test(timeout = 5000)
     public void testRegisterDeviceConfig() throws Exception {
         System.out.println("registerDeviceConfig");
         deviceRegistry.registerDeviceConfig(deviceConfig.clone().build());
@@ -219,7 +219,7 @@ public class DeviceRegistryTest {
      * Test if the scope and the id of a device configuration and its units is
      * set when registered.
      */
-    @Test
+    @Test(timeout = 5000)
     public void testRegisterDeviceConfigWithUnits() throws Exception {
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
@@ -251,7 +251,7 @@ public class DeviceRegistryTest {
      * Test of testRegiseredDeviceConfigWithoutLabel method, of class
      * DeviceRegistryImpl.
      */
-    @Test
+    @Test(timeout = 5000)
     public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
         String productNumber = "KNHD-4321";
         String serialNumber = "112358";
@@ -270,7 +270,7 @@ public class DeviceRegistryTest {
      * Test of testRegisterTwoDevicesWithSameLabel method, of class
      * DeviceRegistryImpl.
      */
-//    @Test
+//    @Test(timeout = 5000)
     // TODO: fix that the consisteny handling will work after this
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
         String serialNumber1 = "FIRST_DEV";
@@ -293,7 +293,7 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
         UnitTemplate unitTemplate = deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.AMBIENT_LIGHT).addServiceType(ServiceType.BATTERY_PROVIDER).addServiceType(ServiceType.COLOR_SERVICE).build()).get();
         assertTrue(unitTemplate.getServiceTypeList().contains(ServiceType.BATTERY_PROVIDER));
@@ -326,7 +326,7 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         ServiceTemplate serviceTemplate1 = ServiceTemplate.newBuilder().setServiceType(ServiceType.POWER_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(serviceTemplate1).build();
@@ -377,7 +377,7 @@ public class DeviceRegistryTest {
         deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).build());
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testBoundToDeviceConsistencyHandler() throws Exception {
         ServiceTemplate serviceTemplate1 = ServiceTemplate.newBuilder().setServiceType(ServiceType.POWER_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(serviceTemplate1).build();
@@ -411,7 +411,7 @@ public class DeviceRegistryTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testOwnerRemoval() throws Exception {
         UserConfig owner = userRegistry.registerUserConfig(UserConfig.newBuilder().setUserName("owner").setFirstName("Max").setLastName("Mustermann").setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build()).get();
 
@@ -443,7 +443,7 @@ public class DeviceRegistryTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testLocationIdInInventoryState() throws Exception {
         ArrayList<UnitConfig> units = new ArrayList<>();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("testLocationIdInInventoryState", "103721ggbdk12", "ServiceGMBH")).get();
@@ -460,7 +460,7 @@ public class DeviceRegistryTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testSandbox() throws Exception {
         BindingConfig bindingConfig = BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.SINACT).build();
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();

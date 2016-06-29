@@ -60,7 +60,7 @@ public class DeviceConfigUtilsTest {
     /**
      * Test of checkDuplicatedUnitType method, of class UnitBoundsToDeviceConsistencyHandler.
      */
-    @Test
+    @Test(timeout = 5000)
     public void testCheckDuplicatedUnitType() {
         System.out.println("checkDuplicatedUnitType");
         DeviceConfigType.DeviceConfig.Builder deviceConfig = DeviceConfigType.DeviceConfig.newBuilder();
