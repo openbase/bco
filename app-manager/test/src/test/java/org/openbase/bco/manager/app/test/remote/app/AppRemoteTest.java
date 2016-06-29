@@ -95,7 +95,7 @@ public class AppRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    //@Test
     public void testSoundScapeApp() throws Exception {
         ParticipantConfig config = Factory.getInstance().getDefaultParticipantConfig();
         final String scope = "/app/soundscape/theme/";

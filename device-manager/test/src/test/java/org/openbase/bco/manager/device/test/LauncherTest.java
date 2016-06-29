@@ -71,7 +71,7 @@ public class LauncherTest {
     /**
      * Test of deactivate method, of class DeviceManagerLauncher.
      */
-    @Test
+    @Test(timeout = 10000)
     public void testShutdown() throws InitializationException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, Exception {
         DeviceManagerLauncher instance = new DeviceManagerLauncher();
         try {
@@ -82,7 +82,7 @@ public class LauncherTest {
         instance.shutdown();
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testProtobuf() {
         MotionStateType.MotionState.Builder builder = MotionStateType.MotionState.newBuilder();
         builder.setValue(MotionStateType.MotionState.State.UNKNOWN);

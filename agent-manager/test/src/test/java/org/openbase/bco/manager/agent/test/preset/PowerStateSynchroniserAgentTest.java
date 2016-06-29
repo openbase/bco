@@ -140,7 +140,7 @@ public class PowerStateSynchroniserAgentTest {
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
      */
-    @Test
+    @Test(timeout = 30000)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
