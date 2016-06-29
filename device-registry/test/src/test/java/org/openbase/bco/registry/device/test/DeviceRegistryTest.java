@@ -236,7 +236,6 @@ public class DeviceRegistryTest {
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.BATTERY).build();
         DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company).toBuilder().addUnitTemplateConfig(unitTemplateConfig).build()).get();
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, null);
-        System.out.println("config: " + motionSensorConfig);
         motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig).get();
 
         assertEquals("Device id is not set properly", deviceId, motionSensorConfig.getId());
@@ -427,7 +426,9 @@ public class DeviceRegistryTest {
         userRegistry.removeUserConfig(owner).get();
         // wait until device registry consistency check was triggered by user registry and the owner was removed.
         try {
-            deviceRegistryRemote.waitForData(100, TimeUnit.MILLISECONDS);
+            //deviceRegistryRemote.waitForData(100, TimeUnit.MILLISECONDS);
+            deviceRegistry.waitForConsistency();
+            deviceRegistryRemote.requestData().get();
         } catch (CouldNotPerformException e) {
             // may data update was received before.
         }

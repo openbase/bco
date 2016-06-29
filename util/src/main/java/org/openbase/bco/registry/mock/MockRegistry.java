@@ -305,7 +305,6 @@ public class MockRegistry {
     }
 
     protected void shutdown() {
-        System.out.println("Shutdown MockRegistry");
         deviceRegistryLauncher.shutdown();
         locationRegistryLauncher.shutdown();
         agentRegistryLauncher.shutdown();
@@ -314,7 +313,6 @@ public class MockRegistry {
         userRegistryLauncher.shutdown();
         CachedDeviceRegistryRemote.shutdown();
         CachedLocationRegistryRemote.shutdown();
-        System.out.println("Mockregistry shutdown successfully!");
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {

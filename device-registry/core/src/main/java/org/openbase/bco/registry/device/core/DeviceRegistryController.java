@@ -200,7 +200,6 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             // Check the device configs if the locations are modifiered.
             locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
-                System.out.println("locationRegistry data update:" + data);
             };
 
             userRegistryUpdateObserver = (Observable<UserRegistry> source, UserRegistry data) -> {
