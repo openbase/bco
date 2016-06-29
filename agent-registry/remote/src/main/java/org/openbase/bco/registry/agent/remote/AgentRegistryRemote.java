@@ -71,9 +71,9 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
      * Method initializes the remote with the given scope for the server
      * registry connection.
      *
-     * @param scope
+     * @param scope {@inheritDoc}
      * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public void init(final Scope scope) throws InitializationException, InterruptedException {
@@ -88,9 +88,9 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
      * Method initializes the remote with the given scope for the server
      * registry connection.
      *
-     * @param scope
+     * @param scope {@inheritDoc}
      * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
