@@ -100,6 +100,9 @@ public class PowerStateSynchroniserAgentTest {
         locationRemote = new LocationRegistryRemote();
         locationRemote.init();
         locationRemote.activate();
+        
+        deviceRemote.waitForData();
+        locationRemote.waitForData();
     }
 
     @AfterClass

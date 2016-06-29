@@ -133,18 +133,13 @@ public class DeviceManagerController implements DeviceManager {
 
     public void init() throws InitializationException, InterruptedException {
         try {
-            System.out.println("Init & activate device registry");
             deviceRegistryRemote.init();
             deviceRegistryRemote.activate();
-            System.out.println("Wait for device data");
             deviceRegistryRemote.waitForData();
 
-            System.out.println("Init & activate location registry");
             locationRegistryRemote.init();
             locationRegistryRemote.activate();
-            System.out.println("Wait for location data");
             locationRegistryRemote.waitForData();
-            System.out.println("Init registry syncroniser...");
             deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -160,10 +155,8 @@ public class DeviceManagerController implements DeviceManager {
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        System.out.println("Wait for init");
         locationRegistryRemote.waitForData(timeout, timeUnit);
         deviceRegistryRemote.waitForData(timeout, timeUnit);
-        System.out.println("Wait for init finished!");
     }
 
     @Override
