@@ -24,13 +24,14 @@ package org.openbase.bco.registry.agent.lib;
 import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.iface.Shutdownable;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
  * @author mpohling
  */
-public interface AgentRegistry {
+public interface AgentRegistry extends Shutdownable {
 
     public Future<AgentConfig> registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
 
@@ -48,5 +49,4 @@ public interface AgentRegistry {
 
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    public void shutdown();
 }

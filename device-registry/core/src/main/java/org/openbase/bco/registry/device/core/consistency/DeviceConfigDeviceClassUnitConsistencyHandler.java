@@ -32,8 +32,6 @@ import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
@@ -58,7 +56,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(final String id, final IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, final ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, final ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
@@ -93,7 +91,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         }
     }
 
-    private boolean unitWithRelatedTemplateExists(List<UnitConfig> units, UnitTemplateConfig unitTemplate) {
+    private boolean unitWithRelatedTemplateExists(final List<UnitConfig> units, final UnitTemplateConfig unitTemplate) {
         for (UnitConfig unit : units) {
             if (unit.getUnitTemplateConfigId().equals(unitTemplate.getId())) {
                 return true;
@@ -102,7 +100,7 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         return false;
     }
 
-    private boolean templateForUnitExists(List<UnitTemplateConfig> units, String id) {
+    private boolean templateForUnitExists(final List<UnitTemplateConfig> units, String id) {
         for (UnitTemplateConfig unit : units) {
             if (unit.getId().equals(id)) {
                 return true;

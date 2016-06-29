@@ -99,8 +99,4 @@ public class UnitLocationIdConsistencyHandler extends AbstractProtoBufRegistryCo
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
-
-    @Override
-    public void reset() {
-    }
 }

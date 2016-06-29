@@ -63,12 +63,9 @@ public class DeviceScopeConsistencyHandler extends AbstractProtoBufRegistryConsi
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(deviceConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+            System.out.println("new scope:" + ScopeGenerator.generateStringRep(newScope) + " for device: " + entry.getMessage() + " at location: "+locationConfig);
             entry.setMessage(deviceConfig.toBuilder().setScope(newScope));
             throw new EntryModification(entry, this);
         }
-    }
-
-    @Override
-    public void reset() {
     }
 }

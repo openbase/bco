@@ -94,17 +94,8 @@ public class DeviceRegistryTest {
 
     private static DeviceRegistryRemote deviceRegistryRemote;
 
-    public DeviceRegistryTest() {
-    }
-
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
-//        JPService.registerProperty(JPInitializeDB.class, true);
-//        JPService.registerProperty(JPDeviceRegistryScope.class);
-//        JPService.registerProperty(JPLocationRegistryScope.class);
-//        JPService.registerProperty(JPDatabaseDirectory.class);
-//        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class, new File("device-config"));
-//        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class, new File("device-classes"));
         JPService.setupJUnitTestMode();
 
         deviceRegistry = new DeviceRegistryController();
@@ -178,8 +169,9 @@ public class DeviceRegistryTest {
 
     @AfterClass
     public static void tearDownClass() {
-        deviceRegistryRemote.shutdown();
-
+        if (deviceRegistryRemote != null) {
+            deviceRegistryRemote.shutdown();
+        }
         if (locationRegistry != null) {
             locationRegistry.shutdown();
         }
@@ -244,7 +236,7 @@ public class DeviceRegistryTest {
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.BATTERY).build();
         DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company).toBuilder().addUnitTemplateConfig(unitTemplateConfig).build()).get();
         DeviceConfig motionSensorConfig = getDeviceConfig(deviceLabel, serialNumber, motionSensorClass, null);
-
+        System.out.println("config: " + motionSensorConfig);
         motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig).get();
 
         assertEquals("Device id is not set properly", deviceId, motionSensorConfig.getId());
@@ -269,7 +261,7 @@ public class DeviceRegistryTest {
         String deviceId = company + "_" + productNumber + "_" + serialNumber;
 
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company)).get();
-        DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<UnitConfig>());
+        DeviceConfig deviceWithoutLabel = getDeviceConfig("", serialNumber, clazz, new ArrayList<>());
         deviceWithoutLabel = deviceRegistry.registerDeviceConfig(deviceWithoutLabel).get();
 
         assertEquals("The device label is not set as the id if it is empty!", deviceId, deviceWithoutLabel.getLabel());
@@ -287,8 +279,8 @@ public class DeviceRegistryTest {
         String deviceLabel = "SameLabelSameLocation";
 
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("WithoutLabel", "xyz", "HuxGMBH")).get();
-        DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, clazz, new ArrayList<UnitConfig>());
-        DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, clazz, new ArrayList<UnitConfig>());
+        DeviceConfig deviceWithLabel1 = getDeviceConfig(deviceLabel, serialNumber1, clazz, new ArrayList<>());
+        DeviceConfig deviceWithLabel2 = getDeviceConfig(deviceLabel, serialNumber2, clazz, new ArrayList<>());
 
         deviceRegistry.registerDeviceConfig(deviceWithLabel1);
         try {
@@ -376,7 +368,7 @@ public class DeviceRegistryTest {
 
         clazz = deviceRegistry.updateDeviceClass(clazz.toBuilder().addUnitTemplateConfig(unitTemplateConfig3).build()).get();
         config = deviceRegistry.getDeviceConfigById(config.getId());
-        assertTrue("Unit configs and templates differ after the update of the device class", config.getUnitConfigCount() == clazz.getUnitTemplateConfigCount());
+        assertEquals("Unit configs and templates differ after the update of the device class", config.getUnitConfigCount(), clazz.getUnitTemplateConfigCount());
         assertEquals("Device config does not contain the right unit config", config.getUnitConfig(2).getType(), unitTemplateConfig3.getType());
         assertEquals("Unit config does not contain the right service", config.getUnitConfig(2).getServiceConfig(0).getType(), serviceTemplate4.getServiceType());
 
@@ -411,8 +403,8 @@ public class DeviceRegistryTest {
         assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
         assertEquals("Location id in placement config of unit does not equals that in device", config.getPlacementConfig().getLocationId(), config.getUnitConfig(0).getPlacementConfig().getLocationId());
 
-        locationRegistry.removeLocationConfig(testLocation);
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).build());
+        locationRegistry.removeLocationConfig(testLocation).get();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).build()).get();
     }
 
     /**

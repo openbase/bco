@@ -155,7 +155,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException {
+    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(SceneRegistry.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
         super.notifyChange();

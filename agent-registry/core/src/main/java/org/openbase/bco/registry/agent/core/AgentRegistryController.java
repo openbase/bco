@@ -157,7 +157,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException {
+    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(AgentRegistry.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
         super.notifyChange();

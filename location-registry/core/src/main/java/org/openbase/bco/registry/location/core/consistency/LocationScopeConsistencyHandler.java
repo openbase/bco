@@ -47,6 +47,7 @@ public class LocationScopeConsistencyHandler extends AbstractProtoBufRegistryCon
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(locationConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+            System.out.println("location scope: "+ScopeGenerator.generateStringRep(newScope));
             entry.setMessage(locationConfig.toBuilder().setScope(newScope));
             throw new EntryModification(entry, this);
         }

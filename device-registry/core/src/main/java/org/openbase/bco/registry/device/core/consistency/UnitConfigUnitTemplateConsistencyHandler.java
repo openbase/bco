@@ -81,10 +81,6 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
     }
 
-    @Override
-    public void reset() {
-    }
-
     private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceType serviceType) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
             if (serviceConfig.getType() == serviceType) {

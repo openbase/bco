@@ -23,7 +23,6 @@ package org.openbase.bco.registry.agent.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -102,7 +101,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
      * Method initializes the remote with the default registry connection scope.
      *
      * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.{@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     public void init() throws InitializationException, InterruptedException {
         try {
@@ -112,15 +111,6 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
         }
     }
 
-//    @Override
-//    public void activate() throws InterruptedException, CouldNotPerformException {
-//        super.activate();
-//        try {
-//            waitForData();
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
-//        }
-//    }
     @Override
     public void shutdown() {
         try {

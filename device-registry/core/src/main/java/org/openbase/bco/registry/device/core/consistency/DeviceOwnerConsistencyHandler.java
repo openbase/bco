@@ -54,8 +54,4 @@ public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsi
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
-
-    @Override
-    public void reset() {
-    }
 }

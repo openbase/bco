@@ -79,8 +79,4 @@ public class UnitScopeConsistencyHandler extends AbstractProtoBufRegistryConsist
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
-
-    @Override
-    public void reset() {
-    }
 }

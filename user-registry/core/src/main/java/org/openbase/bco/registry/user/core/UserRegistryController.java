@@ -165,7 +165,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException {
+    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(UserRegistry.USER_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userRegistry.isReadOnly());
         setDataField(UserRegistry.GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userGroupRegistry.isReadOnly());

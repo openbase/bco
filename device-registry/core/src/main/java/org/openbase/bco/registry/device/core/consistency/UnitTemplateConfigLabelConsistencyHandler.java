@@ -37,9 +37,6 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  */
 public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
 
-    public UnitTemplateConfigLabelConsistencyHandler() {
-    }
-
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder> entry, ProtoBufMessageMapInterface<String, DeviceClass, DeviceClass.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceClass, DeviceClass.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceClass.Builder deviceClass = entry.getMessage().toBuilder();
@@ -57,9 +54,5 @@ public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufR
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceClass), this);
         }
-    }
-
-    @Override
-    public void reset() {
     }
 }

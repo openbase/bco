@@ -70,8 +70,4 @@ public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegis
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
-
-    @Override
-    public void reset() {
-    }
 }

@@ -138,5 +138,4 @@ public class DeviceLabelConsistencyHandler extends AbstractProtoBufRegistryConsi
     public void reset() {
         labelConsistencyMap.clear();
     }
-
 }

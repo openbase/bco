@@ -95,8 +95,4 @@ public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBuf
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
     }
-
-    @Override
-    public void reset() {
-    }
 }

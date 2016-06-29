@@ -38,9 +38,6 @@ import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
  */
 public class UnitGroupMemberListDuplicationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitGroupConfig, UnitGroupConfig.Builder> {
 
-    public UnitGroupMemberListDuplicationConsistencyHandler() {
-    }
-
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitGroupConfig.Builder unitGroup = entry.getMessage().toBuilder();

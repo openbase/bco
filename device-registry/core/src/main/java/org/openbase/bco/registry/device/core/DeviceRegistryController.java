@@ -200,6 +200,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             // Check the device configs if the locations are modifiered.
             locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
                 deviceConfigRegistry.checkConsistency();
+                System.out.println("locationRegistry data update:" + data);
             };
 
             userRegistryUpdateObserver = (Observable<UserRegistry> source, UserRegistry data) -> {
@@ -304,7 +305,6 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
 
     /**
      * {@inheritDoc}
-     *
      */
     @Override
     public void shutdown() {
@@ -336,10 +336,11 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public final void notifyChange() throws CouldNotPerformException {
+    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(DeviceRegistry.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistry.DEVICE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceConfigRegistry.isReadOnly());
@@ -351,8 +352,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param server
-     * @throws CouldNotPerformException
+     * @param server {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
@@ -362,9 +363,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceConfig> registerDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -374,9 +375,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplateId
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
@@ -386,9 +387,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceClassId
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException {
@@ -398,9 +399,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfigId
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public DeviceConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
@@ -410,9 +411,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param unitConfigId
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException {
@@ -429,10 +430,10 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param unitConfigLabel
-     * @return
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @param unitConfigLabel {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
@@ -449,9 +450,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfigId
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfigId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
@@ -461,9 +462,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplateId
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
@@ -473,9 +474,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplate
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
@@ -485,9 +486,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -497,9 +498,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param unitTemplate
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
@@ -509,9 +510,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceConfig> updateDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -521,9 +522,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceConfig> removeDeviceConfig(DeviceConfig deviceConfig) throws CouldNotPerformException {
@@ -533,9 +534,9 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
@@ -713,7 +714,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         return unitGroupConfigRegistry.isReadOnly();
     }
-    
+
     /**
      * {@inheritDoc}
      *
@@ -757,7 +758,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
         return unitGroupConfigRegistry.isConsistent();
     }
-    
+
     /**
      * {@inheritDoc}
      *
@@ -977,8 +978,6 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         }
         return unitConfigs;
     }
-
-    
 
     /**
      * {@inheritDoc}

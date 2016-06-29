@@ -154,7 +154,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException {
+    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(AppRegistry.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
         super.notifyChange();

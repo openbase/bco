@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -57,7 +56,7 @@ public class UnitTransformationFrameConsistencyHandler extends AbstractTransform
 
             if (placementConfig != null) {
                 unitConfigBuilder.setPlacementConfig(placementConfig);
-                logger.debug("UnitTransformationFrameConsistencyHandler Upgrade Unit["+unitConfigBuilder.getId()+"] frame to "+placementConfig.getTransformationFrameId());
+                logger.debug("UnitTransformationFrameConsistencyHandler Upgrade Unit[" + unitConfigBuilder.getId() + "] frame to " + placementConfig.getTransformationFrameId());
                 modification = true;
             }
 
@@ -65,7 +64,7 @@ public class UnitTransformationFrameConsistencyHandler extends AbstractTransform
         }
 
         if (modification) {
-            logger.debug("UnitTransformationFrameConsistencyHandler Publish Device["+deviceConfigBuilder.getId()+"]!");
+            logger.debug("UnitTransformationFrameConsistencyHandler Publish Device[" + deviceConfigBuilder.getId() + "]!");
             throw new EntryModification(entry.setMessage(deviceConfigBuilder), this);
         }
     }

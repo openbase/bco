@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
@@ -68,5 +67,4 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
         }
         return unitTemplate.getServiceTypeList().stream().noneMatch((serviceType) -> (!serviceTypes.contains(serviceType)));
     }
-
 }
