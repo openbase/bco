@@ -63,7 +63,7 @@ public class ServiceJSonProcessorTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testGetServiceAttributeType() throws Exception {
         System.out.println("getServiceAttributeType");
         Object serviceAttribute = 3.141d;
@@ -99,7 +99,7 @@ public class ServiceJSonProcessorTest {
      *
      * @throws java.lang.Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testSerializationPipeline() throws Exception {
         System.out.println("SerializationPipeline");
         Object serviceAttribute = 3.141d;
