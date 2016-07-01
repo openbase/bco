@@ -122,4 +122,9 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct["+registry.isConsistent()+"]", ex), logger, LogLevel.WARN);
         }
     }
+    
+    @Override
+    public void shutdown() {
+        //TODO insert rct shutdown after implementation ;)
+    }
 }

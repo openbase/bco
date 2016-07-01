@@ -325,7 +325,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
 
         try {
             deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
+        } catch (CouldNotPerformException | InterruptedException | NullPointerException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
         locationRegistryRemote.shutdown();

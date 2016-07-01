@@ -121,4 +121,9 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
     public void afterUpdate(IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry) throws CouldNotPerformException {
         publishTransformation(entry);
     }
+    
+    @Override
+    public void shutdown() {
+        //TODO insert rct shutdown after implementation ;)
+    }
 }

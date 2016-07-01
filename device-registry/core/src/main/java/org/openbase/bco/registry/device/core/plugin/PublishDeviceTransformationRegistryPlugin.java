@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -48,7 +47,6 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry;
     final LocationRegistry locationRegistry;
 
     private TransformerFactory transformerFactory;
@@ -67,7 +65,6 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     @Override
     public void init(final Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry) throws InitializationException, InterruptedException {
         try {
-            this.registry = registry;
             for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry : registry.getEntries()) {
                 publishTransformation(entry);
             }
@@ -176,5 +173,10 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     @Override
     public void afterUpdate(IdentifiableMessage<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entry) throws CouldNotPerformException {
         publishTransformation(entry);
+    }
+
+    @Override
+    public void shutdown() {
+        //TODO insert rct shutdown after implementation ;)
     }
 }
