@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,6 +36,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -76,57 +76,20 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
     private final UnitRemoteFactory factory;
     private final DeviceRegistry deviceRegistry;
+    private final Observer<GeneratedMessage> sourceObserver, targetObserver;
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
         super(true);
         this.factory = UnitRemoteFactoryImpl.getInstance();
         this.deviceRegistry = AgentManagerController.getInstance().getDeviceRegistry();
-    }
 
-    @Override
-    public void init(AgentConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        try {
-            logger.info("Creating PowerStateSynchroniserAgent[" + config.getLabel() + "]");
-
-//            final DeviceRegistryRemote deviceRegistryRemote = new DeviceRegistryRemote();
-//            System.out.println("### init["+config.getLabel()+"]");
-//            deviceRegistryRemote.init();
-//            System.out.println("### activate["+config.getLabel()+"]");
-//            deviceRegistryRemote.activate();
-            MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
-
-            sourceRemote = factory.newInitializedInstance(deviceRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
-            int i = 1;
-            String unitId;
-            try {
-                while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
-                    logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
-                    targetRemotes.add(factory.newInitializedInstance(deviceRegistry.getUnitConfigById(unitId)));
-                    i++;
-                }
-            } catch (NotAvailableException ex) {
-                i--;
-                logger.info("Found [" + i + "] target/s");
-            }
-            sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
-            targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
-
-            logger.info("Initializing observers");
-            initObserver();
-            //TODO mpohling: interrupted should be forwarded! Interface change needed!
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    private void initObserver() {
-        sourceRemote.addDataObserver(new Observer<GeneratedMessage>() {
+        // initialize observer
+        sourceObserver = new Observer<GeneratedMessage>() {
 
             @Override
             public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 sourceLatestPowerState = invokeGetPowerState(data).getValue();
-                logger.info("Recieved new value [" + sourceLatestPowerState + "] for source");
+                logger.info("Received new value [" + sourceLatestPowerState + "] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
                         for (UnitRemote targetRemote : targetRemotes) {
@@ -154,40 +117,67 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
                     }
                 }
             }
-        });
+        };
+        targetObserver = new Observer<GeneratedMessage>() {
 
-        for (UnitRemote targetRemote : targetRemotes) {
-            targetRemote.addDataObserver(new Observer<GeneratedMessage>() {
-
-                @Override
-                public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
-                    PowerState.State newPowerState = invokeGetPowerState(data).getValue();
-                    logger.info("Recieved new value [" + targetLatestPowerState + "] for target [" + source + "]");
-                    if (!updateLatestTargetPowerState(newPowerState)) {
-                        return;
+            @Override
+            public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
+                PowerState.State newPowerState = invokeGetPowerState(data).getValue();
+                logger.info("Received new value [" + targetLatestPowerState + "] for target [" + source + "]");
+                if (!updateLatestTargetPowerState(newPowerState)) {
+                    return;
+                }
+                if (targetLatestPowerState == PowerState.State.ON) {
+                    if (sourceLatestPowerState != PowerState.State.ON) {
+                        invokeSetPower(sourceRemote, ON);
                     }
-                    if (targetLatestPowerState == PowerState.State.ON) {
-                        if (sourceLatestPowerState != PowerState.State.ON) {
-                            invokeSetPower(sourceRemote, ON);
-                        }
-                    } else if (targetLatestPowerState == PowerState.State.OFF) {
-                        switch (sourceBehaviour) {
-                            case OFF:
-                                if (sourceLatestPowerState != PowerState.State.OFF) {
-                                    invokeSetPower(sourceRemote, OFF);
-                                }
-                                break;
-                            case ON:
-                                if (sourceLatestPowerState != PowerState.State.ON) {
-                                    invokeSetPower(sourceRemote, ON);
-                                }
-                                break;
-                            case LAST_STATE:
-                                break;
-                        }
+                } else if (targetLatestPowerState == PowerState.State.OFF) {
+                    switch (sourceBehaviour) {
+                        case OFF:
+                            if (sourceLatestPowerState != PowerState.State.OFF) {
+                                invokeSetPower(sourceRemote, OFF);
+                            }
+                            break;
+                        case ON:
+                            if (sourceLatestPowerState != PowerState.State.ON) {
+                                invokeSetPower(sourceRemote, ON);
+                            }
+                            break;
+                        case LAST_STATE:
+                            break;
                     }
                 }
-            });
+            }
+        };
+    }
+
+    @Override
+    public void init(AgentConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            logger.debug("Creating PowerStateSynchroniserAgent[" + config.getLabel() + "]");
+
+            MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
+
+            sourceRemote = factory.newInitializedInstance(deviceRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+            int i = 1;
+            String unitId;
+            try {
+                while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
+                    logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                    targetRemotes.add(factory.newInitializedInstance(deviceRegistry.getUnitConfigById(unitId)));
+                    i++;
+                }
+            } catch (NotAvailableException ex) {
+                i--;
+                logger.info("Found [" + i + "] target/s");
+            }
+            sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
+            targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
+
+            logger.info("Initializing observers");
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
         }
     }
 
@@ -226,9 +216,10 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             Method method = remote.getClass().getMethod("setPower", PowerState.class);
             method.invoke(remote, powerState);
         } catch (NoSuchMethodException ex) {
-            logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method");
+            logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method", ex);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             logger.error("Could not invoke setPower method on remote [" + remote.getClass().getSimpleName() + "] with value [" + powerState + "]");
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 
@@ -236,20 +227,20 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         try {
             Method method = message.getClass().getMethod("getPowerState");
             return (PowerState) method.invoke(message);
-        } catch (Exception ex) {
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not get powerState from message [" + message + "]", ex);
         }
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getClass().getSimpleName() + "]");
+        logger.debug("Activating [" + getClass().getSimpleName() + "]");
         super.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+        logger.debug("Deactivating [" + getClass().getSimpleName() + "]");
         super.deactivate();
     }
 
@@ -269,18 +260,27 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             } else if (targetLatestPowerState == PowerState.State.UNKNOWN && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.OFF) {
                 targetLatestPowerState = PowerState.State.OFF;
             }
+            targetRemote.addDataObserver(targetObserver);
         }
+
+        // add data observer after all target remotes have been activated
+        // else setPowerState could be called on a target remote without being active
+        sourceRemote.addDataObserver(sourceObserver);
+        sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
+
         logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
         logger.info("Targets [" + targetIds + "], behaviour [" + targetBehaviour + "]");
-        sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        sourceRemote.deactivate();
+        logger.info("Stopping PowerStateSynchroniserAgent...");
+        sourceRemote.removeDataObserver(sourceObserver);
         for (UnitRemote targetRemote : targetRemotes) {
+            targetRemote.removeDataObserver(sourceObserver);
             targetRemote.deactivate();
         }
+        sourceRemote.deactivate();
     }
 
     public UnitRemote getSourceRemote() {
