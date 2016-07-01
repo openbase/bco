@@ -22,6 +22,7 @@ package org.openbase.bco.manager.agent.core;
  * #L%
  */
 
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
@@ -34,7 +35,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType;
@@ -90,8 +90,6 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
             this.agentRegistryRemote.activate();
             this.deviceRegistryRemote.init();
             this.deviceRegistryRemote.activate();
-            this.agentRegistryRemote.waitForData();
-            this.deviceRegistryRemote.waitForData();
             this.registrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -108,5 +106,11 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
     @Override
     public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
         return this.deviceRegistryRemote;
+    }
+
+    @Override
+    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        agentRegistryRemote.waitForData(timeout, timeUnit);
+        deviceRegistryRemote.waitForData(timeout, timeUnit);
     }
 }

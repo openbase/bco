@@ -1,5 +1,8 @@
 package org.openbase.bco.manager.agent.lib;
 
+import java.util.concurrent.TimeUnit;
+import org.openbase.jul.exception.CouldNotPerformException;
+
 /*
  * #%L
  * COMA AgentManager Library
@@ -28,4 +31,5 @@ package org.openbase.bco.manager.agent.lib;
  */
 public interface AgentManager {
 
+    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 }

@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.agent.lib.AgentManager;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class AgentManagerLauncher implements Launcher{
+public class AgentManagerLauncher implements Launcher {
 
     protected static final Logger logger = LoggerFactory.getLogger(AgentManagerLauncher.class);
 
@@ -50,6 +49,7 @@ public class AgentManagerLauncher implements Launcher{
         }
     }
 
+    @Override
     public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             agentManagerController.init();
@@ -59,8 +59,13 @@ public class AgentManagerLauncher implements Launcher{
         }
     }
 
+    @Override
     public void shutdown() {
         agentManagerController.shutdown();
+    }
+
+    public AgentManager getAgentManager() {
+        return agentManagerController;
     }
 
     /**
