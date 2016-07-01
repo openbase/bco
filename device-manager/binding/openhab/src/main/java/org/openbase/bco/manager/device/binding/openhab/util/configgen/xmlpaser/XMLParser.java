@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +29,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import nu.xom.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotProcessException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 
 public class XMLParser {
@@ -110,7 +113,7 @@ public class XMLParser {
     public static Iterable<Element> toIterable(final Elements elements) {
         return () -> new Iterator<Element>() {
             private int i = 0;
-            private int size = elements.size();
+            private final int size = elements.size();
 
             @Override
             public boolean hasNext() {
@@ -132,7 +135,7 @@ public class XMLParser {
     public static Iterable<Node> toIterable(final Nodes nodes) {
         return () -> new Iterator<Node>() {
             private int i = 0;
-            private int size = nodes.size();
+            private final int size = nodes.size();
 
             @Override
             public boolean hasNext() {
@@ -154,7 +157,7 @@ public class XMLParser {
     public static Iterable<Element> toIterableElement(final Nodes nodes) {
         return () -> new Iterator<Element>() {
             private int i = 0;
-            private int size = nodes.size();
+            private final int size = nodes.size();
 
             @Override
             public boolean hasNext() {
@@ -192,30 +195,30 @@ public class XMLParser {
     public static Nodes extractNodesByXpath(String xpath, Node node, NumberOfNodes expectedNumberOfNodes) throws MissingNodeException, OverissueNodeException, NotOneNodeException {
         Nodes nodes = node.query(xpath);
         switch (expectedNumberOfNodes) {
-        case ARBITRARY: {
-            break;
-        }
-        case AT_LEAST_ONE: {
-            if (nodes.size() < 1) {
-                throw new MissingNodeException(xpath, node);
+            case ARBITRARY: {
+                break;
             }
-            break;
+            case AT_LEAST_ONE: {
+                if (nodes.size() < 1) {
+                    throw new MissingNodeException(xpath, node);
+                }
+                break;
 
-        }
-        case AT_MOST_ONE: {
-            if (nodes.size() > 1) {
-                throw new OverissueNodeException(xpath, nodes, node);
             }
-            break;
-        }
-        case EXACT_ONE: {
-            if (nodes.size() != 1) {
-                throw new NotOneNodeException(xpath, nodes, node);
+            case AT_MOST_ONE: {
+                if (nodes.size() > 1) {
+                    throw new OverissueNodeException(xpath, nodes, node);
+                }
+                break;
             }
-            break;
-        }
-        default:
-            throw new AssertionError("Found not handled value[" + expectedNumberOfNodes.name() + "]!");
+            case EXACT_ONE: {
+                if (nodes.size() != 1) {
+                    throw new NotOneNodeException(xpath, nodes, node);
+                }
+                break;
+            }
+            default:
+                throw new AssertionError("Found not handled value[" + expectedNumberOfNodes.name() + "]!");
         }
         return nodes;
     }
@@ -241,7 +244,6 @@ public class XMLParser {
         }
 
         if (throwException) {
-            logger.error("Expected " + expectedNumberOfNodes + " to be found with xPath " + xpath + ", found " + nodes.size());
             throw new XMLParsingException("Expected " + expectedNumberOfNodes + " to be found with xPath " + xpath + ", found " + nodes.size());
         }
         return nodes;
@@ -355,17 +357,15 @@ public class XMLParser {
      * @param doc
      * @return
      */
-    public static String serialize(Node doc) {
+    public static String serialize(Node doc) throws CouldNotProcessException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         Serializer ser = new Serializer(outStream);
         ser.setIndent(3);
         try {
             ser.write(doc.getDocument());
             return outStream.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            logger.error("Couldn't transform doc to prettyXMLString. Returning old document.");
-            return doc.toXML();
+        } catch (IOException ex) {
+            throw new CouldNotProcessException("Couldn't transform doc to prettyXMLString. Returning old document.", ex);
         }
     }
 
@@ -375,13 +375,11 @@ public class XMLParser {
      * @param doc
      * @return
      */
-    public static Node normalizeFormatting(Node doc) {
+    public static Node normalizeFormatting(Node doc) throws CouldNotProcessException {
         try {
             return createDocumentFromString(normalizeFormattingAsString(doc));
-        } catch (XMLParsingException e) {
-            e.printStackTrace();
-            logger.error("Couldn't normalize formatting. Returning old document.");
-            return doc;
+        } catch (XMLParsingException ex) {
+            throw new CouldNotProcessException("Couldn't normalize formatting. Returning old document.", ex);
         }
     }
 
@@ -390,10 +388,8 @@ public class XMLParser {
         try {
             doc = skipNlTabWs(doc);
             return serialize(doc);
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Couldn't normalize formatting. Returning old document.");
-            return copy.toXML();
+        } catch (Exception ex) {
+            throw new CouldNotProcessException("Couldn't normalize formatting. Returning old document.", ex);
         }
     }
 
@@ -424,7 +420,7 @@ public class XMLParser {
      * @param oldDoc
      * @return
      */
-    public static Node skipNlTabWs(Node oldDoc) {
+    public static Node skipNlTabWs(Node oldDoc) throws CouldNotProcessException {
         Node copy = oldDoc.copy();
         try {
             String oldString = oldDoc.toXML();
@@ -432,18 +428,15 @@ public class XMLParser {
             newString = newString.replace("\t", "");
             newString = newString.trim();
             return createDocumentFromString(newString);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            logger.error("Couldn't skipNlTabWs. Returning old document.");
-            return copy;
+        } catch (Exception ex) {
+            throw new CouldNotProcessException("Couldn't skipNlTabWs. Returning old document.", ex);
         }
     }
 
-    protected Element getElementFromXPath(String xPath, Document document) {
+    protected Element getElementFromXPath(String xPath, Document document) throws VerificationFailedException {
         Nodes regNodes = document.query(xPath);
         if (regNodes.size() != 1) {
-            logger.error("Invalide data from XPath[" + xPath + "]!");
-            return null;
+            throw new VerificationFailedException("Invalide data from XPath[" + xPath + "]!");
         }
         return (Element) regNodes.get(0);
     }
@@ -453,18 +446,15 @@ public class XMLParser {
      * @param xPath
      * @param document
      * @return
-     * @deprecated realy bad implementation!
      */
-    @Deprecated
     protected static Iterator<Element> getElementsFromXPath(String xPath, Document document) {
         Nodes regNodes = document.query(xPath);
-
         List<Element> elements = new ArrayList<>();
         for (int i = 0; i < regNodes.size(); i++) {
             try {
                 elements.add((Element) regNodes.get(i));
             } catch (ClassCastException e) {
-                logger.error("Invalide data from XPath[" + xPath + "]!", e);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Invalide data from XPath[" + xPath + "]!", e), logger);
             }
         }
         return elements.iterator();
@@ -473,7 +463,7 @@ public class XMLParser {
     public static boolean parseBooleanElementValue(String elementName, Element sourceElement) {
         try {
             return Boolean.parseBoolean(XMLParser.parseOneChildElement(elementName, sourceElement).getValue());
-        } catch (Exception ex) {
+        } catch (MissingElementException | OverissueElementException ex) {
             return false;
         }
     }

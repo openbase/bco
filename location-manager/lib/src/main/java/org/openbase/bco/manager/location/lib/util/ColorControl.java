@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSVColorType.HSVColor;
@@ -77,7 +78,7 @@ public class ColorControl {
     
     public Future<HSVColor> execute(final HSVColor color) throws InterruptedException, CouldNotPerformException {
 
-        return Executors.newSingleThreadExecutor().submit(new Callable<HSVColor>() {
+        return GlobalExecutionService.submit(new Callable<HSVColor>() {
 
             @Override
             public HSVColor call() throws Exception {

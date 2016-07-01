@@ -42,6 +42,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceRegistryType;
@@ -79,14 +80,11 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
     private boolean init = false;
 
-    private final ExecutorService serviceExecuterService;
-
     /**
      * Creates new form SceneSelectorPanel
      *
      */
     public SceneSelectorPanel() {
-        this.serviceExecuterService = Executors.newSingleThreadExecutor();
         this.unitConfigServiceTypeObservable = new ObservableImpl<>();
         this.initComponents();
         this.setEnable(false);
