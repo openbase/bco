@@ -66,7 +66,6 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
      */
     public AbstractServicePanel() throws InstantiationException {
         try {
-            this.serviceExecuterService = Executors.newSingleThreadScheduledExecutor();
             this.observer = (Observer) (Observable source, Object data) -> {
                 updateDynamicComponents();
             };

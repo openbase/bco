@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.unit.PowerConsumptionSensorType;
@@ -61,7 +62,6 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
 
     protected static final Logger logger = LoggerFactory.getLogger(DalKNXActuatorCheck.class);
 
-    private ExecutorService executerService;
     private TriggerFilter verifyConsumptionTrigger;
 
     /**
@@ -89,7 +89,6 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
 
             colorPanel.setBackground(Color.BLUE);
             stateLabel.setText("Loading Remotes");
-            executerService = Executors.newSingleThreadExecutor();
 
             genericUnitCollectionPanel.init();
 
@@ -121,7 +120,7 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
     }
 
     private synchronized void verifyConsumption() {
-        Future<Void> future = executerService.submit(
+        Future<Void> future = GlobalExecutionService.submit(
                 new Callable<Void>() {
 
                     @Override

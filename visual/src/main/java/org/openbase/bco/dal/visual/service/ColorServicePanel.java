@@ -74,7 +74,7 @@ public class ColorServicePanel extends AbstractServicePanel<ColorOperationServic
         try {
             colorPreviewPanel.setBackground(HSVColorToRGBColorTransformer.transform(getService().getColor()));
         } catch (CouldNotPerformException ex) {
-            logger.error("Could not update color value!", ex);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update color value!", ex), logger);
         }
     }
 

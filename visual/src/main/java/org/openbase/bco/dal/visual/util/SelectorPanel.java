@@ -45,6 +45,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceRegistryType;
@@ -79,7 +80,6 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private boolean init = false;
 
-    private ExecutorService executorService;
     private Future currentTask;
 
     /**
@@ -89,7 +89,6 @@ public class SelectorPanel extends javax.swing.JPanel {
      */
     public SelectorPanel() throws InstantiationException {
         try {
-            this.executorService = Executors.newCachedThreadPool();
             this.unitConfigObservable = new ObservableImpl<>();
             this.initComponents();
             this.setEnable(false);
@@ -313,7 +312,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     }
 
     private synchronized Future executeSingleTask(final Callable task) throws CouldNotPerformException, InterruptedException {
-        return executorService.submit(task);
+        return GlobalExecutionService.submit(task);
 //        if(currentTask != null) {
 //            currentTask.cancel(true);
 //        }

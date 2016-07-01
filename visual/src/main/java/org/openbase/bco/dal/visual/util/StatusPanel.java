@@ -27,10 +27,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.Timer;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,13 +123,16 @@ public class StatusPanel extends javax.swing.JPanel {
         cancelButton.setEnabled(true);
         progressBar.setIndeterminate(true);
         setText(text, type);
-        Executors.newSingleThreadExecutor().execute(() -> {
+        GlobalExecutionService.execute(() -> {
             try {
                 future.get();
                 reset();
             } catch (CancellationException ex) {
                 setStatus("Canceled by user!", StatusType.WARN, 1);
-            } catch (ExecutionException | InterruptedException ex) {
+            } catch (InterruptedException ex) {
+                setError(ex);
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException ex) {
                 setError(ex);
             }
             cancelButton.setEnabled(false);

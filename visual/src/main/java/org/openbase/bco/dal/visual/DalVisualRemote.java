@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
      * Creates new form DalVisualRemote
      *
      * @throws org.openbase.jul.exception.InstantiationException
+     * @throws java.lang.InterruptedException
      */
     public DalVisualRemote() throws InstantiationException, InterruptedException {
         try {
@@ -65,7 +67,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
 
             selectorPanel.addObserver(genericUnitPanel.getUnitConfigObserver());
             init();
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -83,15 +85,11 @@ public class DalVisualRemote extends javax.swing.JFrame {
     }
 
     public final void init() throws InterruptedException, CouldNotPerformException {
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    selectorPanel.init();
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
+        GlobalExecutionService.execute(() -> {
+            try {
+                selectorPanel.init();
+            } catch (InterruptedException | CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger);
             }
         });
     }
