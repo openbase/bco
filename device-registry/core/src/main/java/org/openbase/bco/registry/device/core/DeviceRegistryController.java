@@ -44,6 +44,7 @@ import org.openbase.bco.registry.device.core.consistency.UnitConfigUnitTemplateC
 import org.openbase.bco.registry.device.core.consistency.UnitGroupMemberExistsConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitGroupMemberListDuplicationConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitGroupMemberListTypesConsistencyHandler;
+import org.openbase.bco.registry.device.core.consistency.UnitGroupScopeConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitGroupUnitTypeConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitLabelConsistencyHandler;
@@ -180,6 +181,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberExistsConsistencyHandler(deviceConfigRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(deviceConfigRegistry, unitTemplateRegistry));
+            unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationRegistryRemote));
 
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 notifyChange();
