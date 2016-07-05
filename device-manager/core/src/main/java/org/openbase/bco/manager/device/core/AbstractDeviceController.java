@@ -21,7 +21,7 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.AbstractUnitCollectionController;
+import org.openbase.bco.dal.lib.layer.unit.AbstractSystemUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -37,7 +37,7 @@ import rst.homeautomation.device.GenericDeviceType.GenericDevice;
  *
  * @author Divine Threepwood
  */
-public abstract class AbstractDeviceController extends AbstractUnitCollectionController<GenericDevice, GenericDevice.Builder, DeviceConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractSystemUnitController<GenericDevice, GenericDevice.Builder, DeviceConfig> implements DeviceController {
 
     public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
         super(GenericDevice.newBuilder());
@@ -120,7 +120,7 @@ public abstract class AbstractDeviceController extends AbstractUnitCollectionCon
 
     @Override
     public DeviceConfig applyConfigUpdate(DeviceConfig config) throws CouldNotPerformException, InterruptedException {
-        //TODO: which changes need to be applied here and in the AbstractUnitCollectionController?
+        //TODO: which changes need to be applied here and in the AbstractSystemUnitController?
 
         return super.applyConfigUpdate(config); //To change body of generated methods, choose Tools | Templates.
     }
