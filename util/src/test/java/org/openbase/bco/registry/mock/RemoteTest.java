@@ -77,23 +77,23 @@ public class RemoteTest {
         DeviceRegistryRemote deviceRemoteAlwaysOn = new DeviceRegistryRemote();
         deviceRemoteAlwaysOn.init();
         deviceRemoteAlwaysOn.activate();
-        deviceRemoteAlwaysOn.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        deviceRemoteAlwaysOn.waitForConnectionState(Remote.ConnectionState.CONNECTED);
 
         DeviceRegistryRemote deviceRemoteToggle = new DeviceRegistryRemote();
         deviceRemoteToggle.init();
         deviceRemoteToggle.activate();
-        deviceRemoteToggle.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);
 
         int testNumber = 100;
         for (int i = 0; i < testNumber; ++i) {
             deviceRemoteToggle.shutdown();
-            deviceRemoteToggle.waitForConnectionState(Remote.RemoteConnectionState.DISCONNECTED);
+            deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.DISCONNECTED);
 
-            assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", Remote.RemoteConnectionState.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());
+            assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", Remote.ConnectionState.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());
             deviceRemoteAlwaysOn.requestData().get();
             
             deviceRemoteToggle.activate();
-            deviceRemoteToggle.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+            deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         }
 
         deviceRemoteAlwaysOn.shutdown();

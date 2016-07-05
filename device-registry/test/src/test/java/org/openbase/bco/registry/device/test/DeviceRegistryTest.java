@@ -540,7 +540,7 @@ public class DeviceRegistryTest {
         DeviceConfig.Builder deviceConfigRemoteMessage;
         deviceClassRemoteMessage = DeviceClass.newBuilder().setLabel("RemoteTestDeviceClass").setProductNumber("ABR-132").setCompany("DreamCom");
         deviceClassRemoteMessage = deviceRegistryRemote.registerDeviceClass(deviceClassRemoteMessage.build()).get().toBuilder();
-        deviceRegistryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        deviceRegistryRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         while (true) {
             try {
                 if (deviceRegistryRemote.containsDeviceClass(deviceClassRemoteMessage.clone().build())) {
@@ -571,7 +571,7 @@ public class DeviceRegistryTest {
     public void testGetReadOnlyFlag() throws Exception {
         System.out.println("testGetReadOnlyFlag");
         System.out.println("remote state: " + deviceRegistryRemote.getConnectionState().name());
-        deviceRegistryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        deviceRegistryRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         assertEquals(Boolean.FALSE, deviceRegistryRemote.isDeviceClassRegistryReadOnly());
         assertEquals(Boolean.FALSE, deviceRegistryRemote.isDeviceConfigRegistryReadOnly());
         assertEquals(Boolean.FALSE, deviceRegistryRemote.isUnitTemplateRegistryReadOnly());
