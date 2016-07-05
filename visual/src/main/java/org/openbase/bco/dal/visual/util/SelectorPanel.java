@@ -21,18 +21,16 @@ package org.openbase.bco.dal.visual.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
@@ -131,7 +129,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         statusPanel.setStatus("Wait for location registry data...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.waitForData();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
-        
+
         // register change observer
         deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
             updateDynamicComponents();
@@ -316,14 +314,13 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    private synchronized Future executeSingleTask(final Callable task) throws CouldNotPerformException, InterruptedException {
-        return GlobalExecutionService.submit(task);
-//        if(currentTask != null) {
-//            currentTask.cancel(true);
-//        }
-//
-//        currentTask = executorService.submit(task);
-//        return currentTask;
+    private synchronized Future executeSingleTask(final Callable task) throws CouldNotPerformException {
+        if (currentTask != null) {
+            currentTask.cancel(true);
+        }
+
+        currentTask = GlobalExecutionService.submit(task);
+        return currentTask;
     }
 
     /**
@@ -609,9 +606,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private void scopeApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeApplyButtonActionPerformed
         try {
-
             statusPanel.setStatus("Load new remote control " + scopeTextField.getText().toLowerCase() + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
-
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -625,11 +620,10 @@ public class SelectorPanel extends javax.swing.JPanel {
                         statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
                     }
                     return null;
-
                 }
             }));
             updateButtonStates();
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException | NullPointerException ex) {
             statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not load new remote!", ex), logger));
         }
     }//GEN-LAST:event_scopeApplyButtonActionPerformed
@@ -670,7 +664,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         try {
             detectUnitTypeOutOfScope(ScopeTransformer.transform(new rsb.Scope(text)));
             validScope = true;
-        } catch (Exception ex) {
+        } catch (CouldNotTransformException | NotAvailableException | NullPointerException ex) {
             validScope = false;
         }
 
@@ -719,7 +713,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
 
-        private LocationConfig config;
+        private final LocationConfig config;
 
         public LocationConfigHolder(LocationConfig config) {
             this.config = config;
@@ -752,7 +746,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private static class UnitTypeHolder implements Comparable<UnitTypeHolder> {
 
-        private UnitType type;
+        private final UnitType type;
 
         public UnitTypeHolder(UnitType type) {
             this.type = type;
@@ -785,7 +779,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private static class ServiceTypeHolder implements Comparable<ServiceTypeHolder> {
 
-        private ServiceType type;
+        private final ServiceType type;
 
         public ServiceTypeHolder(ServiceType type) {
             this.type = type;

@@ -35,6 +35,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -54,7 +55,6 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     private UnitRemote unitRemote;
     private final Observer observer;
     protected StatusPanel statusPanel;
-    private ScheduledExecutorService serviceExecuterService;
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
     private ServiceTemplateType.ServiceTemplate.ServiceType serviceType;
@@ -84,7 +84,7 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
                                 }
                             }
                             try {
-                                statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, serviceExecuterService.submit(lastCallable));
+                                statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, GlobalExecutionService.submit(lastCallable));
                             } catch (NotAvailableException ex) {
                                 ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
                             }
