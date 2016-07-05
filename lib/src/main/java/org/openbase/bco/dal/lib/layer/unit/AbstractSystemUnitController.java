@@ -53,11 +53,11 @@ import rst.homeautomation.unit.UnitConfigType;
  * @param <MB> Message related builder.
  * @param <CONFIG>
  */
-public abstract class AbstractUnitCollectionController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements Identifiable<String>, UnitHost {
+public abstract class AbstractSystemUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements Identifiable<String>, UnitHost {
 
     private final Map<String, AbstractUnitController> unitMap;
 
-    public AbstractUnitCollectionController(final MB builder) throws InstantiationException {
+    public AbstractSystemUnitController(final MB builder) throws InstantiationException {
         super(builder);
         this.unitMap = new HashMap<>();
     }
