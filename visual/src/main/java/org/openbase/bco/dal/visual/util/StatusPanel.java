@@ -24,7 +24,6 @@ package org.openbase.bco.dal.visual.util;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -55,12 +54,8 @@ public class StatusPanel extends javax.swing.JPanel {
      */
     public StatusPanel() {
         initComponents();
-        this.timer = new Timer(0, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                reset();
-            }
+        this.timer = new Timer(0, (ActionEvent e) -> {
+            reset();
         });
         timer.setRepeats(false);
         instance = this;
@@ -137,7 +132,6 @@ public class StatusPanel extends javax.swing.JPanel {
             }
             cancelButton.setEnabled(false);
         });
-
     }
 
     private void setText(final String text, StatusType type) {

@@ -23,9 +23,7 @@ package org.openbase.bco.dal.visual;
  */
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
-import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -78,10 +76,6 @@ public class DalVisualRemote extends javax.swing.JFrame {
         } catch(Exception ex) {
             logger.warn("Could not load app icon!", ex);
         }
-    }
-
-    public StatusPanel getStatusPanel() {
-        return statusPanel;
     }
 
     public final void init() throws InterruptedException, CouldNotPerformException {

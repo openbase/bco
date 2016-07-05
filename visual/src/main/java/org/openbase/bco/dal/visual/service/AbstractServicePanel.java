@@ -30,11 +30,10 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,8 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     private S service;
     private ServiceConfig serviceConfig;
     private UnitRemote unitRemote;
-    private final Observer observer;
+    private final Observer<Object> dataObserver;
+    private final Observer<ConnectionState> connectionStateObserver;
     protected StatusPanel statusPanel;
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
@@ -66,33 +66,32 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
      */
     public AbstractServicePanel() throws InstantiationException {
         try {
-            this.observer = (Observer) (Observable source, Object data) -> {
+            this.dataObserver = (Observer) (Observable source, Object data) -> {
                 updateDynamicComponents();
             };
+            this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
+                setEnabled(connectionState.equals(ConnectionState.CONNECTED));
+            };
             this.statusPanel = StatusPanel.getInstance();
-            new Thread() {
-
-                @Override
-                public void run() {
-                    while (!isInterrupted()) {
-                        synchronized (executerSync) {
-                            if (lastCallable == null) {
-                                try {
-                                    executerSync.wait();
-                                } catch (InterruptedException ex) {
-                                    break;
-                                }
-                            }
+            GlobalExecutionService.submit(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    synchronized (executerSync) {
+                        if (lastCallable == null) {
                             try {
-                                statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, GlobalExecutionService.submit(lastCallable));
-                            } catch (NotAvailableException ex) {
-                                ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                                executerSync.wait();
+                            } catch (InterruptedException ex) {
+                                break;
                             }
-                            lastCallable = null;
                         }
+                        try {
+                            statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, GlobalExecutionService.submit(lastCallable));
+                        } catch (NotAvailableException ex) {
+                            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                        }
+                        lastCallable = null;
                     }
                 }
-            }.start();
+            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -112,19 +111,6 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
             lastCallable = callable;
             executerSync.notifyAll();
         }
-
-//        try {
-////            try {
-//            if (serviceExecuterService.isTerminated()) {
-//                lastCallable = null;
-//                statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, serviceExecuterService.submit(callable));
-//            } else {
-//                lastCallable = callable;
-//            }
-////            } catch (InterruptedException ex) {
-////
-////            }
-//       
     }
 
     public S getService() throws NotAvailableException {
@@ -150,15 +136,22 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         this.serviceType = serviceType;
     }
 
-    public void initService(ServiceConfig serviceConfig, S service, UnitRemote unitRemote) {
-        if (this.unitRemote != null) {
-            unitRemote.removeDataObserver(observer);
+    public void initService(ServiceConfig serviceConfig, S service, UnitRemote unitRemote) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (this.unitRemote != null) {
+                unitRemote.removeDataObserver(dataObserver);
+                unitRemote.removeConnectionStateObserver(connectionStateObserver);
+            }
+            this.unitRemote = unitRemote;
+            this.service = service;
+            this.serviceConfig = serviceConfig;
+            unitRemote.addDataObserver(dataObserver);
+            unitRemote.addConnectionStateObserver(connectionStateObserver);
+            unitRemote.waitForData();
+            updateDynamicComponents();
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(unitRemote.getClass(), ex);
         }
-        this.unitRemote = unitRemote;
-        this.service = service;
-        this.serviceConfig = serviceConfig;
-        unitRemote.addDataObserver(observer);
-        updateDynamicComponents();
     }
 
     protected abstract void updateDynamicComponents();

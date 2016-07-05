@@ -22,11 +22,13 @@ package org.openbase.bco.dal.visual.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.util.RSBRemoteView;
@@ -36,6 +38,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.visual.layout.LayoutGenerator;
 import org.slf4j.Logger;
@@ -53,6 +56,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Observer<UnitConfig> unitConfigObserver;
+    private final Observer<ConnectionState> connectionStateObserver;
     private boolean autoRemove;
     private List<JComponent> componentList;
 
@@ -64,10 +68,27 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
         this.unitConfigObserver = (Observable<UnitConfig> source, UnitConfig data) -> {
             updateUnitConfig(data);
         };
+        this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
+            TitledBorder titledBorder = javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + ":" + getRemoteService().getId());
+            switch (connectionState) {
+                case CONNECTED:
+                    titledBorder.setTitleColor(Color.yellow);
+                    break;
+                case CONNECTING:
+                    titledBorder.setTitleColor(Color.yellow);
+                    break;
+                case DISCONNECTED:
+                    titledBorder.setTitleColor(Color.yellow);
+                    break;
+                case UNKNOWN:
+                    titledBorder.setTitleColor(Color.yellow);
+                    break;
+            }
+            setBorder(titledBorder);
+        };
         initComponents();
         autoRemove = true;
         componentList = new ArrayList<>();
-        
     }
 
     public void setAutoRemove(boolean autoRemove) {
@@ -118,8 +139,6 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
                 + " of " + unitConfig.getDeviceId()
                 + " : " + unitConfig.getDescription();
 
-        setBorder(BorderFactory.createTitledBorder("Remote Control - " + remoteLabel));
-
         LayoutGenerator.designList(contextPanel, componentList);
         contextPanel.validate();
         contextPanel.revalidate();
@@ -145,12 +164,12 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
         }
     }
 
-    private AbstractServicePanel instantiatServicePanel(final ServiceConfig serviceConfig, Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException {
+    private AbstractServicePanel instantiatServicePanel(final ServiceConfig serviceConfig, Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             AbstractServicePanel instance = servicePanelClass.newInstance();
             instance.initService(serviceConfig, unitRemote, unitRemote);
             return instance;
-        } catch (NullPointerException | InstantiationException | IllegalAccessException ex) {
+        } catch (NullPointerException | InstantiationException | CouldNotPerformException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);
         }
     }
