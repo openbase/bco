@@ -74,7 +74,7 @@ public class BatteryRemoteTest {
         batteryRemote = new BatteryRemote();
         batteryRemote.initByLabel(label);
         batteryRemote.activate();
-        batteryRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        batteryRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

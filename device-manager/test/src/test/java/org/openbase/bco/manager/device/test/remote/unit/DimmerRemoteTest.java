@@ -70,7 +70,7 @@ public class DimmerRemoteTest {
         dimmerRemote = new DimmerRemote();
         dimmerRemote.initByLabel(MockRegistry.DIMMER_LABEL);
         dimmerRemote.activate();
-        dimmerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        dimmerRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

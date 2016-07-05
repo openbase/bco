@@ -74,7 +74,7 @@ public class PowerPlugRemoteTest {
         powerPlugRemote = new PowerPlugRemote();
         powerPlugRemote.initByLabel(label);
         powerPlugRemote.activate();
-        powerPlugRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        powerPlugRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

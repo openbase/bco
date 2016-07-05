@@ -78,7 +78,7 @@ public class AmbientLightRemoteTest {
         ambientLightRemote = new AmbientLightRemote();
         ambientLightRemote.initByLabel(label);
         ambientLightRemote.activate();
-        ambientLightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        ambientLightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

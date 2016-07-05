@@ -78,10 +78,13 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     public void init() throws CouldNotPerformException, InterruptedException {
         sceneRegistryRemote = new SceneRegistryRemote();
         sceneRegistryRemote.init();
+        StatusPanel.getInstance().setStatus("Wait for scene manager connection...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
         sceneRegistryRemote.activate();
+        StatusPanel.getInstance().setStatus("Wait for scene manager data...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
+        sceneRegistryRemote.waitForData();
+        StatusPanel.getInstance().setStatus("Scene registry loaded.", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
         initDynamicComponents();
         updateDynamicComponents();
-        StatusPanel.getInstance().setStatus("Wait for scene manager connection...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
     }
 
     private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {

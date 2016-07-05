@@ -126,7 +126,7 @@ public class SceneRemoteTest {
         SceneRemote sceneRemote = new SceneRemote();
         sceneRemote.init(config);
         sceneRemote.activate();
-        sceneRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        sceneRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         System.out.println("SceneRemote for scene [" + config.getLabel() + "] connected");
 
         sceneRemote.setActivationState(ActivationStateType.ActivationState.State.ACTIVE).get();

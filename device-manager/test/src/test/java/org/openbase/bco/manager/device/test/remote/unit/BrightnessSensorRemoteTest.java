@@ -72,7 +72,7 @@ public class BrightnessSensorRemoteTest {
         brightnessSensorRemote = new BrightnessSensorRemote();
         brightnessSensorRemote.initByLabel(label);
         brightnessSensorRemote.activate();
-        brightnessSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        brightnessSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

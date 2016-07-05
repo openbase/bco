@@ -73,7 +73,7 @@ public class ReedSwitchRemoteTest {
         reedSwitchRemote = new ReedSwitchRemote();
         reedSwitchRemote.initByLabel(label);
         reedSwitchRemote.activate();
-        reedSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        reedSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

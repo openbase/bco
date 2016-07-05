@@ -70,7 +70,7 @@ public class HandleSensorRemoteTest {
         handleSensorRemote = new HandleSensorRemote();
         handleSensorRemote.initByLabel(MockRegistry.HANDLE_SENSOR_LABEL);
         handleSensorRemote.activate();
-        handleSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        handleSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

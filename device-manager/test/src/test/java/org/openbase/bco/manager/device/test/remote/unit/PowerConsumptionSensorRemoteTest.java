@@ -73,7 +73,7 @@ public class PowerConsumptionSensorRemoteTest {
         powerConsumptionRemote = new PowerConsumptionSensorRemote();
         powerConsumptionRemote.initByLabel(label);
         powerConsumptionRemote.activate();
-        powerConsumptionRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        powerConsumptionRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

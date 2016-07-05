@@ -74,7 +74,7 @@ public class SmokeDetectorRemoteTest {
         smokeDetectorRemote = new SmokeDetectorRemote();
         smokeDetectorRemote.initByLabel(label);
         smokeDetectorRemote.activate();
-        smokeDetectorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        smokeDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
     
     @AfterClass

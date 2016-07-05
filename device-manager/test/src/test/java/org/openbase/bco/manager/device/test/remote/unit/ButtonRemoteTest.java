@@ -73,7 +73,7 @@ public class ButtonRemoteTest {
         buttonRemote = new ButtonRemote();
         buttonRemote.initByLabel(label);
         buttonRemote.activate();
-        buttonRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        buttonRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

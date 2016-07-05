@@ -73,7 +73,7 @@ public class MotionSensorRemoteTest {
         motionSensorRemote = new MotionSensorRemote();
         motionSensorRemote.initByLabel(label);
         motionSensorRemote.activate();
-        motionSensorRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        motionSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

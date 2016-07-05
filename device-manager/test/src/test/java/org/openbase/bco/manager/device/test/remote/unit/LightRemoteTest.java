@@ -72,7 +72,7 @@ public class LightRemoteTest {
         lightRemote = new LightRemote();
         lightRemote.initByLabel(label);
         lightRemote.activate();
-        lightRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

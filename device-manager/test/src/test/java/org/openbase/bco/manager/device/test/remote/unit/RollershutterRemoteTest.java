@@ -73,7 +73,7 @@ public class RollershutterRemoteTest {
         rollershutterRemote = new RollershutterRemote();
         rollershutterRemote.initByLabel(label);
         rollershutterRemote.activate();
-        rollershutterRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        rollershutterRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

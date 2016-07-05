@@ -73,7 +73,7 @@ public class TemperatureControllerRemoteTest {
         temperatureControllerRemote = new TemperatureControllerRemote();
         temperatureControllerRemote.initByLabel(label);
         temperatureControllerRemote.activate();
-        temperatureControllerRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        temperatureControllerRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass

@@ -73,7 +73,7 @@ public class TamperSwitchRemoteTest {
         tamperSwitchRemote = new TamperSwitchRemote();
         tamperSwitchRemote.initByLabel(label);
         tamperSwitchRemote.activate();
-        tamperSwitchRemote.waitForConnectionState(Remote.RemoteConnectionState.CONNECTED);
+        tamperSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
