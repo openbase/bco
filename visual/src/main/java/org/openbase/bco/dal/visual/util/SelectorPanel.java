@@ -125,8 +125,13 @@ public class SelectorPanel extends javax.swing.JPanel {
         deviceRegistryRemote.activate();
         statusPanel.setStatus("Connecting to location manager...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.activate();
-        statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
+        statusPanel.setStatus("Wait for device registry data...", StatusPanel.StatusType.INFO, true);
+        deviceRegistryRemote.waitForData();
+        statusPanel.setStatus("Wait for location registry data...", StatusPanel.StatusType.INFO, true);
+        locationRegistryRemote.waitForData();
+        statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
+        
         // register change observer
         deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) -> {
             updateDynamicComponents();
