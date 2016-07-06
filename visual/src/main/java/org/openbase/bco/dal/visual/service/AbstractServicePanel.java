@@ -21,20 +21,20 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.awt.Component;
+import java.awt.Container;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
-import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import javax.swing.JComponent;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Remote.ConnectionState;
-import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -58,6 +58,8 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     private final SyncObject executerSync = new SyncObject("ExecuterSync");
     private String unitId = "";
     private ServiceTemplateType.ServiceTemplate.ServiceType serviceType;
+    private Future lastActionFuture;
+//    private final RecurrenceEventFilter<Future> recurrenceActionFilter;
 
     /**
      * Creates new form AbstractServiceView
@@ -66,34 +68,53 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
      */
     public AbstractServicePanel() throws InstantiationException {
         try {
+            this.statusPanel = StatusPanel.getInstance();
+//            this.recurrenceActionFilter = new RecurrenceEventFilter<Future>() {
+//
+//                @Override
+//                public void relay() throws Exception {
+//
+//                }
+//            };
             this.dataObserver = (Observer) (Observable source, Object data) -> {
                 updateDynamicComponents();
             };
             this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
-                setEnabled(connectionState.equals(ConnectionState.CONNECTED));
+                enableComponents(this, connectionState.equals(ConnectionState.CONNECTED));
+                System.out.println("enable: " + connectionState.equals(ConnectionState.CONNECTED));
             };
-            this.statusPanel = StatusPanel.getInstance();
-            GlobalExecutionService.submit(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                    synchronized (executerSync) {
-                        if (lastCallable == null) {
-                            try {
-                                executerSync.wait();
-                            } catch (InterruptedException ex) {
-                                break;
-                            }
-                        }
-                        try {
-                            statusPanel.setStatus("Apply " + getService() + " update.", StatusPanel.StatusType.INFO, GlobalExecutionService.submit(lastCallable));
-                        } catch (NotAvailableException ex) {
-                            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-                        }
-                        lastCallable = null;
-                    }
-                }
-            });
+//            GlobalExecutionService.submit(() -> {
+//                while (!Thread.currentThread().isInterrupted()) {
+//                    synchronized (executerSync) {
+//                        if (lastCallable == null) {
+//                            try {
+//                                executerSync.wait();
+//                            } catch (InterruptedException ex) {
+//                                break;
+//                            }
+//                        }
+//                        try {
+//
+//                        } catch (NotAvailableException ex) {
+//                            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+//                        }
+//                        lastCallable = null;
+//                    }
+//                }
+//            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
+        }
+    }
+
+    public final void enableComponents(JComponent component, boolean enable) {
+        synchronized (getTreeLock()) {
+            for (Component childComponent : component.getComponents()) {
+                childComponent.setEnabled(enable);
+                if (childComponent instanceof JComponent) {
+                    enableComponents((JComponent) childComponent, enable);
+                }
+            }
         }
     }
 
@@ -104,13 +125,12 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         return serviceConfig.getType().name();
     }
 
-    private Callable<Void> lastCallable;
-
-    public void execute(Callable<Void> callable) {
-        synchronized (executerSync) {
-            lastCallable = callable;
-            executerSync.notifyAll();
+    public synchronized void notifyActionProcessing(final Future future) {
+        if (lastActionFuture != null && lastActionFuture.isDone()) {
+            lastActionFuture.cancel(true);
         }
+        statusPanel.setStatus("Process " + getServiceName() + " action.", StatusPanel.StatusType.INFO, future);
+        lastActionFuture = future;
     }
 
     public S getService() throws NotAvailableException {

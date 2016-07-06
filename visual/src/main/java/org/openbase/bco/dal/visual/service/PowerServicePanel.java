@@ -104,28 +104,21 @@ public class PowerServicePanel extends AbstractServicePanel<PowerOperationServic
     }// </editor-fold>//GEN-END:initComponents
 
     private void powerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
-        execute(new Callable<Void>() {
-
-            @Override
-            public Void call() throws Exception {
-                try {
-                    switch (getService().getPower().getValue()) {
-                        case ON:
-                            getService().setPower(OFF);
-                            break;
-                        case OFF:
-                        case UNKNOWN:
-                            getService().setPower(ON);
-                            break;
-                        default:
-                            throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");
-                    }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set power state!", ex), logger);
-                }
-                return null;
+        try {
+            switch (getService().getPower().getValue()) {
+            case ON:
+                notifyActionProcessing(getService().setPower(OFF));
+                break;
+            case OFF:
+            case UNKNOWN:
+                notifyActionProcessing(getService().setPower(ON));
+                break;
+            default:
+                throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");
             }
-        });
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set power state!", ex), logger);
+        }
     }//GEN-LAST:event_powerButtonActionPerformed
 
 
@@ -140,23 +133,23 @@ public class PowerServicePanel extends AbstractServicePanel<PowerOperationServic
         try {
             System.out.println("state: " + getService().getPower().getValue().name());
             switch (getService().getPower().getValue()) {
-                case ON:
-                    powerStatusLabel.setForeground(Color.BLACK);
-                    powerStatePanel.setBackground(Color.GREEN.darker());
-                    powerButton.setText("Switch Off");
-                    break;
-                case OFF:
-                    powerStatusLabel.setForeground(Color.LIGHT_GRAY);
-                    powerStatePanel.setBackground(Color.GRAY.darker());
-                    powerButton.setText("Switch On");
-                    break;
-                case UNKNOWN:
-                    powerStatusLabel.setForeground(Color.BLACK);
-                    powerStatePanel.setBackground(Color.ORANGE.darker());
-                    powerButton.setText("Switch Off");
-                    break;
-                default:
-                    throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");
+            case ON:
+                powerStatusLabel.setForeground(Color.BLACK);
+                powerStatePanel.setBackground(Color.GREEN.darker());
+                powerButton.setText("Switch Off");
+                break;
+            case OFF:
+                powerStatusLabel.setForeground(Color.LIGHT_GRAY);
+                powerStatePanel.setBackground(Color.GRAY.darker());
+                powerButton.setText("Switch On");
+                break;
+            case UNKNOWN:
+                powerStatusLabel.setForeground(Color.BLACK);
+                powerStatePanel.setBackground(Color.ORANGE.darker());
+                powerButton.setText("Switch Off");
+                break;
+            default:
+                throw new InvalidStateException("State[" + getService().getPower().getValue() + "] is unknown.");
             }
             powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getPower().getValue().name()));
         } catch (CouldNotPerformException ex) {

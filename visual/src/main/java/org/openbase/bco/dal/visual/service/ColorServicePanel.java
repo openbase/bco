@@ -52,21 +52,13 @@ public class ColorServicePanel extends AbstractServicePanel<ColorOperationServic
                 new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        execute(new Callable<Void>() {
-
-                            @Override
-                            public Void call() throws Exception {
-                                try {
-                                    getService().setColor(HSVColorToRGBColorTransformer.transform(colorChooser.getColor()));
-                                } catch (CouldNotPerformException ex) {
-                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
-                                }
-                                return null;
-                            }
-                        });
+                        try {
+                            notifyActionProcessing(getService().setColor(HSVColorToRGBColorTransformer.transform(colorChooser.getColor())));
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
+                        }
                     }
-                }
-        );
+                });
     }
 
     @Override

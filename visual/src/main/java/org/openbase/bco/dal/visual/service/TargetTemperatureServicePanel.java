@@ -21,7 +21,6 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -122,19 +121,13 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
     }// </editor-fold>//GEN-END:initComponents
 
     private void setTargetTemperatureValueTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setTargetTemperatureValueTextFieldActionPerformed
-        execute(new Callable<Void>() {
 
-            @Override
-            public Void call() throws Exception {
-                try {
-                    double value = Double.parseDouble(setTargetTemperatureValueTextField.getText());
-                    getService().setTargetTemperature(value);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger, LogLevel.ERROR);
-                }
-                return null;
-            }
-        });
+        try {
+            double value = Double.parseDouble(setTargetTemperatureValueTextField.getText());
+            notifyActionProcessing(getService().setTargetTemperature(value));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set target temperature!", ex), logger, LogLevel.ERROR);
+        }
     }//GEN-LAST:event_setTargetTemperatureValueTextFieldActionPerformed
 
     private void currentTargetTemperatureValueTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_currentTargetTemperatureValueTextFieldActionPerformed

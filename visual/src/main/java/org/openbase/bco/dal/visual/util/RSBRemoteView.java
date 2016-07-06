@@ -40,9 +40,9 @@ import rst.rsb.ScopeType.Scope;
 /**
  *
  * @author mpohling
+ * @param <RS>
  */
 public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
-//public abstract class RSBRemoteView<M extends GeneratedMessage, R extends AbstractIdentifiableRemote<M>> extends javax.swing.JPanel implements Observer<M> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -84,9 +84,6 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
         }
         return remoteService;
     }
-//    public M getData() throws CouldNotPerformException {
-//        return getRemoteService().getData();
-//    }
 
     public void setUnitRemote(final UnitTemplateType.UnitTemplate.UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitType + ".");
@@ -101,7 +98,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
         }
     }
 
-    public void setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+    public RS setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
             Class<? extends RS> remoteClass = loadUnitRemoteClass(unitConfig.getType());
@@ -109,6 +106,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             initUnitRemote(unitRemote, unitConfig);
             unitRemote.activate();
             setRemoteService(unitRemote);
+            return unitRemote;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);
         }

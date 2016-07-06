@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
@@ -612,8 +613,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     try {
                         scopeTextField.setForeground(Color.BLACK);
                         Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
-                        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setType(detectUnitTypeOutOfScope(scope));
-                        unitConfigObservable.notifyObservers(unitConfig.build());
+                        unitConfigObservable.notifyObservers(deviceRegistryRemote.getUnitConfigByScope(scope));
                         scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
                     } catch (CouldNotPerformException ex) {
                         scopeTextField.setForeground(Color.RED);
@@ -623,6 +623,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 }
             }));
             updateButtonStates();
+
         } catch (CouldNotPerformException | NullPointerException ex) {
             statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not load new remote!", ex), logger));
         }
@@ -662,9 +663,11 @@ public class SelectorPanel extends javax.swing.JPanel {
         String text = scopeTextField.getText().toLowerCase();
 
         try {
-            detectUnitTypeOutOfScope(ScopeTransformer.transform(new rsb.Scope(text)));
+            Scope scope = ScopeTransformer.transform(new rsb.Scope(text));
+            detectUnitTypeOutOfScope(scope);
+            deviceRegistryRemote.getUnitConfigByScope(scope);
             validScope = true;
-        } catch (CouldNotTransformException | NotAvailableException | NullPointerException ex) {
+        } catch (CouldNotPerformException | IllegalArgumentException | NullPointerException ex) {
             validScope = false;
         }
 

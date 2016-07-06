@@ -112,28 +112,22 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationSe
     }// </editor-fold>//GEN-END:initComponents
 
     private void standbyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standbyButtonActionPerformed
-        execute(new Callable<Void>() {
 
-            @Override
-            public Void call() throws Exception {
-                try {
-                    switch (getService().getStandby().getValue()) {
-                        case STANDBY:
-                            getService().setStandby(RUNNING);
-                            break;
-                        case RUNNING:
-                        case UNKNOWN:
-                            getService().setStandby(STANDBY);
-                            break;
-                        default:
-                            throw new InvalidStateException("State[" + getService().getStandby().getValue().name() + "] is unknown.");
-                    }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger);
-                }
-                return null;
+        try {
+            switch (getService().getStandby().getValue()) {
+            case STANDBY:
+                notifyActionProcessing(getService().setStandby(RUNNING));
+                break;
+            case RUNNING:
+            case UNKNOWN:
+                notifyActionProcessing(getService().setStandby(STANDBY));
+                break;
+            default:
+                throw new InvalidStateException("State[" + getService().getStandby().getValue().name() + "] is unknown.");
             }
-        });
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger);
+        }
     }//GEN-LAST:event_standbyButtonActionPerformed
 
 
@@ -147,24 +141,24 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationSe
     protected void updateDynamicComponents() {
         try {
             switch (getService().getStandby().getValue()) {
-                case STANDBY:
-                    standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
-                    standbyStatePanel.setBackground(Color.BLUE.lightGray);
-                    standbyButton.setText("Wakeup");
-                    break;
-                case RUNNING:
-                    standbyStatusLabel.setForeground(Color.BLACK);
-                    standbyStatePanel.setBackground(Color.GREEN.darker());
-                    standbyButton.setText("Activate Standby");
-                    break;
+            case STANDBY:
+                standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
+                standbyStatePanel.setBackground(Color.BLUE.lightGray);
+                standbyButton.setText("Wakeup");
+                break;
+            case RUNNING:
+                standbyStatusLabel.setForeground(Color.BLACK);
+                standbyStatePanel.setBackground(Color.GREEN.darker());
+                standbyButton.setText("Activate Standby");
+                break;
 
-                case UNKNOWN:
-                    standbyStatusLabel.setForeground(Color.BLACK);
-                    standbyStatePanel.setBackground(Color.ORANGE.darker());
-                    standbyButton.setText("Activate Standby");
-                    break;
-                default:
-                    throw new InvalidStateException("State[" + getService().getStandby().getValue() + "] is unknown.");
+            case UNKNOWN:
+                standbyStatusLabel.setForeground(Color.BLACK);
+                standbyStatePanel.setBackground(Color.ORANGE.darker());
+                standbyButton.setText("Activate Standby");
+                break;
+            default:
+                throw new InvalidStateException("State[" + getService().getStandby().getValue() + "] is unknown.");
             }
             standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getStandby().getValue().name()));
         } catch (CouldNotPerformException ex) {

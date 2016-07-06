@@ -85,21 +85,25 @@ public class StatusPanel extends javax.swing.JPanel {
         setStatus(message, StatusType.WARN, 5);
     }
 
-    public void setError(Exception ex) {
+    public void setError(final String message) {
+        setStatus(message, StatusType.ERROR, 5);
+    }
+
+    public void setError(final Exception ex) {
         setStatus(ex.getLocalizedMessage(), StatusType.ERROR, 5);
     }
 
-    public void setStatus(String text, StatusType type, boolean ongoing) {
+    public void setStatus(final String text, final StatusType type, final boolean ongoing) {
         reset();
         setText(text, type);
         progressBar.setIndeterminate(ongoing);
     }
 
-    public void setStatus(String text, StatusType type, int validity) {
+    public void setStatus(final String text, final StatusType type, final int validity) {
         setStatus(text, type, validity, 100);
     }
 
-    public void setStatus(String text, StatusType type, int validity, int progress) {
+    public void setStatus(final String text, final StatusType type, final int validity, final int progress) {
         reset();
         timer.setInitialDelay(validity * 1000);
         setText(text, type);
@@ -125,10 +129,10 @@ public class StatusPanel extends javax.swing.JPanel {
             } catch (CancellationException ex) {
                 setStatus("Canceled by user!", StatusType.WARN, 1);
             } catch (InterruptedException ex) {
-                setError(ex);
+                setError("Shutdown detected...");
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
-                setError(ex);
+                setError("Connection to main controller lost!");
             }
             cancelButton.setEnabled(false);
         });

@@ -21,7 +21,6 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -92,18 +91,11 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOpera
     }//GEN-LAST:event_brightnessSliderPropertyChange
 
     private void brightnessSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_brightnessSliderStateChanged
-        execute(new Callable<Void>() {
-
-            @Override
-            public Void call() throws Exception {
-                try {
-                    getService().setBrightness((double) brightnessSlider.getValue());
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set brightness value!", ex), logger);
-                }
-                return null;
-            }
-        });
+        try {
+            notifyActionProcessing(getService().setBrightness((double) brightnessSlider.getValue()));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set brightness value!", ex), logger);
+        }
     }//GEN-LAST:event_brightnessSliderStateChanged
 
 

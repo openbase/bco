@@ -30,16 +30,21 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.util.RSBRemoteView;
+import org.openbase.bco.dal.visual.util.StatusPanel;
+import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.visual.layout.LayoutGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,32 +64,31 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
     private final Observer<ConnectionState> connectionStateObserver;
     private boolean autoRemove;
     private List<JComponent> componentList;
+    private StatusPanel statusPanel;
 
     /**
      * Creates new form AmbientLightView
+     *
+     * @throws org.openbase.jul.exception.InstantiationException
      */
     public GenericUnitPanel() {
         super();
-        this.unitConfigObserver = (Observable<UnitConfig> source, UnitConfig data) -> {
-            updateUnitConfig(data);
+
+        // init status panel
+        try {
+            statusPanel = StatusPanel.getInstance();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new org.openbase.jul.exception.InstantiationException(this, ex), logger);
+        }
+
+        // init unit config observer
+        this.unitConfigObserver = (Observable<UnitConfig> source, UnitConfig config) -> {
+            updateUnitConfig(config);
         };
+
+        // init connection observer
         this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
-            TitledBorder titledBorder = javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + ":" + getRemoteService().getId());
-            switch (connectionState) {
-                case CONNECTED:
-                    titledBorder.setTitleColor(Color.yellow);
-                    break;
-                case CONNECTING:
-                    titledBorder.setTitleColor(Color.yellow);
-                    break;
-                case DISCONNECTED:
-                    titledBorder.setTitleColor(Color.yellow);
-                    break;
-                case UNKNOWN:
-                    titledBorder.setTitleColor(Color.yellow);
-                    break;
-            }
-            setBorder(titledBorder);
+            updateConnectionState(connectionState);
         };
         initComponents();
         autoRemove = true;
@@ -99,6 +103,63 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
         return unitConfigObserver;
     }
 
+    private void updateConnectionState(final ConnectionState connectionState) throws InterruptedException {
+        try {
+            // build unit label
+            String remoteLabel;
+            try {
+                UnitConfig unitConfig = ((UnitConfig) getRemoteService().getConfig());
+                remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
+                        + "[" + unitConfig.getLabel() + "]"
+                        + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
+                        + " of " + ((UnitConfig) getRemoteService().getConfig()).getDeviceId()
+                        + " : " + unitConfig.getDescription();
+            } catch (CouldNotPerformException ex) {
+                remoteLabel = "?";
+            }
+
+            Color textColor = Color.BLACK;
+            String textSuffix = "";
+
+            switch (connectionState) {
+                case CONNECTED:
+                    textSuffix = "connected";
+                    break;
+                case CONNECTING:
+                    textColor = Color.ORANGE.darker();
+                    textSuffix = "waiting for connection...";
+                    GlobalExecutionService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + " connection...", StatusType.INFO, true);
+                                getRemoteService().waitForConnectionState(ConnectionState.CONNECTED);
+                                statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + " established.", StatusType.INFO, 3);
+                            } catch (NotAvailableException | InterruptedException ex) {
+                                statusPanel.setError(ex);
+                            }
+                        }
+                    });
+                    break;
+                case DISCONNECTED:
+                    textColor = Color.RED.darker();
+                    textSuffix = "disconnected";
+                    break;
+                case UNKNOWN:
+                    textColor = Color.YELLOW.darker();
+                    textSuffix = "";
+                    break;
+            }
+
+//            TitledBorder titledBorder = BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + ":" + getRemoteService().getId() + " [" + textSuffix + "]");
+            TitledBorder titledBorder = BorderFactory.createTitledBorder("Remote Control - " + remoteLabel + " (" + textSuffix + ")");
+            titledBorder.setTitleColor(textColor);
+            setBorder(titledBorder);
+        } catch (NullPointerException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update connection state!", ex), logger);
+        }
+    }
+
     public void updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         updateUnitConfig(unitConfig, ServiceType.UNKNOWN);
 
@@ -106,8 +167,16 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
 
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
         CachedLocationRegistryRemote.waitForData();
-        setUnitRemote(unitConfig);
+        try {
+            getRemoteService().removeConnectionStateObserver(connectionStateObserver);
 
+        } catch (NotAvailableException ex) {
+            // skip deregistration
+        }
+
+        UnitRemote unitRemote = setUnitRemote(unitConfig);
+        unitRemote.addConnectionStateObserver(connectionStateObserver);
+        updateConnectionState(unitRemote.getConnectionState());
         if (autoRemove) {
             contextPanel.removeAll();
         }
@@ -132,12 +201,6 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getType().name() + "]", ex), logger, LogLevel.ERROR);
             }
         }
-
-        String remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
-                + "[" + unitConfig.getLabel() + "]"
-                + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
-                + " of " + unitConfig.getDeviceId()
-                + " : " + unitConfig.getDescription();
 
         LayoutGenerator.designList(contextPanel, componentList);
         contextPanel.validate();
