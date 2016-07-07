@@ -5,7 +5,7 @@
     <artifactId>manager.location.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA LocationManager Remote</name>
+    <name>BCO Manager Location Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

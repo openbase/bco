@@ -5,7 +5,7 @@
     <artifactId>manager.device.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA DeviceManager Binding OpenHAB</name>
+    <name>BCO Manager Device Binding OpenHAB</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

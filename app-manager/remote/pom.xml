@@ -5,7 +5,7 @@
     <artifactId>manager.app.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA AppManager Remote</name>
+    <name>BCO Manager App Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

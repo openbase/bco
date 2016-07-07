@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.device.binding</artifactId>
-    <name>COMA DeviceManager Bindings</name>
+    <name>BCO Manager Device Bindings</name>
     <description>DeviceManager Binding Collection</description>
     
     <packaging>pom</packaging>

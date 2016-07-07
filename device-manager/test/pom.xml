@@ -5,7 +5,7 @@
     <artifactId>manager.device.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA DeviceManager Test</name>
+    <name>BCO Manager Device Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

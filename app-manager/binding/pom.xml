@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.app.binding</artifactId>
-    <name>COMA AppManager Bindings</name>
+    <name>BCO Manager App Bindings</name>
     <description>AppManager Binding Collection</description>
     
     <packaging>pom</packaging>

@@ -6,7 +6,7 @@
     <artifactId>manager</artifactId>
     <version>1.1-SNAPSHOT</version>
 
-    <name>COMA</name>
+    <name>BCO Manager</name>
     <inceptionYear>2015</inceptionYear>
     <description>Core Manager Collection</description>
 

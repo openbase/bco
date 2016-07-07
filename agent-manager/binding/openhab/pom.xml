@@ -5,7 +5,7 @@
     <artifactId>manager.agent.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA AgentManager Binding OpenHAB</name>
+    <name>BCO Manager Agent Binding OpenHAB</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

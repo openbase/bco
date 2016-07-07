@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.scene</artifactId>
-    <name>COMA SceneManager</name>
+    <name>BCO Manager Scene</name>
     <description>SceneManager</description>
     
     <packaging>pom</packaging>

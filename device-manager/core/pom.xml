@@ -5,7 +5,7 @@
     <artifactId>manager.device.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA DeviceManager Core</name>
+    <name>BCO Manager Device Core</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

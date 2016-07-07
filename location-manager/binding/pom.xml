@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.location.binding</artifactId>
-    <name>COMA LocationManager Bindings</name>
+    <name>BCO Manager Location Bindings</name>
     <description>LocationManager Binding Collection</description>
     
     <packaging>pom</packaging>

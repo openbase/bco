@@ -5,7 +5,7 @@
     <artifactId>manager.user.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA UserManager Remote</name>
+    <name>BCO Manager User Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

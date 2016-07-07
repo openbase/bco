@@ -5,7 +5,7 @@
     <artifactId>manager.device.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA DeviceManager Remote</name>
+    <name>BCO Manager Device Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

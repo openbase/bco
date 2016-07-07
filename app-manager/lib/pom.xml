@@ -5,7 +5,7 @@
     <artifactId>manager.app.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA AppManager Library</name>
+    <name>BCO Manager App Library</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

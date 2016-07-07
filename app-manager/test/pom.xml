@@ -5,7 +5,7 @@
     <artifactId>manager.app.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA AppManager Test</name>
+    <name>BCO Manager App Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

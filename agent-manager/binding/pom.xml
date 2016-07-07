@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.agent.binding</artifactId>
-    <name>COMA AgentManager Bindings</name>
+    <name>BCO Manager Agent Bindings</name>
     <description>AgentManager Binding Collection</description>
     
     <packaging>pom</packaging>

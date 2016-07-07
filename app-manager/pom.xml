@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.app</artifactId>
-    <name>COMA AppManager</name>
+    <name>BCO Manager App</name>
     <description>AppManager</description>
     
     <packaging>pom</packaging>

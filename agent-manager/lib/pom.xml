@@ -5,7 +5,7 @@
     <artifactId>manager.agent.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA AgentManager Library</name>
+    <name>BCO Manager Agent Library</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

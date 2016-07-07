@@ -5,7 +5,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.location</artifactId>
-    <name>COMA LocationManager</name>
+    <name>BCO Manager Location</name>
     <description>LocationManager</description>
     
     <packaging>pom</packaging>

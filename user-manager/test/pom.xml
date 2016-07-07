@@ -5,7 +5,7 @@
     <artifactId>manager.user.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA UserManager Test</name>
+    <name>BCO Manager User Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

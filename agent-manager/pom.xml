@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.agent</artifactId>
-    <name>COMA AgentManager</name>
+    <name>BCO Manager Agent</name>
     <description>AgentManager</description>
     
     <packaging>pom</packaging>

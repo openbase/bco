@@ -5,7 +5,7 @@
     <artifactId>manager.location.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA LocationManager Test</name>
+    <name>BCO Manager Location Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

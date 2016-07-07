@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager.scene.binding</artifactId>
-    <name>COMA SceneManager Bindings</name>
+    <name>BCO Manager Scene Bindings</name>
     <description>SceneManager Binding Collection</description>
     
     <packaging>pom</packaging>

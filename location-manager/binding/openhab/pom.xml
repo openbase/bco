@@ -5,7 +5,7 @@
     <artifactId>manager.location.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA LocationManager Binding OpenHAB</name>
+    <name>BCO Manager Location Binding OpenHAB</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

@@ -5,7 +5,7 @@
     <artifactId>manager.scene.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA SceneManager Test</name>
+    <name>BCO Manager Scene Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

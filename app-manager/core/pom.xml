@@ -5,7 +5,7 @@
     <artifactId>manager.app.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>COMA AppManager Core</name>
+    <name>BCO Manager App Core</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
