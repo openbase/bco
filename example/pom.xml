@@ -5,7 +5,7 @@
     <artifactId>dal.example</artifactId>
     <packaging>jar</packaging>
 
-    <name>DAL Example</name>
+    <name>BCO DAL Example</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

@@ -6,7 +6,7 @@
     <artifactId>dal</artifactId>
     <version>1.1-SNAPSHOT</version>
 
-    <name>DAL</name>
+    <name>BCO DAL</name>
     <inceptionYear>2014</inceptionYear>
     <description>Domotic Abstraction Layer</description>
 

@@ -5,7 +5,7 @@
     <artifactId>dal.visual</artifactId>
     <packaging>jar</packaging>
 
-    <name>DAL Visualisation</name>
+    <name>BCO DAL Visualisation</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
