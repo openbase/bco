@@ -5,7 +5,7 @@
     <artifactId>registry.scene.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM SceneRegistry Library</name>
+    <name>BCO Registry Scene Library</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

@@ -5,7 +5,7 @@
     <artifactId>registry.location.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM LocationRegistry Core</name>
+    <name>BCO Registry Location Core</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

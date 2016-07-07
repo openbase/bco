@@ -5,7 +5,7 @@
     <artifactId>registry.scene.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM SceneRegistry Core</name>
+    <name>BCO Registry Scene Core</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

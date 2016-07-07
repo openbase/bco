@@ -5,7 +5,7 @@
     <artifactId>registry.device.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM DeviceRegistry Remote</name>
+    <name>BCO Registry Device Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

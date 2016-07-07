@@ -5,7 +5,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry.location</artifactId>
-    <name>REM LocationRegistry</name>
+    <name>BCO Registry Location</name>
     <description>LocationRegistry</description>
     
     <packaging>pom</packaging>

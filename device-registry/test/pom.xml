@@ -5,7 +5,7 @@
     <artifactId>registry.device.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM DeviceRegistry Test</name>
+    <name>BCO Registry Device Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

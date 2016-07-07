@@ -5,7 +5,7 @@
     <artifactId>registry.user.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM UserRegistry Remote</name>
+    <name>BCO Registry User Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

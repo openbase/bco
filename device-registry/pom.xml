@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry.device</artifactId>
-    <name>REM DeviceRegistry</name>
+    <name>BCO Registry Device</name>
     <description>DeviceRegistry</description>
     
     <packaging>pom</packaging>

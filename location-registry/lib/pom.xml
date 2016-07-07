@@ -5,7 +5,7 @@
     <artifactId>registry.location.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM LocationRegistry Library</name>
+    <name>BCO Registry Location Library</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

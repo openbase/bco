@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry.app</artifactId>
-    <name>REM AppRegistry</name>
+    <name>BCO Registry App</name>
     <description>AppRegistry</description>
     
     <packaging>pom</packaging>

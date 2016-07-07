@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry.user</artifactId>
-    <name>REM UserRegistry</name>
+    <name>BCO Registry User</name>
     <description>UserRegistry</description>
     
     <packaging>pom</packaging>

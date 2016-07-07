@@ -5,7 +5,7 @@
     <artifactId>registry.app.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM AppRegistry Test</name>
+    <name>BCO Registry App Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

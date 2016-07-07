@@ -5,7 +5,7 @@
     <artifactId>registry.user.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM UserRegistry Test</name>
+    <name>BCO Registry User Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

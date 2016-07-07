@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry.agent</artifactId>
-    <name>REM AgentRegistry</name>
+    <name>BCO Registry Agent</name>
     <description>AgentRegistry</description>
     
     <packaging>pom</packaging>

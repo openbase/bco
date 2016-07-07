@@ -4,7 +4,7 @@
     
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry.scene</artifactId>
-    <name>REM SceneRegistry</name>
+    <name>BCO Registry Scene</name>
     <description>SceneRegistry</description>
     
     <packaging>pom</packaging>

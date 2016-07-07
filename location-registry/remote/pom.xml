@@ -5,7 +5,7 @@
     <artifactId>registry.location.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM LocationRegistry Remote</name>
+    <name>BCO Registry Location Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

@@ -5,7 +5,7 @@
     <artifactId>registry.scene.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM SceneRegistry Test</name>
+    <name>BCO Registry Scene Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

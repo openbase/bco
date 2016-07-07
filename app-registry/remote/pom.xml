@@ -5,7 +5,7 @@
     <artifactId>registry.app.remote</artifactId>
     <packaging>jar</packaging>
 
-    <name>REM AppRegistry Remote</name>
+    <name>BCO Registry App Remote</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
