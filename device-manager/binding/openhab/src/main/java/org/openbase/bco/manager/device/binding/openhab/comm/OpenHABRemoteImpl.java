@@ -73,9 +73,9 @@ public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
     public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
         //TODO: this is just a hack
         // Why do all items from knx publish their new values as commands, check if this is configurable in ets
-//        if(command.getItem().startsWith("Hager") || command.getItem().startsWith("Gire")) {
-//            internalReceiveUpdate(command);
-//        }
+        if(command.getItem().startsWith("Hager") || command.getItem().startsWith("Gire")) {
+            internalReceiveUpdate(command);
+        }
         // do nothing...
     }
 }
