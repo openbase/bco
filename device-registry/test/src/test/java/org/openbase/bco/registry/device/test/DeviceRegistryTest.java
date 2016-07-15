@@ -35,7 +35,6 @@ import org.openbase.bco.registry.location.core.LocationRegistryController;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
@@ -57,11 +56,10 @@ import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
 import rst.homeautomation.binding.BindingConfigType;
 import rst.homeautomation.binding.BindingConfigType.BindingConfig;
-import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.BindingServiceConfigType.BindingServiceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
@@ -244,7 +242,7 @@ public class DeviceRegistryTest {
         assertEquals("Unit id is not set properly", expectedUnitID, motionSensorConfig.getUnitConfig(0).getId());
         assertEquals("Unit scope is not set properly", expectedUnitScope, ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()));
 
-        assertEquals("Device id is not set in unit", motionSensorConfig.getId(), motionSensorConfig.getUnitConfig(0).getDeviceId());
+        assertEquals("Device id is not set in unit", motionSensorConfig.getId(), motionSensorConfig.getUnitConfig(0).getSystemUnitId());
     }
 
     /**
@@ -295,49 +293,51 @@ public class DeviceRegistryTest {
 
     @Test(timeout = 5000)
     public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
-        UnitTemplate unitTemplate = deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.AMBIENT_LIGHT).addServiceType(ServiceType.BATTERY_PROVIDER).addServiceType(ServiceType.COLOR_SERVICE).build()).get();
-        assertTrue(unitTemplate.getServiceTypeList().contains(ServiceType.BATTERY_PROVIDER));
-        assertTrue(unitTemplate.getServiceTypeList().contains(ServiceType.COLOR_SERVICE));
-        assertTrue(unitTemplate.getType() == UnitType.AMBIENT_LIGHT);
+        ServiceTemplate batteryTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE).build();
+        ServiceTemplate colorTemplate = ServiceTemplate.newBuilder().setType(ServiceType.COLOR_STATE_SERVICE).build();
+        UnitTemplate unitTemplate = deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.COLORABLE_LIGHT).addServiceTemplate(batteryTemplate).addServiceTemplate(colorTemplate).build()).get();
+        assertTrue(unitTemplate.getServiceTemplateList().contains(batteryTemplate));
+        assertTrue(unitTemplate.getServiceTemplateList().contains(colorTemplate));
+        assertTrue(unitTemplate.getType() == UnitType.COLORABLE_LIGHT);
 
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitTemplate.getType()).build();
         String serialNumber1 = "5073";
         String deviceLabel = "thisIsARandomLabel12512";
-        BindingConfigType.BindingConfig bindingConfig = BindingConfigType.BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("unitTest", "423112358", "company").toBuilder().setBindingConfig(bindingConfig).addUnitTemplateConfig(unitTemplateConfig).build()).get();
 
         MetaConfigType.MetaConfig metaConfig = MetaConfigType.MetaConfig.newBuilder().addEntry(EntryType.Entry.newBuilder().setKey("testKey")).build();
         ServiceConfig serviceConfig1 = getServiceConfig(ServiceType.UNKNOWN);
-        ServiceConfig serviceConfig2 = getServiceConfig(ServiceType.BATTERY_PROVIDER).toBuilder().setMetaConfig(metaConfig).build();
+        ServiceConfig serviceConfig2 = getServiceConfig(ServiceType.BATTERY_STATE_SERVICE).toBuilder().setMetaConfig(metaConfig).build();
         ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
-        unitConfigs.add(getUnitConfig(UnitType.AMBIENT_LIGHT, "alsdkhuehlfai").toBuilder().addServiceConfig(serviceConfig1).addServiceConfig(serviceConfig2).build());
+        unitConfigs.add(getUnitConfig(UnitType.COLORABLE_LIGHT, "alsdkhuehlfai").toBuilder().addServiceConfig(serviceConfig1).addServiceConfig(serviceConfig2).build());
         DeviceConfig localDeviceConfig = getDeviceConfig(deviceLabel, serialNumber1, clazz, unitConfigs);
 
         localDeviceConfig = deviceRegistry.registerDeviceConfig(localDeviceConfig).get();
         assertTrue(localDeviceConfig.getUnitConfigCount() == 1);
         assertTrue(localDeviceConfig.getUnitConfig(0).getServiceConfigCount() == 2);
         UnitConfig unit = localDeviceConfig.getUnitConfig(0);
-        assertTrue(unit.getServiceConfig(0).getType() == ServiceType.BATTERY_PROVIDER || unit.getServiceConfig(0).getType() == ServiceType.COLOR_SERVICE);
-        assertTrue(unit.getServiceConfig(1).getType() == ServiceType.BATTERY_PROVIDER || unit.getServiceConfig(1).getType() == ServiceType.COLOR_SERVICE);
-        if (unit.getServiceConfig(0).getType() == ServiceType.BATTERY_PROVIDER) {
+        assertTrue(unit.getServiceConfig(0).getServiceTemplate().getType() == ServiceType.BATTERY_STATE_SERVICE || unit.getServiceConfig(0).getServiceTemplate().getType() == ServiceType.COLOR_STATE_SERVICE);
+        assertTrue(unit.getServiceConfig(1).getServiceTemplate().getType() == ServiceType.BATTERY_STATE_SERVICE || unit.getServiceConfig(1).getServiceTemplate().getType() == ServiceType.COLOR_STATE_SERVICE);
+        if (unit.getServiceConfig(0).getServiceTemplate().getType() == ServiceType.BATTERY_STATE_SERVICE) {
             assertEquals(metaConfig, unit.getServiceConfig(0).getMetaConfig());
-        } else if (unit.getServiceConfig(1).getType() == ServiceType.BATTERY_PROVIDER) {
+        } else if (unit.getServiceConfig(1).getServiceTemplate().getType() == ServiceType.BATTERY_STATE_SERVICE) {
             assertEquals(metaConfig, unit.getServiceConfig(1).getMetaConfig());
         }
     }
 
     @Test(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
-        ServiceTemplate serviceTemplate1 = ServiceTemplate.newBuilder().setServiceType(ServiceType.POWER_SERVICE).build();
-        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(serviceTemplate1).build();
-        ServiceTemplate serviceTemplate2 = ServiceTemplate.newBuilder().setServiceType(ServiceType.BATTERY_PROVIDER).build();
-        ServiceTemplate serviceTemplate3 = ServiceTemplate.newBuilder().setServiceType(ServiceType.HANDLE_PROVIDER).build();
-        UnitTemplateConfig unitTemplateConfig2 = UnitTemplateConfig.newBuilder().setType(UnitType.HANDLE_SENSOR).addServiceTemplate(serviceTemplate2).addServiceTemplate(serviceTemplate3).build();
+        ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
+        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
+        ServiceTemplateConfig serviceTemplate2 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BATTERY_STATE_SERVICE).build();
+        ServiceTemplateConfig serviceTemplate3 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.HANDLE_STATE_SERVICE).build();
+        UnitTemplateConfig unitTemplateConfig2 = UnitTemplateConfig.newBuilder().setType(UnitType.HANDLE).addServiceTemplateConfig(serviceTemplate2).addServiceTemplateConfig(serviceTemplate3).build();
 
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceType(serviceTemplate1.getServiceType()).build()).get();
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.HANDLE_SENSOR).addServiceType(ServiceType.BATTERY_PROVIDER).addServiceType(ServiceType.HANDLE_PROVIDER).build()).get();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build()).get();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.HANDLE).addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE)).addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.HANDLE_STATE_SERVICE)).build()).get();
 
-        BindingConfigType.BindingConfig bindingConfig = BindingConfigType.BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("unittemplateUnitConfigTest", "0149283794283", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).addUnitTemplateConfig(unitTemplateConfig2).setBindingConfig(bindingConfig).build()).get();
         assertTrue(clazz.getUnitTemplateConfigCount() == 2);
 
@@ -348,47 +348,47 @@ public class DeviceRegistryTest {
         for (UnitConfig unit : config.getUnitConfigList()) {
             if (unit.getType().equals(unitTemplateConfig1.getType())) {
                 containsLight = true;
-                assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateCount());
-                assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getType().equals(serviceTemplate1.getServiceType()));
+                assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateConfigCount());
+                assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getServiceTemplate().getType().equals(serviceTemplate1.getServiceType()));
             } else if (unit.getType().equals(unitTemplateConfig2.getType())) {
                 containsHandlseSensor = true;
-                assertTrue("The handle sensor unit contains more or less services than the template config", unit.getServiceConfigCount() == unitTemplateConfig2.getServiceTemplateCount());
-                assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(0).getType(), serviceTemplate2.getServiceType());
-                assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(1).getType(), serviceTemplate3.getServiceType());
+                assertTrue("The handle sensor unit contains more or less services than the template config", unit.getServiceConfigCount() == unitTemplateConfig2.getServiceTemplateConfigCount());
+                assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(0).getServiceTemplate().getType(), serviceTemplate2.getServiceType());
+                assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(1).getServiceTemplate().getType(), serviceTemplate3.getServiceType());
             }
         }
         assertTrue("The device config does not contain a light unit even though the device class has an according unit template", containsLight);
         assertTrue("The device config does not contain a handle sensor unit even though the device class has an according unit template", containsHandlseSensor);
 
-        ServiceTemplate serviceTemplate4 = ServiceTemplate.newBuilder().setServiceType(ServiceType.BUTTON_PROVIDER).build();
-        UnitTemplateConfig unitTemplateConfig3 = UnitTemplateConfig.newBuilder().setType(UnitType.BUTTON).addServiceTemplate(serviceTemplate1).build();
+        ServiceTemplateConfig serviceTemplate4 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BUTTON_STATE_SERVICE).build();
+        UnitTemplateConfig unitTemplateConfig3 = UnitTemplateConfig.newBuilder().setType(UnitType.BUTTON).addServiceTemplateConfig(serviceTemplate1).build();
 
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).addServiceType(ServiceType.BUTTON_PROVIDER).build()).get();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.BUTTON_STATE_SERVICE)).build()).get();
 
         clazz = deviceRegistry.updateDeviceClass(clazz.toBuilder().addUnitTemplateConfig(unitTemplateConfig3).build()).get();
         config = deviceRegistry.getDeviceConfigById(config.getId());
         assertEquals("Unit configs and templates differ after the update of the device class", config.getUnitConfigCount(), clazz.getUnitTemplateConfigCount());
         assertEquals("Device config does not contain the right unit config", config.getUnitConfig(2).getType(), unitTemplateConfig3.getType());
-        assertEquals("Unit config does not contain the right service", config.getUnitConfig(2).getServiceConfig(0).getType(), serviceTemplate4.getServiceType());
+        assertEquals("Unit config does not contain the right service", config.getUnitConfig(2).getServiceConfig(0).getServiceTemplate().getType(), serviceTemplate4.getServiceType());
 
         // clearing unit templates because of effects on other tests it might have
         deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).build());
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.HANDLE_SENSOR).build());
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.HANDLE).build());
         deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.BUTTON).build());
     }
 
     @Test(timeout = 5000)
     public void testBoundToDeviceConsistencyHandler() throws Exception {
-        ServiceTemplate serviceTemplate1 = ServiceTemplate.newBuilder().setServiceType(ServiceType.POWER_SERVICE).build();
-        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(serviceTemplate1).build();
-        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceType(serviceTemplate1.getServiceType()).build());
+        ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
+        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
+        deviceRegistry.updateUnitTemplate(UnitTemplate.newBuilder().setType(UnitType.LIGHT).addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build());
 
-        BindingConfigType.BindingConfig bindingConfig = BindingConfigType.BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
+        BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("BoundToDeviceTest", "boundToDevicePNR", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).setBindingConfig(bindingConfig).build()).get();
 
         DeviceConfig config = deviceRegistry.registerDeviceConfig(getDeviceConfig("BoundToDeviceTestDevice", "boundToDeviceSNR", clazz, null)).get();
         assertTrue("Unit config has not been added to device config", config.getUnitConfigCount() == 1);
-        assertTrue("Unit config has not been set as bound to device", config.getUnitConfig(0).getBoundToDevice());
+        assertTrue("Unit config has not been set as bound to device", config.getUnitConfig(0).getBoundToSystemUnit());
         assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
 
         LocationConfig testLocation = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel("BoundToDeviceTestLocation").build()).get();
@@ -398,7 +398,7 @@ public class DeviceRegistryTest {
         assertTrue("Units placement config has not been modified correctly", config.getUnitConfig(0).getPlacementConfig().getLocationId().equals(testLocation.getId()));
 
         config = deviceRegistry.updateDeviceConfig(config).get();
-        assertTrue("Unit is not bound to device anymore", config.getUnitConfig(0).getBoundToDevice());
+        assertTrue("Unit is not bound to device anymore", config.getUnitConfig(0).getBoundToSystemUnit());
         assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
         assertEquals("Location id in placement config of unit does not equals that in device", config.getPlacementConfig().getLocationId(), config.getUnitConfig(0).getPlacementConfig().getLocationId());
 
@@ -462,7 +462,7 @@ public class DeviceRegistryTest {
      */
     @Test(timeout = 5000)
     public void testSandbox() throws Exception {
-        BindingConfig bindingConfig = BindingConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.SINACT).build();
+        BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("SINACT").build();
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("SandboxTestLabel", "SandboxTestPNR", "SanboxCompany").toBuilder().setBindingConfig(bindingConfig).addUnitTemplateConfig(unitTemplateConfig).build()).get();
 
@@ -512,7 +512,7 @@ public class DeviceRegistryTest {
     }
 
     private UnitConfig getUnitConfig(UnitType type, String label) {
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).setBoundToDevice(false).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).setBoundToSystemUnit(false).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
@@ -527,7 +527,7 @@ public class DeviceRegistryTest {
     }
 
     private ServiceConfig getServiceConfig(ServiceType type) {
-        return ServiceConfig.newBuilder().setType(type).setBindingServiceConfig(BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.SINACT).build()).build();
+        return ServiceConfig.newBuilder().setServiceTemplate(ServiceTemplate.newBuilder().setType(type)).setBindingConfig(BindingConfig.newBuilder().setBindingId("SINACT").build()).build();
     }
 
     /**

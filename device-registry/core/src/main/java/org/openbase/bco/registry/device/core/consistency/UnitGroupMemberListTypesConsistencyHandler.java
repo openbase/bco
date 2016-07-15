@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,7 +32,7 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
@@ -46,14 +45,14 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitGroupConfig, UnitGroupConfig.Builder> {
 
-    private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> deviceConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry;
 
-    public UnitGroupMemberListTypesConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry, ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry) {
+    public UnitGroupMemberListTypesConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> deviceConfigRegistry, ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry) {
         this.deviceConfigRegistry = deviceConfigRegistry;
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
-    
+
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitGroupConfig.Builder unitGroup = entry.getMessage().toBuilder();
@@ -68,7 +67,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
                 UnitConfig unitConfig = getUnitConfigById(memberId);
                 boolean skip = false;
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (!unitGroup.getServiceTypeList().contains(serviceConfig.getType())) {
+                    if (!unitGroup.getServiceTemplateList().contains(serviceConfig.getServiceTemplate())) {
                         skip = true;
                     }
                 }
@@ -105,7 +104,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         }
         throw new NotAvailableException(unitConfigId);
     }
-    
+
     private List<UnitType> getSubTypes(UnitType type) throws CouldNotPerformException {
         List<UnitType> unitTypes = new ArrayList<>();
         for (UnitTemplate template : unitTemplateRegistry.getMessages()) {

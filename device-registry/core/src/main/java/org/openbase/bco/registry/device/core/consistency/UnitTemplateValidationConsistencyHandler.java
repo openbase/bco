@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -28,19 +28,20 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
-import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class UnitTemplateValidationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitTemplate, UnitTemplate.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry;
 
-    public UnitTemplateValidationConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry) {
+    public UnitTemplateValidationConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
 

@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -32,9 +31,9 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
-import rst.homeautomation.device.DeviceClassType;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 
@@ -42,17 +41,17 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UnitConfigUnitTemplateConfigIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> {
+public class UnitConfigUnitTemplateConfigIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
 
-    public UnitConfigUnitTemplateConfigIdConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
+    public UnitConfigUnitTemplateConfigIdConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfigType.DeviceConfig, DeviceConfigType.DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
+    public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceClass.id");

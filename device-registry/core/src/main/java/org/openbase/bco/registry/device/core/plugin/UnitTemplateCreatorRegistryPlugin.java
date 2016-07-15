@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.plugin;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -27,21 +27,21 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
-import rst.homeautomation.device.DeviceRegistryType;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * Threepwood</a>
  */
 public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>> {
 
-    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> registry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> registry;
 
-    public UnitTemplateCreatorRegistryPlugin(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry) {
+    public UnitTemplateCreatorRegistryPlugin(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry) {
         this.registry = unitTemplateRegistry;
     }
 

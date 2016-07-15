@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -32,7 +32,7 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 
@@ -42,9 +42,9 @@ import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
  */
 public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitGroupConfig, UnitGroupConfig.Builder> {
 
-    private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> deviceConfigRegistry;
 
-    public UnitGroupMemberExistsConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry) {
+    public UnitGroupMemberExistsConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> deviceConfigRegistry) {
         this.deviceConfigRegistry = deviceConfigRegistry;
     }
 

@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.core.consistency.LabelConsistencyHandler;
 import org.openbase.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
+import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
@@ -50,36 +51,36 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
+import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.rsb.ScopeType;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
  * @author mpohling
  */
-public class SceneRegistryController extends RSBCommunicationService<SceneRegistry, SceneRegistry.Builder> implements org.openbase.bco.registry.scene.lib.SceneRegistry, Manageable<ScopeType.Scope> {
+public class SceneRegistryController extends RSBCommunicationService<SceneRegistryData, SceneRegistryData.Builder> implements SceneRegistry, Manageable<ScopeType.Scope> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfigType.SceneConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> sceneConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> sceneConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private Observer<LocationRegistry> locationRegistryUpdateObserver;
+    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
-        super(SceneRegistry.newBuilder());
+        super(SceneRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistry.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistryData.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
-            locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
+            locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
 
                 @Override
-                public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+                public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
                     sceneConfigRegistry.checkConsistency();
                 }
             };
@@ -157,13 +158,13 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(SceneRegistry.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
+        setDataField(SceneRegistryData.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.registry.scene.lib.SceneRegistry.class, this, server);
+        RPCHelper.registerInterface(SceneRegistry.class, this, server);
     }
 
     @Override
@@ -206,7 +207,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
         return sceneConfigRegistry.isReadOnly();
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> getSceneConfigRegistry() {
         return sceneConfigRegistry;
     }
 }

@@ -23,6 +23,7 @@ package org.openbase.bco.registry.agent.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -42,24 +43,24 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
+import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> implements org.openbase.bco.registry.agent.lib.AgentRegistry, Remote<AgentRegistry> {
+public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> implements AgentRegistry, Remote<AgentRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> agentConfigRemoteRegistry;
+    private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> agentConfigRemoteRegistry;
 
     public AgentRegistryRemote() throws InstantiationException {
-        super(AgentRegistry.class);
+        super(AgentRegistryData.class);
         try {
             agentConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
@@ -121,11 +122,11 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistry> impleme
     }
 
     @Override
-    public void notifyDataUpdate(final AgentRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final AgentRegistryData data) throws CouldNotPerformException {
         agentConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentConfigList());
     }
 
-    public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRemoteRegistry() {
+    public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
         return agentConfigRemoteRegistry;
     }
 

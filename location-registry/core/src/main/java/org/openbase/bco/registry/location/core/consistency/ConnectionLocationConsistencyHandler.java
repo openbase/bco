@@ -2,7 +2,7 @@ package org.openbase.bco.registry.location.core.consistency;
 
 /*
  * #%L
- * REM LocationRegistry Core
+ * REM LocationRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -33,7 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -42,9 +42,9 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  */
 public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, ConnectionConfig, ConnectionConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry;
 
-    public ConnectionLocationConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry) {
+    public ConnectionLocationConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry) {
         this.locationConfigRegistry = locationConfigRegistry;
     }
 
@@ -65,7 +65,7 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
     }
 
     //TODO tamino: please reimplement more intuitive. May with a treemap where the key is the distance and the value the path.
-    private LocationConfig getLowestCommonParentLocation(List<String> locationIds, ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry) throws CouldNotPerformException {
+    private LocationConfig getLowestCommonParentLocation(List<String> locationIds, ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry) throws CouldNotPerformException {
         // list that contains a list of location configs from the root location to one of the given locations in order
         List<List<LocationConfig>> pathToRootLists = new ArrayList<>();
         // the size of the shortest list with a path from root to parent

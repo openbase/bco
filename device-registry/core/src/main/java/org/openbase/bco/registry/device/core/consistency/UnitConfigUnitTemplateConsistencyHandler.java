@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
@@ -32,10 +31,10 @@ import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
-import rst.homeautomation.service.BindingServiceConfigType;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
@@ -45,11 +44,11 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
  */
 public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry;
 
     List<String> idList = new ArrayList();
 
-    public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry) {
+    public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
 
@@ -60,15 +59,15 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : deviceConfig.getUnitConfigBuilderList()) {
             UnitTemplate unitTemplate = unitTemplateRegistry.get(unitConfig.getType().toString()).getMessage();
-            for (ServiceType serviceType : unitTemplate.getServiceTypeList()) {
-                if (!unitConfigContainsServiceType(unitConfig, serviceType)) {
-                    unitConfig.addServiceConfig(ServiceConfig.newBuilder().setType(serviceType).setBindingServiceConfig(BindingServiceConfigType.BindingServiceConfig.getDefaultInstance()));
+            for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
+                if (!unitConfigContainsServiceType(unitConfig, serviceTemplate)) {
+                    unitConfig.addServiceConfig(ServiceConfig.newBuilder().setServiceTemplate(serviceTemplate).setBindingConfig(BindingConfig.getDefaultInstance()));
                     modification = true;
                 }
             }
 
             for (int i = 0; i < unitConfig.getServiceConfigCount(); i++) {
-                if (!unitTemplate.getServiceTypeList().contains(unitConfig.getServiceConfig(i).getType())) {
+                if (!unitTemplate.getServiceTemplateList().contains(unitConfig.getServiceConfig(i).getServiceTemplate())) {
                     unitConfig.removeServiceConfig(i);
                     i--;
                     modification = true;
@@ -81,9 +80,9 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
     }
 
-    private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceType serviceType) {
+    private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceTemplate serviceTemplate) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-            if (serviceConfig.getType() == serviceType) {
+            if (serviceConfig.getServiceTemplate().equals(serviceTemplate)) {
                 return true;
             }
         }

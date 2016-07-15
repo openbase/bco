@@ -24,6 +24,7 @@ package org.openbase.bco.registry.app.remote;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -44,24 +45,24 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
-import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
+import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements org.openbase.bco.registry.app.lib.AppRegistry, Remote<AppRegistry> {
+public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> implements AppRegistry, Remote<AppRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> appConfigRemoteRegistry;
+    private final RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> appConfigRemoteRegistry;
 
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
-        super(AppRegistry.class);
+        super(AppRegistryData.class);
         try {
             appConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
@@ -134,11 +135,11 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistry> implements 
     }
 
     @Override
-    protected void notifyDataUpdate(final AppRegistry data) throws CouldNotPerformException {
+    protected void notifyDataUpdate(final AppRegistryData data) throws CouldNotPerformException {
         appConfigRemoteRegistry.notifyRegistryUpdate(data.getAppConfigList());
     }
 
-    public RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRemoteRegistry() {
+    public RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> getAppConfigRemoteRegistry() {
         return appConfigRemoteRegistry;
     }
 

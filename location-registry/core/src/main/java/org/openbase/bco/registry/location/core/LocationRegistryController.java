@@ -48,6 +48,7 @@ import org.openbase.bco.registry.location.core.consistency.RootLocationExistencC
 import org.openbase.bco.registry.location.core.dbconvert.LocationConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.location.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import org.openbase.bco.registry.location.core.plugin.PublishLocationTransformationRegistryPlugin;
+import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.generator.ConnectionIDGenerator;
 import org.openbase.bco.registry.location.lib.generator.LocationIDGenerator;
 import org.openbase.bco.registry.location.lib.jp.JPConnectionConfigDatabaseDirectory;
@@ -73,7 +74,7 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -81,31 +82,31 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
  * @author mpohling
  */
-public class LocationRegistryController extends RSBCommunicationService<LocationRegistry, LocationRegistry.Builder> implements org.openbase.bco.registry.location.lib.LocationRegistry, Manageable<ScopeType.Scope> {
+public class LocationRegistryController extends RSBCommunicationService<LocationRegistryData, LocationRegistryData.Builder> implements LocationRegistry, Manageable<ScopeType.Scope> {
     
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
     
-    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> connectionConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> connectionConfigRegistry;
     
     private final DeviceRegistryRemote deviceRegistryRemote;
-    private Observer<DeviceRegistry> deviceRegistryUpdateObserver;
+    private Observer<DeviceRegistryData> deviceRegistryUpdateObserver;
     
     public LocationRegistryController() throws InstantiationException, InterruptedException {
-        super(LocationRegistry.newBuilder());
+        super(LocationRegistryData.newBuilder());
         try {
-            locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistry.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-            connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistry.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+            locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryData.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+            connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryData.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
             
             locationConfigRegistry.setName("LocationConfigRegistry");
             connectionConfigRegistry.setName("ConnectionConfigRegistry");
@@ -113,7 +114,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
             connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
             
-            deviceRegistryUpdateObserver = (Observable<DeviceRegistry> source, DeviceRegistry data) -> {
+            deviceRegistryUpdateObserver = (Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
                 locationConfigRegistry.checkConsistency();
                 connectionConfigRegistry.checkConsistency();
             };
@@ -244,8 +245,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(LocationRegistry.LOCATION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, locationConfigRegistry.isReadOnly());
-        setDataField(LocationRegistry.CONNECTION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, connectionConfigRegistry.isReadOnly());
+        setDataField(LocationRegistryData.LOCATION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, locationConfigRegistry.isReadOnly());
+        setDataField(LocationRegistryData.CONNECTION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, connectionConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
@@ -257,7 +258,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.registry.location.lib.LocationRegistry.class, this, server);
+        RPCHelper.registerInterface(LocationRegistry.class, this, server);
     }
 
     /**
@@ -454,7 +455,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getType().equals(type)) {
+                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }
@@ -496,7 +497,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      *
      * @return the location config registry.
      */
-    public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> getLocationConfigRegistry() {
         return locationConfigRegistry;
     }
 
@@ -505,7 +506,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      *
      * @return the connection config registry.
      */
-    public ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> getConnectionConfigRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> getConnectionConfigRegistry() {
         return connectionConfigRegistry;
     }
 
@@ -644,7 +645,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getType().equals(type)) {
+                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }

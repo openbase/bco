@@ -51,12 +51,11 @@ import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.homeautomation.binding.BindingConfigType.BindingConfig;
-import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.BindingServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
@@ -118,22 +117,22 @@ public class MockRegistry {
 
     public enum MockUnitTemplate {
 
-        AMBIENT_LIGHT(UnitType.AMBIENT_LIGHT, ServiceType.COLOR_SERVICE, ServiceType.POWER_SERVICE, ServiceType.BRIGHTNESS_SERVICE),
-        LIGHT(UnitType.LIGHT, ServiceType.POWER_SERVICE),
-        MOTION_SENSOR(UnitType.MOTION_SENSOR, ServiceType.MOTION_PROVIDER),
-        BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, ServiceType.BRIGHTNESS_PROVIDER),
-        BUTTON(UnitType.BUTTON, ServiceType.BUTTON_PROVIDER),
-        DIMMER(UnitType.DIMMER, ServiceType.BRIGHTNESS_SERVICE, ServiceType.POWER_SERVICE),
-        HANDLE_SENSOR(UnitType.HANDLE_SENSOR, ServiceType.HANDLE_PROVIDER),
-        POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, ServiceType.POWER_CONSUMPTION_PROVIDER),
-        POWER_PLUG(UnitType.POWER_PLUG, ServiceType.POWER_SERVICE),
-        REED_SWITCH(UnitType.REED_SWITCH, ServiceType.REED_SWITCH_PROVIDER),
-        ROLLERSHUTTER(UnitType.ROLLERSHUTTER, ServiceType.SHUTTER_SERVICE, ServiceType.OPENING_RATIO_SERVICE),
-        TAMPER_SWITCH(UnitType.TAMPER_SWITCH, ServiceType.TAMPER_PROVIDER),
-        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TARGET_TEMPERATURE_SERVICE, ServiceType.TEMPERATURE_PROVIDER),
-        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, ServiceType.SMOKE_STATE_PROVIDER, ServiceType.SMOKE_ALARM_STATE_PROVIDER),
-        TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, ServiceType.TEMPERATURE_PROVIDER), // TODO mpohling: whats about temperature service?
-        BATTERY(UnitType.BATTERY, ServiceType.BATTERY_PROVIDER);
+        AMBIENT_LIGHT(UnitType.COLORABLE_LIGHT, ServiceType.CONTACT_STATE_SERVICE, ServiceType.POWER_STATE_SERVICE, ServiceType.BRIGHTNESS_STATE_SERVICE),
+        LIGHT(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE),
+        MOTION_SENSOR(UnitType.MOTION_DETECTOR, ServiceType.MOTION_STATE_SERVICE),
+        BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, ServiceType.BRIGHTNESS_STATE_SERVICE),
+        BUTTON(UnitType.BUTTON, ServiceType.BUTTON_STATE_SERVICE),
+        DIMMER(UnitType.DIMMER, ServiceType.INTENSITY_STATE_SERVICE, ServiceType.POWER_STATE_SERVICE),
+        HANDLE_SENSOR(UnitType.HANDLE, ServiceType.HANDLE_STATE_SERVICE),
+        POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, ServiceType.POWER_CONSUMPTION_STATE_SERVICE),
+        POWER_PLUG(UnitType.POWER_SWITCH, ServiceType.POWER_STATE_SERVICE),
+        REED_SWITCH(UnitType.REED_CONTACT, ServiceType.CONTACT_STATE_SERVICE),
+        ROLLERSHUTTER(UnitType.ROLLER_SHUTTER, ServiceType.BLIND_STATE_SERVICE),
+        TAMPER_SWITCH(UnitType.TAMPER_DETECTOR, ServiceType.TAMPER_STATE_SERVICE),
+        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServiceType.TEMPERATURE_STATE_SERVICE),
+        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, ServiceType.SMOKE_STATE_SERVICE, ServiceType.SMOKE_ALARM_STATE_SERVICE),
+        TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, ServiceType.TEMPERATURE_STATE_SERVICE),
+        BATTERY(UnitType.BATTERY, ServiceType.BATTERY_STATE_SERVICE);
 
         private final UnitTemplate template;
 
@@ -141,7 +140,7 @@ public class MockRegistry {
             UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
             for (ServiceType serviceType : serviceTypes) {
-                templateBuilder.addServiceType(serviceType);
+                templateBuilder.addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceType));
             }
             this.template = templateBuilder.build();
         }
@@ -294,7 +293,7 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
-            
+
             logger.info("Started app/agent/scene registries!");
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
@@ -338,18 +337,18 @@ public class MockRegistry {
 
         try {
             // ambient light
-            DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.AMBIENT_LIGHT)).get();
-            units.add(getUnitConfig(UnitType.AMBIENT_LIGHT, AMBIENT_LIGHT_LABEL));
+            DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
+            units.add(getUnitConfig(UnitType.COLORABLE_LIGHT, AMBIENT_LIGHT_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units)).get();
 
             units.clear();
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
-            DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_SENSOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_SWITCH)).get();
-            units.add(getUnitConfig(UnitType.MOTION_SENSOR, MOTION_SENSOR_LABEL));
+            DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
+            units.add(getUnitConfig(UnitType.MOTION_DETECTOR, MOTION_SENSOR_LABEL));
             units.add(getUnitConfig(UnitType.BATTERY, BATTERY_LABEL));
             units.add(getUnitConfig(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL));
             units.add(getUnitConfig(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL));
-            units.add(getUnitConfig(UnitType.TAMPER_SWITCH, TAMPER_SWITCH_LABEL));
+            units.add(getUnitConfig(UnitType.TAMPER_DETECTOR, TAMPER_SWITCH_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units)).get();
 
             units.clear();
@@ -366,8 +365,8 @@ public class MockRegistry {
 
             units.clear();
             // handle
-            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE_SENSOR)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE_SENSOR, HANDLE_SENSOR_LABEL));
+            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
+            units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE, HANDLE_SENSOR_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units)).get();
             units.clear();
             // light
@@ -377,21 +376,21 @@ public class MockRegistry {
 
             units.clear();
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_PLUG, UnitType.POWER_CONSUMPTION_SENSOR)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.POWER_PLUG, POWER_PLUG_LABEL));
+            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
+            units.add(getUnitConfig(UnitTemplate.UnitType.POWER_SWITCH, POWER_PLUG_LABEL));
             units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units)).get();
 
             units.clear();
             // reedSwitch
-            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_SWITCH)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.REED_SWITCH, REED_SWITCH_LABEL));
+            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
+            units.add(getUnitConfig(UnitTemplate.UnitType.REED_CONTACT, REED_SWITCH_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units)).get();
 
             units.clear();
             // rollershutter
-            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLERSHUTTER)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.ROLLERSHUTTER, ROLLERSHUTTER_LABEL));
+            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
+            units.add(getUnitConfig(UnitTemplate.UnitType.ROLLER_SHUTTER, ROLLERSHUTTER_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units)).get();
 
             units.clear();
@@ -419,16 +418,16 @@ public class MockRegistry {
 
     public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        for (ServiceType type : template.getServiceTypeList()) {
-            BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = BindingServiceConfigType.BindingServiceConfig.newBuilder().setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB).build();
-            serviceConfigList.add(ServiceConfig.newBuilder().setType(type).setBindingServiceConfig(bindingServiceConfig).build());
+        for (ServiceTemplate serviceTemplate : template.getServiceTemplateList()) {
+            BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
+            serviceConfigList.add(ServiceConfig.newBuilder().setServiceTemplate(serviceTemplate).setBindingConfig(bindingServiceConfig).build());
         }
         return serviceConfigList;
     }
 
     public static UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
         UnitTemplate template = MockUnitTemplate.getTemplate(type);
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToDevice(false).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToSystemUnit(false).build();
     }
 
     public static DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
@@ -445,11 +444,11 @@ public class MockRegistry {
     private static List<UnitTemplateConfig> getUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
         List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
         for (UnitTemplate.UnitType type : unitTypes) {
-            List<ServiceTemplate> serviceTemplates = new ArrayList<>();
-            for (ServiceType serviceType : MockUnitTemplate.getTemplate(type).getServiceTypeList()) {
-                serviceTemplates.add(ServiceTemplate.newBuilder().setServiceType(serviceType).build());
+            List<ServiceTemplateConfig> serviceTemplateConfigs = new ArrayList<>();
+            for (ServiceTemplate serviceTemplate : MockUnitTemplate.getTemplate(type).getServiceTemplateList()) {
+                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceTemplate.getType()).build());
             }
-            UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplate(serviceTemplates).build();
+            UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
             unitTemplateConfigs.add(config);
         }
         return unitTemplateConfigs;
@@ -466,7 +465,7 @@ public class MockRegistry {
 
     public static BindingConfig getBindingConfig() {
         BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
-        bindingConfigBuilder.setType(BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB);
+        bindingConfigBuilder.setBindingId("OPENHAB");
         return bindingConfigBuilder.build();
     }
 

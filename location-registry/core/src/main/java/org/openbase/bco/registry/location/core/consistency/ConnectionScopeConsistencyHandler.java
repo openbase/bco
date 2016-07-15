@@ -2,7 +2,7 @@ package org.openbase.bco.registry.location.core.consistency;
 
 /*
  * #%L
- * REM LocationRegistry Core
+ * REM LocationRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -33,7 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.rsb.ScopeType.Scope;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
@@ -41,9 +41,9 @@ import rst.spatial.LocationRegistryType.LocationRegistry;
  */
 public class ConnectionScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, ConnectionConfig, ConnectionConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry;
 
-    public ConnectionScopeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRegistry) {
+    public ConnectionScopeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry) {
         this.locationConfigRegistry = locationConfigRegistry;
     }
 

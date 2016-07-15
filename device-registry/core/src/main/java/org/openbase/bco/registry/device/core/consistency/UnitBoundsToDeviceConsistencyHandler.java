@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -30,10 +29,9 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
-import rst.homeautomation.device.DeviceClassType;
-import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -44,28 +42,28 @@ public class UnitBoundsToDeviceConsistencyHandler extends AbstractProtoBufRegist
 
     public static final boolean DEFAULT_BOUND_TO_DEVICE = true;
 
-    private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
 
-    public UnitBoundsToDeviceConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) throws InstantiationException {
+    public UnitBoundsToDeviceConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry) throws InstantiationException {
         this.deviceClassRegistry = deviceClassRegistry;
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
+        DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
 
             // Setup default bounding
-            if (!unitConfig.hasBoundToDevice()) {
-                unitConfig.setBoundToDevice(DEFAULT_BOUND_TO_DEVICE);
+            if (!unitConfig.hasBoundToSystemUnit()) {
+                unitConfig.setBoundToSystemUnit(DEFAULT_BOUND_TO_DEVICE);
                 modification = true;
             }
 
             // Copy device placement and label if bound to device is enabled.
-            if (unitConfig.getBoundToDevice()) {
+            if (unitConfig.getBoundToSystemUnit()) {
 
                 // copy location id
                 if (!unitConfig.getPlacementConfig().getLocationId().equals(deviceConfig.getPlacementConfig().getLocationId())) {

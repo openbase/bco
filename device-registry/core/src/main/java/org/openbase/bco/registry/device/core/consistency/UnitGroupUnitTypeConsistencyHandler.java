@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -29,8 +29,8 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.List;
-import rst.homeautomation.device.DeviceRegistryType;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -41,9 +41,9 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitGroupConfig, UnitGroupConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry;
 
-    public UnitGroupUnitTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryType.DeviceRegistry.Builder> unitTemplateRegistry) {
+    public UnitGroupUnitTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
 
@@ -51,20 +51,20 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
     public void processData(String id, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitGroupConfig.Builder unitGroup = entry.getMessage().toBuilder();
         if (unitGroup.hasUnitType() && !(unitGroup.getUnitType() == UnitType.UNKNOWN)) {
-            if (unitGroup.getServiceTypeList().isEmpty()) {
-                throw new EntryModification(entry.setMessage(unitGroup.addAllServiceType(unitTemplateRegistry.get(unitGroup.getUnitType().toString()).getMessage().getServiceTypeList())), this);
+            if (unitGroup.getServiceTemplateList().isEmpty()) {
+                throw new EntryModification(entry.setMessage(unitGroup.addAllServiceTemplate(unitTemplateRegistry.get(unitGroup.getUnitType().toString()).getMessage().getServiceTemplateList())), this);
             }
-            if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceTypeList())) {
+            if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceTemplateList())) {
                 throw new EntryModification(entry.setMessage(unitGroup.setUnitType(UnitType.UNKNOWN)), this);
             }
         }
     }
 
-    private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceType> serviceTypes) throws CouldNotPerformException {
+    private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceTemplate> serviceTemplates) throws CouldNotPerformException {
         UnitTemplate unitTemplate = unitTemplateRegistry.get(unitType.toString()).getMessage();
-        if (!serviceTypes.stream().noneMatch((serviceType) -> (!unitTemplate.getServiceTypeList().contains(serviceType)))) {
+        if (!serviceTemplates.stream().noneMatch((serviceTemplate) -> (!unitTemplate.getServiceTemplateList().contains(serviceTemplate)))) {
             return false;
         }
-        return unitTemplate.getServiceTypeList().stream().noneMatch((serviceType) -> (!serviceTypes.contains(serviceType)));
+        return unitTemplate.getServiceTemplateList().stream().noneMatch((serviceType) -> (!serviceTemplates.contains(serviceType)));
     }
 }

@@ -29,6 +29,7 @@ import org.openbase.bco.registry.user.core.consistency.UserConfigScopeConsistenc
 import org.openbase.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.UserGroupConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.UserGroupConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.generator.UserConfigIdGenerator;
 import org.openbase.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
 import org.openbase.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
@@ -55,30 +56,30 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserGroupConfigType.UserGroupConfig;
-import rst.authorization.UserRegistryType.UserRegistry;
+import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class UserRegistryController extends RSBCommunicationService<UserRegistry, UserRegistry.Builder> implements org.openbase.bco.registry.user.lib.UserRegistry, Manageable<ScopeType.Scope> {
+public class UserRegistryController extends RSBCommunicationService<UserRegistryData, UserRegistryData.Builder> implements UserRegistry, Manageable<ScopeType.Scope> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserGroupConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> userRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistry.Builder> userGroupRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> userRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> userGroupRegistry;
 
     public UserRegistryController() throws InstantiationException, InterruptedException {
-        super(UserRegistry.newBuilder());
+        super(UserRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistry.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistry.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             userRegistry.setName("UserRegistry");
             userRegistry.loadRegistry();
@@ -167,21 +168,21 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(UserRegistry.USER_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userRegistry.isReadOnly());
-        setDataField(UserRegistry.GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userGroupRegistry.isReadOnly());
+        setDataField(UserRegistryData.USER_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userRegistry.isReadOnly());
+        setDataField(UserRegistryData.GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userGroupRegistry.isReadOnly());
         super.notifyChange();
     }
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.registry.user.lib.UserRegistry.class, this, server);
+        RPCHelper.registerInterface(UserRegistry.class, this, server);
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> getUserRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> getUserRegistry() {
         return userRegistry;
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistry.Builder> getGroupRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> getGroupRegistry() {
         return userGroupRegistry;
     }
 

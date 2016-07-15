@@ -21,7 +21,6 @@ package org.openbase.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,7 +36,6 @@ import java.util.Set;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType;
-import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
@@ -54,7 +52,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
 
     @Override
     public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        LocationConfigType.LocationConfig locationConfig = entry.getMessage();
+        LocationConfig locationConfig = entry.getMessage();
 
         Collection<String> lookupUnitIds;
 
@@ -92,7 +90,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
                     }
 
                     // filter units which are currently not installed
-                    DeviceConfigType.DeviceConfig deviceConfig = deviceRegistryRemote.getDeviceConfigById(unitConfig.getDeviceId());
+                    DeviceConfigType.DeviceConfig deviceConfig = deviceRegistryRemote.getDeviceConfigById(unitConfig.getSystemUnitId());
                     if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                         continue;
                     }

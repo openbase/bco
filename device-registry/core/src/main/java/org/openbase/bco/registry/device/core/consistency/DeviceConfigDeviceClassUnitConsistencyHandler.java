@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -36,9 +36,10 @@ import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType;
-import rst.homeautomation.service.BindingServiceConfigType;
+import rst.homeautomation.device.DeviceRegistryDataType;
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
@@ -49,9 +50,9 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  */
 public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryDataType.DeviceRegistryData.Builder> deviceClassRegistry;
 
-    public DeviceConfigDeviceClassUnitConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
+    public DeviceConfigDeviceClassUnitConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryDataType.DeviceRegistryData.Builder> deviceClassRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
     }
 
@@ -68,13 +69,15 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         List<UnitConfig> unitConfigs = new ArrayList<>(deviceConfig.getUnitConfigList());
         deviceConfig.clearUnitConfig();
 
-        for (UnitTemplateConfig unitTemplate : deviceClass.getUnitTemplateConfigList()) {
-            if (!unitWithRelatedTemplateExists(unitConfigs, unitTemplate)) {
+        for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+            if (!unitWithRelatedTemplateExists(unitConfigs, unitTemplateConfig)) {
                 List<ServiceConfig> serviceConfigs = new ArrayList<>();
-                for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
-                    serviceConfigs.add(ServiceConfig.newBuilder().setType(serviceTemplate.getServiceType()).setBindingServiceConfig(BindingServiceConfigType.BindingServiceConfig.newBuilder().setType(deviceClass.getBindingConfig().getType())).build());
+                for (ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
+                    ServiceConfig.Builder serviceConfig = ServiceConfig.newBuilder().setBindingConfig(BindingConfig.newBuilder().setBindingId(deviceClass.getBindingConfig().getBindingId()));
+                    serviceConfig.setServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplateConfig.getServiceType()));
+                    serviceConfigs.add(serviceConfig.build());
                 }
-                unitConfigs.add(UnitConfig.newBuilder().setType(unitTemplate.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplate.getId()).build());
+                unitConfigs.add(UnitConfig.newBuilder().setType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).build());
                 modification = true;
             }
         }

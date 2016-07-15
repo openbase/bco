@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,7 +21,6 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -30,11 +29,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
-import rst.homeautomation.binding.BindingTypeHolderType.BindingTypeHolder.BindingType;
-import rst.homeautomation.device.DeviceClassType;
+import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType;
-import rst.homeautomation.service.BindingServiceConfigType;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -44,9 +42,9 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
 
-    public ServiceConfigBindingTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
+    public ServiceConfigBindingTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
     }
 
@@ -61,29 +59,29 @@ public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBuf
             unitConfig.clearServiceConfig();
             for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
 
-                if (!serviceConfig.hasBindingServiceConfig()) {
+                if (!serviceConfig.hasBindingConfig()) {
                     throw new NotAvailableException("serviceconfig.bindingserviceconfig");
                 }
 
-                BindingServiceConfigType.BindingServiceConfig bindingServiceConfig = serviceConfig.getBindingServiceConfig();
+                BindingConfig bindingConfig = serviceConfig.getBindingConfig();
 
                 if (!deviceConfig.hasDeviceClassId()) {
                     throw new NotAvailableException("deviceclass");
                 }
 
-                DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId());
+                DeviceClass deviceClass = deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId());
                 if (!deviceClass.hasBindingConfig()) {
                     throw new NotAvailableException("deviceclass.bindingconfig");
                 }
 
-                if (!deviceClass.getBindingConfig().hasType() || deviceClass.getBindingConfig().getType() == BindingType.UNKNOWN) {
+                if (!deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().equals("UNKNOWN")) {
                     throw new NotAvailableException("deviceclass.bindingconfig.type");
                 }
 
-                BindingType bindingType = deviceClass.getBindingConfig().getType();
+                String bindingId = deviceClass.getBindingConfig().getBindingId();
 
-                if (!bindingServiceConfig.hasType() || bindingServiceConfig.getType() != bindingType) {
-                    serviceConfig.setBindingServiceConfig(bindingServiceConfig.toBuilder().setType(bindingType).build());
+                if (!bindingConfig.hasBindingId() || !bindingConfig.getBindingId().equals(bindingId)) {
+                    serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build());
                     modification = true;
                 }
                 unitConfig.addServiceConfig(serviceConfig);

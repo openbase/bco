@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -48,8 +49,9 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
@@ -61,23 +63,23 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> implements org.openbase.bco.registry.device.lib.DeviceRegistry, Remote<DeviceRegistry> {
+public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> implements DeviceRegistry, Remote<DeviceRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRemoteRegistry;
-    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRemoteRegistry;
-    private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupRemoteRegistry;
+    private final RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRemoteRegistry;
+    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRemoteRegistry;
+    private final RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> deviceConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistryData.Builder> unitGroupRemoteRegistry;
 
     public DeviceRegistryRemote() throws InstantiationException {
-        super(DeviceRegistry.class);
+        super(DeviceRegistryData.class);
         try {
             unitTemplateRemoteRegistry = new RemoteRegistry<>();
             deviceClassRemoteRegistry = new RemoteRegistry<>();
@@ -156,26 +158,26 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void notifyDataUpdate(final DeviceRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final DeviceRegistryData data) throws CouldNotPerformException {
         unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
         deviceClassRemoteRegistry.notifyRegistryUpdate(data.getDeviceClassList());
         deviceConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceConfigList());
         unitGroupRemoteRegistry.notifyRegistryUpdate(data.getUnitGroupConfigList());
     }
 
-    public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRemoteRegistry() {
+    public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> getUnitTemplateRemoteRegistry() {
         return unitTemplateRemoteRegistry;
     }
 
-    public RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> getDeviceClassRemoteRegistry() {
+    public RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> getDeviceClassRemoteRegistry() {
         return deviceClassRemoteRegistry;
     }
 
-    public RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> getDeviceConfigRemoteRegistry() {
+    public RemoteRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> getDeviceConfigRemoteRegistry() {
         return deviceConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> getUnitGroupConfigRemoteRegistry() {
+    public RemoteRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistryData.Builder> getUnitGroupConfigRemoteRegistry() {
         return unitGroupRemoteRegistry;
     }
 
@@ -205,7 +207,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
      */
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException {
-        validateData();     
+        validateData();
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
 
@@ -513,7 +515,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getType() == serviceType) {
+                if (serviceConfig.getServiceTemplate().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }
@@ -771,8 +773,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
             boolean skipGroup = false;
-            for (ServiceType serviceType : unitGroup.getServiceTypeList()) {
-                if (!serviceTypes.contains(serviceType)) {
+            for (ServiceTemplate serviceTemplate : unitGroup.getServiceTemplateList()) {
+                if (!serviceTypes.contains(serviceTemplate.getType())) {
                     skipGroup = true;
                 }
             }
@@ -857,7 +859,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistry> imple
             foundServiceType = false;
             for (ServiceType serviceType : serviceTypes) {
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getType() == serviceType) {
+                    if (serviceConfig.getServiceTemplate().getType() == serviceType) {
                         foundServiceType = true;
                     }
                 }

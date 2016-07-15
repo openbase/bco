@@ -33,7 +33,6 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.Map;
 import java.util.TreeMap;
-import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -51,7 +50,7 @@ public class UnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistenc
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
+        DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         deviceConfig.clearUnitConfig();
         boolean modification = false;
@@ -63,7 +62,7 @@ public class UnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistenc
 
             // check if unit id is unique.
             if (unitMap.containsKey(unitConfig.getId())) {
-                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getDeviceId() + "]!");
+                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getSystemUnitId()+ "]!");
             }
             unitMap.put(unitConfig.getId(), unitConfig.build());
             deviceConfig.addUnitConfig(unitConfig);

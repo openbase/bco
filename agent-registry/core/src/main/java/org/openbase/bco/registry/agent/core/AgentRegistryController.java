@@ -28,6 +28,7 @@ import org.openbase.bco.registry.agent.core.consistency.LabelConsistencyHandler;
 import org.openbase.bco.registry.agent.core.consistency.LocationIdConsistencyHandler;
 import org.openbase.bco.registry.agent.core.consistency.ScopeConsistencyHandler;
 import org.openbase.bco.registry.agent.core.dbconvert.AgentConfig_0_To_1_DBConverter;
+import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
@@ -49,39 +50,38 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
  * @author mpohling
  */
-public class AgentRegistryController extends RSBCommunicationService<AgentRegistry, AgentRegistry.Builder> implements org.openbase.bco.registry.agent.lib.AgentRegistry {
+public class AgentRegistryController extends RSBCommunicationService<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfigType.AgentConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> agentConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> agentConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private Observer<LocationRegistry> locationRegistryUpdateObserver;
+    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
-        super(AgentRegistry.newBuilder());
+        super(AgentRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistry.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             agentConfigRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
 
-            locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
+            locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
 
                 @Override
-                public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+                public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
                     agentConfigRegistry.checkConsistency();
                 }
             };
@@ -152,20 +152,20 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
-        
+
         locationRegistryRemote.shutdown();
     }
 
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(AgentRegistry.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
+        setDataField(AgentRegistryData.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.registry.agent.lib.AgentRegistry.class, this, server);
+        RPCHelper.registerInterface(AgentRegistry.class, this, server);
     }
 
     @Override
@@ -208,7 +208,7 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
         return agentConfigRegistry.isReadOnly();
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistry.Builder> getAgentConfigRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> getAgentConfigRegistry() {
         return agentConfigRegistry;
     }
 }

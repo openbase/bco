@@ -23,6 +23,7 @@ package org.openbase.bco.registry.scene.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -42,24 +43,24 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
+import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> implements org.openbase.bco.registry.scene.lib.SceneRegistry, Remote<SceneRegistry> {
+public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> sceneConfigRemoteRegistry;
+    private final RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> sceneConfigRemoteRegistry;
 
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
-        super(SceneRegistry.class);
+        super(SceneRegistryData.class);
         try {
             sceneConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
@@ -143,11 +144,11 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistry> impleme
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void notifyDataUpdate(final SceneRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final SceneRegistryData data) throws CouldNotPerformException {
         sceneConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneConfigList());
     }
 
-    public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistry.Builder> getSceneConfigRemoteRegistry() {
+    public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> getSceneConfigRemoteRegistry() {
         return sceneConfigRemoteRegistry;
     }
 

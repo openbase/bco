@@ -83,7 +83,7 @@ public class DeviceConfigUtils {
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final DeviceConfigOrBuilder deviceConfig, final DeviceClassOrBuilder deviceClass, boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
         try {
-            if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToDevice()) {
+            if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToSystemUnit()) {
                 if (deviceConfigHasDuplicatedUnitType) {
                     if (unitConfig.hasLabel() && !unitConfig.getLabel().isEmpty()) {
                         return false;

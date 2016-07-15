@@ -57,6 +57,7 @@ import org.openbase.bco.registry.device.core.consistency.UnitTransformationFrame
 import org.openbase.bco.registry.device.core.dbconvert.DeviceConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.device.core.plugin.PublishDeviceTransformationRegistryPlugin;
 import org.openbase.bco.registry.device.core.plugin.UnitTemplateCreatorRegistryPlugin;
+import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.generator.DeviceConfigIdGenerator;
 import org.openbase.bco.registry.device.lib.generator.UnitGroupIdGenerator;
@@ -88,51 +89,52 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserRegistryType.UserRegistry;
+import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
  * @author mpohling
  */
-public class DeviceRegistryController extends RSBCommunicationService<DeviceRegistry, DeviceRegistry.Builder> implements org.openbase.bco.registry.device.lib.DeviceRegistry, Manageable<ScopeType.Scope> {
+public class DeviceRegistryController extends RSBCommunicationService<DeviceRegistryData, DeviceRegistryData.Builder> implements DeviceRegistry, Manageable<ScopeType.Scope> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> unitTemplateRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> deviceClassRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> deviceConfigRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> unitGroupConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> deviceConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistryData.Builder> unitGroupConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
     private final UserRegistryRemote userRegistryRemote;
-    private Observer<LocationRegistry> locationRegistryUpdateObserver;
-    private Observer<UserRegistry> userRegistryUpdateObserver;
+    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
+    private Observer<UserRegistryData> userRegistryUpdateObserver;
 
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
-        super(DeviceRegistry.newBuilder());
+        super(DeviceRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistry.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistry.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistry.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistry.UNIT_GROUP_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.UNIT_GROUP_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             deviceConfigRegistry.activateVersionControl(DeviceConfig_0_To_1_DBConverter.class.getPackage());
 
@@ -200,11 +202,11 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             });
 
             // Check the device configs if the locations are modifiered.
-            locationRegistryUpdateObserver = (Observable<LocationRegistry> source, LocationRegistry data) -> {
+            locationRegistryUpdateObserver = (Observable<LocationRegistryData> source, LocationRegistryData data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
 
-            userRegistryUpdateObserver = (Observable<UserRegistry> source, UserRegistry data) -> {
+            userRegistryUpdateObserver = (Observable<UserRegistryData> source, UserRegistryData data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
 
@@ -343,10 +345,10 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(DeviceRegistry.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
-        setDataField(DeviceRegistry.DEVICE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceConfigRegistry.isReadOnly());
-        setDataField(DeviceRegistry.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
-        setDataField(DeviceRegistry.UNIT_GROUP_REGISTRY_READ_ONLY_FIELD_NUMBER, unitGroupConfigRegistry.isReadOnly());
+        setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
+        setDataField(DeviceRegistryData.DEVICE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceConfigRegistry.isReadOnly());
+        setDataField(DeviceRegistryData.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
+        setDataField(DeviceRegistryData.UNIT_GROUP_REGISTRY_READ_ONLY_FIELD_NUMBER, unitGroupConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
@@ -358,7 +360,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
      */
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.registry.device.lib.DeviceRegistry.class, this, server);
+        RPCHelper.registerInterface(DeviceRegistry.class, this, server);
     }
 
     /**
@@ -792,7 +794,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getType() == serviceType) {
+                if (serviceConfig.getServiceTemplate().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }
@@ -800,19 +802,19 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         return serviceConfigs;
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistry.Builder> getUnitTemplateRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> getUnitTemplateRegistry() {
         return unitTemplateRegistry;
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistry.Builder> getDeviceClassRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> getDeviceClassRegistry() {
         return deviceClassRegistry;
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistry.Builder> getDeviceConfigRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, DeviceConfig, DeviceConfig.Builder, DeviceRegistryData.Builder> getDeviceConfigRegistry() {
         return deviceConfigRegistry;
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistry.Builder> getUnitGroupRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder, DeviceRegistryData.Builder> getUnitGroupRegistry() {
         return unitGroupConfigRegistry;
     }
 
@@ -951,8 +953,8 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
         List<UnitGroupConfig> unitGroups = new ArrayList<>();
         for (UnitGroupConfig unitGroup : getUnitGroupConfigs()) {
             boolean skipGroup = false;
-            for (ServiceType serviceType : unitGroup.getServiceTypeList()) {
-                if (!serviceTypes.contains(serviceType)) {
+            for (ServiceTemplate serviceTemplate : unitGroup.getServiceTemplateList()) {
+                if (!serviceTypes.contains(serviceTemplate.getType())) {
                     skipGroup = true;
                 }
             }
@@ -999,7 +1001,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             foundServiceType = false;
             for (ServiceType serviceType : serviceTypes) {
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getType() == serviceType) {
+                    if (serviceConfig.getServiceTemplate().getType() == serviceType) {
                         foundServiceType = true;
                     }
                 }

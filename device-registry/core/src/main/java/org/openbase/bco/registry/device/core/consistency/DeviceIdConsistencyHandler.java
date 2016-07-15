@@ -47,8 +47,8 @@ public class DeviceIdConsistencyHandler extends AbstractProtoBufRegistryConsiste
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfigType.UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-            if (!unitConfig.hasDeviceId() || unitConfig.getDeviceId().isEmpty() || !unitConfig.getDeviceId().equals(deviceConfig.getId())) {
-                unitConfig.setDeviceId(deviceConfig.getId());
+            if (!unitConfig.hasSystemUnitId()|| unitConfig.getSystemUnitId().isEmpty() || !unitConfig.getSystemUnitId().equals(deviceConfig.getId())) {
+                unitConfig.setSystemUnitId(deviceConfig.getId());
                 modification = true;
             }
             deviceConfig.addUnitConfig(unitConfig);

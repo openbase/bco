@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -53,26 +54,26 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
  * @author mpohling
  */
-public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> implements org.openbase.bco.registry.location.lib.LocationRegistry, Remote<LocationRegistry> {
+public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryData> implements LocationRegistry, Remote<LocationRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> locationConfigRemoteRegistry;
-    private final RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> connectionConfigRemoteRegistry;
+    private final RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRemoteRegistry;
+    private final RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> connectionConfigRemoteRegistry;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
     public LocationRegistryRemote() throws InstantiationException {
-        super(LocationRegistry.class);
+        super(LocationRegistryData.class);
         try {
             this.locationConfigRemoteRegistry = new RemoteRegistry<>();
             this.connectionConfigRemoteRegistry = new RemoteRegistry<>();
@@ -174,16 +175,16 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void notifyDataUpdate(final LocationRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final LocationRegistryData data) throws CouldNotPerformException {
         locationConfigRemoteRegistry.notifyRegistryUpdate(data.getLocationConfigList());
         connectionConfigRemoteRegistry.notifyRegistryUpdate(data.getConnectionConfigList());
     }
 
-    public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistry.Builder> getLocationConfigRemoteRegistry() {
+    public RemoteRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> getLocationConfigRemoteRegistry() {
         return locationConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistry.Builder> getConnectionConfigRemoteRegistry() {
+    public RemoteRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> getConnectionConfigRemoteRegistry() {
         return connectionConfigRemoteRegistry;
     }
 
@@ -386,7 +387,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getType().equals(type)) {
+                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }
@@ -602,7 +603,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistry> i
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getType().equals(type)) {
+                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }

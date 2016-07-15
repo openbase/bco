@@ -24,6 +24,7 @@ package org.openbase.bco.registry.user.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -45,26 +46,26 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserGroupConfigType.UserGroupConfig;
-import rst.authorization.UserRegistryType.UserRegistry;
+import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.rsb.ScopeType;
 
 /**
  *
  * @author mpohling
  */
-public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implements org.openbase.bco.registry.user.lib.UserRegistry, Remote<UserRegistry> {
+public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> implements UserRegistry, Remote<UserRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistry.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserGroupConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> userConfigRemoteRegistry;
-    private final RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistry.Builder> groupConfigRemoteRegistry;
+    private final RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> userConfigRemoteRegistry;
+    private final RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> groupConfigRemoteRegistry;
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
-        super(UserRegistry.class);
+        super(UserRegistryData.class);
         try {
             userConfigRemoteRegistry = new RemoteRegistry<>();
             groupConfigRemoteRegistry = new RemoteRegistry<>();
@@ -116,7 +117,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
             throw new InitializationException(this, ex);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -131,16 +132,16 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistry> implement
     }
 
     @Override
-    public void notifyDataUpdate(final UserRegistry data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final UserRegistryData data) throws CouldNotPerformException {
         userConfigRemoteRegistry.notifyRegistryUpdate(data.getUserConfigList());
         groupConfigRemoteRegistry.notifyRegistryUpdate(data.getUserGroupConfigList());
     }
 
-    public RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistry.Builder> getUserConfigRemoteRegistry() {
+    public RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> getUserConfigRemoteRegistry() {
         return userConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistry.Builder> getGroupConfigRemoteRegistry() {
+    public RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> getGroupConfigRemoteRegistry() {
         return groupConfigRemoteRegistry;
     }
 

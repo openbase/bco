@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.app.core.consistency.LabelConsistencyHandler;
 import org.openbase.bco.registry.app.core.consistency.ScopeConsistencyHandler;
+import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
@@ -48,38 +49,37 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.app.AppConfigType;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
-import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
+import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.rsb.ScopeType;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
  * @author mpohling
  */
-public class AppRegistryController extends RSBCommunicationService<AppRegistry, AppRegistry.Builder> implements org.openbase.bco.registry.app.lib.AppRegistry, Manageable<ScopeType.Scope> {
+public class AppRegistryController extends RSBCommunicationService<AppRegistryData, AppRegistryData.Builder> implements AppRegistry, Manageable<ScopeType.Scope> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfigType.AppConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> appConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> appConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private Observer<LocationRegistry> locationRegistryUpdateObserver;
+    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
 
     public AppRegistryController() throws InstantiationException, InterruptedException {
-        super(AppRegistry.newBuilder());
+        super(AppRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistry.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
-            locationRegistryUpdateObserver = new Observer<LocationRegistry>() {
+            locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
 
                 @Override
-                public void update(Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+                public void update(Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
                     appConfigRegistry.checkConsistency();
                 }
             };
@@ -156,13 +156,13 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(AppRegistry.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
+        setDataField(AppRegistryData.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
         super.notifyChange();
     }
 
     @Override
     public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.registry.app.lib.AppRegistry.class, this, server);
+        RPCHelper.registerInterface(AppRegistry.class, this, server);
     }
 
     @Override
@@ -205,7 +205,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistry, 
         return appConfigRegistry.isReadOnly();
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistry.Builder> getAppConfigRegistry() {
+    public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> getAppConfigRegistry() {
         return appConfigRegistry;
     }
 }

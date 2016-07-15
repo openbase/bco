@@ -276,7 +276,7 @@ public class LocationRegistryTest {
 
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            remote.getUnitConfigsByLocation(UnitTemplate.UnitType.AMBIENT_LIGHT, "Quark");
+            remote.getUnitConfigsByLocation(UnitTemplate.UnitType.COLORABLE_LIGHT, "Quark");
             assertTrue("Exception handling failed!", false);
         } catch (CouldNotPerformException ex) {
             // this should happen id unit type is unknown!

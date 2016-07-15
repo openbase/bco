@@ -2,7 +2,7 @@ package org.openbase.bco.registry.device.core.consistency;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * REM DeviceRegistryData Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -33,7 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.device.DeviceRegistryDataType;
 
 /**
  *
@@ -41,9 +41,9 @@ import rst.homeautomation.device.DeviceRegistryType;
  */
 public class DeviceConfigDeviceClassIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryDataType.DeviceRegistryData.Builder> deviceClassRegistry;
 
-    public DeviceConfigDeviceClassIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryType.DeviceRegistry.Builder> deviceClassRegistry) {
+    public DeviceConfigDeviceClassIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder, DeviceRegistryDataType.DeviceRegistryData.Builder> deviceClassRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
     }
 
