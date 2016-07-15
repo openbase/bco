@@ -24,9 +24,9 @@ package org.openbase.bco.manager.agent.test.preset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
-import org.openbase.bco.dal.remote.unit.DimmerRemote;
-import org.openbase.bco.dal.remote.unit.PowerPlugRemote;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.DimmableLightRemote;
+import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
 import org.openbase.bco.manager.agent.remote.AgentRemote;
@@ -38,9 +38,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,7 +46,6 @@ import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -144,9 +141,9 @@ public class PowerStateSynchroniserAgentTest {
         agent.requestData().get();
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
         
-        DimmerRemote dimmerRemote = new DimmerRemote();
-        AmbientLightRemote ambientLightRemote = new AmbientLightRemote();
-        PowerPlugRemote powerPlugRemote = new PowerPlugRemote();
+        DimmableLightRemote dimmerRemote = new DimmableLightRemote();
+        ColorableLightRemote ambientLightRemote = new ColorableLightRemote();
+        PowerSwitchRemote powerPlugRemote = new PowerSwitchRemote();
         dimmerRemote.init(deviceRegistry.getUnitConfigById(sourceId));
         ambientLightRemote.init(deviceRegistry.getUnitConfigById(targetId1));
         powerPlugRemote.init(deviceRegistry.getUnitConfigById(targetId2));
@@ -162,51 +159,51 @@ public class PowerStateSynchroniserAgentTest {
         logger.info("Ambient light id [" + ambientLightRemote.getId() + "]");
         logger.info("Power plug id [" + powerPlugRemote.getId() + "]");
         
-        dimmerRemote.setPower(OFF).get();
+        dimmerRemote.setPowerState(OFF).get();
         Thread.sleep(50);
         dimmerRemote.requestData().get();
-        logger.info("Dimmer state [" + dimmerRemote.getPower().getValue() + "]");
+        logger.info("Dimmer state [" + dimmerRemote.getPowerState().getValue() + "]");
         ambientLightRemote.requestData().get();
         powerPlugRemote.requestData().get();
-        assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPower().getValue());
-        assertEquals("AmbientLight[Target] has not been turned off as a reaction", PowerState.State.OFF, ambientLightRemote.getPower().getValue());
-        assertEquals("PowerPlug[Target] has not been turned off as a reaction", PowerState.State.OFF, powerPlugRemote.getPower().getValue());
+        assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPowerState().getValue());
+        assertEquals("AmbientLight[Target] has not been turned off as a reaction", PowerState.State.OFF, ambientLightRemote.getPowerState().getValue());
+        assertEquals("PowerPlug[Target] has not been turned off as a reaction", PowerState.State.OFF, powerPlugRemote.getPowerState().getValue());
         
-        dimmerRemote.setPower(ON).get();
+        dimmerRemote.setPowerState(ON).get();
         dimmerRemote.requestData().get();
         Thread.sleep(50);
         ambientLightRemote.requestData().get();
         powerPlugRemote.requestData().get();
-        assertEquals("Dimmer[Source] has not been turned on", PowerState.State.ON, dimmerRemote.getPower().getValue());
-        assertEquals("AmbientLight[Target] has not been turned on as a reaction", PowerState.State.ON, ambientLightRemote.getPower().getValue());
-        assertEquals("PowerPlug[Target] has not been turned on as a reaction", PowerState.State.ON, powerPlugRemote.getPower().getValue());
+        assertEquals("Dimmer[Source] has not been turned on", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
+        assertEquals("AmbientLight[Target] has not been turned on as a reaction", PowerState.State.ON, ambientLightRemote.getPowerState().getValue());
+        assertEquals("PowerPlug[Target] has not been turned on as a reaction", PowerState.State.ON, powerPlugRemote.getPowerState().getValue());
         
-        ambientLightRemote.setPower(OFF).get();
+        ambientLightRemote.setPowerState(OFF).get();
         ambientLightRemote.requestData().get();
         Thread.sleep(50);
         dimmerRemote.requestData().get();
         powerPlugRemote.requestData().get();
-        assertEquals("AmbientLight[Target] has not been turned off", PowerState.State.OFF, ambientLightRemote.getPower().getValue());
-        assertEquals("PowerPlug[Target] should not have turned off as a reaction", PowerState.State.ON, powerPlugRemote.getPower().getValue());
-        assertEquals("Dimmer[Source] should not have been turned off as a reaction. One target was still on.", PowerState.State.ON, dimmerRemote.getPower().getValue());
+        assertEquals("AmbientLight[Target] has not been turned off", PowerState.State.OFF, ambientLightRemote.getPowerState().getValue());
+        assertEquals("PowerPlug[Target] should not have turned off as a reaction", PowerState.State.ON, powerPlugRemote.getPowerState().getValue());
+        assertEquals("Dimmer[Source] should not have been turned off as a reaction. One target was still on.", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
         
-        powerPlugRemote.setPower(OFF).get();
+        powerPlugRemote.setPowerState(OFF).get();
         powerPlugRemote.requestData().get();
         Thread.sleep(50);
         ambientLightRemote.requestData().get();
         dimmerRemote.requestData().get();
-        assertEquals("PowerPlug[Target] has not been turned off", PowerState.State.OFF, powerPlugRemote.getPower().getValue());
-        assertEquals("AmbientLight[Target] should still be off", PowerState.State.OFF, ambientLightRemote.getPower().getValue());
-        assertEquals("Dimmer[Source] should have been turned off as a reaction.", PowerState.State.OFF, dimmerRemote.getPower().getValue());
+        assertEquals("PowerPlug[Target] has not been turned off", PowerState.State.OFF, powerPlugRemote.getPowerState().getValue());
+        assertEquals("AmbientLight[Target] should still be off", PowerState.State.OFF, ambientLightRemote.getPowerState().getValue());
+        assertEquals("Dimmer[Source] should have been turned off as a reaction.", PowerState.State.OFF, dimmerRemote.getPowerState().getValue());
         
-        ambientLightRemote.setPower(ON).get();
+        ambientLightRemote.setPowerState(ON).get();
         ambientLightRemote.requestData().get();
         Thread.sleep(50);
         dimmerRemote.requestData().get();
         powerPlugRemote.requestData().get();
-        assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, ambientLightRemote.getPower().getValue());
-        assertEquals("PowerPlug[Target] should still be off", PowerState.State.OFF, powerPlugRemote.getPower().getValue());
-        assertEquals("Dimmer[Source] has not been turned on as a reaction", PowerState.State.ON, dimmerRemote.getPower().getValue());
+        assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, ambientLightRemote.getPowerState().getValue());
+        assertEquals("PowerPlug[Target] should still be off", PowerState.State.OFF, powerPlugRemote.getPowerState().getValue());
+        assertEquals("Dimmer[Source] has not been turned on as a reaction", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
         
         dimmerRemote.shutdown();
         ambientLightRemote.shutdown();
@@ -222,13 +219,13 @@ public class PowerStateSynchroniserAgentTest {
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
         
         for (UnitConfig unit : deviceRegistry.getUnitConfigs()) {
-            if (unit.getType() == UnitType.DIMMER && source.getValue().isEmpty()) {
+            if (unit.getType() == UnitType.DIMMABLE_LIGHT && source.getValue().isEmpty()) {
                 sourceId = unit.getId();
                 source.setValue(unit.getId());
-            } else if (unit.getType() == UnitType.AMBIENT_LIGHT && target1.getValue().isEmpty()) {
+            } else if (unit.getType() == UnitType.COLORABLE_LIGHT && target1.getValue().isEmpty()) {
                 targetId1 = unit.getId();
                 target1.setValue(unit.getId());
-            } else if (unit.getType() == UnitType.POWER_PLUG && target2.getValue().isEmpty()) {
+            } else if (unit.getType() == UnitType.POWER_SWITCH && target2.getValue().isEmpty()) {
                 targetId2 = unit.getId();
                 target2.setValue(unit.getId());
             }

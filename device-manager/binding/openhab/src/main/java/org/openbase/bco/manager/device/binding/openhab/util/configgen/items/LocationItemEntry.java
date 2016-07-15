@@ -26,6 +26,7 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -38,13 +39,13 @@ public class LocationItemEntry extends AbstractItemEntry {
     public static String LOCATION_GROUP_LABEL = "Locations";
     public static String LOCATION_RSB_BINDING_CONFIG = "bco.manager.location";
 
-    public LocationItemEntry(final LocationConfig locationConfig, final ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
+    public LocationItemEntry(final LocationConfig locationConfig, final ServiceTemplate serviceTemplate) throws org.openbase.jul.exception.InstantiationException {
         super();
         try {
-            this.itemId = generateItemId(locationConfig, serviceType);
+            this.itemId = generateItemId(locationConfig, serviceTemplate.getType());
             this.icon = "";
-            this.commandType = getDefaultCommand(serviceType);
-            this.label = locationConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name());
+            this.commandType = getDefaultCommand(serviceTemplate);
+            this.label = locationConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name());
             if("Number".equals(commandType)) {
                 label += " [%.0f]";
             }

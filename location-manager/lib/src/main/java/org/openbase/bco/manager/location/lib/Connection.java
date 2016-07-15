@@ -21,8 +21,8 @@ package org.openbase.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.HandleProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.provider.LabelProvider;
@@ -32,6 +32,6 @@ import rst.spatial.ConnectionConfigType.ConnectionConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, ConnectionConfig>, HandleProviderService, ReedSwitchProviderService {
+public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, ConnectionConfig>, HandleStateProviderService, ContactStateProviderService {
 
 }

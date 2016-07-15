@@ -30,19 +30,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TamperProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -64,19 +63,27 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.AlarmStateType;
-import rst.homeautomation.state.MotionStateType;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
+import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.BlindStateType.BlindState;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.homeautomation.state.ColorStateType.ColorState;
 import rst.homeautomation.state.PowerConsumptionStateType;
-import rst.homeautomation.state.PowerStateType;
-import rst.homeautomation.state.ShutterStateType;
-import rst.homeautomation.state.SmokeStateType;
-import rst.homeautomation.state.StandbyStateType;
-import rst.homeautomation.state.TamperStateType;
+import rst.homeautomation.state.SmokeStateType.SmokeState;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
+import rst.homeautomation.state.TamperStateType.TamperState;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationDataType.LocationData;
-import rst.vision.HSVColorType;
+import rst.vision.ColorType.Color;
+import rst.vision.HSBColorType.HSBColor;
+import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
@@ -87,8 +94,20 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSVColorType.HSVColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerStateType.PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Color.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RGBColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
 
     private final UnitRemoteFactory factory;
@@ -106,71 +125,69 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     private boolean isSupportedServiceType(final ServiceType serviceType) {
         switch (serviceType) {
-            case BRIGHTNESS_SERVICE:
-            case COLOR_SERVICE:
-            case DIM_SERVICE:
-            case MOTION_PROVIDER:
-            case OPENING_RATIO_SERVICE:
-            case POWER_CONSUMPTION_PROVIDER:
-            case POWER_SERVICE:
-            case SHUTTER_SERVICE:
-            case SMOKE_ALARM_STATE_PROVIDER:
-            case SMOKE_STATE_PROVIDER:
-            case STANDBY_SERVICE:
-            case TAMPER_PROVIDER:
-            case TARGET_TEMPERATURE_SERVICE:
-            case TEMPERATURE_PROVIDER:
+            case BRIGHTNESS_STATE_SERVICE:
+            case COLOR_STATE_SERVICE:
+            case MOTION_STATE_SERVICE:
+            case POWER_CONSUMPTION_STATE_SERVICE:
+            case POWER_STATE_SERVICE:
+            case BLIND_STATE_SERVICE:
+            case SMOKE_ALARM_STATE_SERVICE:
+            case SMOKE_STATE_SERVICE:
+            case STANDBY_STATE_SERVICE:
+            case TAMPER_STATE_SERVICE:
+            case TARGET_TEMPERATURE_STATE_SERVICE:
+            case TEMPERATURE_STATE_SERVICE:
                 return true;
             default:
                 return false;
         }
     }
 
-    private boolean isSupportedServiceType(final List<ServiceType> serviceTypes) {
-        return serviceTypes.stream().anyMatch((serviceType) -> (isSupportedServiceType(serviceType)));
+    private boolean isSupportedServiceType(final List<ServiceTemplate> serviceTemplates) {
+        return serviceTemplates.stream().anyMatch((serviceTemplate) -> (isSupportedServiceType(serviceTemplate.getType())));
     }
 
     private void addRemoteToServiceMap(final ServiceType serviceType, final UnitRemote unitRemote) {
         //TODO: should be replaced with generic class loading
         // and the update can be realized with reflections or the setField method and a notify
         switch (serviceType) {
-            case BRIGHTNESS_SERVICE:
-                ((ArrayList<BrightnessOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE)).add((BrightnessOperationService) unitRemote);
+            case BRIGHTNESS_STATE_SERVICE:
+                ((ArrayList<BrightnessStateOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).add((BrightnessStateOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        Double brightness = getBrightness();
+                        BrightnessState brightness = getBrightnessState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setBrightness(brightness);
+                            dataBuilder.getInternalBuilder().setBrightnessState(brightness);
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
                         }
                     }
                 });
                 break;
-            case COLOR_SERVICE:
-                ((ArrayList<ColorOperationService>) serviceMap.get(ServiceType.COLOR_SERVICE)).add((ColorOperationService) unitRemote);
+            case COLOR_STATE_SERVICE:
+                ((ArrayList<ColorStateOperationService>) serviceMap.get(ServiceType.COLOR_STATE_SERVICE)).add((ColorStateOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        HSVColorType.HSVColor color = getColor();
+                        ColorState color = getColorState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setColor(color);
+                            dataBuilder.getInternalBuilder().setColorState(color);
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply color data change!", ex);
                         }
                     }
                 });
                 break;
-            case MOTION_PROVIDER:
-                ((ArrayList<MotionProviderService>) serviceMap.get(ServiceType.MOTION_PROVIDER)).add((MotionProviderService) unitRemote);
+            case MOTION_STATE_SERVICE:
+                ((ArrayList<MotionStateProviderService>) serviceMap.get(ServiceType.MOTION_STATE_SERVICE)).add((MotionStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        MotionStateType.MotionState motion = getMotion();
+                        MotionState motion = getMotionState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                             dataBuilder.getInternalBuilder().setMotionState(motion);
                         } catch (Exception ex) {
@@ -179,28 +196,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case OPENING_RATIO_SERVICE:
-                ((ArrayList<OpeningRatioOperationService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE)).add((OpeningRatioOperationService) unitRemote);
+            case POWER_CONSUMPTION_STATE_SERVICE:
+                ((ArrayList<PowerConsumptionStateProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).add((PowerConsumptionStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        Double openingRatio = getOpeningRatio();
-                        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setOpeningRatio(openingRatio);
-                        } catch (Exception ex) {
-                            throw new CouldNotPerformException("Could not apply opening ratio data change!", ex);
-                        }
-                    }
-                });
-                break;
-            case POWER_CONSUMPTION_PROVIDER:
-                ((ArrayList<PowerConsumptionProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER)).add((PowerConsumptionProviderService) unitRemote);
-                unitRemote.addDataObserver(new Observer() {
-
-                    @Override
-                    public void update(final Observable source, Object data) throws Exception {
-                        PowerConsumptionStateType.PowerConsumptionState powerConsumption = getPowerConsumption();
+                        PowerConsumptionStateType.PowerConsumptionState powerConsumption = getPowerConsumptionState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                             dataBuilder.getInternalBuilder().setPowerConsumptionState(powerConsumption);
                         } catch (Exception ex) {
@@ -210,13 +212,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case POWER_SERVICE:
-                ((ArrayList<PowerOperationService>) serviceMap.get(ServiceType.POWER_SERVICE)).add((PowerOperationService) unitRemote);
+            case POWER_STATE_SERVICE:
+                ((ArrayList<PowerStateOperationService>) serviceMap.get(ServiceType.POWER_STATE_SERVICE)).add((PowerStateOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        PowerStateType.PowerState powerState = getPower();
+                        PowerState powerState = getPowerState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                             dataBuilder.getInternalBuilder().setPowerState(powerState);
                         } catch (Exception ex) {
@@ -225,23 +227,23 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case SHUTTER_SERVICE:
-                ((ArrayList<ShutterOperationService>) serviceMap.get(ServiceType.SHUTTER_SERVICE)).add((ShutterOperationService) unitRemote);
+            case BLIND_STATE_SERVICE:
+                ((ArrayList<BlindStateOperationService>) serviceMap.get(ServiceType.BLIND_STATE_SERVICE)).add((BlindStateOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        ShutterStateType.ShutterState shutter = getShutter();
+                        BlindState blindState = getBlindState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setShutterState(shutter);
+                            dataBuilder.getInternalBuilder().setBlindState(blindState);
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply shutter data change!", ex);
                         }
                     }
                 });
                 break;
-            case SMOKE_ALARM_STATE_PROVIDER:
-                ((ArrayList<SmokeAlarmStateProviderService>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER)).add((SmokeAlarmStateProviderService) unitRemote);
+            case SMOKE_ALARM_STATE_SERVICE:
+                ((ArrayList<SmokeAlarmStateProviderService>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).add((SmokeAlarmStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
@@ -255,13 +257,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case SMOKE_STATE_PROVIDER:
-                ((ArrayList<SmokeStateProviderService>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER)).add((SmokeStateProviderService) unitRemote);
+            case SMOKE_STATE_SERVICE:
+                ((ArrayList<SmokeStateProviderService>) serviceMap.get(ServiceType.SMOKE_STATE_SERVICE)).add((SmokeStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        SmokeStateType.SmokeState smokeState = getSmokeState();
+                        SmokeState smokeState = getSmokeState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                             dataBuilder.getInternalBuilder().setSmokeState(smokeState);
                         } catch (Exception ex) {
@@ -270,13 +272,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case STANDBY_SERVICE:
-                ((ArrayList<StandbyOperationService>) serviceMap.get(ServiceType.STANDBY_SERVICE)).add((StandbyOperationService) unitRemote);
+            case STANDBY_STATE_SERVICE:
+                ((ArrayList<StandbyStateOperationService>) serviceMap.get(ServiceType.STANDBY_STATE_SERVICE)).add((StandbyStateOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        StandbyStateType.StandbyState standby = getStandby();
+                        StandbyState standby = getStandbyState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                             dataBuilder.getInternalBuilder().setStandbyState(standby);
                         } catch (Exception ex) {
@@ -285,13 +287,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case TAMPER_PROVIDER:
-                ((ArrayList<TamperProviderService>) serviceMap.get(ServiceType.TAMPER_PROVIDER)).add((TamperProviderService) unitRemote);
+            case TAMPER_STATE_SERVICE:
+                ((ArrayList<TamperStateProviderService>) serviceMap.get(ServiceType.TAMPER_STATE_SERVICE)).add((TamperStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        TamperStateType.TamperState tamper = getTamper();
+                        TamperState tamper = getTamperState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                             dataBuilder.getInternalBuilder().setTamperState(tamper);
                         } catch (Exception ex) {
@@ -300,30 +302,30 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
                 });
                 break;
-            case TARGET_TEMPERATURE_SERVICE:
-                ((ArrayList<TargetTemperatureOperationService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE)).add((TargetTemperatureOperationService) unitRemote);
+            case TARGET_TEMPERATURE_STATE_SERVICE:
+                ((ArrayList<TargetTemperatureStateOperationService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).add((TargetTemperatureStateOperationService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        Double targetTemperature = getTargetTemperature();
+                        TemperatureState targetTemperature = getTargetTemperatureState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setTargetTemperature(targetTemperature);
+                            dataBuilder.getInternalBuilder().setTargetTemperatureState(targetTemperature);
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply target temperature data change!", ex);
                         }
                     }
                 });
                 break;
-            case TEMPERATURE_PROVIDER:
-                ((ArrayList<TemperatureProviderService>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER)).add((TemperatureProviderService) unitRemote);
+            case TEMPERATURE_STATE_SERVICE:
+                ((ArrayList<TemperatureStateProviderService>) serviceMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).add((TemperatureStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        Double temperature = getTemperature();
+                        TemperatureState temperature = getTemperatureState();
                         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setTemperature(temperature);
+                            dataBuilder.getInternalBuilder().setAcutalTemperatureState(temperature);
                         } catch (Exception ex) {
                             throw new CouldNotPerformException("Could not apply temperature data change!", ex);
                         }
@@ -346,10 +348,10 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
             for (UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
                 if (config.getUnitIdList().contains(unitConfig.getId())) {
-                    List<ServiceType> serviceTypes = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList();
+                    List<ServiceTemplate> serviceTemplates = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
                     // ignore units that do not have any service supported by a location
-                    if (!isSupportedServiceType(serviceTypes)) {
+                    if (!isSupportedServiceType(serviceTemplates)) {
                         continue;
                     }
 
@@ -385,18 +387,18 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         for (String newUnitId : newUnitIdList) {
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
             UnitConfig unitConfig = deviceRegistry.getUnitConfigById(newUnitId);
-            List<ServiceType> serviceTypes = new ArrayList<>();
+            List<ServiceTemplate> serviceTemplates = new ArrayList<>();
 
             // ignore units that do not have any service supported by a location
-            if (!isSupportedServiceType(serviceTypes)) {
+            if (!isSupportedServiceType(serviceTemplates)) {
                 continue;
             }
 
             UnitRemote unitRemote = factory.newInitializedInstance(unitConfig);
             unitRemoteMap.put(unitConfig.getId(), unitRemote);
             if (isActive()) {
-                for (ServiceType serviceType : serviceTypes) {
-                    addRemoteToServiceMap(serviceType, unitRemote);
+                for (ServiceTemplate serviceTemplate : serviceTemplates) {
+                    addRemoteToServiceMap(serviceTemplate.getType(), unitRemote);
                 }
                 unitRemote.activate();
             }
@@ -417,8 +419,8 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         super.activate();
 
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
-            for (ServiceType serviceType : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTypeList()) {
-                addRemoteToServiceMap(serviceType, unitRemote);
+            for (ServiceTemplate serviceTemplate : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTemplateList()) {
+                addRemoteToServiceMap(serviceTemplate.getType(), unitRemote);
             }
         }
         getCurrentStatus();
@@ -426,33 +428,31 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     private void getCurrentStatus() {
         try {
-            Double brighntess = getBrightness();
-            HSVColorType.HSVColor color = getColor();
-            MotionStateType.MotionState motion = getMotion();
-            Double openingRatio = getOpeningRatio();
-            PowerStateType.PowerState power = getPower();
-            PowerConsumptionStateType.PowerConsumptionState powerConsumption = getPowerConsumption();
-            ShutterStateType.ShutterState shutter = getShutter();
-            AlarmStateType.AlarmState smokeAlarmState = getSmokeAlarmState();
-            SmokeStateType.SmokeState smokeState = getSmokeState();
-            StandbyStateType.StandbyState standby = getStandby();
-            TamperStateType.TamperState tamper = getTamper();
-            Double targetTemperature = getTargetTemperature();
-            Double temperature = getTemperature();
+            BrightnessState brighntess = getBrightnessState();
+            ColorState color = getColorState();
+            MotionState motion = getMotionState();
+            PowerState power = getPowerState();
+            PowerConsumptionStateType.PowerConsumptionState powerConsumption = getPowerConsumptionState();
+            BlindState blindState = getBlindState();
+            AlarmState smokeAlarmState = getSmokeAlarmState();
+            SmokeState smokeState = getSmokeState();
+            StandbyState standby = getStandbyState();
+            TamperState tamper = getTamperState();
+            TemperatureState targetTemperature = getTargetTemperatureState();
+            TemperatureState temperature = getTemperatureState();
             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                dataBuilder.getInternalBuilder().setBrightness(brighntess);
-                dataBuilder.getInternalBuilder().setColor(color);
+                dataBuilder.getInternalBuilder().setBrightnessState(brighntess);
+                dataBuilder.getInternalBuilder().setColorState(color);
                 dataBuilder.getInternalBuilder().setMotionState(motion);
-                dataBuilder.getInternalBuilder().setOpeningRatio(openingRatio);
                 dataBuilder.getInternalBuilder().setPowerState(power);
                 dataBuilder.getInternalBuilder().setPowerConsumptionState(powerConsumption);
-                dataBuilder.getInternalBuilder().setShutterState(shutter);
+                dataBuilder.getInternalBuilder().setBlindState(blindState);
                 dataBuilder.getInternalBuilder().setSmokeAlarmState(smokeAlarmState);
                 dataBuilder.getInternalBuilder().setSmokeState(smokeState);
                 dataBuilder.getInternalBuilder().setStandbyState(standby);
                 dataBuilder.getInternalBuilder().setTamperState(tamper);
-                dataBuilder.getInternalBuilder().setTargetTemperature(targetTemperature);
-                dataBuilder.getInternalBuilder().setTemperature(temperature);
+                dataBuilder.getInternalBuilder().setTargetTemperatureState(targetTemperature);
+                dataBuilder.getInternalBuilder().setAcutalTemperatureState(temperature);
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not apply data change!", ex);
             }
@@ -480,68 +480,63 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Collection<ColorOperationService> getColorStateOperationServices() {
-        return (Collection<ColorOperationService>) serviceMap.get(ServiceType.COLOR_SERVICE);
+    public Collection<ColorStateOperationService> getColorStateOperationServices() {
+        return (Collection<ColorStateOperationService>) serviceMap.get(ServiceType.COLOR_STATE_SERVICE);
     }
 
     @Override
-    public Collection<BrightnessOperationService> getBrightnessStateOperationServices() {
-        return (Collection<BrightnessOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_SERVICE);
+    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() {
+        return (Collection<BrightnessStateOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE);
     }
 
     @Override
-    public Collection<OpeningRatioOperationService> getOpeningRatioStateOperationServices() {
-        return (Collection<OpeningRatioOperationService>) serviceMap.get(ServiceType.OPENING_RATIO_SERVICE);
+    public Collection<PowerStateOperationService> getPowerStateOperationServices() {
+        return (Collection<PowerStateOperationService>) serviceMap.get(ServiceType.POWER_STATE_SERVICE);
     }
 
     @Override
-    public Collection<PowerOperationService> getPowerStateOperationServices() {
-        return (Collection<PowerOperationService>) serviceMap.get(ServiceType.POWER_SERVICE);
+    public Collection<BlindStateOperationService> getBlindStateOperationServices() {
+        return (Collection<BlindStateOperationService>) serviceMap.get(ServiceType.BLIND_STATE_SERVICE);
     }
 
     @Override
-    public Collection<ShutterOperationService> getShutterStateOperationServices() {
-        return (Collection<ShutterOperationService>) serviceMap.get(ServiceType.SHUTTER_SERVICE);
+    public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {
+        return (Collection<StandbyStateOperationService>) serviceMap.get(ServiceType.STANDBY_STATE_SERVICE);
     }
 
     @Override
-    public Collection<StandbyOperationService> getStandbyStateOperationServices() {
-        return (Collection<StandbyOperationService>) serviceMap.get(ServiceType.STANDBY_SERVICE);
+    public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() {
+        return (Collection<TargetTemperatureStateOperationService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
     }
 
     @Override
-    public Collection<TargetTemperatureOperationService> getTargetTemperatureStateOperationServices() {
-        return (Collection<TargetTemperatureOperationService>) serviceMap.get(ServiceType.TARGET_TEMPERATURE_SERVICE);
-    }
-
-    @Override
-    public Collection<MotionProviderService> getMotionStateProviderServices() {
-        return (Collection<MotionProviderService>) serviceMap.get(ServiceType.MOTION_PROVIDER);
+    public Collection<MotionStateProviderService> getMotionStateProviderServices() {
+        return (Collection<MotionStateProviderService>) serviceMap.get(ServiceType.MOTION_STATE_SERVICE);
     }
 
     @Override
     public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
-        return (Collection<SmokeAlarmStateProviderService>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_PROVIDER);
+        return (Collection<SmokeAlarmStateProviderService>) serviceMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE);
     }
 
     @Override
     public Collection<SmokeStateProviderService> getSmokeStateProviderServices() {
-        return (Collection<SmokeStateProviderService>) serviceMap.get(ServiceType.SMOKE_STATE_PROVIDER);
+        return (Collection<SmokeStateProviderService>) serviceMap.get(ServiceType.SMOKE_STATE_SERVICE);
     }
 
     @Override
-    public Collection<TemperatureProviderService> getTemperatureStateProviderServices() {
-        return (Collection<TemperatureProviderService>) serviceMap.get(ServiceType.TEMPERATURE_PROVIDER);
+    public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() {
+        return (Collection<TemperatureStateProviderService>) serviceMap.get(ServiceType.TEMPERATURE_STATE_SERVICE);
     }
 
     @Override
-    public Collection<PowerConsumptionProviderService> getPowerConsumptionStateProviderServices() {
-        return (Collection<PowerConsumptionProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_PROVIDER);
+    public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() {
+        return (Collection<PowerConsumptionStateProviderService>) serviceMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
     }
 
     @Override
-    public Collection<TamperProviderService> getTamperStateProviderServices() {
-        return (Collection<TamperProviderService>) serviceMap.get(ServiceType.TAMPER_PROVIDER);
+    public Collection<TamperStateProviderService> getTamperStateProviderServices() {
+        return (Collection<TamperStateProviderService>) serviceMap.get(ServiceType.TAMPER_STATE_SERVICE_VALUE);
     }
 
     @Override
@@ -561,7 +556,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public Future<Void> restoreSnapshot(SceneConfigType.SceneConfig snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             for (final ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                unitRemoteMap.get(actionConfig.getServiceHolder()).applyAction(actionConfig);
+                unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig);
             }
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException ex) {
@@ -571,7 +566,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     @Override
     public Future<Void> applyAction(ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return unitRemoteMap.get(actionConfig.getServiceHolder()).applyAction(actionConfig);
+        return unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig);
     }
 
     @Override

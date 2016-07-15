@@ -47,7 +47,7 @@ import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneRegistryType;
+import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.EnablingStateType;
 
@@ -88,10 +88,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {
-        sceneRegistryRemote.addDataObserver(new Observer<SceneRegistryType.SceneRegistry>() {
+        sceneRegistryRemote.addDataObserver(new Observer<SceneRegistryData>() {
 
             @Override
-            public void update(final Observable<SceneRegistryType.SceneRegistry> source, SceneRegistryType.SceneRegistry data) throws Exception {
+            public void update(final Observable<SceneRegistryData> source, SceneRegistryData data) throws Exception {
 
                 updateDynamicComponents();
 

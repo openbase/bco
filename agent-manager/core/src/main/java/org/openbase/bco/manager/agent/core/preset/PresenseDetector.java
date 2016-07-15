@@ -28,8 +28,8 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.schedule.Timeout;
 import java.util.ArrayList;
 import java.util.List;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionProviderService;
-import org.openbase.bco.dal.remote.unit.MotionSensorRemote;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
 import org.openbase.bco.manager.location.remote.LocationRemote;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Manageable;
@@ -48,7 +48,7 @@ import rst.spatial.LocationDataType;
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public class PresenseDetector extends ObservableImpl<MotionState> implements MotionProviderService, Manageable<LocationRemote> {
+public class PresenseDetector extends ObservableImpl<MotionState> implements MotionStateProviderService, Manageable<LocationRemote> {
 
     /**
      * Default 3 minute window of no movement unit the state switches to
@@ -58,7 +58,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final List<MotionSensorRemote> motionSensorList;
+    private final List<MotionDetectorRemote> motionSensorList;
     private MotionStateType.MotionState.Builder motionState;
     private Timeout motionTimeout;
 
@@ -92,14 +92,14 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        for (MotionSensorRemote remote : motionSensorList) {
+        for (MotionDetectorRemote remote : motionSensorList) {
             remote.activate();
         }
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        for (MotionSensorRemote remote : motionSensorList) {
+        for (MotionDetectorRemote remote : motionSensorList) {
             remote.deactivate();
         }
     }
@@ -146,7 +146,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
     }
 
     @Override
-    public MotionState getMotion() throws NotAvailableException {
+    public MotionState getMotionState() throws NotAvailableException {
         return this.motionState.build();
     }
 }

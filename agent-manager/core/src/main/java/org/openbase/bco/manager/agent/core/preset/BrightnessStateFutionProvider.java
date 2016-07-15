@@ -30,22 +30,22 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.openbase.bco.dal.lib.layer.service.provider.BrightnessProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.bco.dal.remote.unit.BrightnessSensorRemote;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.unit.BrightnessSensorType;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.homeautomation.unit.BrightnessSensorDataType.BrightnessSensorData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public class BrightnessStateFutionProvider extends ObservableImpl<Double> implements BrightnessProviderService {
+public class BrightnessStateFutionProvider extends ObservableImpl<Double> implements BrightnessStateProviderService {
 //
 //    /**
 //     * Default 3 minute window of no movement unit the state switches to NO_MOTION.
@@ -92,17 +92,17 @@ public class BrightnessStateFutionProvider extends ObservableImpl<Double> implem
 //                }
 //            };
             BrightnessSensorRemote brightnessSensorRemote;
-            for (UnitConfigType.UnitConfig unitConfig : brightnessUnitConfigs) {
-                if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR) {
-                    logger.warn("Skip Unit[" + unitConfig.getId() + "] because its not of Type[" + UnitTemplateType.UnitTemplate.UnitType.MOTION_SENSOR + "]!");
+            for (UnitConfig unitConfig : brightnessUnitConfigs) {
+                if (unitConfig.getType() != UnitTemplate.UnitType.MOTION_DETECTOR) {
+                    logger.warn("Skip Unit[" + unitConfig.getId() + "] because its not of Type[" + UnitTemplate.UnitType.MOTION_DETECTOR + "]!");
                     continue;
                 }
 
                 brightnessSensorRemote = new BrightnessSensorRemote();
                 brightnessSensorRemote.init(unitConfig);
                 brightnessSensorList.add(brightnessSensorRemote);
-                brightnessSensorRemote.addDataObserver((Observable<BrightnessSensorType.BrightnessSensor> source, BrightnessSensorType.BrightnessSensor data) -> {
-                    updateBrightnessState(data.getBrightness());
+                brightnessSensorRemote.addDataObserver((Observable<BrightnessSensorData> source, BrightnessSensorData data) -> {
+                    updateBrightnessState(data.getBrightnessState().getBrightness());
                 });
             }
         } catch (CouldNotPerformException ex) {
@@ -123,15 +123,15 @@ public class BrightnessStateFutionProvider extends ObservableImpl<Double> implem
     }
 
     @Override
-    public Double getBrightness() throws NotAvailableException {
+    public BrightnessState getBrightnessState() throws NotAvailableException {
 //        try {
             if (brightnessAverageState == UNKNOWN_VALUE) {
                 if (brightnessLastStates.isEmpty()) {
                     throw new NotAvailableException("brightness");
                 }
-                return brightnessLastStates.values().stream().findFirst().get();
+                return BrightnessState.newBuilder().setBrightness(brightnessLastStates.values().stream().findFirst().get()).build();
             }
-            return brightnessAverageState;
+            return BrightnessState.newBuilder().setBrightness(brightnessAverageState).build();
 //        } catch (Exception ex) {
 //            throw new CouldNotPerformException("Could not return brightness!", ex);
 //        }

@@ -85,9 +85,9 @@ public class PersonLightProviderAgent extends AbstractAgent {
 
     private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
         if (motionState.getValue() == MotionState.State.MOVEMENT) {
-            locationRemote.setPower(PowerState.State.ON);
+            locationRemote.setPowerState(PowerState.State.ON);
         } else {
-            locationRemote.setPower(PowerState.State.OFF);
+            locationRemote.setPowerState(PowerState.State.OFF);
         }
         logger.info("detect: " + motionState.getValue());
     }

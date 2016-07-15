@@ -32,7 +32,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import rst.homeautomation.binding.BindingTypeHolderType.BindingTypeHolder.BindingType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType;
 
@@ -74,7 +73,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
                 public boolean isSupported(DeviceConfigType.DeviceConfig config) throws CouldNotPerformException {
                     try {
                         DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(config.getDeviceClassId());
-                        if (!deviceClass.getBindingConfig().getType().equals(BindingType.OPENHAB)) {
+                        if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
                             return false;
                         }
                         return super.isSupported(config);

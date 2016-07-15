@@ -22,11 +22,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.HandleSensorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.HandleSensorRemote;
+import org.openbase.bco.dal.lib.layer.unit.TamperDetectorController;
+import org.openbase.bco.dal.remote.unit.TamperDetectorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -35,27 +35,28 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.HandleStateType.HandleState;
+import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
  * @author thuxohl
  */
-public class HandleSensorRemoteTest {
+public class TamperDetectorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(HandleSensorRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperDetectorRemoteTest.class);
 
-    private static HandleSensorRemote handleSensorRemote;
+    private static TamperDetectorRemote tamperDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
+    private static String label;
 
-    public HandleSensorRemoteTest() {
+    public TamperDetectorRemoteTest() {
     }
 
     @BeforeClass
@@ -67,10 +68,12 @@ public class HandleSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        handleSensorRemote = new HandleSensorRemote();
-        handleSensorRemote.initByLabel(MockRegistry.HANDLE_SENSOR_LABEL);
-        handleSensorRemote.activate();
-        handleSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        label = MockRegistry.TAMPER_DETECTOR_LABEL;
+
+        tamperDetectorRemote = new TamperDetectorRemote();
+        tamperDetectorRemote.initByLabel(label);
+        tamperDetectorRemote.activate();
+        tamperDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -78,8 +81,8 @@ public class HandleSensorRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (handleSensorRemote != null) {
-            handleSensorRemote.shutdown();
+        if (tamperDetectorRemote != null) {
+            tamperDetectorRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -93,23 +96,23 @@ public class HandleSensorRemoteTest {
     }
 
     /**
-     * Test of notifyUpdated method, of class HandleSensorRemote.
+     * Test of notifyUpdated method, of class TamperSwtichRemote.
      */
     @Ignore
     public void testNotifyUpdated() {
     }
 
     /**
-     * Test of getRotaryHandleState method, of class HandleSensorRemote.
+     * Test of getTamperState method, of class TamperSwtichRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
-    public void testGetRotaryHandleState() throws Exception {
-        System.out.println("getRotaryHandleState");
-        HandleState.State state = HandleState.State.TILTED;
-        ((HandleSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleSensorRemote.getId())).updateHandleProvider(state);
-        handleSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the handle state returns the wrong value!", state, handleSensorRemote.getHandle().getValue());
+    public void testGetTamperState() throws Exception {
+        System.out.println("getTamperState");
+        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        tamperDetectorRemote.requestData().get();
+        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
     }
 }

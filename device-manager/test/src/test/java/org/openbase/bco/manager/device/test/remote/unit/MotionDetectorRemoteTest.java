@@ -23,11 +23,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.dal.lib.layer.unit.MotionSensorController;
+import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.MotionSensorRemote;
+import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -47,16 +47,16 @@ import rst.homeautomation.state.MotionStateType.MotionState;
  *
  * @author thuxohl
  */
-public class MotionSensorRemoteTest {
+public class MotionDetectorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MotionSensorRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MotionDetectorRemoteTest.class);
 
-    private static MotionSensorRemote motionSensorRemote;
+    private static MotionDetectorRemote motionDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
 
-    public MotionSensorRemoteTest() {
+    public MotionDetectorRemoteTest() {
     }
 
     @BeforeClass
@@ -68,12 +68,12 @@ public class MotionSensorRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.MOTION_SENSOR_LABEL;
+        label = MockRegistry.MOTION_DETECTOR_LABEL;
 
-        motionSensorRemote = new MotionSensorRemote();
-        motionSensorRemote.initByLabel(label);
-        motionSensorRemote.activate();
-        motionSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        motionDetectorRemote = new MotionDetectorRemote();
+        motionDetectorRemote.initByLabel(label);
+        motionDetectorRemote.activate();
+        motionDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -81,8 +81,8 @@ public class MotionSensorRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (motionSensorRemote != null) {
-            motionSensorRemote.shutdown();
+        if (motionDetectorRemote != null) {
+            motionDetectorRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -111,8 +111,8 @@ public class MotionSensorRemoteTest {
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
-        ((MotionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionSensorRemote.getId())).updateMotionProvider(motion);
-        motionSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionSensorRemote.getMotion().getValue());
+        ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        motionDetectorRemote.requestData().get();
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
     }
 }

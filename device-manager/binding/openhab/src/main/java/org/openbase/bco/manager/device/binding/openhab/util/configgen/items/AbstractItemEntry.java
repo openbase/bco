@@ -182,41 +182,39 @@ public abstract class AbstractItemEntry implements ItemEntry {
         return "{ " + itemHardwareConfig + " }";
     }
 
-    protected String getDefaultCommand(ServiceTemplateType.ServiceTemplate.ServiceType type) {
-        switch (type) {
-            case COLOR_SERVICE:
+    protected String getDefaultCommand(ServiceTemplateType.ServiceTemplate serviceTemplate) {
+        switch (serviceTemplate.getType()) {
+            case COLOR_STATE_SERVICE:
                 return "Color";
-            case OPENING_RATIO_PROVIDER:
-            case OPENING_RATIO_SERVICE:
-            case POWER_CONSUMPTION_PROVIDER:
-            case TEMPERATURE_PROVIDER:
-            case MOTION_PROVIDER:
-            case TAMPER_PROVIDER:
-            case BRIGHTNESS_PROVIDER:
-            case BATTERY_PROVIDER:
-            case SMOKE_ALARM_STATE_PROVIDER:
-            case SMOKE_STATE_PROVIDER:
-            case TEMPERATURE_ALARM_STATE_PROVIDER:
-            case TARGET_TEMPERATURE_PROVIDER:
-            case TARGET_TEMPERATURE_SERVICE:
+            case POWER_CONSUMPTION_STATE_SERVICE:
+            case TEMPERATURE_STATE_SERVICE:
+            case MOTION_STATE_SERVICE:
+            case TAMPER_STATE_SERVICE:
+            case BATTERY_STATE_SERVICE:
+            case SMOKE_ALARM_STATE_SERVICE:
+            case SMOKE_STATE_SERVICE:
+            case TEMPERATURE_ALARM_STATE_SERVICE:
+            case TARGET_TEMPERATURE_STATE_SERVICE:
                 return "Number";
-            case SHUTTER_PROVIDER:
-            case SHUTTER_SERVICE:
+            case BLIND_STATE_SERVICE:
                 return "Rollershutter";
-            case POWER_SERVICE:
-            case POWER_PROVIDER:
-            case BUTTON_PROVIDER:
+            case POWER_STATE_SERVICE:
+            case BUTTON_STATE_SERVICE:
                 return "Switch";
-            case BRIGHTNESS_SERVICE:
-            case DIM_PROVIDER:
-            case DIM_SERVICE:
+            case INTENSITY_STATE_SERVICE:
                 return "Dimmer";
-            case REED_SWITCH_PROVIDER:
+            case CONTACT_STATE_SERVICE:
                 return "Contact";
-            case HANDLE_PROVIDER:
+            case HANDLE_STATE_SERVICE:
                 return "String";
+            case BRIGHTNESS_STATE_SERVICE:
+                if (serviceTemplate.getPattern() == ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION) {
+                    return "Dimmer";
+                } else {
+                    return "Number";
+                }
             default:
-                logger.warn("Unkown Service Type: " + type);
+                logger.warn("Unkown Service Type: " + serviceTemplate);
                 return "";
         }
     }

@@ -22,14 +22,13 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotSupportedException;
@@ -47,37 +46,32 @@ public class OpenhabServiceFactory implements ServiceFactory {
     }
 
     @Override
-    public <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) throws InstantiationException {
         return new BrightnessServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends ColorOperationService & Unit> ColorOperationService newColorService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) throws InstantiationException {
         return new ColorServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends PowerOperationService & Unit> PowerOperationService newPowerService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) throws InstantiationException {
         return new PowerServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(final UNIT unit) throws InstantiationException {
-        return new OpeningRatioServiceImpl(unit);
+    public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) throws InstantiationException {
+        return new BlindServiceImpl(unit);
     }
 
     @Override
-    public <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(final UNIT unit) throws InstantiationException {
-        return new ShutterServiceImpl(unit);
+    public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) throws InstantiationException {
+        throw new InstantiationException(this, new NotSupportedException(StandbyStateOperationService.class, this));
     }
 
     @Override
-    public <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(final UNIT unit) throws InstantiationException {
-        throw new InstantiationException(this, new NotSupportedException(StandbyOperationService.class, this));
-    }
-
-    @Override
-    public <UNIT extends TargetTemperatureOperationService & Unit> TargetTemperatureOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
+    public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
         return new TargetTemperatureServiceImpl(unit);
     }
 }

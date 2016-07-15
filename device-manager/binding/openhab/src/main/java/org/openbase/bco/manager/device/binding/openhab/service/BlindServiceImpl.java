@@ -23,32 +23,32 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.ShutterStateType.ShutterState;
+import rst.homeautomation.state.BlindStateType.BlindState;
 
 /**
  *
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class ShutterServiceImpl<ST extends ShutterOperationService & Unit> extends OpenHABService<ST> implements ShutterOperationService {
+public class BlindServiceImpl<ST extends BlindStateOperationService & Unit> extends OpenHABService<ST> implements BlindStateOperationService {
 
-    public ShutterServiceImpl(final ST unit) throws InstantiationException {
+    public BlindServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public Future<Void> setShutter(ShutterState state) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newUpDownCommand(state.getValue()));
+    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
     }
 
     @Override
-    public ShutterState getShutter() throws NotAvailableException {
-        return unit.getShutter();
+    public BlindState getBlindState() throws NotAvailableException {
+        return unit.getBlindState();
     }
 
 }

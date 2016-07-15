@@ -22,11 +22,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.DimmerController;
+import org.openbase.bco.dal.lib.layer.unit.DimmableLightController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.DimmerRemote;
+import org.openbase.bco.dal.remote.unit.DimmableLightRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,21 +41,22 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author thuxohl
  */
-public class DimmerRemoteTest {
+public class DimmableLightRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DimmerRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DimmableLightRemoteTest.class);
 
-    private static DimmerRemote dimmerRemote;
+    private static DimmableLightRemote dimmableLightRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
 
-    public DimmerRemoteTest() {
+    public DimmableLightRemoteTest() {
     }
 
     @BeforeClass
@@ -67,10 +68,10 @@ public class DimmerRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        dimmerRemote = new DimmerRemote();
-        dimmerRemote.initByLabel(MockRegistry.DIMMER_LABEL);
-        dimmerRemote.activate();
-        dimmerRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        dimmableLightRemote = new DimmableLightRemote();
+        dimmableLightRemote.initByLabel(MockRegistry.DIMMABLE_LIGHT_LABEL);
+        dimmableLightRemote.activate();
+        dimmableLightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -78,8 +79,8 @@ public class DimmerRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (dimmerRemote != null) {
-            dimmerRemote.shutdown();
+        if (dimmableLightRemote != null) {
+            dimmableLightRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -108,9 +109,9 @@ public class DimmerRemoteTest {
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        dimmerRemote.setPower(state).get();
-        dimmerRemote.requestData().get();
-        assertEquals("Power has not been set in time!", state, dimmerRemote.getData().getPowerState());
+        dimmableLightRemote.setPowerState(state).get();
+        dimmableLightRemote.requestData().get();
+        assertEquals("Power has not been set in time!", state, dimmableLightRemote.getData().getPowerState());
     }
 
     /**
@@ -120,9 +121,9 @@ public class DimmerRemoteTest {
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updatePowerProvider(state);
-        dimmerRemote.requestData().get();
-        assertEquals("Power has not been set in time!", state, dimmerRemote.getPower());
+        ((DimmableLightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updatePowerStateProvider(state);
+        dimmableLightRemote.requestData().get();
+        assertEquals("Power has not been set in time!", state, dimmableLightRemote.getPowerState());
     }
 
     /**
@@ -132,9 +133,10 @@ public class DimmerRemoteTest {
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 66d;
-        dimmerRemote.setBrightness(brightness).get();
-        dimmerRemote.requestData().get();
-        assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getData().getValue(), 0.1);
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
+        dimmableLightRemote.setBrightnessState(brightnessState).get();
+        dimmableLightRemote.requestData().get();
+        assertEquals("Dimm has not been set in time!", brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
     }
 
     /**
@@ -144,8 +146,9 @@ public class DimmerRemoteTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         Double brightness = 70.0d;
-        ((DimmerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmerRemote.getId())).updateBrightnessProvider(brightness);
-        dimmerRemote.requestData().get();
-        assertEquals("Dimm has not been set in time!", brightness, dimmerRemote.getBrightness());
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
+        ((DimmableLightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updateBrightnessStateProvider(brightnessState);
+        dimmableLightRemote.requestData().get();
+        assertEquals("Dimm has not been set in time!", brightnessState, dimmableLightRemote.getBrightnessState());
     }
 }

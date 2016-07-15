@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -35,19 +35,19 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class PowerServiceImpl<ST extends PowerOperationService & Unit> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService {
+public class PowerServiceImpl<ST extends PowerStateOperationService & Unit> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {
 
     public PowerServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public PowerState getPower() throws NotAvailableException {
-        return unit.getPower();
+    public PowerState getPowerState() throws NotAvailableException {
+        return unit.getPowerState();
     }
 
     @Override
-    public Future<Void> setPower(PowerState state) throws CouldNotPerformException {
+    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
         return executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
     }
 }

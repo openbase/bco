@@ -22,11 +22,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.ReedSwitchController;
+import org.openbase.bco.dal.lib.layer.unit.ReedContactController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.ReedSwitchRemote;
+import org.openbase.bco.dal.remote.unit.ReedContactRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,22 +41,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
+import rst.homeautomation.state.ContactStateType.ContactState;
 
 /**
  *
  * @author thuxohl
  */
-public class ReedSwitchRemoteTest {
+public class ReedContactRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ReedSwitchRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ReedContactRemoteTest.class);
 
-    private static ReedSwitchRemote reedSwitchRemote;
+    private static ReedContactRemote reedContactRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
 
-    public ReedSwitchRemoteTest() {
+    public ReedContactRemoteTest() {
     }
 
     @BeforeClass
@@ -68,12 +68,12 @@ public class ReedSwitchRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.REED_SWITCH_LABEL;
+        label = MockRegistry.REED_CONTACT_LABEL;
 
-        reedSwitchRemote = new ReedSwitchRemote();
-        reedSwitchRemote.initByLabel(label);
-        reedSwitchRemote.activate();
-        reedSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        reedContactRemote = new ReedContactRemote();
+        reedContactRemote.initByLabel(label);
+        reedContactRemote.activate();
+        reedContactRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -81,8 +81,8 @@ public class ReedSwitchRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (reedSwitchRemote != null) {
-            reedSwitchRemote.shutdown();
+        if (reedContactRemote != null) {
+            reedContactRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -110,9 +110,9 @@ public class ReedSwitchRemoteTest {
     @Test(timeout = 10000)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
-        ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
-        ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitchProvider(state);
-        reedSwitchRemote.requestData().get();
-        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch().getValue());
+        ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
+        ((ReedContactController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedContactRemote.getId())).updateContactStateProvider(state);
+        reedContactRemote.requestData().get();
+        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedContactRemote.getContactState());
     }
 }

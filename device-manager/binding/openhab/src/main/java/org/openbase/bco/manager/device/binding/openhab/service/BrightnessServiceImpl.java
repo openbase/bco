@@ -24,31 +24,32 @@ package org.openbase.bco.manager.device.binding.openhab.service;
 
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
  * @author mpohling
  * @param <UNIT> Related unit.
  */
-public class BrightnessServiceImpl<UNIT extends BrightnessOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessOperationService {
+public class BrightnessServiceImpl<UNIT extends BrightnessStateOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
 
     public BrightnessServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public Double getBrightness() throws NotAvailableException {
-        return unit.getBrightness();
+    public BrightnessState getBrightnessState() throws NotAvailableException {
+        return unit.getBrightnessState();
     }
 
     @Override
-    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newPercentCommand(brightness));
+    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness()));
     }
 }
 

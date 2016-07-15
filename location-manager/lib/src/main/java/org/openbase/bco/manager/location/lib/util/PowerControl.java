@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.lib.util;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
@@ -45,7 +45,7 @@ public class PowerControl {
     public final static Random random = new Random();
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private final List<AmbientLightRemote> ambientLightRemoteList;
+    private final List<ColorableLightRemote> ambientLightRemoteList;
     private final PowerState.State powerState;
 
     public PowerControl(final String locationId, final PowerState.State powerState) throws InstantiationException, InterruptedException {
@@ -54,15 +54,15 @@ public class PowerControl {
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.AMBIENT_LIGHT, locationId);
+            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, locationId);
             this.ambientLightRemoteList = new ArrayList<>();
-            AmbientLightRemote ambientLightRemote;
+            ColorableLightRemote ambientLightRemote;
             for (UnitConfig unitConfig : unitConfigs) {
 //                if(!unitConfig.getTemplate().getServiceTypeList().contains(ServiceTypeHolderType.ServiceTypeHolder.ServiceType.POWER_SERVICE)) {
 //                    continue;
 //                }
                 
-                ambientLightRemote = new AmbientLightRemote();
+                ambientLightRemote = new ColorableLightRemote();
                 ambientLightRemote.init(unitConfig);
                 ambientLightRemoteList.add(ambientLightRemote);
             }
@@ -72,14 +72,14 @@ public class PowerControl {
     }
 
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (AmbientLightRemote remote : ambientLightRemoteList) {
+        for (ColorableLightRemote remote : ambientLightRemoteList) {
             remote.activate();
         }
         new Thread() {
 
             @Override
             public void run() {
-                    for (AmbientLightRemote remote : ambientLightRemoteList) {
+                    for (ColorableLightRemote remote : ambientLightRemoteList) {
                         try {
                             remote.setColor(Color.BLACK);
                             remote.callMethodAsync("setPower", PowerState.newBuilder().setValue(powerState).build());
