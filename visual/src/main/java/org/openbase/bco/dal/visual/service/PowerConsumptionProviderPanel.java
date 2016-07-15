@@ -21,24 +21,19 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
-import org.openbase.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
+import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.text.DecimalFormat;
-import javax.swing.JProgressBar;
-import javax.swing.Painter;
-import javax.swing.UIDefaults;
-import rst.vision.HSVColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
  * @author mpohling
  */
-public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionProviderService> {
+public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionStateProviderService> {
 
     private DecimalFormat numberFormat = new DecimalFormat("#.##");
     private Color currentColor = Color.BLACK;
@@ -144,16 +139,16 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
     @Override
     protected void updateDynamicComponents() {
         try {
-            voltageValueLabel.setText(numberFormat.format(getService().getPowerConsumption().getVoltage()) + " V");
-            currentValueLabel.setText(numberFormat.format(getService().getPowerConsumption().getCurrent()) + " A");
-            consumptionBar.setString(numberFormat.format(getService().getPowerConsumption().getConsumption()) + " W");
+            voltageValueLabel.setText(numberFormat.format(getService().getPowerConsumptionState().getVoltage()) + " V");
+            currentValueLabel.setText(numberFormat.format(getService().getPowerConsumptionState().getCurrent()) + " A");
+            consumptionBar.setString(numberFormat.format(getService().getPowerConsumptionState().getConsumption()) + " W");
 
-            double level = (getService().getPowerConsumption().getCurrent() / 16);
+            double level = (getService().getPowerConsumptionState().getCurrent() / 16);
 
             consumptionBar.setValue((int) (level * 100));
 
             double hue = Math.min(180, Math.max(0, 180 - level * 180));
-            colorPanel.setBackground(HSVColorToRGBColorTransformer.transform(HSVColorType.HSVColor.newBuilder().setValue(80).setSaturation(100).setHue(hue).build()));
+            colorPanel.setBackground(HSBColorToRGBColorTransformer.transform(HSBColor.newBuilder().setBrightness(80).setSaturation(100).setHue(hue).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

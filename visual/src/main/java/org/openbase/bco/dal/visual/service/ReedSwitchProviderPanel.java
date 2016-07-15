@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -34,7 +34,7 @@ import java.awt.Color;
  *
  * @author kengelma
  */
-public class ReedSwitchProviderPanel extends AbstractServicePanel<ReedSwitchProviderService> {
+public class ReedSwitchProviderPanel extends AbstractServicePanel<ContactStateProviderService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel
@@ -106,7 +106,7 @@ public class ReedSwitchProviderPanel extends AbstractServicePanel<ReedSwitchProv
     @Override
     protected void updateDynamicComponents() {        
         try {
-            switch (getService().getReedSwitch().getValue()) {
+            switch (getService().getContactState().getValue()) {
                 case UNKNOWN:
                     reedSwitchStateLabel.setForeground(Color.DARK_GRAY);
                     reedSwitchStatePanel.setBackground(Color.ORANGE.darker());
@@ -120,9 +120,9 @@ public class ReedSwitchProviderPanel extends AbstractServicePanel<ReedSwitchProv
                     reedSwitchStatePanel.setBackground(Color.GREEN.darker());
                     break;
                 default:
-                    throw new InvalidStateException("State[" + getService().getReedSwitch().getValue() + "] is unknown.");
+                    throw new InvalidStateException("State[" + getService().getContactState().getValue() + "] is unknown.");
             }
-            reedSwitchStateLabel.setText("Current ReedState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getReedSwitch().getValue().name()));
+            reedSwitchStateLabel.setText("Current ReedState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getContactState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

@@ -39,11 +39,11 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.RemoteServer;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.unit.AmbientLightType.AmbientLight;
+import rst.homeautomation.unit.ColorableLightDataType.ColorableLightData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -54,8 +54,8 @@ public class ObserveServiceStateChangesViaRSB {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(DeviceConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(DeviceRegistry.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(AmbientLight.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(DeviceRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(ColorableLightData.getDefaultInstance()));
     }
 
     public static final String APP_NAME = "CollectionServiceDataViaRemoteLib";
@@ -73,18 +73,18 @@ public class ObserveServiceStateChangesViaRSB {
         JPService.setApplicationName(APP_NAME);
         JPService.parseAndExitOnError(args);
 
-        ServiceType serviceType = ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_SERVICE;
+        ServiceType serviceType = ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
         List<UnitConfig> unitConfigList = new ArrayList<>();
 
         try {
             final RemoteServer deviceRegistryRemoteServer = Factory.getInstance().createRemoteServer("/registry/device/ctrl");
             deviceRegistryRemoteServer.activate();
-            final DeviceRegistry deviceRegistry = (DeviceRegistry) deviceRegistryRemoteServer.call("requestStatus").getData();
+            final DeviceRegistryData deviceRegistry = (DeviceRegistryData) deviceRegistryRemoteServer.call("requestStatus").getData();
 
             for (DeviceConfig deviceConfig : deviceRegistry.getDeviceConfigList()) {
                 for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        if (serviceConfig.getType().equals(serviceType)) {
+                        if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
                             unitConfigList.add(unitConfig);
                         }
                     }

@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.Collection;
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
@@ -31,7 +31,7 @@ import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionProviderService {
+public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionStateProviderService {
 
     /**
      * Returns an average current and voltage for the underlying provider and
@@ -41,15 +41,15 @@ public interface PowerConsumptionStateProviderServiceCollection extends PowerCon
      * @throws NotAvailableException
      */
     @Override
-    default public PowerConsumptionState getPowerConsumption() throws NotAvailableException {
+    default public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         try {
             double consumptionSum = 0;
             double averageCurrent = 0;
             double averageVoltage = 0;
-            for (PowerConsumptionProviderService provider : getPowerConsumptionStateProviderServices()) {
-                consumptionSum += provider.getPowerConsumption().getConsumption();
-                averageCurrent += provider.getPowerConsumption().getCurrent();
-                averageVoltage += provider.getPowerConsumption().getVoltage();
+            for (PowerConsumptionStateProviderService provider : getPowerConsumptionStateProviderServices()) {
+                consumptionSum += provider.getPowerConsumptionState().getConsumption();
+                averageCurrent += provider.getPowerConsumptionState().getCurrent();
+                averageVoltage += provider.getPowerConsumptionState().getVoltage();
             }
             averageCurrent = averageCurrent / getPowerConsumptionStateProviderServices().size();
             averageVoltage = averageVoltage / getPowerConsumptionStateProviderServices().size();
@@ -59,5 +59,5 @@ public interface PowerConsumptionStateProviderServiceCollection extends PowerCon
         }
     }
 
-    public Collection<PowerConsumptionProviderService> getPowerConsumptionStateProviderServices() throws CouldNotPerformException;
+    public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() throws CouldNotPerformException;
 }

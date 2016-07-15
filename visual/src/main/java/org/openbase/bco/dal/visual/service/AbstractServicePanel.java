@@ -122,7 +122,7 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         if (service == null) {
             return "---";
         }
-        return serviceConfig.getType().name();
+        return serviceConfig.getServiceTemplate().getType().name();
     }
 
     public synchronized void notifyActionProcessing(final Future future) {

@@ -33,23 +33,4 @@ public interface SmokeStateProviderService extends ProviderService {
 
     public SmokeState getSmokeState() throws NotAvailableException;
 
-//    public class GetSmokeStateCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(GetSmokeStateCallback.class);
-//
-//        private final SmokeStateProviderService provider;
-//
-//        public GetSmokeStateCallback(final SmokeStateProviderService provider) {
-//            this.provider = provider;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                return new Event(SmokeState.class, provider.getSmokeState());
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
-//            }
-//        }
-//    }
 }

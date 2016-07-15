@@ -27,29 +27,29 @@ import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.BatteryStateType.BatteryState;
-import rst.homeautomation.unit.BatteryType.Battery;
+import rst.homeautomation.unit.BatteryDataType.BatteryData;
 
 /**
  *
  * @author thuxohl
  */
-public class BatteryRemote extends AbstractUnitRemote<Battery> implements BatteryInterface {
+public class BatteryRemote extends AbstractUnitRemote<BatteryData> implements BatteryInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Battery.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
 
     public BatteryRemote() {
-        super(Battery.class);
+        super(BatteryData.class);
     }
 
     @Override
-    public void notifyDataUpdate(Battery data) {
+    public void notifyDataUpdate(BatteryData data) {
     }
 
     @Override
-    public BatteryState getBattery() throws NotAvailableException {
+    public BatteryState getBatteryState() throws NotAvailableException {
         try {
             return getData().getBatteryState();
         } catch (CouldNotPerformException ex) {

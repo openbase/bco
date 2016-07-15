@@ -112,7 +112,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
                 remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
                         + "[" + unitConfig.getLabel() + "]"
                         + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
-                        + " of " + ((UnitConfig) getRemoteService().getConfig()).getDeviceId()
+                        + " of " + ((UnitConfig) getRemoteService().getConfig()).getSystemUnitId()
                         + " : " + unitConfig.getDescription();
             } catch (CouldNotPerformException ex) {
                 remoteLabel = "?";
@@ -185,20 +185,20 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
 
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
 
-            if (serviceType != ServiceType.UNKNOWN && serviceConfig.getType() != serviceType) {
+            if (serviceType != ServiceType.UNKNOWN && serviceConfig.getServiceTemplate().getType()!= serviceType) {
                 continue;
             }
 
             try {
                 servicePanel = new JPanel();
-                servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()) + ":" + unitConfig.getId()));
-                AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getType()), getRemoteService());
+                servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
+                AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
                 abstractServicePanel.setUnitId(unitConfig.getId());
-                abstractServicePanel.setServiceType(serviceConfig.getType());
+                abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
                 servicePanel.add(abstractServicePanel);
                 componentList.add(servicePanel);
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getType().name() + "]", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
             }
         }
 

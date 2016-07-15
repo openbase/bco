@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.ButtonProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ButtonStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InvalidStateException;
@@ -34,7 +34,7 @@ import java.awt.Color;
  *
  * @author mpohling
  */
-public class ButtonProviderPanel extends AbstractServicePanel<ButtonProviderService> {
+public class ButtonProviderPanel extends AbstractServicePanel<ButtonStateProviderService> {
 
     /**
      * Creates new form BrightnessService
@@ -103,12 +103,12 @@ public class ButtonProviderPanel extends AbstractServicePanel<ButtonProviderServ
     @Override
     protected void updateDynamicComponents() {
         try {
-            switch (getService().getButton().getValue()) {
-                case CLICKED:
+            switch (getService().getButtonState().getValue()) {
+                case PRESSED:
                     buttonStatusLabel.setForeground(Color.BLACK);
                     standbyStatePanel.setBackground(Color.GREEN.darker());
                     break;
-                case DOUBLE_CLICKED:
+                case DOUBLE_PRESSED:
                     buttonStatusLabel.setForeground(Color.BLACK);
                     standbyStatePanel.setBackground(Color.GREEN.brighter());
                     break;
@@ -121,9 +121,9 @@ public class ButtonProviderPanel extends AbstractServicePanel<ButtonProviderServ
                     standbyStatePanel.setBackground(Color.ORANGE.darker());
                     break;
                 default:
-                    throw new InvalidStateException("State[" + getService().getButton().getValue() + "] is unknown.");
+                    throw new InvalidStateException("State[" + getService().getButtonState().getValue() + "] is unknown.");
             }
-            buttonStatusLabel.setText("Current ButtonState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getButton().getValue().name()));
+            buttonStatusLabel.setText("Current ButtonState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getButtonState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

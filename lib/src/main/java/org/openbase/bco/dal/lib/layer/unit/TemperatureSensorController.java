@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -30,37 +28,39 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.homeautomation.unit.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  *
  * @author thuxohl
  */
-public class TemperatureSensorController extends AbstractUnitController<TemperatureSensor, TemperatureSensor.Builder> implements TemperatureSensorInterface {
+public class TemperatureSensorController extends AbstractUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
 
-    public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureSensorController.class, unitHost, builder);
     }
 
-    public void updateTemperatureProvider(final Double value) throws CouldNotPerformException {
-        logger.debug("Apply temperature Update[" + value + "] for " + this + ".");
+    public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
+        logger.debug("Apply temperature Update[" + temperatureState + "] for " + this + ".");
 
-        try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setTemperature(value);
+        try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply temperature Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply temperature Update[" + temperatureState + "] for " + this + "!", ex);
         }
     }
 
     @Override
-    public Double getTemperature() throws NotAvailableException {
+    public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
-            return getData().getTemperature();
+            return getData().getTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("temperature", ex);
         }
@@ -69,7 +69,7 @@ public class TemperatureSensorController extends AbstractUnitController<Temperat
     public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
 
-        try (ClosableDataBuilder<TemperatureSensor.Builder> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTemperatureAlarmState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not alarm state Update[" + value + "] for " + this + "!", ex);

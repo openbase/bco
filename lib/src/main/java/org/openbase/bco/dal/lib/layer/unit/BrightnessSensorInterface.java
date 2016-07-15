@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.BrightnessProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface BrightnessSensorInterface extends BrightnessProviderService {
+public interface BrightnessSensorInterface extends BrightnessStateProviderService {
     
 }

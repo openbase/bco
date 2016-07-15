@@ -30,29 +30,29 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonType.Button;
+import rst.homeautomation.unit.ButtonDataType.ButtonData;
 import rst.timing.TimestampType;
 
 /**
  *
  * @author mpohling
  */
-public class ButtonController extends AbstractUnitController<Button, Button.Builder> implements ButtonInterface {
+public class ButtonController extends AbstractUnitController<ButtonData, ButtonData.Builder> implements ButtonInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
 
-    public ButtonController(final UnitHost unitHost, final Button.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public ButtonController(final UnitHost unitHost, final ButtonData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ButtonController.class, unitHost, builder);
     }
 
-    public void updateButtonProvider(final ButtonState state) throws CouldNotPerformException {
+    public void updateButtonStateProvider(final ButtonState state) throws CouldNotPerformException {
 
         logger.debug("Apply button Update[" + state + "] for " + this + ".");
 
-        try (ClosableDataBuilder<Button.Builder> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
             
             ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
             
@@ -60,9 +60,9 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
             buttonState.setValue(state.getValue());
             
             // Update timestemp if necessary
-            if (state.getValue() == ButtonState.State.CLICKED || state.getValue() == ButtonState.State.DOUBLE_CLICKED) {
+            if (state.getValue() == ButtonState.State.PRESSED || state.getValue() == ButtonState.State.DOUBLE_PRESSED) {
                 //TODO tamino: need to be tested! Please write an unit test.
-                buttonState.setLastClicked(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
+                buttonState.setTimestamp(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 
             dataBuilder.getInternalBuilder().setButtonState(buttonState);
@@ -72,7 +72,7 @@ public class ButtonController extends AbstractUnitController<Button, Button.Buil
     }
 
     @Override
-    public ButtonState getButton() throws NotAvailableException {
+    public ButtonState getButtonState() throws NotAvailableException {
         try {
             return getData().getButtonState();
         } catch(CouldNotPerformException ex) {

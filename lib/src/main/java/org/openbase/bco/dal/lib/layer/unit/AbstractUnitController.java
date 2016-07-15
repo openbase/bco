@@ -258,8 +258,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         stopWatch.start();
         // collect service interface methods
         HashMap<String, ServiceTemplate.ServiceType> serviceInterfaceMap = new HashMap<>();
-        for (ServiceTemplate.ServiceType serviceType : getTemplate().getServiceTypeList()) {
-            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceType.name()), serviceType);
+        for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name()), serviceTemplate.getType());
         }
 
         Class<? extends Service> serviceInterfaceClass = null;
@@ -383,18 +383,18 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
 
             // === Verify if all update methods are registered. ===
-            for (ServiceTemplate.ServiceType service : getTemplate().getServiceTypeList()) {
+            for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
 
                 // TODO: replace by service type filer if availbale.
                 // filter other services than provider
-                if (!service.name().contains("Provider")) {
+                if (!serviceTemplate.getType().name().contains("Provider")) {
                     continue;
                 }
 
                 // verify
-                updateMethod = ProviderService.getUpdateMethodName(service);
+                updateMethod = ProviderService.getUpdateMethodName(serviceTemplate.getType());
                 if (!unitMethods.contains(updateMethod)) {
-                    exceptionStack = MultiException.push(service, new NotAvailableException("Method", updateMethod), exceptionStack);
+                    exceptionStack = MultiException.push(serviceTemplate, new NotAvailableException("Method", updateMethod), exceptionStack);
                 }
             }
 

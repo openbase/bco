@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -31,23 +31,23 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.LightType.Light;
+import rst.homeautomation.unit.LightDataType.LightData;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  * @author thuxohl
  */
-public class LightController extends AbstractUnitController<Light, Light.Builder> implements LightInterface {
+public class LightController extends AbstractUnitController<LightData, LightData.Builder> implements LightInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Light.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
-    private PowerOperationService powerService;
+    private PowerStateOperationService powerService;
 
-    public LightController(final UnitHost unitHost, final Light.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public LightController(final UnitHost unitHost, final LightData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(LightController.class, unitHost, builder);
     }
 
@@ -61,24 +61,24 @@ public class LightController extends AbstractUnitController<Light, Light.Builder
         }
     }
 
-    public void updatePowerProvider(final PowerState value) throws CouldNotPerformException {
-        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+    public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + powerState + "] for " + this + ".");
 
-        try (ClosableDataBuilder<Light.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerState(value);
+        try (ClosableDataBuilder<LightData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setPowerState(powerState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply power Update[" + powerState + "] for " + this + "!", ex);
         }
     }
 
     @Override
-    public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
-        return powerService.setPower(state);
+    public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to Power [" + powerState + "]");
+        return powerService.setPowerState(powerState);
     }
 
     @Override
-    public PowerState getPower() throws NotAvailableException {
+    public PowerState getPowerState() throws NotAvailableException {
         try {
             return getData().getPowerState();
         } catch (CouldNotPerformException ex) {

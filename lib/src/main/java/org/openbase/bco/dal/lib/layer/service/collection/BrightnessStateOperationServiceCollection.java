@@ -23,20 +23,21 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface BrightnessStateOperationServiceCollection extends BrightnessOperationService {
+public interface BrightnessStateOperationServiceCollection extends BrightnessStateOperationService {
 
     @Override
-    default public Future<Void> setBrightness(final Double brightness) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((BrightnessOperationService input) -> input.setBrightness(brightness), getBrightnessStateOperationServices());
+    default public Future<Void> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+        return GlobalExecutionService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getBrightnessStateOperationServices());
     }
 
     /**
@@ -47,18 +48,18 @@ public interface BrightnessStateOperationServiceCollection extends BrightnessOpe
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    default public Double getBrightness() throws NotAvailableException {
+    default public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
             Double average = 0d;
-            for (BrightnessOperationService service : getBrightnessStateOperationServices()) {
-                average += service.getBrightness();
+            for (BrightnessStateOperationService service : getBrightnessStateOperationServices()) {
+                average += service.getBrightnessState().getBrightness();
             }
             average /= getBrightnessStateOperationServices().size();
-            return average;
+            return BrightnessState.newBuilder().setBrightness(average).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Brightness", ex);
         }
     }
 
-    public Collection<BrightnessOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException;
+    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException;
 }

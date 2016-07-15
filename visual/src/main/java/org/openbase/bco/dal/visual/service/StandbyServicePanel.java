@@ -21,7 +21,7 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InvalidStateException;
@@ -34,7 +34,7 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
  *
  * @author mpohling
  */
-public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationService> {
+public class StandbyServicePanel extends AbstractServicePanel<StandbyStateOperationService> {
 
     private static final StandbyState RUNNING = StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
     private static final StandbyState STANDBY = StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
@@ -114,16 +114,16 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationSe
     private void standbyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standbyButtonActionPerformed
 
         try {
-            switch (getService().getStandby().getValue()) {
+            switch (getService().getStandbyState().getValue()) {
             case STANDBY:
-                notifyActionProcessing(getService().setStandby(RUNNING));
+                notifyActionProcessing(getService().setStandbyState(RUNNING));
                 break;
             case RUNNING:
             case UNKNOWN:
-                notifyActionProcessing(getService().setStandby(STANDBY));
+                notifyActionProcessing(getService().setStandbyState(STANDBY));
                 break;
             default:
-                throw new InvalidStateException("State[" + getService().getStandby().getValue().name() + "] is unknown.");
+                throw new InvalidStateException("State[" + getService().getStandbyState().getValue().name() + "] is unknown.");
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger);
@@ -140,7 +140,7 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationSe
     @Override
     protected void updateDynamicComponents() {
         try {
-            switch (getService().getStandby().getValue()) {
+            switch (getService().getStandbyState().getValue()) {
             case STANDBY:
                 standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
                 standbyStatePanel.setBackground(Color.BLUE.lightGray);
@@ -158,9 +158,9 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyOperationSe
                 standbyButton.setText("Activate Standby");
                 break;
             default:
-                throw new InvalidStateException("State[" + getService().getStandby().getValue() + "] is unknown.");
+                throw new InvalidStateException("State[" + getService().getStandbyState().getValue() + "] is unknown.");
             }
-            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getStandby().getValue().name()));
+            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getStandbyState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

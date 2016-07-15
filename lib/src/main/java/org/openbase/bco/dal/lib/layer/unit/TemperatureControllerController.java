@@ -24,29 +24,31 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.TemperatureControllerType.TemperatureController;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.homeautomation.unit.TemperatureControllerDataType.TemperatureControllerData;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class TemperatureControllerController extends AbstractUnitController<TemperatureController, TemperatureController.Builder> implements TemperatureControllerInterface {
+public class TemperatureControllerController extends AbstractUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureControllerInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureController.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureControllerData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
 
-    private TargetTemperatureOperationService targetTemperatureService;
+    private TargetTemperatureStateOperationService targetTemperatureStateService;
 
-    public TemperatureControllerController(final UnitHost unitHost, final TemperatureController.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public TemperatureControllerController(final UnitHost unitHost, final TemperatureControllerData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureControllerController.class, unitHost, builder);
     }
 
@@ -54,54 +56,53 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            this.targetTemperatureService = getServiceFactory().newTargetTemperatureService(this);
+            this.targetTemperatureStateService = getServiceFactory().newTargetTemperatureService(this);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-
     @Override
-    public Future<Void> setTargetTemperature(final Double value) throws CouldNotPerformException {
+    public Future<Void> setTargetTemperatureState(final TemperatureState value) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to target temperature [" + value + "]");
-        return targetTemperatureService.setTargetTemperature(value);
+        return targetTemperatureStateService.setTargetTemperatureState(value);
     }
 
     @Override
-    public Double getTargetTemperature() throws NotAvailableException {
+    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
         try {
-            return getData().getTargetTemperature();
+            return getData().getTargetTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("target temperature", ex);
         }
     }
 
-    public void updateTargetTemperatureProvider(final Double value) throws CouldNotPerformException {
-        logger.info("Apply target temperature Update[" + value + "] for " + this + ".");
+    public void updateTargetTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
+        logger.info("Apply target temperature Update[" + temperatureState + "] for " + this + ".");
 
-        try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setTargetTemperature(value);
+        try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setTargetTemperatureState(temperatureState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply target temperature Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply target temperature Update[" + temperatureState + "] for " + this + "!", ex);
         }
         
         logger.info("Target temperature update applied");
     }
 
-    public void updateTemperatureProvider(final Double value) throws CouldNotPerformException {
-        logger.debug("Apply actual temperature Update[" + value + "] for " + this + ".");
+    public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
+        logger.debug("Apply actual temperature Update[" + temperatureState + "] for " + this + ".");
 
-        try (ClosableDataBuilder<TemperatureController.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setActualTemperature(value);
+        try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setActualTemperatureState(temperatureState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply actual temperature Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply actual temperature Update[" + temperatureState + "] for " + this + "!", ex);
         }
     }
 
     @Override
-    public Double getTemperature() throws NotAvailableException {
+    public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
-            return getData().getActualTemperature();
+            return getData().getActualTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("actual temperature", ex);
         }

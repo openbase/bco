@@ -33,23 +33,4 @@ public interface TemperatureAlarmStateProviderService extends ProviderService {
 
     public AlarmState getTemperatureAlarmState() throws NotAvailableException;
 
-//    public class GetTemperatureAlarmStateCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(GetTemperatureAlarmStateCallback.class);
-//
-//        private final TemperatureAlarmStateProviderService provider;
-//
-//        public GetTemperatureAlarmStateCallback(final TemperatureAlarmStateProviderService provider) {
-//            this.provider = provider;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                return new Event(AlarmState.class, provider.getTemperatureAlarmState());
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
-//            }
-//        }
-//    }
 }

@@ -28,26 +28,26 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
-import rst.homeautomation.unit.SmokeDetectorType.SmokeDetector;
+import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
  *
  * @author thuxohl
  */
-public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetector> implements SmokeDetectorInterface {
+public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetectorData> implements SmokeDetectorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetector.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetectorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
     public SmokeDetectorRemote() {
-        super(SmokeDetector.class);
+        super(SmokeDetectorData.class);
     }
 
     @Override
-    public void notifyDataUpdate(SmokeDetector data) throws CouldNotPerformException {
+    public void notifyDataUpdate(SmokeDetectorData data) throws CouldNotPerformException {
     }
 
     @Override

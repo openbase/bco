@@ -30,27 +30,27 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
+import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
 /**
  *
  * @author mpohling
  */
-public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensor, PowerConsumptionSensor.Builder> implements PowerConsumptionSensorInterface {
+public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
 
-    public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensor.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
 
-    public void updatePowerConsumptionProvider(final PowerConsumptionState state) throws CouldNotPerformException {
+    public void updatePowerConsumptionStateProvider(final PowerConsumptionState state) throws CouldNotPerformException {
         logger.debug("Apply power consumption Update[" + state + "] for " + this + ".");
 
-        try (ClosableDataBuilder<PowerConsumptionSensor.Builder> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<PowerConsumptionSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerConsumptionState(state);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply power consumption Update[" + state + "] for " + this + "!", ex);
@@ -58,7 +58,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
     }
 
     @Override
-    public PowerConsumptionState getPowerConsumption() throws NotAvailableException {
+    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         try {
             return getData().getPowerConsumptionState();
         } catch (CouldNotPerformException ex) {

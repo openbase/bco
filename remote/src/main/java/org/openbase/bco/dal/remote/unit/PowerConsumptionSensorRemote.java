@@ -27,29 +27,29 @@ import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.homeautomation.unit.PowerConsumptionSensorType.PowerConsumptionSensor;
+import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
 /**
  *
  * @author thuxohl
  */
-public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensor> implements PowerConsumptionSensorInterface {
+public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensorData> implements PowerConsumptionSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
 
     public PowerConsumptionSensorRemote() {
-        super(PowerConsumptionSensor.class);
+        super(PowerConsumptionSensorData.class);
     }
 
     @Override
-    public void notifyDataUpdate(PowerConsumptionSensor data) {
+    public void notifyDataUpdate(PowerConsumptionSensorData data) {
     }
 
     @Override
-    public PowerConsumptionState getPowerConsumption() throws NotAvailableException {
+    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         try {
             return getData().getPowerConsumptionState();
         } catch (CouldNotPerformException ex) {

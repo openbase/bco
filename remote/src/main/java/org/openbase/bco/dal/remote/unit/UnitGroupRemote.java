@@ -27,23 +27,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
-import org.openbase.bco.dal.remote.service.BrightnessServiceRemote;
-import org.openbase.bco.dal.remote.service.ColorServiceRemote;
-import org.openbase.bco.dal.remote.service.OpeningRatioServiceRemote;
-import org.openbase.bco.dal.remote.service.PowerServiceRemote;
+import org.openbase.bco.dal.remote.service.BrightnessStateServiceRemote;
+import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
+import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
-import org.openbase.bco.dal.remote.service.ShutterServiceRemote;
-import org.openbase.bco.dal.remote.service.StandbyServiceRemote;
-import org.openbase.bco.dal.remote.service.TargetTemperatureServiceRemote;
+import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
+import org.openbase.bco.dal.remote.service.StandbyStateServiceRemote;
+import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -53,18 +51,20 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.state.PowerStateType;
-import rst.homeautomation.state.ShutterStateType;
-import rst.homeautomation.state.StandbyStateType;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.BlindStateType.BlindState;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
-import rst.vision.HSVColorType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig> implements BrightnessOperationService, ColorOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService, StandbyOperationService, TargetTemperatureOperationService {
+public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
 
     private final Map<ServiceTemplate.ServiceType, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
     private final ServiceRemoteFactory serviceRemoteFactory;
@@ -81,87 +81,75 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
     }
 
     @Override
-    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
-        return ((BrightnessServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE)).setBrightness(brightness);
+    public Future<Void> setBrightnessState(BrightnessState brightness) throws CouldNotPerformException {
+        testServiceAvailability(ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE);
+        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightness);
     }
 
     @Override
-    public Double getBrightness() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE);
-        return ((BrightnessServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.BRIGHTNESS_SERVICE)).getBrightness();
+    public BrightnessState getBrightnessState() throws NotAvailableException {
+        testServiceAvailability(ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE);
+        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState();
     }
 
     @Override
-    public Future<Void> setColor(HSVColorType.HSVColor color) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.COLOR_SERVICE);
-        return ((ColorServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.COLOR_SERVICE)).setColor(color);
+    public Future<Void> setColorState(ColorState color) throws CouldNotPerformException {
+        testServiceAvailability(ServiceTemplate.ServiceType.COLOR_STATE_SERVICE);
+        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.COLOR_STATE_SERVICE)).setColorState(color);
     }
 
     @Override
-    public HSVColorType.HSVColor getColor() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.COLOR_SERVICE);
-        return ((ColorServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.COLOR_SERVICE)).getColor();
+    public ColorState getColorState() throws NotAvailableException {
+        testServiceAvailability(ServiceTemplate.ServiceType.COLOR_STATE_SERVICE);
+        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.COLOR_STATE_SERVICE)).getColorState();
     }
 
     @Override
-    public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.OPENING_RATIO_SERVICE);
-        return ((OpeningRatioServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.OPENING_RATIO_SERVICE)).setOpeningRatio(openingRatio);
+    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+        testServiceAvailability(ServiceTemplate.ServiceType.POWER_STATE_SERVICE);
+        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).setPowerState(state);
     }
 
     @Override
-    public Double getOpeningRatio() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.OPENING_RATIO_SERVICE);
-        return ((OpeningRatioServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.OPENING_RATIO_SERVICE)).getOpeningRatio();
+    public PowerState getPowerState() throws NotAvailableException {
+        testServiceAvailability(ServiceTemplate.ServiceType.POWER_STATE_SERVICE);
+        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).getPowerState();
     }
 
     @Override
-    public Future<Void> setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.POWER_SERVICE);
-        return ((PowerServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.POWER_SERVICE)).setPower(state);
+    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+        testServiceAvailability(ServiceTemplate.ServiceType.BLIND_STATE_SERVICE);
+        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.BLIND_STATE_SERVICE)).setBlindState(state);
     }
 
     @Override
-    public PowerStateType.PowerState getPower() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.POWER_SERVICE);
-        return ((PowerServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.POWER_SERVICE)).getPower();
+    public BlindState getBlindState() throws NotAvailableException {
+        testServiceAvailability(ServiceTemplate.ServiceType.BLIND_STATE_SERVICE);
+        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.BLIND_STATE_SERVICE)).getBlindState();
     }
 
     @Override
-    public Future<Void> setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.SHUTTER_SERVICE);
-        return ((ShutterServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.SHUTTER_SERVICE)).setShutter(state);
+    public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
+        testServiceAvailability(ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE);
+        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(state);
     }
 
     @Override
-    public ShutterStateType.ShutterState getShutter() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.SHUTTER_SERVICE);
-        return ((ShutterServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.SHUTTER_SERVICE)).getShutter();
+    public StandbyState getStandbyState() throws NotAvailableException {
+        testServiceAvailability(ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE);
+        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.STANDBY_STATE_SERVICE)).getStandbyState();
     }
 
     @Override
-    public Future<Void> setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.STANDBY_SERVICE);
-        return ((StandbyServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.STANDBY_SERVICE)).setStandby(state);
+    public Future<Void> setTargetTemperatureState(TemperatureState value) throws CouldNotPerformException {
+        testServiceAvailability(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(value);
     }
 
     @Override
-    public StandbyStateType.StandbyState getStandby() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.STANDBY_SERVICE);
-        return ((StandbyServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.STANDBY_SERVICE)).getStandby();
-    }
-
-    @Override
-    public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
-        testServiceAvailability(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE);
-        return ((TargetTemperatureServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE)).setTargetTemperature(value);
-    }
-
-    @Override
-    public Double getTargetTemperature() throws NotAvailableException {
-        testServiceAvailability(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE);
-        return ((TargetTemperatureServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_SERVICE)).getTargetTemperature();
+    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
+        testServiceAvailability(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState();
     }
 
     private void testServiceAvailability(ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
@@ -210,21 +198,21 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
         }
 
         List<UnitConfig> unitConfigsByService = new ArrayList<>();
-        for (ServiceTemplate.ServiceType serviceType : unitGroupConfig.getServiceTypeList()) {
+        for (ServiceTemplate serviceTemplate : unitGroupConfig.getServiceTemplateList()) {
             for (UnitConfig unitConfig : unitConfigs) {
-                if (unitHasService(unitConfig, serviceType)) {
+                if (unitHasService(unitConfig, serviceTemplate)) {
                     unitConfigsByService.add(unitConfig);
                 }
             }
             // create serviceRemoteByType and unitCOnfiglist
-            serviceRemoteMap.put(serviceType, serviceRemoteFactory.createAndInitServiceRemote(serviceType, unitConfigsByService));
+            serviceRemoteMap.put(serviceTemplate.getType(), serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
             unitConfigsByService.clear();
         }
     }
 
-    private boolean unitHasService(UnitConfig unitConfig, ServiceTemplate.ServiceType serviceType) {
+    private boolean unitHasService(UnitConfig unitConfig, ServiceTemplate serviceTemplate) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-            if (serviceConfig.getType() == serviceType) {
+            if (serviceConfig.getServiceTemplate().equals(serviceTemplate)) {
                 return true;
             }
         }

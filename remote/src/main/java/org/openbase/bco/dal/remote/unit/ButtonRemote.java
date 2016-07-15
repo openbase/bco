@@ -27,29 +27,29 @@ import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonType.Button;
+import rst.homeautomation.unit.ButtonDataType.ButtonData;
 
 /**
  *
  * @author thuxohl
  */
-public class ButtonRemote extends AbstractUnitRemote<Button> implements ButtonInterface {
+public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements ButtonInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
 
     public ButtonRemote() {
-        super(Button.class);
+        super(ButtonData.class);
     }
 
     @Override
-    public void notifyDataUpdate(Button data) {
+    public void notifyDataUpdate(ButtonData data) {
     }
 
     @Override
-    public ButtonState getButton() throws NotAvailableException {
+    public ButtonState getButtonState() throws NotAvailableException {
         try {
             return getData().getButtonState();
         } catch (CouldNotPerformException ex) {

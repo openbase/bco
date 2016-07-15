@@ -21,11 +21,10 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class ColorServicePanel extends AbstractServicePanel<ColorOperationService> {
+public class ColorServicePanel extends AbstractServicePanel<ColorStateOperationService> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -48,12 +47,11 @@ public class ColorServicePanel extends AbstractServicePanel<ColorOperationServic
     public ColorServicePanel() throws InstantiationException {
         initComponents();
 
-        colorChooser.getSelectionModel().addChangeListener(
-                new ChangeListener() {
+        colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
                         try {
-                            notifyActionProcessing(getService().setColor(HSVColorToRGBColorTransformer.transform(colorChooser.getColor())));
+                            notifyActionProcessing(getService().setColor(HSBColorToRGBColorTransformer.transform(colorChooser.getColor())));
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
                         }
@@ -64,7 +62,7 @@ public class ColorServicePanel extends AbstractServicePanel<ColorOperationServic
     @Override
     protected void updateDynamicComponents() {
         try {
-            colorPreviewPanel.setBackground(HSVColorToRGBColorTransformer.transform(getService().getColor()));
+            colorPreviewPanel.setBackground(getService().getJavaAWTColor());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update color value!", ex), logger);
         }

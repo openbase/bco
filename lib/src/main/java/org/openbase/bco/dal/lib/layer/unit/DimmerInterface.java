@@ -1,8 +1,13 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.openbase.bco.dal.lib.layer.unit;
 
 /*
  * #%L
- * DAL Library
+ * BCO DAL Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,13 +27,10 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface DimmerInterface extends PowerOperationService, BrightnessOperationService {
+public class DimmerInterface {
     
 }

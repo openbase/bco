@@ -22,13 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface TemperatureControllerInterface extends TemperatureProviderService, TargetTemperatureOperationService {
+public interface TemperatureControllerInterface extends TemperatureStateProviderService, TargetTemperatureStateOperationService {
     
 }

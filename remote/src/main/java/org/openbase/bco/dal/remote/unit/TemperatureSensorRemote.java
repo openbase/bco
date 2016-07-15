@@ -27,31 +27,32 @@ import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.unit.TemperatureSensorType.TemperatureSensor;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.homeautomation.unit.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  *
  * @author thuxohl
  */
-public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensor> implements TemperatureSensorInterface {
+public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensorData> implements TemperatureSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
     }
 
     public TemperatureSensorRemote() {
-        super(TemperatureSensor.class);
+        super(TemperatureSensorData.class);
     }
 
     @Override
-    public void notifyDataUpdate(TemperatureSensor data) {
+    public void notifyDataUpdate(TemperatureSensorData data) {
     }
 
     @Override
-    public Double getTemperature() throws NotAvailableException {
+    public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
-            return getData().getTemperature();
+            return getData().getTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Temperature", ex);
         }

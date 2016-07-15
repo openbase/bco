@@ -22,7 +22,7 @@ package org.openbase.bco.dal.example;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -42,7 +42,7 @@ public class ControlAmbientLightViaRemoteLib {
 
     public void notifyAlarm() throws CouldNotPerformException, InterruptedException {
 
-        final AmbientLightRemote testLight = new AmbientLightRemote();
+        final ColorableLightRemote testLight = new ColorableLightRemote();
 
         try {
             testLight.init(new Scope("/home/control/ambientlight/testunit_0/"));

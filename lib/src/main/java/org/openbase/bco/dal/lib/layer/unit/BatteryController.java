@@ -28,27 +28,27 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.BatteryStateType.BatteryState;
-import rst.homeautomation.unit.BatteryType.Battery;
+import rst.homeautomation.unit.BatteryDataType.BatteryData;
 
 /**
  *
  * @author thuxohl
  */
-public class BatteryController extends AbstractUnitController<Battery, Battery.Builder> implements BatteryInterface {
+public class BatteryController extends AbstractUnitController<BatteryData, BatteryData.Builder> implements BatteryInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Battery.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryState.getDefaultInstance()));
     }
 
-    public BatteryController(final UnitHost unitHost, Battery.Builder builder) throws InstantiationException, CouldNotPerformException {
+    public BatteryController(final UnitHost unitHost, BatteryData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(BatteryController.class, unitHost, builder);
     }
 
-    public void updateBatteryProvider(final BatteryState value) throws CouldNotPerformException {
+    public void updateBatteryStateProvider(final BatteryState value) throws CouldNotPerformException {
         logger.debug("Apply battery Update[" + value + "] for " + this + ".");
 
-        try (ClosableDataBuilder<Battery.Builder> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<BatteryData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setBatteryState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply battery Update[" + value + "] for " + this + "!", ex);
@@ -56,7 +56,7 @@ public class BatteryController extends AbstractUnitController<Battery, Battery.B
     }
 
     @Override
-    public BatteryState getBattery() throws NotAvailableException {
+    public BatteryState getBatteryState() throws NotAvailableException {
         try {
             return getData().getBatteryState();
         } catch (CouldNotPerformException ex) {

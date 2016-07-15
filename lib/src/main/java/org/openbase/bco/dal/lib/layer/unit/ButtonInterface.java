@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.ButtonProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ButtonStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface ButtonInterface extends ButtonProviderService {
+public interface ButtonInterface extends ButtonStateProviderService {
     
 }

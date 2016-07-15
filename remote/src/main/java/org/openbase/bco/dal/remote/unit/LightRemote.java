@@ -29,38 +29,38 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.LightType.Light;
+import rst.homeautomation.unit.LightDataType.LightData;
 
 /**
  *
  * @author thuxohl
  */
-public class LightRemote extends AbstractUnitRemote<Light> implements LightInterface {
+public class LightRemote extends AbstractUnitRemote<LightData> implements LightInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Light.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
 
     public LightRemote() {
-        super(Light.class);
+        super(LightData.class);
     }
 
     @Override
-    public void notifyDataUpdate(Light data) {
+    public void notifyDataUpdate(LightData data) {
     }
 
-    public void setPower(final PowerState.State value) throws CouldNotPerformException {
-        setPower(PowerState.newBuilder().setValue(value).build());
+    public void setPowerState(final PowerState.State value) throws CouldNotPerformException {
+        setPowerState(PowerState.newBuilder().setValue(value).build());
     }
 
     @Override
-    public Future<Void> setPower(PowerState value) throws CouldNotPerformException {
+    public Future<Void> setPowerState(PowerState value) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(value, this, Void.class);
     }
 
     @Override
-    public PowerState getPower() throws NotAvailableException {
+    public PowerState getPowerState() throws NotAvailableException {
         try {
             return this.getData().getPowerState();
         } catch (CouldNotPerformException ex) {

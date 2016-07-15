@@ -22,13 +22,12 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InstantiationException;
 
@@ -38,18 +37,16 @@ import org.openbase.jul.exception.InstantiationException;
  */
 public interface ServiceFactory {
 
-    public abstract <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends ColorOperationService & Unit> ColorOperationService newColorService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends PowerOperationService & Unit> PowerOperationService newPowerService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(UNIT unit) throws InstantiationException;
 
-    public abstract <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(UNIT unit) throws InstantiationException;
-
-    public abstract <UNIT extends TargetTemperatureOperationService & Unit> TargetTemperatureOperationService newTargetTemperatureService(UNIT unit) throws InstantiationException;
+    public abstract <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(UNIT unit) throws InstantiationException;
 
 }

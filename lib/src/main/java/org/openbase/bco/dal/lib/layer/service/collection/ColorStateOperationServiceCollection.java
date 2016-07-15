@@ -24,29 +24,31 @@ package org.openbase.bco.dal.lib.layer.service.collection;
 import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import rst.vision.HSVColorType.HSVColor;
+import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.vision.ColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.com">Marian Pohling</a>
  */
-public interface ColorStateOperationServiceCollection extends ColorOperationService {
+public interface ColorStateOperationServiceCollection extends ColorStateOperationService {
 
     /**
      *
-     * @param color
+     * @param colorState
      * @return
      * @throws CouldNotPerformException
      */
     @Override
-    default public Future<Void> setColor(final HSVColor color) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((ColorOperationService input) -> input.setColor(color), getColorStateOperationServices());
+    default public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
+        return GlobalExecutionService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getColorStateOperationServices());
     }
 
     /**
@@ -56,15 +58,15 @@ public interface ColorStateOperationServiceCollection extends ColorOperationServ
      * @throws NotAvailableException
      */
     @Override
-    default public HSVColor getColor() throws NotAvailableException {
+    default public ColorState getColorState() throws NotAvailableException {
         try {
             double averageRed = 0;
             double averageGreen = 0;
             double averageBlue = 0;
             int amount = getColorStateOperationServices().size();
-            Collection<ColorOperationService> colorStateOperationServicCollection = getColorStateOperationServices();
-            for (ColorOperationService service : colorStateOperationServicCollection) {
-                Color color = HSVColorToRGBColorTransformer.transform(service.getColor());
+            Collection<ColorStateOperationService> colorStateOperationServicCollection = getColorStateOperationServices();
+            for (ColorStateOperationService service : colorStateOperationServicCollection) {
+                Color color = HSBColorToRGBColorTransformer.transform(service.getColorState().getColor().getHsbColor());
                 averageRed += color.getRed();
                 averageGreen += color.getGreen();
                 averageBlue += color.getBlue();
@@ -73,11 +75,12 @@ public interface ColorStateOperationServiceCollection extends ColorOperationServ
             averageGreen = averageGreen / amount;
             averageBlue = averageBlue / amount;
 
-            return HSVColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
+            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
+            return ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB)).build();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("HSVColor", ex);
+            throw new NotAvailableException("HSBColor", ex);
         }
     }
 
-    public Collection<ColorOperationService> getColorStateOperationServices() throws CouldNotPerformException;
+    public Collection<ColorStateOperationService> getColorStateOperationServices() throws CouldNotPerformException;
 }

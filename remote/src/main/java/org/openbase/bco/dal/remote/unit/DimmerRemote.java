@@ -1,8 +1,13 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.openbase.bco.dal.remote.unit;
 
 /*
  * #%L
- * DAL Remote
+ * BCO DAL Remote
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,65 +26,11 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.DimmerInterface;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.DimmerType.Dimmer;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimmerRemote extends AbstractUnitRemote<Dimmer> implements DimmerInterface {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Dimmer.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-    }
-
-    public DimmerRemote() {
-        super(Dimmer.class);
-    }
-
-    @Override
-    public void notifyDataUpdate(Dimmer data) {
-    }
-
-    public void setPower(final PowerState.State value) throws CouldNotPerformException {
-        setPower(PowerState.newBuilder().setValue(value).build());
-    }
-
-    @Override
-    public Future<Void> setPower(final PowerState value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
-    }
-
-    @Override
-    public PowerState getPower() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(brightness, this, Void.class);
-    }
-
-    @Override
-    public Double getBrightness() throws NotAvailableException {
-        try {
-            return getData().getValue();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightness", ex);
-        }
-    }
-
+public class DimmerRemote {
+    
 }

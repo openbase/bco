@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
@@ -33,11 +33,11 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface PowerStateOperationServiceCollection extends PowerOperationService {
+public interface PowerStateOperationServiceCollection extends PowerStateOperationService {
 
     @Override
-    default public Future<Void> setPower(final PowerState state) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((PowerOperationService input) -> input.setPower(state), getPowerStateOperationServices());
+    default public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+        return GlobalExecutionService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), getPowerStateOperationServices());
     }
 
     /**
@@ -47,10 +47,10 @@ public interface PowerStateOperationServiceCollection extends PowerOperationServ
      * @throws NotAvailableException
      */
     @Override
-    default public PowerState getPower() throws NotAvailableException {
+    default public PowerState getPowerState() throws NotAvailableException {
         try {
-            for (PowerOperationService service : getPowerStateOperationServices()) {
-                if (service.getPower().getValue() == PowerState.State.ON) {
+            for (PowerStateOperationService service : getPowerStateOperationServices()) {
+                if (service.getPowerState().getValue() == PowerState.State.ON) {
                     return PowerState.newBuilder().setValue(PowerState.State.ON).build();
                 }
             }
@@ -60,5 +60,5 @@ public interface PowerStateOperationServiceCollection extends PowerOperationServ
         }
     }
 
-    public Collection<PowerOperationService> getPowerStateOperationServices() throws CouldNotPerformException;
+    public Collection<PowerStateOperationService> getPowerStateOperationServices() throws CouldNotPerformException;
 }

@@ -1,0 +1,121 @@
+package org.openbase.bco.dal.lib.layer.unit;
+
+/*
+ * #%L
+ * DAL Library
+ * %%
+ * Copyright (C) 2014 - 2016 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
+ * #L%
+ */
+import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.DimmableLightDataType.DimmableLightData;
+import rst.homeautomation.unit.UnitConfigType;
+
+/**
+ *
+ * @author thuxohl
+ */
+public class DimmableLightController extends AbstractUnitController<DimmableLightData, DimmableLightData.Builder> implements DimmableLightInterface {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmableLightData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
+    }
+
+    private PowerStateOperationService powerService;
+    private BrightnessStateOperationService brightnessService;
+
+    public DimmableLightController(final UnitHost unitHost, DimmableLightData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
+        super(DimmableLightController.class, unitHost, builder);
+    }
+
+    @Override
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            this.powerService = getServiceFactory().newPowerService(this);
+            this.brightnessService = getServiceFactory().newBrightnessService(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
+        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setPowerState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+        }
+    }
+
+    @Override
+    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
+        return powerService.setPowerState(state);
+    }
+
+    @Override
+    public PowerState getPowerState() throws NotAvailableException {
+        try {
+            return getData().getPowerState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("power", ex);
+        }
+    }
+
+    public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
+        logger.debug("Apply dim Update[" + brightnessState + "] for " + this + ".");
+
+        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
+            if (brightnessState.getBrightness() == 0) {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
+            } else {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+            }
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply dim Update[" + brightnessState + "] for " + this + "!", ex);
+        }
+    }
+
+    @Override
+    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+        return brightnessService.setBrightnessState(brightnessState);
+    }
+
+    @Override
+    public BrightnessState getBrightnessState() throws NotAvailableException {
+        try {
+            return getData().getBrightnessState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("brightness", ex);
+        }
+    }
+}

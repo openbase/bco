@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.Collection;
-import org.openbase.bco.dal.lib.layer.service.provider.HandleProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.state.HandleStateType.HandleState;
@@ -31,7 +31,7 @@ import rst.homeautomation.state.HandleStateType.HandleState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface HandleStateProviderServiceCollection extends HandleProviderService {
+public interface HandleStateProviderServiceCollection extends HandleStateProviderService {
 
     /**
      * If at least one handle state provider returns open than that is returned.
@@ -42,25 +42,34 @@ public interface HandleStateProviderServiceCollection extends HandleProviderServ
      * @throws NotAvailableException
      */
     @Override
-    default public HandleState getHandle() throws NotAvailableException {
+    default public HandleState getHandleState() throws NotAvailableException {
+        // TODO: rethink position in handle state
         try {
-            boolean tilted = false;
-            for (HandleProviderService provider : getHandleStateProviderServices()) {
-                if (provider.getHandle().getValue() == HandleState.State.OPEN) {
-                    return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();
-                }
-                if (provider.getHandle().getValue() == HandleState.State.TILTED) {
-                    tilted = true;
-                }
+            int position = 0;
+            //boolean tilted = false;
+            Collection<HandleStateProviderService> handleStateProviderServices = getHandleStateProviderServices();
+            for (HandleStateProviderService provider : handleStateProviderServices) {
+                position += provider.getHandleState().getPosition();
             }
-            if (tilted) {
-                return HandleState.newBuilder().setValue(HandleState.State.TILTED).build();
-            }
-            return HandleState.newBuilder().setValue(HandleState.State.CLOSED).build();
+
+            position /= handleStateProviderServices.size();
+            return HandleState.newBuilder().setPosition(position).build();
+            /*for (HandleProviderService provider : getHandleStateProviderServices()) {
+             if (provider.getHandle().getPosition() == HandleState.State.OPEN) {
+             return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();
+             }
+             if (provider.getHandle().getValue() == HandleState.State.TILTED) {
+             tilted = true;
+             }
+             }
+             if (tilted) {
+             return HandleState.newBuilder().setValue(HandleState.State.TILTED).build();
+             }
+             return HandleState.newBuilder().setValue(HandleState.State.CLOSED).build();*/
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("HandleState", ex);
         }
     }
 
-    public Collection<HandleProviderService> getHandleStateProviderServices() throws CouldNotPerformException;
+    public Collection<HandleStateProviderService> getHandleStateProviderServices() throws CouldNotPerformException;
 }

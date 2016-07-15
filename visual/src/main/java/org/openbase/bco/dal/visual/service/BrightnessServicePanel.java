@@ -21,16 +21,16 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import java.util.concurrent.Callable;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
  * @author mpohling
  */
-public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOperationService> {
+public class BrightnessServicePanel extends AbstractServicePanel<BrightnessStateOperationService> {
 
     /**
      * Creates new form BrightnessService
@@ -92,7 +92,7 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOpera
 
     private void brightnessSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_brightnessSliderStateChanged
         try {
-            notifyActionProcessing(getService().setBrightness((double) brightnessSlider.getValue()));
+            notifyActionProcessing(getService().setBrightnessState(BrightnessState.newBuilder().setBrightness((double) brightnessSlider.getValue()).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set brightness value!", ex), logger);
         }
@@ -107,7 +107,7 @@ public class BrightnessServicePanel extends AbstractServicePanel<BrightnessOpera
     @Override
     protected void updateDynamicComponents() {
         try {
-            brightnessBar.setValue(getService().getBrightness().intValue());
+            brightnessBar.setValue((int) getService().getBrightnessState().getBrightness());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

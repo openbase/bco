@@ -98,7 +98,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
 
     private static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-            if (serviceConfig.getType() == serviceType) {
+            if (serviceConfig.getServiceTemplate().getType() == serviceType) {
                 return true;
             }
         }

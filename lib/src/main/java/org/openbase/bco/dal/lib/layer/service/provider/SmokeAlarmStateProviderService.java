@@ -33,23 +33,4 @@ public interface SmokeAlarmStateProviderService extends ProviderService {
 
     public AlarmState getSmokeAlarmState() throws NotAvailableException;
 
-//    public class GetSmokeAlarmStateCallback extends EventCallback {
-//
-//        private static final Logger logger = LoggerFactory.getLogger(GetSmokeAlarmStateCallback.class);
-//
-//        private final SmokeAlarmStateProviderService provider;
-//
-//        public GetSmokeAlarmStateCallback(final SmokeAlarmStateProviderService provider) {
-//            this.provider = provider;
-//        }
-//
-//        @Override
-//        public Event invoke(final Event request) throws UserCodeException {
-//            try {
-//                return new Event(AlarmState.class, provider.getSmokeAlarmState());
-//            } catch (Exception ex) {
-//                throw ExceptionPrinter.printHistoryAndReturnThrowable(new UserCodeException(new InvocationFailedException(this, provider, ex)), logger);
-//            }
-//        }
-//    }
 }

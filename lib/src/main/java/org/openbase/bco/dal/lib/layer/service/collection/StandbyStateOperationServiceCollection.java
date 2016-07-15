@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
@@ -33,11 +33,11 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface StandbyStateOperationServiceCollection extends StandbyOperationService {
+public interface StandbyStateOperationServiceCollection extends StandbyStateOperationService {
 
     @Override
-    default public Future<Void> setStandby(StandbyState state) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((StandbyOperationService input) -> input.setStandby(state), getStandbyStateOperationServices());
+    default public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
+        return GlobalExecutionService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), getStandbyStateOperationServices());
     }
 
     /**
@@ -48,10 +48,10 @@ public interface StandbyStateOperationServiceCollection extends StandbyOperation
      * @throws NotAvailableException
      */
     @Override
-    default public StandbyState getStandby() throws NotAvailableException {
+    default public StandbyState getStandbyState() throws NotAvailableException {
         try {
-            for (StandbyOperationService service : getStandbyStateOperationServices()) {
-                if (service.getStandby().getValue() == StandbyState.State.RUNNING) {
+            for (StandbyStateOperationService service : getStandbyStateOperationServices()) {
+                if (service.getStandbyState().getValue() == StandbyState.State.RUNNING) {
                     return StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
                 }
             }
@@ -61,5 +61,5 @@ public interface StandbyStateOperationServiceCollection extends StandbyOperation
         }
     }
 
-    public Collection<StandbyOperationService> getStandbyStateOperationServices() throws CouldNotPerformException;
+    public Collection<StandbyStateOperationService> getStandbyStateOperationServices() throws CouldNotPerformException;
 }

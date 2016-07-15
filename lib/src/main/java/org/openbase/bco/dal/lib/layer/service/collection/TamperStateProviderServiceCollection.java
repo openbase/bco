@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.Collection;
-import org.openbase.bco.dal.lib.layer.service.provider.TamperProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.state.TamperStateType.TamperState;
@@ -31,7 +31,7 @@ import rst.homeautomation.state.TamperStateType.TamperState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface TamperStateProviderServiceCollection extends TamperProviderService {
+public interface TamperStateProviderServiceCollection extends TamperStateProviderService {
 
     /**
      * Returns tamper if at least one of the tamper providers returns tamper and
@@ -41,10 +41,10 @@ public interface TamperStateProviderServiceCollection extends TamperProviderServ
      * @throws NotAvailableException
      */
     @Override
-    default public TamperState getTamper() throws NotAvailableException {
+    default public TamperState getTamperState() throws NotAvailableException {
         try {
-            for (TamperProviderService provider : getTamperStateProviderServices()) {
-                if (provider.getTamper().getValue() == TamperState.State.TAMPER) {
+            for (TamperStateProviderService provider : getTamperStateProviderServices()) {
+                if (provider.getTamperState().getValue() == TamperState.State.TAMPER) {
                     return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
                 }
             }
@@ -55,5 +55,5 @@ public interface TamperStateProviderServiceCollection extends TamperProviderServ
         }
     }
 
-    public Collection<TamperProviderService> getTamperStateProviderServices() throws CouldNotPerformException;
+    public Collection<TamperStateProviderService> getTamperStateProviderServices() throws CouldNotPerformException;
 }

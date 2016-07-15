@@ -26,31 +26,32 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.BrightnessSensorType;
-import rst.homeautomation.unit.BrightnessSensorType.BrightnessSensor;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.homeautomation.unit.BrightnessSensorDataType.BrightnessSensorData;
 
 /**
  *
  * @author thuxohl
  */
-public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensor> implements BrightnessSensorInterface {
+public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorData> implements BrightnessSensorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorType.BrightnessSensor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
 
     public BrightnessSensorRemote() {
-        super(BrightnessSensor.class);
+        super(BrightnessSensorData.class);
     }
 
     @Override
-    public void notifyDataUpdate(BrightnessSensorType.BrightnessSensor data) {
+    public void notifyDataUpdate(BrightnessSensorData data) {
     }
 
     @Override
-    public Double getBrightness() throws NotAvailableException {
+    public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
-            return getData().getBrightness();
+            return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Brightness", ex);
         }

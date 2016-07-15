@@ -21,8 +21,7 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.service.provider.HandleProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -34,12 +33,13 @@ import java.awt.Color;
  *
  * @author kengelma
  */
-public class HandleProviderPanel extends AbstractServicePanel<HandleProviderService> {
+public class HandleProviderPanel extends AbstractServicePanel<HandleStateProviderService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel
      *
-     * @throws org.openbase.jul.exception.InstantiationException can't instantiate
+     * @throws org.openbase.jul.exception.InstantiationException can't
+     * instantiate
      */
     public HandleProviderPanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
@@ -107,27 +107,23 @@ public class HandleProviderPanel extends AbstractServicePanel<HandleProviderServ
     @Override
     protected void updateDynamicComponents() {
         try {
-            switch (getService().getHandle().getValue()) {
-                case UNKNOWN:
-                    handleStateLabel.setForeground(Color.DARK_GRAY);
-                    handleStatePanel.setBackground(Color.ORANGE);
-                    break;
-                case CLOSED:
+            switch (getService().getHandleState().getPosition()) {
+                case 0:
                     handleStateLabel.setForeground(Color.WHITE);
                     handleStatePanel.setBackground(Color.BLUE);
                     break;
-                case TILTED:
+                case 180:
                     handleStateLabel.setForeground(Color.BLACK);
                     handleStatePanel.setBackground(Color.CYAN);
                     break;
-                case OPEN:
+                case 90:
                     handleStateLabel.setForeground(Color.WHITE);
                     handleStatePanel.setBackground(Color.GREEN);
                     break;
                 default:
-                    throw new InvalidStateException("State[" + getService().getHandle().getValue() + "] is unknown.");
+                    throw new InvalidStateException("State[" + getService().getHandleState().getPosition() + "] is unknown.");
             }
-            handleStateLabel.setText("Current HandleState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getHandle().getValue().name()));
+            handleStateLabel.setText("Current HandleState = " + getService().getHandleState().getPosition());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

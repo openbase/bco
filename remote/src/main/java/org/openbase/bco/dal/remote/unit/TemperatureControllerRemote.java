@@ -28,44 +28,46 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.TemperatureControllerType.TemperatureController;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.homeautomation.unit.TemperatureControllerDataType.TemperatureControllerData;
 
 /**
  *
  * @author mpohling
  */
-public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureController> implements TemperatureControllerInterface {
+public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureControllerData> implements TemperatureControllerInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureController.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureControllerData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
 
     public TemperatureControllerRemote() {
-        super(TemperatureController.class);
+        super(TemperatureControllerData.class);
     }
 
     @Override
-    public void notifyDataUpdate(TemperatureController data) throws CouldNotPerformException {
+    public void notifyDataUpdate(TemperatureControllerData data) throws CouldNotPerformException {
     }
 
     @Override
-    public Double getTemperature() throws NotAvailableException {
+    public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
-            return getData().getActualTemperature();
+            return getData().getActualTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Temperature", ex);
         }
     }
 
     @Override
-    public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
+    public Future<Void> setTargetTemperatureState(TemperatureState value) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(value, this, Void.class);
     }
 
     @Override
-    public Double getTargetTemperature() throws NotAvailableException {
+    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
         try {
-            return getData().getTargetTemperature();
+            return getData().getTargetTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("TargetTemperature", ex);
         }

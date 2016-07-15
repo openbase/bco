@@ -30,28 +30,28 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
-import rst.homeautomation.unit.SmokeDetectorType.SmokeDetector;
+import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
  *
  * @author thuxohl
  */
-public class SmokeDetectorController extends AbstractUnitController<SmokeDetector, SmokeDetector.Builder> implements SmokeDetectorInterface {
+public class SmokeDetectorController extends AbstractUnitController<SmokeDetectorData, SmokeDetectorData.Builder> implements SmokeDetectorInterface {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetector.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetectorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
     }
 
-    public SmokeDetectorController(final UnitHost unitHost, SmokeDetector.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
+    public SmokeDetectorController(final UnitHost unitHost, SmokeDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(SmokeDetectorController.class, unitHost, builder);
     }
 
     public void updateSmokeAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
 
-        try (ClosableDataBuilder<SmokeDetector.Builder> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setSmokeAlarmState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply alarm state Update[" + value + "] for " + this + "!", ex);
@@ -70,7 +70,7 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
     public void updateSmokeStateProvider(final SmokeState value) throws CouldNotPerformException {
         logger.debug("Apply smoke state Update[" + value + "] for " + this + ".");
 
-        try (ClosableDataBuilder<SmokeDetector.Builder> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setSmokeState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply smoke state Update[" + value + "] for " + this + "!", ex);

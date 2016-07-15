@@ -25,22 +25,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.PowerStateType;
 import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.state.ShutterStateType;
+import rst.homeautomation.state.BlindStateType.BlindState;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.homeautomation.state.ColorStateType.ColorState;
 import rst.homeautomation.state.StandbyStateType;
-import rst.vision.HSVColorType.HSVColor;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
@@ -55,113 +55,97 @@ public class ServiceFactoryMock implements ServiceFactory {
     }
 
     @Override
-    public <UNIT extends BrightnessOperationService & Unit> BrightnessOperationService newBrightnessService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new BrightnessOperationService() {
+    public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+        return new BrightnessStateOperationService() {
 
             @Override
-            public Double getBrightness() throws NotAvailableException {
-                return ((BrightnessOperationService) unit).getBrightness();
+            public BrightnessState getBrightnessState() throws NotAvailableException {
+                return ((BrightnessStateOperationService) unit).getBrightnessState();
             }
 
             @Override
-            public Future<Void> setBrightness(Double brightness) throws CouldNotPerformException {
-                return update(brightness, unit);
-            }
-        };
-    }
-
-    @Override
-    public <UNIT extends ColorOperationService & Unit> ColorOperationService newColorService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new ColorOperationService() {
-
-            @Override
-            public HSVColor getColor() throws NotAvailableException {
-                return ((ColorOperationService) unit).getColor();
-            }
-
-            @Override
-            public Future<Void> setColor(HSVColor color) throws CouldNotPerformException {
-                return update(color, unit);
+            public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+                return update(brightnessState, unit);
             }
         };
     }
 
     @Override
-    public <UNIT extends PowerOperationService & Unit> PowerOperationService newPowerService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new PowerOperationService() {
+    public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+        return new ColorStateOperationService() {
 
             @Override
-            public PowerState getPower() throws NotAvailableException {
-                return ((PowerOperationService) unit).getPower();
+            public ColorState getColorState() throws NotAvailableException {
+                return ((ColorStateOperationService) unit).getColorState();
             }
 
             @Override
-            public Future<Void> setPower(PowerStateType.PowerState state) throws CouldNotPerformException {
+            public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
+                return update(colorState, unit);
+            }
+        };
+    }
+
+    @Override
+    public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+        return new PowerStateOperationService() {
+
+            @Override
+            public PowerState getPowerState() throws NotAvailableException {
+                return ((PowerStateOperationService) unit).getPowerState();
+            }
+
+            @Override
+            public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+                return update(powerState, unit);
+            }
+        };
+    }
+
+    @Override
+    public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+        return new BlindStateOperationService() {
+
+            @Override
+            public BlindState getBlindState() throws NotAvailableException {
+                return ((BlindStateOperationService) unit).getBlindState();
+            }
+
+            @Override
+            public Future<Void> setBlindState(BlindState blindState) throws CouldNotPerformException {
+                return update(blindState, unit);
+            }
+        };
+    }
+
+    @Override
+    public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+        return new StandbyStateOperationService() {
+
+            @Override
+            public StandbyStateType.StandbyState getStandbyState() throws NotAvailableException {
+                return ((StandbyStateOperationService) unit).getStandbyState();
+            }
+
+            @Override
+            public Future<Void> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
                 return update(state, unit);
             }
         };
     }
 
     @Override
-    public <UNIT extends OpeningRatioOperationService & Unit> OpeningRatioOperationService newOpeningRatioService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new OpeningRatioOperationService() {
+    public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+        return new TargetTemperatureStateOperationService() {
 
             @Override
-            public Double getOpeningRatio() throws NotAvailableException {
-                return ((OpeningRatioOperationService) unit).getOpeningRatio();
+            public TemperatureState getTargetTemperatureState() throws NotAvailableException {
+                return ((TargetTemperatureStateOperationService) unit).getTargetTemperatureState();
             }
 
             @Override
-            public Future<Void> setOpeningRatio(Double openingRatio) throws CouldNotPerformException {
-                return update(openingRatio, unit);
-            }
-        };
-    }
-
-    @Override
-    public <UNIT extends ShutterOperationService & Unit> ShutterOperationService newShutterService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new ShutterOperationService() {
-
-            @Override
-            public ShutterStateType.ShutterState getShutter() throws NotAvailableException {
-                return ((ShutterOperationService) unit).getShutter();
-            }
-
-            @Override
-            public Future<Void> setShutter(ShutterStateType.ShutterState state) throws CouldNotPerformException {
-                return update(state, unit);
-            }
-        };
-    }
-
-    @Override
-    public <UNIT extends StandbyOperationService & Unit> StandbyOperationService newStandbyService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new StandbyOperationService() {
-
-            @Override
-            public StandbyStateType.StandbyState getStandby() throws NotAvailableException {
-                return ((StandbyOperationService) unit).getStandby();
-            }
-
-            @Override
-            public Future<Void> setStandby(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-                return update(state, unit);
-            }
-        };
-    }
-
-    @Override
-    public <UNIT extends TargetTemperatureOperationService & Unit> TargetTemperatureOperationService newTargetTemperatureService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-        return new TargetTemperatureOperationService() {
-
-            @Override
-            public Double getTargetTemperature() throws NotAvailableException {
-                return ((TargetTemperatureOperationService) unit).getTargetTemperature();
-            }
-
-            @Override
-            public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
-                return update(value, unit);
+            public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
+                return update(temperatureState, unit);
             }
         };
     }
@@ -176,7 +160,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
             String methodName;
             try {
-                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update") + "Provider";
+                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update") + "StateProvider";
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not detect update method name!", ex);
             }

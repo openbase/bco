@@ -23,20 +23,21 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface TargetTemperatureStateOperationServiceCollection extends TargetTemperatureOperationService {
+public interface TargetTemperatureStateOperationServiceCollection extends TargetTemperatureStateOperationService {
 
     @Override
-    default public Future<Void> setTargetTemperature(Double value) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((TargetTemperatureOperationService input) -> input.setTargetTemperature(value), getTargetTemperatureStateOperationServices());
+    default public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
+        return GlobalExecutionService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getTargetTemperatureStateOperationServices());
     }
 
     /**
@@ -47,18 +48,18 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
      * @throws NotAvailableException
      */
     @Override
-    default public Double getTargetTemperature() throws NotAvailableException {
+    default public TemperatureState getTargetTemperatureState() throws NotAvailableException {
         try {
             Double average = 0d;
-            for (TargetTemperatureOperationService service : getTargetTemperatureStateOperationServices()) {
-                average += service.getTargetTemperature();
+            for (TargetTemperatureStateOperationService service : getTargetTemperatureStateOperationServices()) {
+                average += service.getTargetTemperatureState().getTemperature();
             }
             average /= getTargetTemperatureStateOperationServices().size();
-            return average;
+            return TemperatureState.newBuilder().setTemperature(average).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("TargetTemperature", ex);
         }
     }
 
-    public Collection<TargetTemperatureOperationService> getTargetTemperatureStateOperationServices() throws CouldNotPerformException;
+    public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() throws CouldNotPerformException;
 }

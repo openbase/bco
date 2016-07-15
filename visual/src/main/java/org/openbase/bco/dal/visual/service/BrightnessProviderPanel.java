@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.BrightnessProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -33,7 +33,7 @@ import java.text.DecimalFormat;
  *
  * @author mpohling
  */
-public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessProviderService> {
+public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessStateProviderService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 
@@ -107,7 +107,7 @@ public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessProv
     @Override
     protected void updateDynamicComponents() {
         try {
-            Double brightness = getService().getBrightness();
+            Double brightness = getService().getBrightnessState().getBrightness();
 
             if (brightness < 0) {
                 brightnessLevelLabel.setForeground(Color.WHITE);
@@ -119,7 +119,7 @@ public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessProv
             brightnessLevelLabel.setForeground(Color.BLACK);
             float colorValue = ((float) Math.max(Math.min(MAX_BRIGHTNESS, brightness), MIN_BRIGHTNESS)) / MAX_BRIGHTNESS;
             brightnessLevelLabelPanel.setBackground(Color.getHSBColor((float) 40 / 360, 1f - colorValue, colorValue));
-            brightnessLevelLabel.setText(numberFormat.format(getService().getBrightness()) + " LUX");
+            brightnessLevelLabel.setText(numberFormat.format(getService().getBrightnessState()) + " LUX");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

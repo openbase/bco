@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.Collection;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.state.MotionStateType.MotionState;
@@ -31,7 +31,7 @@ import rst.homeautomation.state.MotionStateType.MotionState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface MotionStateProviderServiceCollection extends MotionProviderService {
+public interface MotionStateProviderServiceCollection extends MotionStateProviderService {
 
     /**
      * Returns movement if at least one motion provider returns movement else no
@@ -41,10 +41,10 @@ public interface MotionStateProviderServiceCollection extends MotionProviderServ
      * @throws NotAvailableException
      */
     @Override
-    default public MotionState getMotion() throws NotAvailableException {
+    default public MotionState getMotionState() throws NotAvailableException {
         try {
-            for (MotionProviderService provider : getMotionStateProviderServices()) {
-                if (provider.getMotion().getValue() == MotionState.State.MOVEMENT) {
+            for (MotionStateProviderService provider : getMotionStateProviderServices()) {
+                if (provider.getMotionState().getValue() == MotionState.State.MOVEMENT) {
                     return MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
                 }
             }
@@ -54,5 +54,5 @@ public interface MotionStateProviderServiceCollection extends MotionProviderServ
         }
     }
 
-    public Collection<MotionProviderService> getMotionStateProviderServices() throws CouldNotPerformException;
+    public Collection<MotionStateProviderService> getMotionStateProviderServices() throws CouldNotPerformException;
 }

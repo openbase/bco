@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface PowerConsumptionSensorInterface extends PowerConsumptionProviderService {
+public interface PowerConsumptionSensorInterface extends PowerConsumptionStateProviderService {
     
 }

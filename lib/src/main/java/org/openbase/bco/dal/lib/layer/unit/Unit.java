@@ -66,17 +66,17 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
     public default Future<SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         SceneConfig.Builder snapshotBuilder = SceneConfig.newBuilder();
-        for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : getTemplate().getServiceTypeList()) {
+        for (ServiceTemplateType.ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
             try {
-                ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceType).setServiceHolder(getId());
+                ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceTemplate.getType()).setUnitId(getId());
 
                 // skip non operation services.
-                if (Service.detectServiceBaseType(serviceType) != ServiceBaseType.OPERATION) {
+                if (Service.detectServiceBaseType(serviceTemplate.getType()) != ServiceBaseType.OPERATION) {
                     continue;
                 }
 
                 // load service attribute by related provider service
-                Object serviceAttribute = Service.invokeServiceMethod(Service.getProviderForOperationService(serviceType), this);
+                Object serviceAttribute = Service.invokeServiceMethod(Service.getProviderForOperationService(serviceTemplate.getType()), this);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();

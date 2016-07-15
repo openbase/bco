@@ -22,15 +22,16 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.Collection;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface TemperatureStateProviderServiceCollection extends TemperatureProviderService {
+public interface TemperatureStateProviderServiceCollection extends TemperatureStateProviderService {
 
     /**
      * Returns the average temperature value for a collection of temperature
@@ -40,19 +41,19 @@ public interface TemperatureStateProviderServiceCollection extends TemperaturePr
      * @throws NotAvailableException
      */
     @Override
-    default public Double getTemperature() throws NotAvailableException {
+    default public TemperatureState getTemperatureState() throws NotAvailableException {
 
         try {
             Double average = 0d;
-            for (TemperatureProviderService service : getTemperatureStateProviderServices()) {
-                average += service.getTemperature();
+            for (TemperatureStateProviderService service : getTemperatureStateProviderServices()) {
+                average += service.getTemperatureState().getTemperature();
             }
             average /= getTemperatureStateProviderServices().size();
-            return average;
+            return TemperatureState.newBuilder().setTemperature(average).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Temperature", ex);
         }
     }
 
-    public Collection<TemperatureProviderService> getTemperatureStateProviderServices() throws CouldNotPerformException;
+    public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() throws CouldNotPerformException;
 }
