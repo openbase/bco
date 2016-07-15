@@ -78,19 +78,19 @@ public class MockRegistry {
     public static final String USER_NAME = "uSeRnAmE";
     public static UserConfig testUser;
 
-    public static final String AMBIENT_LIGHT_LABEL = "Ambient_Light_Unit_Test";
+    public static final String COLORABLE_LIGHT_LABEL = "Ambient_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
     public static final String BRIGHTNESS_SENSOR_LABEL = "Brightness_Sensor_Unit_Test";
     public static final String BUTTON_LABEL = "Button_Unit_Test";
-    public static final String DIMMER_LABEL = "Dimmer_Unit_Test";
-    public static final String HANDLE_SENSOR_LABEL = "Handle_Sensor_Unit_Test";
+    public static final String DIMMABLE_LIGHT_LABEL = "Dimmer_Unit_Test";
+    public static final String HANDLE_LABEL = "Handle_Sensor_Unit_Test";
     public static final String LIGHT_LABEL = "Light_Unit_Test";
-    public static final String MOTION_SENSOR_LABEL = "Motion_Sensor_Unit_Test";
+    public static final String MOTION_DETECTOR_LABEL = "Motion_Sensor_Unit_Test";
     public static final String POWER_CONSUMPTION_LABEL = "Power_Consumption_Sensor_Unit_Test";
-    public static final String POWER_PLUG_LABEL = "Power_Plug_Unit_Test";
-    public static final String REED_SWITCH_LABEL = "Reed_Switch_Unit_Test";
-    public static final String ROLLERSHUTTER_LABEL = "Rollershutter_Unit_Test";
-    public static final String TAMPER_SWITCH_LABEL = "Tamper_Switch_Unit_Test";
+    public static final String POWER_SWITCH_LABEL = "Power_Plug_Unit_Test";
+    public static final String REED_CONTACT_LABEL = "Reed_Switch_Unit_Test";
+    public static final String ROLLER_SHUTTER_LABEL = "Rollershutter_Unit_Test";
+    public static final String TAMPER_DETECTOR_LABEL = "Tamper_Switch_Unit_Test";
     public static final String TEMPERATURE_SENSOR_LABEL = "Temperature_Sensor_Unit_Test";
     public static final String TEMPERATURE_CONTROLLER_LABEL = "Temperature_Controller_Unit_Test";
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
@@ -338,17 +338,17 @@ public class MockRegistry {
         try {
             // ambient light
             DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
-            units.add(getUnitConfig(UnitType.COLORABLE_LIGHT, AMBIENT_LIGHT_LABEL));
+            units.add(getUnitConfig(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units)).get();
 
             units.clear();
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
-            units.add(getUnitConfig(UnitType.MOTION_DETECTOR, MOTION_SENSOR_LABEL));
+            units.add(getUnitConfig(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL));
             units.add(getUnitConfig(UnitType.BATTERY, BATTERY_LABEL));
             units.add(getUnitConfig(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL));
             units.add(getUnitConfig(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL));
-            units.add(getUnitConfig(UnitType.TAMPER_DETECTOR, TAMPER_SWITCH_LABEL));
+            units.add(getUnitConfig(UnitType.TAMPER_DETECTOR, TAMPER_DETECTOR_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units)).get();
 
             units.clear();
@@ -360,13 +360,13 @@ public class MockRegistry {
             units.clear();
             // dimmer
             DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.DIMMER, DIMMER_LABEL));
+            units.add(getUnitConfig(UnitTemplate.UnitType.DIMMER, DIMMABLE_LIGHT_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units)).get();
 
             units.clear();
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE, HANDLE_SENSOR_LABEL));
+            units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE, HANDLE_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units)).get();
             units.clear();
             // light
@@ -377,20 +377,20 @@ public class MockRegistry {
             units.clear();
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.POWER_SWITCH, POWER_PLUG_LABEL));
+            units.add(getUnitConfig(UnitTemplate.UnitType.POWER_SWITCH, POWER_SWITCH_LABEL));
             units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units)).get();
 
             units.clear();
             // reedSwitch
             DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.REED_CONTACT, REED_SWITCH_LABEL));
+            units.add(getUnitConfig(UnitTemplate.UnitType.REED_CONTACT, REED_CONTACT_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units)).get();
 
             units.clear();
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.ROLLER_SHUTTER, ROLLERSHUTTER_LABEL));
+            units.add(getUnitConfig(UnitTemplate.UnitType.ROLLER_SHUTTER, ROLLER_SHUTTER_LABEL));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units)).get();
 
             units.clear();
