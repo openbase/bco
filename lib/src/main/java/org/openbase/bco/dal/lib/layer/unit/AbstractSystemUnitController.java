@@ -44,6 +44,7 @@ import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.processing.StringProcessor;
+import rst.homeautomation.unit.SystemUnitDataType;
 import rst.homeautomation.unit.UnitConfigType;
 
 /**
@@ -142,7 +143,7 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
             MB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
-            String repeatedUnitFieldName = "unit_" + unitConfig.getType().name().toLowerCase();
+            String repeatedUnitFieldName = "unit_" + unitConfig.getType().name().toLowerCase() + "_data";
             Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
 
             if (repeatedUnitFieldDescriptor == null) {
@@ -152,7 +153,7 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
             GeneratedMessage.Builder unitBuilder = loadUnitBuilder(unitConfig);
             Method addUnitMethod;
             try {
-                addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName, unitBuilder.getClass());
+                addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName + "Data", unitBuilder.getClass());
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Missing repeated field for " + unitBuilder.getClass().getName() + " in protobuf Type[" + builder.getClass().getName() + "]! ", ex);
             }
@@ -164,7 +165,7 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
             }
 
             try {
-                return (B) builderClass.getMethod("getUnit" + unitTypeName + "Builder", int.class).invoke(builder, builder.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
+                return (B) builderClass.getMethod("getUnit" + unitTypeName + "DataBuilder", int.class).invoke(builder, builder.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not create Builder!", ex);
             }
@@ -178,7 +179,7 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
         GeneratedMessage.Builder builder = null;
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
-            String unitMessageClassName = "rst.homeautomation.unit." + unitTypeName + "Type$" + unitTypeName;
+            String unitMessageClassName = "rst.homeautomation.unit." + unitTypeName + "DataType$" + unitTypeName + "Data";
             Class messageClass;
             try {
                 messageClass = Class.forName(unitMessageClassName);
