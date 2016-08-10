@@ -62,12 +62,12 @@ public class RollerShutterController extends AbstractUnitController<RollerShutte
     }
 
     public void updateBlindStateProvider(final BlindState blindState) throws CouldNotPerformException {
-        logger.debug("Apply blind Update[" + blindState + "] for " + this + ".");
+        logger.debug("Apply blindState Update[" + blindState + "] for " + this + ".");
 
         try (ClosableDataBuilder<RollerShutterData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setBlindState(blindState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply shutter Update[" + blindState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply blindState Update[" + blindState + "] for " + this + "!", ex);
         }
     }
 
@@ -82,7 +82,7 @@ public class RollerShutterController extends AbstractUnitController<RollerShutte
         try {
             return getData().getBlindState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("shutter", ex);
+            throw new NotAvailableException("blindState", ex);
         }
     }
 }

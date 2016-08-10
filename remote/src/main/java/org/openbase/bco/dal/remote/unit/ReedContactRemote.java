@@ -53,7 +53,7 @@ public class ReedContactRemote extends AbstractUnitRemote<ReedContactData> imple
         try {
             return getData().getContactState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ReedSwitchState", ex);
+            throw new NotAvailableException("ContactState", ex);
         }
     }
 

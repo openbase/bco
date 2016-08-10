@@ -53,7 +53,7 @@ public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorD
         try {
             return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Brightness", ex);
+            throw new NotAvailableException("BrightnessState", ex);
         }
     }
 }

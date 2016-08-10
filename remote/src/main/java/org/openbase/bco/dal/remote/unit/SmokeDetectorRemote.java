@@ -55,7 +55,7 @@ public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetectorData> i
         try {
             return getData().getSmokeAlarmState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AlarmState", ex);
+            throw new NotAvailableException("SmokeAlarmState", ex);
         }
     }
 

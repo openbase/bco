@@ -48,12 +48,12 @@ public class ReedContactController extends AbstractUnitController<ReedContactDat
     }
 
     public void updateContactStateProvider(final ContactState contactState) throws CouldNotPerformException {
-        logger.debug("Apply reed switch Update[" + contactState + "] for " + this + ".");
+        logger.debug("Apply contactState Update[" + contactState + "] for " + this + ".");
 
         try (ClosableDataBuilder<ReedContactData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setContactState(contactState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply reed switch Update[" + contactState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply contactState Update[" + contactState + "] for " + this + "!", ex);
         }
     }
 
@@ -62,7 +62,7 @@ public class ReedContactController extends AbstractUnitController<ReedContactDat
         try {
             return getData().getContactState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("reed switch", ex);
+            throw new NotAvailableException("contactState", ex);
         }
     }
 }

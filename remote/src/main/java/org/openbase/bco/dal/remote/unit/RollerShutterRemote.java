@@ -64,7 +64,7 @@ public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> i
         try {
             return getData().getBlindState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ShutterState", ex);
+            throw new NotAvailableException("BlindState", ex);
         }
     }
 }

@@ -55,7 +55,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
         try {
             return getData().getActualTemperatureState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Temperature", ex);
+            throw new NotAvailableException("TemperatureState", ex);
         }
     }
 
@@ -69,7 +69,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
         try {
             return getData().getTargetTemperatureState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TargetTemperature", ex);
+            throw new NotAvailableException("TargetTemperatureState", ex);
         }
     }
 }

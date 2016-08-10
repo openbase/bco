@@ -80,7 +80,7 @@ public class DimmableLightRemote extends AbstractUnitRemote<DimmableLightData> i
         try {
             return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightness", ex);
+            throw new NotAvailableException("BrightnessState", ex);
         }
     }
 

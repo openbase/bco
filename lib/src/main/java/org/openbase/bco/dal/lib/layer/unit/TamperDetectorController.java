@@ -48,7 +48,7 @@ public class TamperDetectorController extends AbstractUnitController<TamperDetec
 
     public void updateTamperStateProvider(final TamperState state) throws CouldNotPerformException {
 
-        logger.debug("Apply tamper Update[" + state + "] for " + this + ".");
+        logger.debug("Apply tamperState Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<TamperDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
 
@@ -65,7 +65,7 @@ public class TamperDetectorController extends AbstractUnitController<TamperDetec
 
             dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply tamper Update[" + state + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply tamperState Update[" + state + "] for " + this + "!", ex);
         }
     }
 
@@ -74,7 +74,7 @@ public class TamperDetectorController extends AbstractUnitController<TamperDetec
         try {
             return getData().getTamperState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("tamper", ex);
+            throw new NotAvailableException("tamperState", ex);
         }
     }
 }

@@ -85,7 +85,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
         try {
             return getData().getColorState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Color", ex);
+            throw new NotAvailableException("ColorState", ex);
         }
     }
 
@@ -94,7 +94,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
         try {
             return BrightnessState.newBuilder().setBrightness(getData().getColorState().getColor().getHsbColor().getBrightness()).build();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Brightness", ex);
+            throw new NotAvailableException("BrightnessState", ex);
         }
     }
 }

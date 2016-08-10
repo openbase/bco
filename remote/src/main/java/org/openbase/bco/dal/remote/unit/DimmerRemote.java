@@ -78,7 +78,7 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
         try {
             return getData().getIntensityState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
+            throw new NotAvailableException("IntensityState", ex);
         }
     }
 }

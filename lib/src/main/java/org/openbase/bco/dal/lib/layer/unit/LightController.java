@@ -62,18 +62,18 @@ public class LightController extends AbstractUnitController<LightData, LightData
     }
 
     public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Apply power Update[" + powerState + "] for " + this + ".");
+        logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
 
         try (ClosableDataBuilder<LightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerState(powerState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power Update[" + powerState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
         }
     }
 
     @Override
     public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + powerState + "]");
+        logger.debug("Setting [" + getLabel() + "] to PowerState [" + powerState + "]");
         return powerService.setPowerState(powerState);
     }
 
@@ -82,7 +82,7 @@ public class LightController extends AbstractUnitController<LightData, LightData
         try {
             return getData().getPowerState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("power", ex);
+            throw new NotAvailableException("powerState", ex);
         }
     }
 }

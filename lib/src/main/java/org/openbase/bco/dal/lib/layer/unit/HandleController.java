@@ -48,12 +48,12 @@ public class HandleController extends AbstractUnitController<HandleData, HandleD
     }
 
     public void updateHandleStateProvider(final HandleState handleState) throws CouldNotPerformException {
-        logger.debug("Apply handle state Update[" + handleState + "] for " + this + ".");
+        logger.debug("Apply handleState Update[" + handleState + "] for " + this + ".");
 
         try (ClosableDataBuilder<HandleData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setHandleState(handleState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply handle state Update[" + handleState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply handleState Update[" + handleState + "] for " + this + "!", ex);
         }
     }
 
@@ -62,7 +62,7 @@ public class HandleController extends AbstractUnitController<HandleData, HandleD
         try {
             return getData().getHandleState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("handle state", ex);
+            throw new NotAvailableException("handleState", ex);
         }
     }
 }

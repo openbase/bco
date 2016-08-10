@@ -67,18 +67,18 @@ public class MonitorController extends AbstractUnitController<MonitorData, Monit
     }
     
     public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Apply power Update[" + powerState + "] for " + this + ".");
+        logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
         
         try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerState(powerState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power Update[" + powerState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
         }
     }
     
     @Override
     public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + powerState + "]");
+        logger.debug("Setting [" + getLabel() + "] to PowerState [" + powerState + "]");
         return powerStateService.setPowerState(powerState);
     }
     
@@ -87,7 +87,7 @@ public class MonitorController extends AbstractUnitController<MonitorData, Monit
         try {
             return getData().getPowerState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("power", ex);
+            throw new NotAvailableException("powerState", ex);
         }
     }
     
@@ -102,17 +102,17 @@ public class MonitorController extends AbstractUnitController<MonitorData, Monit
         try {
             return getData().getStandbyState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("standby", ex);
+            throw new NotAvailableException("standbyState", ex);
         }
     }
     
     public void updateStandbyStateProvider(final StandbyState standbyState) throws CouldNotPerformException {
-        logger.debug("Apply power Update[" + standbyState + "] for " + this + ".");
+        logger.debug("Apply standbyState Update[" + standbyState + "] for " + this + ".");
         
         try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setStandbyState(standbyState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply standby Update[" + standbyState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply standbyState Update[" + standbyState + "] for " + this + "!", ex);
         }
     }
 }

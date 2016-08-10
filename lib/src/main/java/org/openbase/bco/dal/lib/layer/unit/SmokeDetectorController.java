@@ -49,12 +49,12 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
     }
 
     public void updateSmokeAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
-        logger.debug("Apply alarm state Update[" + value + "] for " + this + ".");
+        logger.debug("Apply smokeAlarmState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setSmokeAlarmState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply alarm state Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply smokeAlarmState Update[" + value + "] for " + this + "!", ex);
         }
     }
 
@@ -63,17 +63,17 @@ public class SmokeDetectorController extends AbstractUnitController<SmokeDetecto
         try {
             return getData().getSmokeAlarmState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("smokealarmstate", ex);
+            throw new NotAvailableException("smokeState", ex);
         }
     }
 
     public void updateSmokeStateProvider(final SmokeState value) throws CouldNotPerformException {
-        logger.debug("Apply smoke state Update[" + value + "] for " + this + ".");
+        logger.debug("Apply smokeState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setSmokeState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply smoke state Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply smokeState Update[" + value + "] for " + this + "!", ex);
         }
     }
 

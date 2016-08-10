@@ -64,7 +64,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
 
     @Override
     public Future<Void> setTargetTemperatureState(final TemperatureState value) throws CouldNotPerformException {
-        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to target temperature [" + value + "]");
+        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to targetTemperatureState [" + value + "]");
         return targetTemperatureStateService.setTargetTemperatureState(value);
     }
 
@@ -73,12 +73,12 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         try {
             return getData().getTargetTemperatureState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("target temperature", ex);
+            throw new NotAvailableException("targetTemperatureState", ex);
         }
     }
 
     public void updateTargetTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
-        logger.info("Apply target temperature Update[" + temperatureState + "] for " + this + ".");
+        logger.info("Apply targetTemperatureState Update[" + temperatureState + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTargetTemperatureState(temperatureState);
@@ -90,12 +90,12 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
     }
 
     public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
-        logger.debug("Apply actual temperature Update[" + temperatureState + "] for " + this + ".");
+        logger.debug("Apply actual temperatureState Update[" + temperatureState + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setActualTemperatureState(temperatureState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply actual temperature Update[" + temperatureState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply actual temperatureStatee Update[" + temperatureState + "] for " + this + "!", ex);
         }
     }
 
@@ -104,7 +104,7 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         try {
             return getData().getActualTemperatureState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("actual temperature", ex);
+            throw new NotAvailableException("actual temperatureState", ex);
         }
     }
 }

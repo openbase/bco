@@ -49,7 +49,7 @@ public class MotionDetectorController extends AbstractUnitController<MotionDetec
 
     public void updateMotionStateProvider(MotionState state) throws CouldNotPerformException {
         
-        logger.debug("Apply motion Update[" + state + "] for " + this + ".");
+        logger.debug("Apply motionState Update[" + state + "] for " + this + ".");
         
         try (ClosableDataBuilder<MotionDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
 
@@ -66,7 +66,7 @@ public class MotionDetectorController extends AbstractUnitController<MotionDetec
 
             dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply motion Update[" + state + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply motionState Update[" + state + "] for " + this + "!", ex);
         }
     }
 
@@ -75,7 +75,7 @@ public class MotionDetectorController extends AbstractUnitController<MotionDetec
         try {
             return getData().getMotionState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("motion", ex);
+            throw new NotAvailableException("motionState", ex);
         }
     }
 }

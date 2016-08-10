@@ -48,12 +48,12 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
     }
 
     public void updatePowerConsumptionStateProvider(final PowerConsumptionState state) throws CouldNotPerformException {
-        logger.debug("Apply power consumption Update[" + state + "] for " + this + ".");
+        logger.debug("Apply powerConsumptionState Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<PowerConsumptionSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerConsumptionState(state);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power consumption Update[" + state + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply powerConsumptionState Update[" + state + "] for " + this + "!", ex);
         }
     }
 
@@ -62,7 +62,7 @@ public class PowerConsumptionSensorController extends AbstractUnitController<Pow
         try {
             return getData().getPowerConsumptionState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("power consumption", ex);
+            throw new NotAvailableException("powerConsumptionState", ex);
         }
     }
 }

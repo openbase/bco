@@ -78,12 +78,12 @@ public class ColorableLightController extends AbstractUnitController<ColorableLi
     }
 
     public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
-        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
         }
     }
 
@@ -98,18 +98,18 @@ public class ColorableLightController extends AbstractUnitController<ColorableLi
         try {
             return getData().getPowerState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("power", ex);
+            throw new NotAvailableException("powerState", ex);
         }
     }
 
     public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
-        logger.debug("Apply color Update[" + colorState + "] for " + this + ".");
+        logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColorState(colorState);
             dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply color Update[" + colorState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply colorState Update[" + colorState + "] for " + this + "!", ex);
         }
     }
 
@@ -123,12 +123,12 @@ public class ColorableLightController extends AbstractUnitController<ColorableLi
         try {
             return getData().getColorState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("color", ex);
+            throw new NotAvailableException("colorState", ex);
         }
     }
 
     public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
-        logger.debug("Apply brightness Update[" + brightnessState + "] for " + this + ".");
+        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
@@ -140,13 +140,13 @@ public class ColorableLightController extends AbstractUnitController<ColorableLi
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
             }
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply brightness Update[" + brightnessState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
         }
     }
 
     @Override
     public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to Brightness[" + brightnessState + "]");
+        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to BrightnessState[" + brightnessState + "]");
         return brightnessService.setBrightnessState(brightnessState);
     }
 
@@ -155,7 +155,7 @@ public class ColorableLightController extends AbstractUnitController<ColorableLi
         try {
             return BrightnessState.newBuilder().setBrightness(getData().getColorState().getColor().getHsbColor().getBrightness()).build();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightness", ex);
+            throw new NotAvailableException("brightnessState", ex);
         }
     }
 }
