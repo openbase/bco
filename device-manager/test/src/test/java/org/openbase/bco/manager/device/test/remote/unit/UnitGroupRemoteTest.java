@@ -76,34 +76,15 @@ public class UnitGroupRemoteTest {
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         unitGroupRemote = new UnitGroupRemote();
-        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE)).setLabel("testGroup");
+        ServiceTemplate serviceTempalte = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
+        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(serviceTempalte).setLabel("testGroup");
         
-        boolean hasPowerService, hasBrightnessService;
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
-            hasPowerService = false;
-            hasBrightnessService = false;
             for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-//                if (serviceConfig.getServiceTemplate().getType() == ServiceType.POWER_STATE_SERVICE 
-//                        && serviceConfig.getServiceTemplate().getPattern() == ServicePattern.OPERATION) {
-//                    units.add(unit);
-//                    unitGroupConfig.addMemberId(unit.getConfig().getId());
-//                }
-                if(!hasPowerService) {
-                    hasPowerService = serviceConfig.getServiceTemplate().getType() == ServiceType.POWER_STATE_SERVICE 
-                        && serviceConfig.getServiceTemplate().getPattern() == ServicePattern.OPERATION;
+                if (serviceConfig.getServiceTemplate().equals(serviceTempalte)) {
+                    units.add(unit);
+                    unitGroupConfig.addMemberId(unit.getConfig().getId());
                 }
-                if(!hasBrightnessService) {
-                    hasBrightnessService = serviceConfig.getServiceTemplate().getType() == ServiceType.BRIGHTNESS_STATE_SERVICE 
-                        && serviceConfig.getServiceTemplate().getPattern() == ServicePattern.OPERATION;
-                }
-            }
-            if(hasBrightnessService && hasPowerService) {
-                System.out.println(unit.getConfig().getId());
-                for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-                    System.out.println(serviceConfig);
-                }
-                units.add(unit);
-                unitGroupConfig.addMemberId(unit.getConfig().getId());
             }
         }
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
@@ -176,7 +157,7 @@ public class UnitGroupRemoteTest {
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 75d;
-        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
         try {
             unitGroupRemote.setBrightnessState(brightnessState).get();
             fail("Brighntess service has been used even though the group config is only defined for power service");
