@@ -3,10 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openbase.bco.dal.lib.layer.unit;
-
-import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+package org.openbase.bco.dal.lib.layer.service.provider;
 
 /*
  * #%L
@@ -30,10 +27,14 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
  * #L%
  */
 
+import org.openbase.jul.exception.NotAvailableException;
+import rst.homeautomation.state.IntensityStateType.IntensityState;
+
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface DimmerInterface extends PowerStateOperationService, IntensityStateOperationService {
+public interface IntensityStateProviderService extends ProviderService{
     
+    public IntensityState getIntensityState() throws NotAvailableException;
 }

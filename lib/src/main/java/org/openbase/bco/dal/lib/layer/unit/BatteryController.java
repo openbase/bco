@@ -46,12 +46,12 @@ public class BatteryController extends AbstractUnitController<BatteryData, Batte
     }
 
     public void updateBatteryStateProvider(final BatteryState value) throws CouldNotPerformException {
-        logger.debug("Apply battery Update[" + value + "] for " + this + ".");
+        logger.debug("Apply batteryState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<BatteryData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setBatteryState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply battery Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply batteryState Update[" + value + "] for " + this + "!", ex);
         }
     }
 
@@ -60,7 +60,7 @@ public class BatteryController extends AbstractUnitController<BatteryData, Batte
         try {
             return getData().getBatteryState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("battery", ex);
+            throw new NotAvailableException("batteryState", ex);
         }
     }
 }

@@ -5,6 +5,20 @@
  */
 package org.openbase.bco.dal.lib.layer.unit;
 
+import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.state.IntensityStateType.IntensityState;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.DimmerDataType.DimmerData;
+import rst.homeautomation.unit.UnitConfigType;
+
 /*
  * #%L
  * BCO DAL Library
@@ -31,6 +45,82 @@ package org.openbase.bco.dal.lib.layer.unit;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimmerController {
+public class DimmerController extends AbstractUnitController<DimmerData, DimmerData.Builder> implements DimmerInterface {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IntensityState.getDefaultInstance()));
+    }
     
+    private PowerStateOperationService powerStateService;
+    private IntensityStateOperationService intensityStateService;
+    
+    public DimmerController(final UnitHost unitHost, DimmerData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
+        super(DimmerController.class, unitHost, builder);
+    }
+    
+    @Override
+    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+        try {
+            this.powerStateService = getServiceFactory().newPowerService(this);
+            this.intensityStateService = getServiceFactory().newIntensityStateService(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+        return powerStateService.setPowerState(powerState);
+    }
+
+    @Override
+    public PowerState getPowerState() throws NotAvailableException {
+        try {
+            return getData().getPowerState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("powerState", ex);
+        }
+    }
+    
+    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
+        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
+
+        try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setPowerState(value);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
+        }
+    }
+
+    @Override
+    public Future<Void> setIntensityState(IntensityState intensityState) throws CouldNotPerformException {
+        return intensityStateService.setIntensityState(intensityState);
+    }
+
+    @Override
+    public IntensityState getIntensityState() throws NotAvailableException {
+        try {
+            return getData().getIntensityState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("intensityState", ex);
+        }
+    }
+    
+    public void updateIntensityStateProvider(final IntensityState intensityState) throws CouldNotPerformException {
+        logger.debug("Apply intensityState Update[" + intensityState + "] for " + this + ".");
+
+        try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setIntensityState(intensityState);
+            if (intensityState.getIntensity() == 0) {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
+            } else {
+                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+            }
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply intensityState Update[" + intensityState + "] for " + this + "!", ex);
+        }
+    }
 }

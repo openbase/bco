@@ -257,38 +257,33 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
         stopWatch.start();
         // collect service interface methods
-        HashMap<String, ServiceTemplate.ServiceType> serviceInterfaceMap = new HashMap<>();
+        HashMap<String, ServiceTemplate> serviceInterfaceMap = new HashMap<>();
         for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
-            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name()), serviceTemplate.getType());
+            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name())
+                    + StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getPattern().name()), serviceTemplate);
         }
 
         Class<? extends Service> serviceInterfaceClass = null;
         Package servicePackage;
-        for (Entry<String, ServiceTemplate.ServiceType> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
-
+        for (Entry<String, ServiceTemplate> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             try {
                 // Identify package
-                if (serviceInterfaceMapEntry.getKey().contains(Service.CONSUMER_SERVICE_LABEL)) {
+                if (serviceInterfaceMapEntry.getValue().getPattern() == ServiceTemplate.ServicePattern.CONSUMER) {
                     servicePackage = ConsumerService.class.getPackage();
-//                } else if (serviceInterfaceMapEntry.getKey().contains(Service.OPERATION_SERVICE_LABEL)) {
-//                    servicePackage = OperationService.class.getPackage();
-//                } else if (serviceInterfaceMapEntry.getKey().contains(Service.PROVIDER_SERVICE_LABEL)) {
-//                    servicePackage = ProviderService.class.getPackage();
-                } else if (serviceInterfaceMapEntry.getKey().contains("Service")) {
+                } else if (serviceInterfaceMapEntry.getValue().getPattern() == ServiceTemplate.ServicePattern.OPERATION) {
                     servicePackage = OperationService.class.getPackage();
-                } else if (serviceInterfaceMapEntry.getKey().contains("Provider")) {
+                } else if (serviceInterfaceMapEntry.getValue().getPattern() == ServiceTemplate.ServicePattern.PROVIDER) {
                     servicePackage = ProviderService.class.getPackage();
                 } else {
                     throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
                 }
 
                 // Identify interface class
+                String serviceDataTypeName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getType().name()).replaceAll("Service", "");
+                String servicePatternName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getPattern().name());
+                String serviceClassName = servicePackage.getName() + "." + serviceDataTypeName + servicePatternName + "Service";
                 try {
-                    if (servicePackage.equals(ProviderService.class.getPackage())) {
-                        serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + serviceInterfaceMapEntry.getKey() + "Service");
-                    } else if (servicePackage.equals(OperationService.class.getPackage())) {
-                        serviceInterfaceClass = (Class<? extends Service>) Class.forName(servicePackage.getName() + "." + serviceInterfaceMapEntry.getKey().replaceAll("Service", "") + "OperationService");
-                    }
+                    serviceInterfaceClass = (Class<? extends Service>) Class.forName(serviceClassName);
                     if (serviceInterfaceClass == null) {
                         throw new NotAvailableException(serviceInterfaceMapEntry.getKey());
                     }

@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperation
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -41,6 +42,8 @@ public interface ServiceFactory {
 
     public abstract <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(UNIT unit) throws InstantiationException;
 
+    public abstract <UNIT extends IntensityStateOperationService & Unit> IntensityStateOperationService newIntensityStateService(UNIT unit) throws InstantiationException;
+    
     public abstract <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(UNIT unit) throws InstantiationException;
 
     public abstract <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(UNIT unit) throws InstantiationException;

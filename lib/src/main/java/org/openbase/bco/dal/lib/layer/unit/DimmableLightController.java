@@ -66,18 +66,18 @@ public class DimmableLightController extends AbstractUnitController<DimmableLigh
     }
 
     public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
-        logger.debug("Apply power Update[" + value + "] for " + this + ".");
+        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply power Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
         }
     }
 
     @Override
     public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to Power [" + state + "]");
+        logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         return powerService.setPowerState(state);
     }
 
@@ -86,12 +86,12 @@ public class DimmableLightController extends AbstractUnitController<DimmableLigh
         try {
             return getData().getPowerState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("power", ex);
+            throw new NotAvailableException("powerState", ex);
         }
     }
 
     public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
-        logger.debug("Apply dim Update[" + brightnessState + "] for " + this + ".");
+        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 
         try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
@@ -101,7 +101,7 @@ public class DimmableLightController extends AbstractUnitController<DimmableLigh
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
             }
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply dim Update[" + brightnessState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
         }
     }
 
@@ -115,7 +115,7 @@ public class DimmableLightController extends AbstractUnitController<DimmableLigh
         try {
             return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightness", ex);
+            throw new NotAvailableException("brightnessState", ex);
         }
     }
 }

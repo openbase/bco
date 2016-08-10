@@ -50,7 +50,7 @@ public class ButtonController extends AbstractUnitController<ButtonData, ButtonD
 
     public void updateButtonStateProvider(final ButtonState state) throws CouldNotPerformException {
 
-        logger.debug("Apply button Update[" + state + "] for " + this + ".");
+        logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
             
@@ -67,7 +67,7 @@ public class ButtonController extends AbstractUnitController<ButtonData, ButtonD
 
             dataBuilder.getInternalBuilder().setButtonState(buttonState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply button Update[" + state + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply buttonState Update[" + state + "] for " + this + "!", ex);
         }
     }
 
@@ -76,7 +76,7 @@ public class ButtonController extends AbstractUnitController<ButtonData, ButtonD
         try {
             return getData().getButtonState();
         } catch(CouldNotPerformException ex) {
-            throw new NotAvailableException("buttion state", ex);
+            throw new NotAvailableException("buttonState state", ex);
         }
     }
 }

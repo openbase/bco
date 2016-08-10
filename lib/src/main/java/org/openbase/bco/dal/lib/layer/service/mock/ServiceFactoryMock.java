@@ -29,16 +29,20 @@ import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperation
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.BlindStateType.BlindState;
 import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.homeautomation.state.IntensityStateType;
 import rst.homeautomation.state.StandbyStateType;
 import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
@@ -169,5 +173,22 @@ public class ServiceFactoryMock implements ServiceFactory {
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);
         }
+    }
+
+    @Override
+    public <UNIT extends IntensityStateOperationService & Unit> IntensityStateOperationService newIntensityStateService(UNIT unit) throws InstantiationException {
+        return new IntensityStateOperationService() {
+
+            @Override
+            public Future<Void> setIntensityState(IntensityStateType.IntensityState intensityState) throws CouldNotPerformException {
+                return update(intensityState, unit);
+            }
+
+            @Override
+            public IntensityStateType.IntensityState getIntensityState() throws NotAvailableException {
+                return ((IntensityStateOperationService) unit).getIntensityState();
+            }
+            
+        };
     }
 }

@@ -5,6 +5,17 @@
  */
 package org.openbase.bco.dal.remote.unit;
 
+import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.DimmerInterface;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.state.IntensityStateType.IntensityState;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.DimmerDataType.DimmerData;
+
 /*
  * #%L
  * BCO DAL Remote
@@ -31,6 +42,43 @@ package org.openbase.bco.dal.remote.unit;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimmerRemote {
-    
+public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements DimmerInterface {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IntensityState.getDefaultInstance()));
+    }
+
+    public DimmerRemote() {
+        super(DimmerData.class);
+    }
+
+    @Override
+    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(powerState, this, Void.class);
+    }
+
+    @Override
+    public PowerState getPowerState() throws NotAvailableException {
+        try {
+            return getData().getPowerState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerState", ex);
+        }
+    }
+
+    @Override
+    public Future<Void> setIntensityState(IntensityState intensityState) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(intensityState, this, Void.class);
+    }
+
+    @Override
+    public IntensityState getIntensityState() throws NotAvailableException {
+        try {
+            return getData().getIntensityState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PowerState", ex);
+        }
+    }
 }

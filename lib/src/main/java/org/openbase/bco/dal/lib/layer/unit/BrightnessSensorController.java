@@ -46,12 +46,12 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
     }
 
     public void updateBrightnessStateProvider(final BrightnessState value) throws CouldNotPerformException {
-        logger.debug("Apply brightness Update[" + value + "] for " + this + ".");
+        logger.debug("Apply brightnessState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<BrightnessSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setBrightnessState(value);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply brightness Update[" + value + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply brightnessState Update[" + value + "] for " + this + "!", ex);
         }
     }
 
@@ -60,7 +60,7 @@ public class BrightnessSensorController extends AbstractUnitController<Brightnes
         try {
             return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("brightness", ex);
+            throw new NotAvailableException("brightnessState", ex);
         }
     }
 }
