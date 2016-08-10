@@ -50,7 +50,7 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
     private static final String ID_FIELD = "id";
     private static final String TYPE_FIELD = "type";
     private static final String INCLUDED_TYPE_FIELD = "included_type";
-    private static final String SERVICE_TYPE_FIELD = "service_type";
+    private static final String SERVICE_TYPE_FIELD = "type";
     private static final String SERVICE_PATTERN_FIELD = "pattern";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
 
@@ -154,20 +154,23 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
             // new name for the service type
             String newServiceTypeName = serviceTypeMap.get(serviceTypeName);
 
+            //TODO: yes or no to every unit has consumer?
             // every unit from version 0 has a consumer service
             JsonObject serviceTemplate = new JsonObject();
-            serviceTemplate.addProperty(TYPE_FIELD, newServiceTypeName);
-            serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, CONSUMER_PATTERN);
-            serviceTemplates.add(serviceTemplate);
+//            serviceTemplate.addProperty(TYPE_FIELD, newServiceTypeName);
+//            serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, CONSUMER_PATTERN);
+//            serviceTemplates.add(serviceTemplate);
 
             // every unit from version 0 has a provider service
-            serviceTemplate.remove(SERVICE_PATTERN_FIELD);
+            serviceTemplate = new JsonObject();
+            serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
             serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, PROVIDER_PATTERN);
             serviceTemplates.add(serviceTemplate);
 
             // only unit with a service type that ends on SERVICE have an operation service of that kind
             if (serviceTypeName.endsWith("SERVICE")) {
-                serviceTemplate.remove(SERVICE_PATTERN_FIELD);
+                serviceTemplate = new JsonObject();
+                serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
                 serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, OPERATION_PATTERN);
                 serviceTemplates.add(serviceTemplate);
             }
