@@ -58,6 +58,7 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -66,6 +67,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.*;
 
 /**
  *
@@ -115,32 +117,76 @@ public class MockRegistry {
 //    private final UserRegistryRemote userRemote;
     private static LocationConfig paradise;
 
+    public enum MockServiceTemplate {
+        
+        // endings:
+        // SOS = STATE_OPERATION_SERVICE
+        // SPS = STATE_PROVIDER_SERVICE
+        // SCS = STATE_CONSUMER_SERVICE
+        BATTERY_SPS(ServiceType.BATTERY_STATE_SERVICE, ServicePattern.PROVIDER),
+        BLIND_SOS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.OPERATION),
+        BLIND_SPS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.PROVIDER),
+        BRIGHTNESS_SOS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.OPERATION),
+        BRIGHTNESS_SPS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.PROVIDER),
+        BUTTON_SPS(ServiceType.BUTTON_STATE_SERVICE, ServicePattern.PROVIDER),
+        COLOR_SOS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.OPERATION),
+        COLOR_SPS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.PROVIDER),
+        CONTACT_SPS(ServiceType.CONTACT_STATE_SERVICE, ServicePattern.PROVIDER),
+        HANDLE_SPS(ServiceType.HANDLE_STATE_SERVICE, ServicePattern.PROVIDER),
+        INTENSITY_SOS(ServiceType.INTENSITY_STATE_SERVICE, ServicePattern.OPERATION),
+        INTENSITY_SPS(ServiceType.INTENSITY_STATE_SERVICE, ServicePattern.PROVIDER),
+        MOTION_SPS(ServiceType.MOTION_STATE_SERVICE, ServicePattern.PROVIDER),
+        POWER_CONSUMPTION_SPS(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, ServicePattern.PROVIDER),
+        POWER_SOS(ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION),
+        POWER_SPS(ServiceType.POWER_STATE_SERVICE, ServicePattern.PROVIDER),
+        SMOKE_ALARM_SPS(ServiceType.SMOKE_ALARM_STATE_SERVICE, ServicePattern.PROVIDER),
+        SMOKE_SPS(ServiceType.SMOKE_STATE_SERVICE, ServicePattern.PROVIDER),
+        TAMPER_SPS(ServiceType.TAMPER_STATE_SERVICE, ServicePattern.PROVIDER),
+        TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
+        TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
+        TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER);
+        
+        
+        private final ServiceTemplate template;
+        
+        MockServiceTemplate(ServiceType type, ServicePattern servicePattern) {
+            ServiceTemplate.Builder templateBuilder = ServiceTemplate.newBuilder();
+            templateBuilder.setType(type);
+            templateBuilder.setPattern(servicePattern);
+            this.template = templateBuilder.build();
+        }
+        
+        public ServiceTemplate getTemplate() {
+            return template;
+        }
+    }
+    
     public enum MockUnitTemplate {
 
-        AMBIENT_LIGHT(UnitType.COLORABLE_LIGHT, ServiceType.CONTACT_STATE_SERVICE, ServiceType.POWER_STATE_SERVICE, ServiceType.BRIGHTNESS_STATE_SERVICE),
-        LIGHT(UnitType.LIGHT, ServiceType.POWER_STATE_SERVICE),
-        MOTION_SENSOR(UnitType.MOTION_DETECTOR, ServiceType.MOTION_STATE_SERVICE),
-        BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, ServiceType.BRIGHTNESS_STATE_SERVICE),
-        BUTTON(UnitType.BUTTON, ServiceType.BUTTON_STATE_SERVICE),
-        DIMMER(UnitType.DIMMER, ServiceType.INTENSITY_STATE_SERVICE, ServiceType.POWER_STATE_SERVICE),
-        HANDLE_SENSOR(UnitType.HANDLE, ServiceType.HANDLE_STATE_SERVICE),
-        POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, ServiceType.POWER_CONSUMPTION_STATE_SERVICE),
-        POWER_PLUG(UnitType.POWER_SWITCH, ServiceType.POWER_STATE_SERVICE),
-        REED_SWITCH(UnitType.REED_CONTACT, ServiceType.CONTACT_STATE_SERVICE),
-        ROLLERSHUTTER(UnitType.ROLLER_SHUTTER, ServiceType.BLIND_STATE_SERVICE),
-        TAMPER_SWITCH(UnitType.TAMPER_DETECTOR, ServiceType.TAMPER_STATE_SERVICE),
-        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServiceType.TEMPERATURE_STATE_SERVICE),
-        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, ServiceType.SMOKE_STATE_SERVICE, ServiceType.SMOKE_ALARM_STATE_SERVICE),
-        TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, ServiceType.TEMPERATURE_STATE_SERVICE),
-        BATTERY(UnitType.BATTERY, ServiceType.BATTERY_STATE_SERVICE);
+        AMBIENT_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SOS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
+        MOTION_SENSOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
+        BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SPS),
+        BUTTON(UnitType.BUTTON, BUTTON_SPS),
+        DIMMER(UnitType.DIMMER, INTENSITY_SOS, INTENSITY_SPS, POWER_SOS, POWER_SPS),
+        HANDLE_SENSOR(UnitType.HANDLE, HANDLE_SPS),
+        POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_SPS),
+        POWER_PLUG(UnitType.POWER_SWITCH, POWER_SOS, POWER_SPS),
+        REED_SWITCH(UnitType.REED_CONTACT, CONTACT_SPS),
+        ROLLERSHUTTER(UnitType.ROLLER_SHUTTER, BLIND_SOS, BLIND_SPS),
+        TAMPER_SWITCH(UnitType.TAMPER_DETECTOR, TAMPER_SPS),
+        TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, TARGET_TEMPERATURE_SOS, TARGET_TEMPERATURE_SPS, TEMPERATURE_SPS),
+        SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, SMOKE_SPS, SMOKE_ALARM_SPS),
+        TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
+        BATTERY(UnitType.BATTERY, BATTERY_SPS);
 
         private final UnitTemplate template;
 
-        MockUnitTemplate(UnitTemplate.UnitType type, ServiceType... serviceTypes) {
+        MockUnitTemplate(UnitTemplate.UnitType type, MockServiceTemplate... serviceTemplates) {
             UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
-            for (ServiceType serviceType : serviceTypes) {
-                templateBuilder.addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceType));
+            for (MockServiceTemplate serviceTemplate : serviceTemplates) {
+                templateBuilder.addServiceTemplate(serviceTemplate.getTemplate());
             }
             this.template = templateBuilder.build();
         }
