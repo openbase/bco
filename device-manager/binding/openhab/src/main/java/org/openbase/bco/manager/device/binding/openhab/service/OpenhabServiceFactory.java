@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -73,5 +74,10 @@ public class OpenhabServiceFactory implements ServiceFactory {
     @Override
     public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
         return new TargetTemperatureServiceImpl(unit);
+    }
+
+    @Override
+    public <UNIT extends IntensityStateOperationService & Unit> IntensityStateOperationService newIntensityStateService(UNIT unit) throws InstantiationException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

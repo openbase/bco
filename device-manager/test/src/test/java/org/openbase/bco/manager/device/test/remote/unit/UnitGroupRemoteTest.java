@@ -45,6 +45,7 @@ import static org.junit.Assert.*;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 import rst.homeautomation.state.PowerStateType.PowerState;
@@ -76,12 +77,33 @@ public class UnitGroupRemoteTest {
 
         unitGroupRemote = new UnitGroupRemote();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE)).setLabel("testGroup");
+        
+        boolean hasPowerService, hasBrightnessService;
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
+            hasPowerService = false;
+            hasBrightnessService = false;
             for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().getType() == ServiceType.POWER_STATE_SERVICE) {
-                    units.add(unit);
-                    unitGroupConfig.addMemberId(unit.getConfig().getId());
+//                if (serviceConfig.getServiceTemplate().getType() == ServiceType.POWER_STATE_SERVICE 
+//                        && serviceConfig.getServiceTemplate().getPattern() == ServicePattern.OPERATION) {
+//                    units.add(unit);
+//                    unitGroupConfig.addMemberId(unit.getConfig().getId());
+//                }
+                if(!hasPowerService) {
+                    hasPowerService = serviceConfig.getServiceTemplate().getType() == ServiceType.POWER_STATE_SERVICE 
+                        && serviceConfig.getServiceTemplate().getPattern() == ServicePattern.OPERATION;
                 }
+                if(!hasBrightnessService) {
+                    hasBrightnessService = serviceConfig.getServiceTemplate().getType() == ServiceType.BRIGHTNESS_STATE_SERVICE 
+                        && serviceConfig.getServiceTemplate().getPattern() == ServicePattern.OPERATION;
+                }
+            }
+            if(hasBrightnessService && hasPowerService) {
+                System.out.println(unit.getConfig().getId());
+                for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
+                    System.out.println(serviceConfig);
+                }
+                units.add(unit);
+                unitGroupConfig.addMemberId(unit.getConfig().getId());
             }
         }
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
