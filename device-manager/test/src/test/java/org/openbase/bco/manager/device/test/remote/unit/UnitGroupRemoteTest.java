@@ -22,26 +22,27 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.ArrayList;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
@@ -76,20 +77,30 @@ public class UnitGroupRemoteTest {
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         unitGroupRemote = new UnitGroupRemote();
-        ServiceTemplate serviceTempalte = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(serviceTempalte).setLabel("testGroup");
-        
+        ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
+        ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
+        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService).setLabel("testGroup");
+
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
-            for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().equals(serviceTempalte)) {
-                    units.add(unit);
-                    unitGroupConfig.addMemberId(unit.getConfig().getId());
-                }
+            if (allServiceTemplatesImplemented(unitGroupConfig, unit.getConfig().getServiceConfigList())) {
+                units.add(unit);
+                unitGroupConfig.addMemberId(unit.getConfig().getId());
             }
         }
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitGroupConfig.build());
         unitGroupRemote.activate();
+    }
+
+    private static boolean allServiceTemplatesImplemented(UnitGroupConfig.Builder unitGroup, List<ServiceConfig> serviceConfigList) {
+        List<ServiceTemplate> fromUnit = new ArrayList<>(), inGroup = new ArrayList<>();
+        serviceConfigList.stream().forEach((serviceConfig) -> {
+            fromUnit.add(serviceConfig.getServiceTemplate());
+        });
+        if (!unitGroup.getServiceTemplateList().stream().noneMatch((serviceTemplate) -> (!fromUnit.contains(serviceTemplate)))) {
+            return false;
+        }
+        return true;
     }
 
     @AfterClass
