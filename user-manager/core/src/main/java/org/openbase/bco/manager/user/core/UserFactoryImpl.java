@@ -21,7 +21,6 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.user.lib.User;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.manager.user.lib.UserFactory;
@@ -60,7 +59,7 @@ public class UserFactoryImpl implements UserFactory {
             if (config == null) {
                 throw new NotAvailableException("userconfig");
             }
-            logger.info("Creating user [" + config.getUserName()  + "]");
+            logger.info("Creating user [" + config.getUserName() + "]");
             user = new UserControllerImpl();
             user.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {

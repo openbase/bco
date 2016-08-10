@@ -21,9 +21,9 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
-import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -61,7 +61,7 @@ public class AgentFactoryImpl implements AgentFactory {
             if (config == null) {
                 throw new NotAvailableException("agentconfig");
             }
-            if (!config.hasType()) {
+            if (!config.hasAgentClassId()) {
                 throw new NotAvailableException("agentype");
             }
             if(!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
@@ -78,9 +78,10 @@ public class AgentFactoryImpl implements AgentFactory {
     }
 
     private String getAgentClass(final AgentConfigType.AgentConfig config) {
+        //TODO: after agent class registry implementation the class id need to be resolved!
         return AbstractAgent.class.getPackage().getName() + "."
                 + "preset."
-                + StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
+                + StringProcessor.transformUpperCaseToCamelCase(config.getAgentClassId())
                 + "Agent";
     }
 }
