@@ -22,24 +22,24 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
+import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType.MotionState;
 
@@ -110,7 +110,7 @@ public class MotionDetectorRemoteTest {
     @Test(timeout = 10000)
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
-        MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
+        MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
         ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());

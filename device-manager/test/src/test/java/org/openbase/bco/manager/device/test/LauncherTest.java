@@ -21,20 +21,18 @@ package org.openbase.bco.manager.device.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
@@ -88,21 +86,21 @@ public class LauncherTest {
         builder.setValue(MotionStateType.MotionState.State.UNKNOWN);
         Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.UNKNOWN);
         Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.UNKNOWN);
-        builder.setValue(MotionStateType.MotionState.State.MOVEMENT);
-        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.MOVEMENT);
-        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.MOVEMENT);
+        builder.setValue(MotionStateType.MotionState.State.MOTION);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.MOTION);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.MOTION);
         builder.build();
 
         MotionStateType.MotionState.Builder clone = builder.clone();
 
-        builder.setValue(MotionStateType.MotionState.State.NO_MOVEMENT);
-        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
-        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
-        Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.MOVEMENT);
-        Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.MOVEMENT);
+        builder.setValue(MotionStateType.MotionState.State.NO_MOTION);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOTION);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOTION);
+        Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.NO_MOTION);
+        Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.NO_MOTION);
         clone.setValue(MotionStateType.MotionState.State.UNKNOWN);
-        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
-        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOVEMENT);
+        Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOTION);
+        Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOTION);
         Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.UNKNOWN);
         Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.UNKNOWN);
     }
