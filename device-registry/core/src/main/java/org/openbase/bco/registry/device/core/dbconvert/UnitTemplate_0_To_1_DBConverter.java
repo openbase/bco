@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openbase.bco.registry.device.core.dbconvert.deviceclass;
+package org.openbase.bco.registry.device.core.dbconvert;
 
 /*
  * #%L
@@ -26,35 +26,36 @@ package org.openbase.bco.registry.device.core.dbconvert.deviceclass;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.version.DBVersionConverter;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DeviceClass_0_To_1_DBConverter implements DBVersionConverter {
+public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
 
-    private static final String BINDING_CONFIG_FIELD = "binding_config";
+    private static final String PROVIDER_PATTERN = "PROVIDER";
+    private static final String OPERATION_PATTERN = "OPERATION";
+
+    private static final String ID_FIELD = "id";
     private static final String TYPE_FIELD = "type";
-    private static final String BINDING_ID_FIELD = "binding_id";
-    private static final String UNIT_TEMPLATE_CONFIG_FIELD = "unit_template_config";
+    private static final String INCLUDED_TYPE_FIELD = "included_type";
+    private static final String SERVICE_TYPE_FIELD = "type";
+    private static final String SERVICE_PATTERN_FIELD = "pattern";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
-    private static final String SERVICE_TEMPLATE_CONFIG_FIELD = "service_template_config";
-    private static final String SERVICE_TYPE_FIELD = "service_type";
 
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
 
-    public DeviceClass_0_To_1_DBConverter() {
+    public UnitTemplate_0_To_1_DBConverter() {
         unitTypeMap = new HashMap<>();
         unitTypeMap.put("AMBIENT_LIGHT", "COLORABLE_LIGHT");
         unitTypeMap.put("LIGHT", "LIGHT");
@@ -108,36 +109,66 @@ public class DeviceClass_0_To_1_DBConverter implements DBVersionConverter {
     }
 
     @Override
-    public JsonObject upgrade(JsonObject deviceClass, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
-        // replace binding type with binding id
-        JsonObject bindingConfig = deviceClass.getAsJsonObject(BINDING_CONFIG_FIELD);
-        deviceClass.remove(BINDING_CONFIG_FIELD);
-        String bindingId = StringProcessor.transformUpperCaseToCamelCase(bindingConfig.getAsJsonPrimitive(TYPE_FIELD).getAsString());
-        bindingConfig.addProperty(BINDING_ID_FIELD, bindingId);
-        deviceClass.add(BINDING_CONFIG_FIELD, bindingConfig);
+    public JsonObject upgrade(JsonObject unitTemplate, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
+        String oldName = unitTemplate.get(TYPE_FIELD).getAsString();
+        String newName = unitTypeMap.get(oldName);
 
-        JsonArray unitTemplateConfigs = deviceClass.getAsJsonArray(UNIT_TEMPLATE_CONFIG_FIELD);
-        for (JsonElement unitTemplateConfigElem : unitTemplateConfigs) {
-            JsonObject unitTemplateConfig = unitTemplateConfigElem.getAsJsonObject();
-            String newType = unitTypeMap.get(unitTemplateConfig.get(TYPE_FIELD).getAsString());
-            unitTemplateConfig.remove(TYPE_FIELD);
-            unitTemplateConfig.addProperty(TYPE_FIELD, newType);
-
-            //TODO: also adjust if and label of unit template config or let the consistency handler handle this?
-            JsonArray serviceTemplates = unitTemplateConfig.getAsJsonArray(SERVICE_TEMPLATE_FIELD);
-            for (JsonElement serviceTemplateElem : serviceTemplates) {
-                JsonObject serviceTemplate = serviceTemplateElem.getAsJsonObject();
-                String newServiceType = serviceTypeMap.get(serviceTemplate.get(SERVICE_TYPE_FIELD).getAsString());
-                serviceTemplate.remove(SERVICE_TYPE_FIELD);
-                serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceType);
-            }
-            unitTemplateConfig.remove(SERVICE_TEMPLATE_FIELD);
-            unitTemplateConfig.add(SERVICE_TEMPLATE_CONFIG_FIELD, serviceTemplates);
-
-            deviceClass.remove(UNIT_TEMPLATE_CONFIG_FIELD);
-            deviceClass.add(UNIT_TEMPLATE_CONFIG_FIELD, unitTemplateConfigs);
+        // every type from version 0 should be contained in the map
+        // so this is for a debugging purpose
+        if (!unitTypeMap.containsKey(oldName)) {
+            throw new CouldNotPerformException("unitTypeMap does not contain type [" + oldName + "] and therefore cannot update unit template");
         }
 
-        return deviceClass;
+        JsonArray includedTypes = unitTemplate.getAsJsonArray(INCLUDED_TYPE_FIELD);
+        JsonArray serviceTypes = unitTemplate.getAsJsonArray(SERVICE_TYPE_FIELD);
+
+        // remove all fields where the values have change
+        unitTemplate.remove(ID_FIELD);
+        unitTemplate.remove(TYPE_FIELD);
+        unitTemplate.remove(INCLUDED_TYPE_FIELD);
+        unitTemplate.remove(SERVICE_TYPE_FIELD);
+
+        // id and type have the same values in unit templates
+        unitTemplate.addProperty(ID_FIELD, newName);
+        unitTemplate.addProperty(TYPE_FIELD, newName);
+
+        // replace included types with the new names
+        JsonParser jsonParser = new JsonParser();
+        for (int i = 0; i < includedTypes.size(); ++i) {
+            includedTypes.set(i, jsonParser.parse(unitTypeMap.get(includedTypes.get(i).getAsString())));
+        }
+        unitTemplate.add(INCLUDED_TYPE_FIELD, includedTypes);
+
+        // replace service types with service templates
+        JsonArray serviceTemplates = new JsonArray();
+        for (JsonElement serviceType : serviceTypes) {
+            String serviceTypeName = serviceType.getAsString();
+
+            // delete service that does not exist anymore, e.g. multi service, opening ratio service
+            if (!serviceTypeMap.containsKey(serviceTypeName)) {
+                continue;
+            }
+
+            // new name for the service type
+            String newServiceTypeName = serviceTypeMap.get(serviceTypeName);
+
+            // every unit from version 0 has a provider service
+            JsonObject serviceTemplate = new JsonObject();
+            serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
+            serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, PROVIDER_PATTERN);
+            serviceTemplates.add(serviceTemplate);
+
+            // only unit with a service type that ends on SERVICE have an operation service of that kind
+            if (serviceTypeName.endsWith("SERVICE")) {
+                serviceTemplate = new JsonObject();
+                serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
+                serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, OPERATION_PATTERN);
+                serviceTemplates.add(serviceTemplate);
+            }
+        }
+        unitTemplate.add(SERVICE_TEMPLATE_FIELD, serviceTemplates);
+
+        return unitTemplate;
     }
+
 }
