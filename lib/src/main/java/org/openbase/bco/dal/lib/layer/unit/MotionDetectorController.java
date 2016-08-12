@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -48,20 +46,20 @@ public class MotionDetectorController extends AbstractUnitController<MotionDetec
     }
 
     public void updateMotionStateProvider(MotionState state) throws CouldNotPerformException {
-        
+
         logger.debug("Apply motionState Update[" + state + "] for " + this + ".");
-        
+
         try (ClosableDataBuilder<MotionDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
 
             MotionState.Builder motionStateBuilder = dataBuilder.getInternalBuilder().getMotionStateBuilder();
-            
+
             // Update value
             motionStateBuilder.setValue(state.getValue());
-            
+
             // Update timestemp if necessary
-            if (state.getValue()== MotionState.State.MOVEMENT) {
-            //TODO tamino: need to be tested! Please write an unit test.
-                motionStateBuilder.setLastMovement(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
+            if (state.getValue() == MotionState.State.MOTION) {
+                //TODO tamino: need to be tested! Please write an unit test.
+                motionStateBuilder.setLastMotion(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 
             dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder);

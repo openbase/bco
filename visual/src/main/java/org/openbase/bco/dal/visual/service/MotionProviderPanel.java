@@ -21,17 +21,15 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.processing.StringProcessor;
 
 /**
  *
@@ -114,7 +112,6 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionStateProvide
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lastMovementValueLabel;
@@ -126,11 +123,11 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionStateProvide
     protected void updateDynamicComponents() {
         try {
             switch (getService().getMotionState().getValue()) {
-                case MOVEMENT:
+                case MOTION:
                     motionStatusLabel.setForeground(Color.BLACK);
                     motionStatePanel.setBackground(Color.GREEN.darker());
                     break;
-                case NO_MOVEMENT:
+                case NO_MOTION:
                     motionStatusLabel.setForeground(Color.BLACK);
                     motionStatePanel.setBackground(Color.LIGHT_GRAY);
                     break;
@@ -143,10 +140,10 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionStateProvide
             }
             motionStatusLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getService().getMotionState().getValue().name()));
             try {
-                lastMovementValueLabel.setText(dateFormat.format(new Date(getService().getMotionState().getLastMovement().getTime())));
+                lastMovementValueLabel.setText(dateFormat.format(new Date(getService().getMotionState().getLastMotion().getTime())));
             } catch (Exception ex) {
                 lastMovementValueLabel.setText("N/A");
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: ["+getService().getMotionState().getLastMovement()+"]!",ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getService().getMotionState().getLastMotion() + "]!", ex), logger, LogLevel.ERROR);
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);

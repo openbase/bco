@@ -44,11 +44,11 @@ public interface MotionStateProviderServiceCollection extends MotionStateProvide
     default public MotionState getMotionState() throws NotAvailableException {
         try {
             for (MotionStateProviderService provider : getMotionStateProviderServices()) {
-                if (provider.getMotionState().getValue() == MotionState.State.MOVEMENT) {
-                    return MotionState.newBuilder().setValue(MotionState.State.MOVEMENT).build();
+                if (provider.getMotionState().getValue() == MotionState.State.MOTION) {
+                    return MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
                 }
             }
-            return MotionState.newBuilder().setValue(MotionState.State.NO_MOVEMENT).build();
+            return MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("MotionState", ex);
         }
