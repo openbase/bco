@@ -21,8 +21,11 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.Map;
+import java.util.TreeMap;
+import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
@@ -30,7 +33,6 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -43,11 +45,13 @@ import rst.rsb.ScopeType;
 public class UnitScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
     private final LocationRegistryRemote locationRegistryRemote;
+    private final Map<String, UnitConfig> unitScopeMap;
 
     public UnitScopeConsistencyHandler(final LocationRegistryRemote locationRegistryRemote) {
         this.locationRegistryRemote = locationRegistryRemote;
+        this.unitScopeMap = new TreeMap<>();
     }
-    
+
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceConfigType.DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
@@ -57,11 +61,11 @@ public class UnitScopeConsistencyHandler extends AbstractProtoBufRegistryConsist
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
             UnitConfig unitConfigClone = UnitConfig.newBuilder(unitConfig.build()).build();
 
-            if(!unitConfigClone.hasPlacementConfig()) {
+            if (!unitConfigClone.hasPlacementConfig()) {
                 throw new NotAvailableException("placementconfig");
             }
 
-            if(!unitConfigClone.getPlacementConfig().hasLocationId() || unitConfigClone.getPlacementConfig().getLocationId().isEmpty()) {
+            if (!unitConfigClone.getPlacementConfig().hasLocationId() || unitConfigClone.getPlacementConfig().getLocationId().isEmpty()) {
                 throw new NotAvailableException("placementconfig.locationid");
             }
 
@@ -72,11 +76,22 @@ public class UnitScopeConsistencyHandler extends AbstractProtoBufRegistryConsist
                 unitConfig.setScope(newScope);
                 modification = true;
             }
+
+            if (unitScopeMap.containsKey(ScopeGenerator.generateStringRep(unitConfig.getScope()))) {
+                throw new InvalidStateException("Two units with same scope[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitScopeMap.get(ScopeGenerator.generateStringRep(unitConfig.getScope())).getSystemUnitId() + "]!");
+            }
+            unitScopeMap.put(ScopeGenerator.generateStringRep(unitConfig.getScope()), unitConfig.build());
+
             deviceConfig.addUnitConfig(unitConfig);
         }
 
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceConfig), this);
         }
+    }
+
+    @Override
+    public void reset() {
+        unitScopeMap.clear();
     }
 }
