@@ -21,31 +21,31 @@ package org.openbase.bco.registry.device.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.device.core.DeviceRegistryController;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.bco.registry.location.core.LocationRegistryController;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
-import org.openbase.bco.registry.user.core.UserRegistryController;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.registry.device.core.DeviceRegistryController;
+import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.location.core.LocationRegistryController;
+import org.openbase.bco.registry.user.core.UserRegistryController;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.authorization.UserConfigType.UserConfig;
@@ -54,7 +54,6 @@ import rst.configuration.MetaConfigType;
 import rst.geometry.PoseType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
-import rst.homeautomation.binding.BindingConfigType;
 import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
@@ -228,7 +227,6 @@ public class DeviceRegistryTest {
         String deviceScope = "/" + LOCATION_LABEL + "/" + "device" + "/" + deviceLabel.toLowerCase() + "/";
 
         String expectedUnitScope = "/" + LOCATION_LABEL + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + deviceLabel.toLowerCase() + "/";
-        String expectedUnitID = expectedUnitScope;
 
         // units are automatically added when a unit template config in the device class exists
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.BATTERY).build();
@@ -239,7 +237,6 @@ public class DeviceRegistryTest {
         assertEquals("Device id is not set properly", deviceId, motionSensorConfig.getId());
         assertEquals("Device scope is not set properly", deviceScope, ScopeGenerator.generateStringRep(motionSensorConfig.getScope()));
 
-        assertEquals("Unit id is not set properly", expectedUnitID, motionSensorConfig.getUnitConfig(0).getId());
         assertEquals("Unit scope is not set properly", expectedUnitScope, ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()));
 
         assertEquals("Device id is not set in unit", motionSensorConfig.getId(), motionSensorConfig.getUnitConfig(0).getSystemUnitId());
