@@ -26,7 +26,6 @@ package org.openbase.bco.registry.device.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -41,20 +40,20 @@ import org.openbase.jul.storage.registry.version.DBVersionConverter;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public class UnitGroupConfig_0_To_1_DBConverter implements DBVersionConverter {
-    
+
     private static final String UNIT_TYPE_FIELD = "unit_type";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
     private static final String SERVICE_TYPE_FIELD = "service_type";
     private static final String TYPE_FIELD = "type";
     private static final String PATTERN_FIELD = "pattern";
     private static final String META_CONFIG_FIELD = "meta_config";
-    
+
     private static final String PROVIDER_PATTERN = "PROVIDER";
     private static final String OPERATION_PATTERN = "OPERATION";
-    
+
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
-    
+
     public UnitGroupConfig_0_To_1_DBConverter() {
         unitTypeMap = new HashMap<>();
         unitTypeMap.put("AMBIENT_LIGHT", "COLORABLE_LIGHT");
@@ -79,7 +78,7 @@ public class UnitGroupConfig_0_To_1_DBConverter implements DBVersionConverter {
         unitTypeMap.put("AUDIO_SINK", "AUDIO_SINK");
         unitTypeMap.put("DEPTH_CAMERA", "VIDEO_DEPTH_SOURCE");
         unitTypeMap.put("RGB_CAMERA", "VIDEO_RGB_SOURCE");
-        
+
         serviceTypeMap = new HashMap<>();
         serviceTypeMap.put("BATTERY_PROVIDER", "BATTERY_STATE_SERVICE");
         serviceTypeMap.put("BRIGHTNESS_PROVIDER", "BRIGHTNESS_STATE_SERVICE");
@@ -107,36 +106,38 @@ public class UnitGroupConfig_0_To_1_DBConverter implements DBVersionConverter {
         serviceTypeMap.put("SMOKE_ALARM_STATE_PROVIDER", "SMOKE_ALARM_STATE_SERVICE");
         serviceTypeMap.put("TEMPERATURE_ALARM_STATE_PROVIDER", "TEMPERATURE_ALARM_STATE_SERVICE");
     }
-    
+
     @Override
     public JsonObject upgrade(JsonObject unitGroup, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
         String newUnitType = unitTypeMap.get(unitGroup.get(UNIT_TYPE_FIELD).getAsString());
         unitGroup.remove(UNIT_TYPE_FIELD);
         unitGroup.addProperty(UNIT_TYPE_FIELD, newUnitType);
-        
+
         JsonArray serviceTemplates = unitGroup.getAsJsonArray(SERVICE_TEMPLATE_FIELD);
-        JsonArray newServiceTemplates = new JsonArray();
-        for (JsonElement serviceTemplateElem : serviceTemplates) {
-            JsonObject serviceTemplate = serviceTemplateElem.getAsJsonObject();
-            
-            String oldServiceType = serviceTemplate.get(SERVICE_TYPE_FIELD).getAsString();
-            String newServiceType = serviceTypeMap.get(oldServiceType);
-            serviceTemplate.remove(SERVICE_TYPE_FIELD);
-            serviceTemplate.addProperty(TYPE_FIELD, newServiceType);
-            serviceTemplate.addProperty(PATTERN_FIELD, PROVIDER_PATTERN);
-            newServiceTemplates.add(serviceTemplate);
-            
-            if (oldServiceType.endsWith("SERVICE")) {
-                JsonObject operationServiceTemplate = new JsonObject();
-                operationServiceTemplate.addProperty(TYPE_FIELD, newServiceType);
-                operationServiceTemplate.addProperty(PATTERN_FIELD, OPERATION_PATTERN);
-                operationServiceTemplate.add(META_CONFIG_FIELD, serviceTemplate.get(META_CONFIG_FIELD));
-                newServiceTemplates.add(operationServiceTemplate);
+        if (serviceTemplates != null) {
+            JsonArray newServiceTemplates = new JsonArray();
+            for (JsonElement serviceTemplateElem : serviceTemplates) {
+                JsonObject serviceTemplate = serviceTemplateElem.getAsJsonObject();
+
+                String oldServiceType = serviceTemplate.get(SERVICE_TYPE_FIELD).getAsString();
+                String newServiceType = serviceTypeMap.get(oldServiceType);
+                serviceTemplate.remove(SERVICE_TYPE_FIELD);
+                serviceTemplate.addProperty(TYPE_FIELD, newServiceType);
+                serviceTemplate.addProperty(PATTERN_FIELD, PROVIDER_PATTERN);
+                newServiceTemplates.add(serviceTemplate);
+
+                if (oldServiceType.endsWith("SERVICE")) {
+                    JsonObject operationServiceTemplate = new JsonObject();
+                    operationServiceTemplate.addProperty(TYPE_FIELD, newServiceType);
+                    operationServiceTemplate.addProperty(PATTERN_FIELD, OPERATION_PATTERN);
+                    operationServiceTemplate.add(META_CONFIG_FIELD, serviceTemplate.get(META_CONFIG_FIELD));
+                    newServiceTemplates.add(operationServiceTemplate);
+                }
             }
+            unitGroup.remove(SERVICE_TEMPLATE_FIELD);
+            unitGroup.add(SERVICE_TEMPLATE_FIELD, newServiceTemplates);
         }
-        unitGroup.remove(SERVICE_TEMPLATE_FIELD);
-        unitGroup.add(SERVICE_TEMPLATE_FIELD, newServiceTemplates);
-        
+
         return unitGroup;
     }
 }

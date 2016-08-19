@@ -29,6 +29,7 @@ package org.openbase.bco.registry.device.core.dbconvert;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,45 +113,55 @@ public class DeviceClass_0_To_1_DBConverter implements DBVersionConverter {
     public JsonObject upgrade(JsonObject deviceClass, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
         // replace binding type with binding id
         JsonObject bindingConfig = deviceClass.getAsJsonObject(BINDING_CONFIG_FIELD);
-        deviceClass.remove(BINDING_CONFIG_FIELD);
-        String bindingId = StringProcessor.transformUpperCaseToCamelCase(bindingConfig.getAsJsonPrimitive(TYPE_FIELD).getAsString());
-        bindingConfig.addProperty(BINDING_ID_FIELD, bindingId);
-        deviceClass.add(BINDING_CONFIG_FIELD, bindingConfig);
+        if (bindingConfig != null) {
+            deviceClass.remove(BINDING_CONFIG_FIELD);
+            JsonPrimitive bindingType = bindingConfig.getAsJsonPrimitive(TYPE_FIELD);
+            if (bindingType != null) {
+                bindingConfig.remove(TYPE_FIELD);
+                String bindingId = StringProcessor.transformUpperCaseToCamelCase(bindingType.getAsString());
+                bindingConfig.addProperty(BINDING_ID_FIELD, bindingId);
+            }
+            deviceClass.add(BINDING_CONFIG_FIELD, bindingConfig);
+        }
 
         JsonArray unitTemplateConfigs = deviceClass.getAsJsonArray(UNIT_TEMPLATE_CONFIG_FIELD);
-        JsonArray newUnitTemplateConfigs = new JsonArray();
-        for (JsonElement unitTemplateConfigElem : unitTemplateConfigs) {
-            JsonObject unitTemplateConfig = unitTemplateConfigElem.getAsJsonObject();
-            String oldType = unitTemplateConfig.get(TYPE_FIELD).getAsString();
-            String newType = unitTypeMap.get(oldType);
-            unitTemplateConfig.remove(TYPE_FIELD);
-            unitTemplateConfig.addProperty(TYPE_FIELD, newType);
+        if (unitTemplateConfigs != null) {
+            JsonArray newUnitTemplateConfigs = new JsonArray();
+            for (JsonElement unitTemplateConfigElem : unitTemplateConfigs) {
+                JsonObject unitTemplateConfig = unitTemplateConfigElem.getAsJsonObject();
+                String oldType = unitTemplateConfig.get(TYPE_FIELD).getAsString();
+                String newType = unitTypeMap.get(oldType);
+                unitTemplateConfig.remove(TYPE_FIELD);
+                unitTemplateConfig.addProperty(TYPE_FIELD, newType);
 
-            String oldUnitTemplateConfigId = unitTemplateConfig.get(ID_FIELD).getAsString();
-            String newUnitTemplateConfigId = oldUnitTemplateConfigId.replace(oldType, newType);
-            unitTemplateConfig.remove(ID_FIELD);
-            unitTemplateConfig.addProperty(ID_FIELD, newUnitTemplateConfigId);
-            if (unitTemplateConfig.get(LABEL_FIELD).getAsString().equals(oldUnitTemplateConfigId)) {
-                unitTemplateConfig.remove(LABEL_FIELD);
-                unitTemplateConfig.addProperty(LABEL_FIELD, newUnitTemplateConfigId);
+                String oldUnitTemplateConfigId = unitTemplateConfig.get(ID_FIELD).getAsString();
+                String newUnitTemplateConfigId = oldUnitTemplateConfigId.replace(oldType, newType);
+                unitTemplateConfig.remove(ID_FIELD);
+                unitTemplateConfig.addProperty(ID_FIELD, newUnitTemplateConfigId);
+                if (unitTemplateConfig.get(LABEL_FIELD).getAsString().equals(oldUnitTemplateConfigId)) {
+                    unitTemplateConfig.remove(LABEL_FIELD);
+                    unitTemplateConfig.addProperty(LABEL_FIELD, newUnitTemplateConfigId);
+                }
+
+                JsonArray serviceTemplates = unitTemplateConfig.getAsJsonArray(SERVICE_TEMPLATE_FIELD);
+                if (serviceTemplates != null) {
+                    JsonArray newServiceTemplates = new JsonArray();
+                    for (JsonElement serviceTemplateElem : serviceTemplates) {
+                        JsonObject serviceTemplate = serviceTemplateElem.getAsJsonObject();
+                        String newServiceType = serviceTypeMap.get(serviceTemplate.get(SERVICE_TYPE_FIELD).getAsString());
+                        serviceTemplate.remove(SERVICE_TYPE_FIELD);
+                        serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceType);
+                        newServiceTemplates.add(serviceTemplate);
+                    }
+                    unitTemplateConfig.remove(SERVICE_TEMPLATE_FIELD);
+                    unitTemplateConfig.add(SERVICE_TEMPLATE_CONFIG_FIELD, newServiceTemplates);
+                }
+
+                newUnitTemplateConfigs.add(unitTemplateConfig);
             }
-
-            JsonArray serviceTemplates = unitTemplateConfig.getAsJsonArray(SERVICE_TEMPLATE_FIELD);
-            JsonArray newServiceTemplates = new JsonArray();
-            for (JsonElement serviceTemplateElem : serviceTemplates) {
-                JsonObject serviceTemplate = serviceTemplateElem.getAsJsonObject();
-                String newServiceType = serviceTypeMap.get(serviceTemplate.get(SERVICE_TYPE_FIELD).getAsString());
-                serviceTemplate.remove(SERVICE_TYPE_FIELD);
-                serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceType);
-                newServiceTemplates.add(serviceTemplate);
-            }
-            unitTemplateConfig.remove(SERVICE_TEMPLATE_FIELD);
-            unitTemplateConfig.add(SERVICE_TEMPLATE_CONFIG_FIELD, newServiceTemplates);
-
-            newUnitTemplateConfigs.add(unitTemplateConfig);
+            deviceClass.remove(UNIT_TEMPLATE_CONFIG_FIELD);
+            deviceClass.add(UNIT_TEMPLATE_CONFIG_FIELD, newUnitTemplateConfigs);
         }
-        deviceClass.remove(UNIT_TEMPLATE_CONFIG_FIELD);
-        deviceClass.add(UNIT_TEMPLATE_CONFIG_FIELD, newUnitTemplateConfigs);
 
         return deviceClass;
     }

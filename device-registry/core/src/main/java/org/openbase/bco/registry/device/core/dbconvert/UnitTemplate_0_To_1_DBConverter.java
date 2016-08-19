@@ -48,7 +48,7 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
     private static final String ID_FIELD = "id";
     private static final String TYPE_FIELD = "type";
     private static final String INCLUDED_TYPE_FIELD = "included_type";
-    private static final String SERVICE_TYPE_FIELD = "type";
+    private static final String SERVICE_TYPE_FIELD = "service_type";
     private static final String SERVICE_PATTERN_FIELD = "pattern";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
 
@@ -57,28 +57,31 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
 
     public UnitTemplate_0_To_1_DBConverter() {
         unitTypeMap = new HashMap<>();
+        unitTypeMap.put("AGENT", "AGENT");
         unitTypeMap.put("AMBIENT_LIGHT", "COLORABLE_LIGHT");
-        unitTypeMap.put("LIGHT", "LIGHT");
-        unitTypeMap.put("DIMMER", "DIMMER");
-        unitTypeMap.put("POWER_PLUG", "POWER_SWITCH");
-        unitTypeMap.put("TEMPERATURE_CONTROLLER", "TEMPERATURE_CONTROLLER");
-        unitTypeMap.put("ROLLERSHUTTER", "ROLLER_SHUTTER");
-        unitTypeMap.put("SCREEN", "MONITOR");
-        unitTypeMap.put("TELEVISION", "TELEVISION");
-        unitTypeMap.put("BUTTON", "BUTTON");
-        unitTypeMap.put("REED_SWITCH", "REED_CONTACT");
-        unitTypeMap.put("HANDLE_SENSOR", "HANDLE");
+        unitTypeMap.put("APP", "APP");
+        unitTypeMap.put("AUDIO_SINK", "AUDIO_SINK");
+        unitTypeMap.put("AUDIO_SOURCE", "AUDIO_SOURCE");
         unitTypeMap.put("BATTERY", "BATTERY");
+        unitTypeMap.put("BRIGHTNESS_SENSOR", "BRIGHTNESS_SENSOR");
+        unitTypeMap.put("BUTTON", "BUTTON");
+        unitTypeMap.put("DEPTH_CAMERA", "VIDEO_DEPTH_SOURCE");
+        unitTypeMap.put("DIMMER", "DIMMER");
+        unitTypeMap.put("HANDLE_SENSOR", "HANDLE");
+        unitTypeMap.put("LIGHT", "LIGHT");
         unitTypeMap.put("MOTION_SENSOR", "MOTION_DETECTOR");
+        unitTypeMap.put("POWER_CONSUMPTION_SENSOR", "POWER_CONSUMPTION_SENSOR");
+        unitTypeMap.put("POWER_PLUG", "POWER_SWITCH");
+        unitTypeMap.put("REED_SWITCH", "REED_CONTACT");
+        unitTypeMap.put("RGB_CAMERA", "VIDEO_RGB_SOURCE");
+        unitTypeMap.put("ROLLERSHUTTER", "ROLLER_SHUTTER");
+        unitTypeMap.put("SCENE", "SCENE");
+        unitTypeMap.put("SCREEN", "MONITOR");
         unitTypeMap.put("SMOKE_DETECTOR", "SMOKE_DETECTOR");
         unitTypeMap.put("TAMPER_SWITCH", "TAMPER_DETECTOR");
-        unitTypeMap.put("POWER_CONSUMPTION_SENSOR", "POWER_CONSUMPTION_SENSOR");
-        unitTypeMap.put("BRIGHTNESS_SENSOR", "BRIGHTNESS_SENSOR");
+        unitTypeMap.put("TELEVISION", "TELEVISION");
+        unitTypeMap.put("TEMPERATURE_CONTROLLER", "TEMPERATURE_CONTROLLER");
         unitTypeMap.put("TEMPERATURE_SENSOR", "TEMPERATURE_SENSOR");
-        unitTypeMap.put("AUDIO_SOURCE", "AUDIO_SOURCE");
-        unitTypeMap.put("AUDIO_SINK", "AUDIO_SINK");
-        unitTypeMap.put("DEPTH_CAMERA", "VIDEO_DEPTH_SOURCE");
-        unitTypeMap.put("RGB_CAMERA", "VIDEO_RGB_SOURCE");
 
         serviceTypeMap = new HashMap<>();
         serviceTypeMap.put("BATTERY_PROVIDER", "BATTERY_STATE_SERVICE");
@@ -133,40 +136,44 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
         unitTemplate.addProperty(TYPE_FIELD, newName);
 
         // replace included types with the new names
-        JsonParser jsonParser = new JsonParser();
-        for (int i = 0; i < includedTypes.size(); ++i) {
-            includedTypes.set(i, jsonParser.parse(unitTypeMap.get(includedTypes.get(i).getAsString())));
+        if (includedTypes != null) {
+            JsonParser jsonParser = new JsonParser();
+            for (int i = 0; i < includedTypes.size(); ++i) {
+                includedTypes.set(i, jsonParser.parse(unitTypeMap.get(includedTypes.get(i).getAsString())));
+            }
+            unitTemplate.add(INCLUDED_TYPE_FIELD, includedTypes);
         }
-        unitTemplate.add(INCLUDED_TYPE_FIELD, includedTypes);
 
         // replace service types with service templates
-        JsonArray serviceTemplates = new JsonArray();
-        for (JsonElement serviceType : serviceTypes) {
-            String serviceTypeName = serviceType.getAsString();
+        if (serviceTypes != null) {
+            JsonArray serviceTemplates = new JsonArray();
+            for (JsonElement serviceType : serviceTypes) {
+                String serviceTypeName = serviceType.getAsString();
 
-            // delete service that does not exist anymore, e.g. multi service, opening ratio service
-            if (!serviceTypeMap.containsKey(serviceTypeName)) {
-                continue;
-            }
+                // delete service that does not exist anymore, e.g. multi service, opening ratio service
+                if (!serviceTypeMap.containsKey(serviceTypeName)) {
+                    continue;
+                }
 
-            // new name for the service type
-            String newServiceTypeName = serviceTypeMap.get(serviceTypeName);
+                // new name for the service type
+                String newServiceTypeName = serviceTypeMap.get(serviceTypeName);
 
-            // every unit from version 0 has a provider service
-            JsonObject serviceTemplate = new JsonObject();
-            serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
-            serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, PROVIDER_PATTERN);
-            serviceTemplates.add(serviceTemplate);
-
-            // only unit with a service type that ends on SERVICE have an operation service of that kind
-            if (serviceTypeName.endsWith("SERVICE")) {
-                serviceTemplate = new JsonObject();
-                serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
-                serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, OPERATION_PATTERN);
+                // every unit from version 0 has a provider service
+                JsonObject serviceTemplate = new JsonObject();
+                serviceTemplate.addProperty(TYPE_FIELD, newServiceTypeName);
+                serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, PROVIDER_PATTERN);
                 serviceTemplates.add(serviceTemplate);
+
+                // only unit with a service type that ends on SERVICE have an operation service of that kind
+                if (serviceTypeName.endsWith("SERVICE")) {
+                    serviceTemplate = new JsonObject();
+                    serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
+                    serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, OPERATION_PATTERN);
+                    serviceTemplates.add(serviceTemplate);
+                }
             }
+            unitTemplate.add(SERVICE_TEMPLATE_FIELD, serviceTemplates);
         }
-        unitTemplate.add(SERVICE_TEMPLATE_FIELD, serviceTemplates);
 
         return unitTemplate;
     }
