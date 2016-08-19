@@ -26,10 +26,10 @@ package org.openbase.bco.registry.device.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -110,43 +110,52 @@ public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
     @Override
     public JsonObject upgrade(JsonObject deviceConfig, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
         JsonArray unitConfigs = deviceConfig.getAsJsonArray(UNIT_CONFIG_FIELD);
-        JsonArray newUnitConfigs = new JsonArray();
-        for (JsonElement unitConfigElem : unitConfigs) {
-            JsonObject unitConfig = unitConfigElem.getAsJsonObject();
+        if (unitConfigs != null) {
+            JsonArray newUnitConfigs = new JsonArray();
+            for (JsonElement unitConfigElem : unitConfigs) {
+                JsonObject unitConfig = unitConfigElem.getAsJsonObject();
 
-            String oldType = unitConfig.get(TYPE_FIELD).getAsString();
-            String newType = unitTypeMap.get(oldType);
-            unitConfig.remove(TYPE_FIELD);
-            unitConfig.addProperty(TYPE_FIELD, newType);
+                String oldType = unitConfig.get(TYPE_FIELD).getAsString();
+                String newType = unitTypeMap.get(oldType);
+                unitConfig.remove(TYPE_FIELD);
+                unitConfig.addProperty(TYPE_FIELD, newType);
 
-            String unitTemplateConfigId = unitConfig.get(UNIT_TEMPLATE_CONFIG_ID_FIELD).getAsString().replace(oldType, newType);
-            unitConfig.remove(UNIT_TEMPLATE_CONFIG_ID_FIELD);
-            unitConfig.addProperty(UNIT_TEMPLATE_CONFIG_ID_FIELD, unitTemplateConfigId);
+                String unitTemplateConfigId = unitConfig.get(UNIT_TEMPLATE_CONFIG_ID_FIELD).getAsString().replace(oldType, newType);
+                unitConfig.remove(UNIT_TEMPLATE_CONFIG_ID_FIELD);
+                unitConfig.addProperty(UNIT_TEMPLATE_CONFIG_ID_FIELD, unitTemplateConfigId);
 
-            JsonArray serviceConfigs = unitConfig.getAsJsonArray(SERVICE_CONFIG_FIELD);
-            JsonArray newServiceConfigs = new JsonArray();
-            for (JsonElement serviceConfigElem : serviceConfigs) {
-                JsonObject serviceConfig = serviceConfigElem.getAsJsonObject();
+                JsonArray serviceConfigs = unitConfig.getAsJsonArray(SERVICE_CONFIG_FIELD);
+                if (serviceConfigs != null) {
+                    JsonArray newServiceConfigs = new JsonArray();
+                    for (JsonElement serviceConfigElem : serviceConfigs) {
+                        JsonObject serviceConfig = serviceConfigElem.getAsJsonObject();
 
-                String serviceType = serviceTypeMap.get(serviceConfig.get(TYPE_FIELD).getAsString());
-                serviceConfig.remove(TYPE_FIELD);
-                serviceConfig.addProperty(TYPE_FIELD, serviceType);
+                        String serviceType = serviceTypeMap.get(serviceConfig.get(TYPE_FIELD).getAsString());
+                        serviceConfig.remove(TYPE_FIELD);
+                        serviceConfig.addProperty(TYPE_FIELD, serviceType);
 
-                JsonObject bindingConfig = serviceConfig.getAsJsonObject(BINDING_SERVICE_CONFIG_FIELD);
-                String bindingId = StringProcessor.transformUpperCaseToCamelCase(bindingConfig.get(TYPE_FIELD).getAsString());
-                bindingConfig.remove(TYPE_FIELD);
-                bindingConfig.addProperty(BINDING_ID_FIELD, bindingId);
-                serviceConfig.remove(BINDING_SERVICE_CONFIG_FIELD);
-                serviceConfig.add(BINDING_CONFIG_FIELD, bindingConfig);
+                        JsonObject bindingConfig = serviceConfig.getAsJsonObject(BINDING_SERVICE_CONFIG_FIELD);
+                        if (bindingConfig != null) {
+                            JsonPrimitive bindingType = bindingConfig.getAsJsonPrimitive(TYPE_FIELD);
+                            if (bindingType != null) {
+                                String bindingId = StringProcessor.transformUpperCaseToCamelCase(bindingType.getAsString());
+                                bindingConfig.remove(TYPE_FIELD);
+                                bindingConfig.addProperty(BINDING_ID_FIELD, bindingId);
+                            }
+                            serviceConfig.remove(BINDING_SERVICE_CONFIG_FIELD);
+                            serviceConfig.add(BINDING_CONFIG_FIELD, bindingConfig);
+                        }
 
-                newServiceConfigs.add(serviceConfig);
+                        newServiceConfigs.add(serviceConfig);
+                    }
+                    unitConfig.remove(SERVICE_CONFIG_FIELD);
+                    unitConfig.add(SERVICE_CONFIG_FIELD, newServiceConfigs);
+                }
             }
-            unitConfig.remove(SERVICE_CONFIG_FIELD);
-            unitConfig.add(SERVICE_CONFIG_FIELD, newServiceConfigs);
-        }
 
-        deviceConfig.remove(UNIT_CONFIG_FIELD);
-        deviceConfig.add(UNIT_CONFIG_FIELD, newUnitConfigs);
+            deviceConfig.remove(UNIT_CONFIG_FIELD);
+            deviceConfig.add(UNIT_CONFIG_FIELD, newUnitConfigs);
+        }
 
         return deviceConfig;
     }
