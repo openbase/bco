@@ -167,7 +167,7 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
                 // only unit with a service type that ends on SERVICE have an operation service of that kind
                 if (serviceTypeName.endsWith("SERVICE")) {
                     serviceTemplate = new JsonObject();
-                    serviceTemplate.addProperty(SERVICE_TYPE_FIELD, newServiceTypeName);
+                    serviceTemplate.addProperty(TYPE_FIELD, newServiceTypeName);
                     serviceTemplate.addProperty(SERVICE_PATTERN_FIELD, OPERATION_PATTERN);
                     serviceTemplates.add(serviceTemplate);
                 }
