@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.core.consistency.LabelConsistencyHandler;
 import org.openbase.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
+import org.openbase.bco.registry.scene.core.dbconvert.SceneConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
@@ -77,6 +78,8 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistryData.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
+            sceneConfigRegistry.activateVersionControl(SceneConfig_0_To_1_DBConverter.class.getPackage());
+
             locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
 
                 @Override
@@ -87,7 +90,6 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
             locationRegistryRemote = new LocationRegistryRemote();
 
-            sceneConfigRegistry.setName("SceneConfigRegistry");
             sceneConfigRegistry.loadRegistry();
 
             sceneConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
@@ -151,7 +153,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
-        
+
         locationRegistryRemote.shutdown();
     }
 

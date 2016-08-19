@@ -89,41 +89,38 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
  * @author mpohling
  */
 public class LocationRegistryController extends RSBCommunicationService<LocationRegistryData, LocationRegistryData.Builder> implements LocationRegistry, Manageable<ScopeType.Scope> {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
-    
+
     private final ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> connectionConfigRegistry;
-    
+
     private final DeviceRegistryRemote deviceRegistryRemote;
     private Observer<DeviceRegistryData> deviceRegistryUpdateObserver;
-    
+
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(LocationRegistryData.newBuilder());
         try {
             locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryData.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
             connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryData.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-            
-            locationConfigRegistry.setName("LocationConfigRegistry");
-            connectionConfigRegistry.setName("ConnectionConfigRegistry");
-            
+
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
             connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
-            
+
             deviceRegistryUpdateObserver = (Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
                 locationConfigRegistry.checkConsistency();
                 connectionConfigRegistry.checkConsistency();
             };
-            
+
             deviceRegistryRemote = new DeviceRegistryRemote();
-            
+
             locationConfigRegistry.loadRegistry();
             connectionConfigRegistry.loadRegistry();
-            
+
             locationConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
             locationConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
@@ -137,18 +134,18 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(deviceRegistryRemote));
             locationConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationConfigRegistry));
             locationConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
-            
+
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerConsistencyHandler(new ConnectionTransformationFrameConsistencyHandler(locationConfigRegistry));
             connectionConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationConfigRegistry));
-            
+
             locationConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>>> source, Map<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             connectionConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>>> source, Map<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> data) -> {
                 notifyChange();
             });
@@ -156,7 +153,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
@@ -183,13 +180,13 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
-        
+
         try {
             locationConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
-        
+
         try {
             connectionConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
@@ -215,25 +212,25 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public void shutdown() {
-        
+
         if (deviceRegistryRemote != null) {
             deviceRegistryRemote.shutdown();
         }
-        
+
         if (locationConfigRegistry != null) {
             locationConfigRegistry.shutdown();
         }
-        
+
         if (connectionConfigRegistry != null) {
             connectionConfigRegistry.shutdown();
         }
-        
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
-        
+
         deviceRegistryRemote.shutdown();
     }
 
@@ -409,7 +406,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -450,7 +447,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -616,7 +613,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     public List<UnitConfig> getUnitConfigsByConnection(UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -640,7 +637,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     public List<UnitConfig> getUnitConfigsByConnection(ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
-        
+
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
@@ -679,14 +676,14 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
         return connectionConfigRegistry.isReadOnly();
     }
-    
+
     @Override
     public List<LocationConfig> getNeighborLocations(String locationId) throws CouldNotPerformException {
         LocationConfig locationConfig = getLocationConfigById(locationId);
         if (locationConfig.getType() != LocationConfig.LocationType.TILE) {
             throw new CouldNotPerformException("Id[" + locationId + "] does not belong to a tile and therefore its neighbors aren't defined!");
         }
-        
+
         Map<String, LocationConfig> neighborMap = new HashMap<>();
         for (ConnectionConfig connectionConfig : getConnectionConfigs()) {
             if (connectionConfig.getTileIdList().contains(locationId)) {
@@ -694,12 +691,12 @@ public class LocationRegistryController extends RSBCommunicationService<Location
                     if (id.equals(locationId)) {
                         continue;
                     }
-                    
+
                     neighborMap.put(id, getLocationConfigById(id));
                 }
             }
         }
-        
+
         return new ArrayList<>(neighborMap.values());
     }
 }

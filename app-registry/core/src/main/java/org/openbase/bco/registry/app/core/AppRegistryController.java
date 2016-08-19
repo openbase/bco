@@ -31,6 +31,7 @@ import org.openbase.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.user.core.dbconvert.DummyConverter;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -76,6 +77,8 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
+            appConfigRegistry.activateVersionControl(DummyConverter.class.getPackage());
+
             locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
 
                 @Override
@@ -86,8 +89,6 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
 
             locationRegistryRemote = new LocationRegistryRemote();
 
-            appConfigRegistry.setName("AppConfigRegistry");
-            
             appConfigRegistry.loadRegistry();
 
             appConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
