@@ -96,8 +96,8 @@ public class LauncherTest {
         builder.setValue(MotionStateType.MotionState.State.NO_MOTION);
         Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOTION);
         Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOTION);
-        Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.NO_MOTION);
-        Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.NO_MOTION);
+        Assert.assertTrue(clone.getValue() == MotionStateType.MotionState.State.MOTION);
+        Assert.assertTrue(clone.build().getValue() == MotionStateType.MotionState.State.MOTION);
         clone.setValue(MotionStateType.MotionState.State.UNKNOWN);
         Assert.assertTrue(builder.getValue() == MotionStateType.MotionState.State.NO_MOTION);
         Assert.assertTrue(builder.build().getValue() == MotionStateType.MotionState.State.NO_MOTION);
