@@ -143,7 +143,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             unitTemplateRegistry.activateVersionControl(UnitTemplate_0_To_1_DBConverter.class.getPackage());
             deviceClassRegistry.activateVersionControl(DeviceClass_0_To_1_DBConverter.class.getPackage());
             unitGroupConfigRegistry.activateVersionControl(UnitGroupConfig_0_To_1_DBConverter.class.getPackage());
-            
+
             locationRegistryRemote = new LocationRegistryRemote();
             userRegistryRemote = new UserRegistryRemote();
 
@@ -151,10 +151,10 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceClassRegistry.loadRegistry();
             deviceConfigRegistry.loadRegistry();
             unitGroupConfigRegistry.loadRegistry();
-            
+
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
             deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
-            
+
             deviceConfigRegistry.registerConsistencyHandler(new DeviceIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
@@ -162,7 +162,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.registerConsistencyHandler(new DeviceOwnerConsistencyHandler(userRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationRegistryRemote.getLocationConfigRemoteRegistry()));
-            
+
             deviceConfigRegistry.registerConsistencyHandler(new UnitScopeConsistencyHandler(locationRegistryRemote));
             deviceConfigRegistry.registerConsistencyHandler(new UnitIdConsistencyHandler());
             deviceConfigRegistry.registerConsistencyHandler(new UnitBoundsToDeviceConsistencyHandler(deviceClassRegistry));
@@ -176,28 +176,28 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             deviceConfigRegistry.registerConsistencyHandler(new UnitConfigUnitTemplateConfigIdConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassUnitConsistencyHandler(deviceClassRegistry));
             deviceConfigRegistry.registerConsistencyHandler(new DeviceConfigLocationIdForInstalledDevicesConsistencyHandler());
-            
+
             unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler(unitTemplateRegistry));
             unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
-            
+
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListDuplicationConsistencyHandler());
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberExistsConsistencyHandler(deviceConfigRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(deviceConfigRegistry, unitTemplateRegistry));
             unitGroupConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationRegistryRemote));
-            
+
             unitTemplateRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>>> source, Map<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             deviceClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             deviceConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>>> source, Map<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> data) -> {
                 notifyChange();
             });
-            
+
             unitGroupConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder>> data) -> {
                 notifyChange();
             });
@@ -206,7 +206,7 @@ public class DeviceRegistryController extends RSBCommunicationService<DeviceRegi
             locationRegistryUpdateObserver = (Observable<LocationRegistryData> source, LocationRegistryData data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
-            
+
             userRegistryUpdateObserver = (Observable<UserRegistryData> source, UserRegistryData data) -> {
                 deviceConfigRegistry.checkConsistency();
             };
