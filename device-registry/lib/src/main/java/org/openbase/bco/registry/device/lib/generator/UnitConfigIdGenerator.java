@@ -21,10 +21,8 @@ package org.openbase.bco.registry.device.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.UUID;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import rst.homeautomation.unit.UnitConfigType;
 
@@ -48,13 +46,6 @@ public class UnitConfigIdGenerator implements IdGenerator<String, UnitConfigType
 
     @Override
     public String generateId(UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
-        try {
-            if (!unitConfig.hasScope()) {
-                throw new NotAvailableException("unitconfig.scope");
-            }
-            return ScopeGenerator.generateStringRep(unitConfig.getScope());
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate unit id!", ex);
-        }
+        return UUID.randomUUID().toString();
     }
 }
