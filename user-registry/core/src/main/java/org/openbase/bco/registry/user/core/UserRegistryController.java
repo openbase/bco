@@ -29,6 +29,7 @@ import org.openbase.bco.registry.user.core.consistency.UserConfigScopeConsistenc
 import org.openbase.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.UserGroupConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.UserGroupConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.user.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.generator.UserConfigIdGenerator;
 import org.openbase.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
@@ -81,13 +82,14 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
-            userRegistry.setName("UserRegistry");
+            userRegistry.activateVersionControl(DummyConverter.class.getPackage());
+            userGroupRegistry.activateVersionControl(DummyConverter.class.getPackage());
+
             userRegistry.loadRegistry();
 
             userRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
             userRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
 
-            userGroupRegistry.setName("UserGroupRegistry");
             userGroupRegistry.loadRegistry();
 
             userGroupRegistry.registerConsistencyHandler(new UserGroupConfigLabelConsistencyHandler());
