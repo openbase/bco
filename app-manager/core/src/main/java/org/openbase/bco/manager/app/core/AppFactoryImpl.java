@@ -42,7 +42,6 @@ public class AppFactoryImpl implements AppFactory {
     private static AppFactoryImpl instance;
 
     public synchronized static AppFactoryImpl getInstance() {
-
         if (instance == null) {
             instance = new AppFactoryImpl();
         }
