@@ -21,7 +21,8 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.Map;
+import java.util.TreeMap;
 import org.openbase.bco.registry.device.lib.generator.UnitConfigIdGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -31,8 +32,6 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
-import java.util.Map;
-import java.util.TreeMap;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -55,14 +54,14 @@ public class UnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistenc
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-            if (!unitConfig.hasId() || unitConfig.getId().isEmpty() || !unitConfig.getId().equals(UnitConfigIdGenerator.getInstance().generateId(unitConfig.build()))) {
+            if (!unitConfig.hasId() || unitConfig.getId().isEmpty()) {
                 unitConfig.setId(UnitConfigIdGenerator.getInstance().generateId(unitConfig.build()));
                 modification = true;
             }
 
             // check if unit id is unique.
             if (unitMap.containsKey(unitConfig.getId())) {
-                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getSystemUnitId()+ "]!");
+                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getSystemUnitId() + "]!");
             }
             unitMap.put(unitConfig.getId(), unitConfig.build());
             deviceConfig.addUnitConfig(unitConfig);
