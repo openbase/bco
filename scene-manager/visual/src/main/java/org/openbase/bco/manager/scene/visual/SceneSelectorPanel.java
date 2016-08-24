@@ -21,7 +21,7 @@ package org.openbase.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.visual.util.RSBRemoteView;
+import org.openbase.bco.dal.visual.util.UnitRemoteView;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -66,7 +66,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     private DeviceRegistryRemote deviceRegistryRemote;
     private LocationRegistryRemote locationRegistryRemote;
 
-    private RSBRemoteView remoteView;
+    private UnitRemoteView remoteView;
 
     private StatusPanel statusPanel;
 
