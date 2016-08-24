@@ -21,9 +21,10 @@ package org.openbase.bco.registry.app.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.exception.CouldNotPerformException;
+import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 
 /**
@@ -46,7 +47,27 @@ public interface AppRegistry {
 
     public List<AppConfig> getAppConfigs() throws CouldNotPerformException, InterruptedException;
 
+    public List<AppConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
+
+    public List<AppConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException;
+
     public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
+
+    public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException;
+
+    public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
+
+    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException;
+
+    public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException;
+
+    public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException;
+
+    public AppClass getAppClassById(final String appClassId) throws CouldNotPerformException, InterruptedException;
+
+    public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException;
+
+    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
 
     public void shutdown();
 }

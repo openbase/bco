@@ -21,10 +21,11 @@ package org.openbase.bco.registry.agent.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
+import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
@@ -47,6 +48,24 @@ public interface AgentRegistry extends Shutdownable {
 
     public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException;
 
+    public List<AgentConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+
+    public List<AgentConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException;
+
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+
+    public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+
+    public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException;
+
+    public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+
+    public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+
+    public List<AgentClass> getAgentClasses() throws CouldNotPerformException;
+
+    public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException;
 
 }

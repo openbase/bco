@@ -21,22 +21,26 @@ package org.openbase.bco.registry.app.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.app.core.consistency.LabelConsistencyHandler;
 import org.openbase.bco.registry.app.core.consistency.ScopeConsistencyHandler;
+import org.openbase.bco.registry.app.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.app.lib.AppRegistry;
+import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.generator.AppConfigIdGenerator;
+import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import org.openbase.bco.registry.user.core.dbconvert.DummyConverter;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -50,6 +54,7 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.rsb.ScopeType;
@@ -64,8 +69,10 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
     }
 
+    private ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> appConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
@@ -75,8 +82,10 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
         super(AppRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+            appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CLASS_FIELD_NUMBER), new AppClassIdGenerator(), JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
+            appClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
             appConfigRegistry.activateVersionControl(DummyConverter.class.getPackage());
 
             locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
@@ -89,8 +98,20 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
 
             locationRegistryRemote = new LocationRegistryRemote();
 
+            appClassRegistry.loadRegistry();
             appConfigRegistry.loadRegistry();
 
+            appClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>> source, Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> data) throws Exception {
+                    notifyChange();
+                    appConfigRegistry.checkConsistency();
+                }
+            });
+
+            //TODO: should be activated but fails in the current db version since appClasses have just been introduced
+            //appConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler(appClassRegistry));
             appConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
             appConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
             appConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppConfig, AppConfig.Builder>>>() {
@@ -127,6 +148,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
         }
 
         try {
+            appClassRegistry.checkConsistency();
             appConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             logger.warn("Initial consistency check failed!");
@@ -146,6 +168,10 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
             appConfigRegistry.shutdown();
         }
 
+        if (appClassRegistry != null) {
+            appClassRegistry.shutdown();
+        }
+
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -158,6 +184,7 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(AppRegistryData.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
+        setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
         super.notifyChange();
     }
 
@@ -208,5 +235,65 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
 
     public ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> getAppConfigRegistry() {
         return appConfigRegistry;
+    }
+
+    @Override
+    public List<AppConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
+        return getAppConfigsByAppClassId(appClass.getId());
+    }
+
+    @Override
+    public List<AppConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException {
+        if (!containsAppClassById(appClassId)) {
+            throw new NotAvailableException("appClassId [" + appClassId + "]");
+        }
+
+        List<AppConfig> appConfigs = new ArrayList<>();
+        for (AppConfig appConfig : getAppConfigs()) {
+            if (appConfig.getAppClassId().equals(appClassId)) {
+                appConfigs.add(appConfig);
+            }
+        }
+        return appConfigs;
+    }
+
+    @Override
+    public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
+        return GlobalExecutionService.submit(() -> appClassRegistry.register(appClass));
+    }
+
+    @Override
+    public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
+        return appClassRegistry.contains(appClass);
+    }
+
+    @Override
+    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
+        return appClassRegistry.contains(appClassId);
+    }
+
+    @Override
+    public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
+        return GlobalExecutionService.submit(() -> appClassRegistry.update(appClass));
+    }
+
+    @Override
+    public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
+        return GlobalExecutionService.submit(() -> appClassRegistry.remove(appClass));
+    }
+
+    @Override
+    public AppClass getAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
+        return appClassRegistry.getMessage(appClassId);
+    }
+
+    @Override
+    public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException {
+        return appClassRegistry.getMessages();
+    }
+
+    @Override
+    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException {
+        return appClassRegistry.isReadOnly();
     }
 }

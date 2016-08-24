@@ -21,6 +21,7 @@ package org.openbase.bco.registry.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
@@ -42,6 +43,7 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.rsb.ScopeType;
@@ -55,14 +57,17 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> agentConfigRemoteRegistry;
+    private final RemoteRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRemoteRegistry;
 
     public AgentRegistryRemote() throws InstantiationException {
         super(AgentRegistryData.class);
         try {
             agentConfigRemoteRegistry = new RemoteRegistry<>();
+            agentClassRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -116,6 +121,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
     public void shutdown() {
         try {
             agentConfigRemoteRegistry.shutdown();
+            agentClassRemoteRegistry.shutdown();
         } finally {
             super.shutdown();
         }
@@ -124,10 +130,15 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
     @Override
     public void notifyDataUpdate(final AgentRegistryData data) throws CouldNotPerformException {
         agentConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentConfigList());
+        agentClassRemoteRegistry.notifyRegistryUpdate(data.getAgentClassList());
     }
 
     public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
         return agentConfigRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRemoteRegistry() {
+        return agentClassRemoteRegistry;
     }
 
     @Override
@@ -184,7 +195,6 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
 
     @Override
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
                 return true;
@@ -193,6 +203,86 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
+        validateData();
         return getData().getAgentConfigRegistryReadOnly();
+    }
+
+    @Override
+    public List<AgentConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+        return getAgentConfigsByAgentClassId(agentClass.getId());
+    }
+
+    @Override
+    public List<AgentConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
+        if (!containsAgentClassById(agentClassId)) {
+            throw new NotAvailableException("agentClassId [" + agentClassId + "]");
+        }
+
+        List<AgentConfig> agentConfigs = new ArrayList<>();
+        for (AgentConfig agentConfig : getAgentConfigs()) {
+            if (agentConfig.getAgentClassId().equals(agentClassId)) {
+                agentConfigs.add(agentConfig);
+            }
+        }
+        return agentConfigs;
+    }
+
+    @Override
+    public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not register agent class!", ex);
+        }
+    }
+
+    @Override
+    public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+        validateData();
+        return agentClassRemoteRegistry.contains(agentClass);
+    }
+
+    @Override
+    public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException {
+        validateData();
+        return agentClassRemoteRegistry.contains(agentClassId);
+    }
+
+    @Override
+    public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update agent class!", ex);
+        }
+    }
+
+    @Override
+    public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not remove agent class!", ex);
+        }
+    }
+
+    @Override
+    public List<AgentClass> getAgentClasses() throws CouldNotPerformException {
+        validateData();
+        return agentClassRemoteRegistry.getMessages();
+    }
+
+    @Override
+    public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        validateData();
+        return getData().getAgentClassRegistryReadOnly();
     }
 }
