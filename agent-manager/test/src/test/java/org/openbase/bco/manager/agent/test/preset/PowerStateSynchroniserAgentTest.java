@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.unit.DimmableLightRemote;
+import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
@@ -141,7 +141,7 @@ public class PowerStateSynchroniserAgentTest {
         agent.requestData().get();
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
 
-        DimmableLightRemote dimmerRemote = new DimmableLightRemote();
+        DimmerRemote dimmerRemote = new DimmerRemote();
         ColorableLightRemote ambientLightRemote = new ColorableLightRemote();
         PowerSwitchRemote powerPlugRemote = new PowerSwitchRemote();
         dimmerRemote.init(deviceRegistry.getUnitConfigById(sourceId));
@@ -219,7 +219,7 @@ public class PowerStateSynchroniserAgentTest {
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 
         for (UnitConfig unit : deviceRegistry.getUnitConfigs()) {
-            if (unit.getType() == UnitType.DIMMABLE_LIGHT && source.getValue().isEmpty()) {
+            if (unit.getType() == UnitType.DIMMER && source.getValue().isEmpty()) {
                 sourceId = unit.getId();
                 source.setValue(unit.getId());
             } else if (unit.getType() == UnitType.COLORABLE_LIGHT && target1.getValue().isEmpty()) {

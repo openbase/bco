@@ -27,7 +27,6 @@ import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType;
@@ -64,7 +63,7 @@ public class AgentFactoryImpl implements AgentFactory {
             if (!config.hasAgentClassId()) {
                 throw new NotAvailableException("agentype");
             }
-            if(!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
+            if (!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
                 throw new NotAvailableException("scope");
             }
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(config));
@@ -81,7 +80,7 @@ public class AgentFactoryImpl implements AgentFactory {
         //TODO: after agent class registry implementation the class id need to be resolved!
         return AbstractAgent.class.getPackage().getName() + "."
                 + "preset."
-                + StringProcessor.transformUpperCaseToCamelCase(config.getAgentClassId())
+                + config.getAgentClassId()
                 + "Agent";
     }
 }
