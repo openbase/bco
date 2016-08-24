@@ -66,7 +66,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
 
-    private RSBRemoteView remoteView;
+    private UnitRemoteView remoteView;
 
     private StatusPanel statusPanel;
 
@@ -295,7 +295,6 @@ public class SelectorPanel extends javax.swing.JPanel {
                 public Void call() throws Exception {
                     try {
                         unitConfigComboBox.setForeground(Color.BLACK);
-
                         unitConfigObservable.notifyObservers(selectedUnitConfig);
                         scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
                     } catch (MultiException ex) {
@@ -690,7 +689,6 @@ public class SelectorPanel extends javax.swing.JPanel {
             scopeTextField.setForeground(Color.RED.darker());
         }
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel instancePanel;

@@ -27,6 +27,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
@@ -42,49 +43,53 @@ import rst.rsb.ScopeType.Scope;
  * @author mpohling
  * @param <RS>
  */
-public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
-
+public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
+    
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    
     private RS remoteService;
 
     /**
      * Creates new form RSBViewService
      */
-    public RSBRemoteView() {
+    public UnitRemoteView() {
         this.initComponents();
     }
-
+    
     private synchronized void setRemoteService(final RS remoteService) {
-
+        
         if (this.remoteService != null) {
             this.remoteService.shutdown();
         }
-
+        
         this.remoteService = remoteService;
         remoteService.addDataObserver(this);
     }
-
+    
     public synchronized void shutdown() {
         if (remoteService == null) {
             return;
         }
-
+        
         remoteService.shutdown();
     }
-
+    
     @Override
     public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) {
-        updateDynamicComponents(data);
+        try {
+            updateDynamicComponents(data);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update unit remote view!", ex), logger);
+        }
     }
-
+    
     public RS getRemoteService() throws NotAvailableException {
         if (remoteService == null) {
             throw new NotAvailableException("remoteService");
         }
         return remoteService;
     }
-
+    
     public void setUnitRemote(final UnitTemplateType.UnitTemplate.UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitType + ".");
         try {
@@ -97,7 +102,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);
         }
     }
-
+    
     public RS setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
@@ -111,7 +116,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);
         }
     }
-
+    
     private Class<? extends RS> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         String remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
@@ -120,7 +125,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             throw new CouldNotPerformException("Could not detect remote class for UnitType[" + unitType.name() + "]", ex);
         }
     }
-
+    
     public RS instantiatUnitRemote(Class<? extends RS> remoteClass) throws InstantiationException {
         try {
             return remoteClass.newInstance();
@@ -128,7 +133,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             throw new InstantiationException("Could not instantiate unit remote out of RemoteClass[" + remoteClass.getSimpleName() + "]!", ex);
         }
     }
-
+    
     private void initUnitRemote(AbstractUnitRemote unitRemote, UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try {
             unitRemote.init(config);
@@ -136,7 +141,7 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             throw new CouldNotPerformException("Could not init " + unitRemote + "!", ex);
         }
     }
-
+    
     private void initUnitRemote(AbstractUnitRemote unitRemote, Scope scope) throws CouldNotPerformException, InterruptedException {
         try {
             unitRemote.init(scope);
@@ -144,8 +149,8 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             throw new CouldNotPerformException("Could not init " + unitRemote + "!", ex);
         }
     }
-
-    protected abstract void updateDynamicComponents(GeneratedMessage data);
+    
+    protected abstract void updateDynamicComponents(GeneratedMessage data) throws CouldNotPerformException;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -167,7 +172,6 @@ public abstract class RSBRemoteView<RS extends AbstractUnitRemote> extends javax
             .addGap(0, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

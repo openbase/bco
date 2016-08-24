@@ -21,26 +21,26 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.text.DecimalFormat;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import java.text.DecimalFormat;
 
 /**
  *
  * @author mpohling
  */
-public class TemperatureProviderPanel extends AbstractServicePanel<TemperatureStateProviderService> {
+public class TemperatureStateServicePanel extends AbstractServicePanel<TemperatureStateProviderService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 
     /**
      * Creates new form BrightnessService
+     *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public TemperatureProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public TemperatureStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 
@@ -83,7 +83,6 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperatureSt
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel temperatureValueLabel;
@@ -92,7 +91,7 @@ public class TemperatureProviderPanel extends AbstractServicePanel<TemperatureSt
     @Override
     protected void updateDynamicComponents() {
         try {
-            temperatureValueLabel.setText(numberFormat.format(getService().getTemperatureState()) + " °C");
+            temperatureValueLabel.setText(numberFormat.format(getService().getTemperatureState().getTemperature()) + getService().getTemperatureState().getTemperatureDataUnit().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

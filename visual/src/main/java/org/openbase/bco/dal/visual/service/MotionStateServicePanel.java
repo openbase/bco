@@ -35,7 +35,7 @@ import org.openbase.jul.processing.StringProcessor;
  *
  * @author mpohling
  */
-public class MotionProviderPanel extends AbstractServicePanel<MotionStateProviderService> {
+public class MotionStateServicePanel extends AbstractServicePanel<MotionStateProviderService> {
 
     private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM);
 
@@ -44,7 +44,7 @@ public class MotionProviderPanel extends AbstractServicePanel<MotionStateProvide
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public MotionProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public MotionStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 

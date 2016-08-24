@@ -33,7 +33,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
  *
  * @author mpohling
  */
-public class PowerServicePanel extends AbstractServicePanel<PowerStateOperationService> {
+public class PowerStateServicePanel extends AbstractServicePanel<PowerStateOperationService> {
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
@@ -41,7 +41,7 @@ public class PowerServicePanel extends AbstractServicePanel<PowerStateOperationS
     /**
      * Creates new form BrightnessService
      */
-    public PowerServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public PowerStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 

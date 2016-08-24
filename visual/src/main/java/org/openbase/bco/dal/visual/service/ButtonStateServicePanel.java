@@ -34,14 +34,14 @@ import java.awt.Color;
  *
  * @author mpohling
  */
-public class ButtonProviderPanel extends AbstractServicePanel<ButtonStateProviderService> {
+public class ButtonStateServicePanel extends AbstractServicePanel<ButtonStateProviderService> {
 
     /**
      * Creates new form BrightnessService
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public ButtonProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public ButtonStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 

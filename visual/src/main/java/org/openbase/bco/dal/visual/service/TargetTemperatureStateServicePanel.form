@@ -24,14 +24,14 @@
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="currentTargetTemperatureValueTextField" min="-2" pref="50" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                      <Component id="jLabel4" min="-2" pref="27" max="-2" attributes="0"/>
+                      <Component id="dataUnitLabel1" min="-2" pref="27" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="setTargetTemperatureLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="setTargetTemperatureValueTextField" min="-2" pref="50" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
-                      <Component id="jLabel2" min="-2" pref="27" max="-2" attributes="0"/>
+                      <Component id="dataUnitLabel2" min="-2" pref="27" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
@@ -45,7 +45,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="currentTargetTemperatureValueTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dataUnitLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -53,7 +53,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="setTargetTemperatureValueTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dataUnitLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="setTargetTemperatureLabel" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -73,7 +73,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="setTargetTemperatureValueTextFieldActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel2">
+    <Component class="javax.swing.JLabel" name="dataUnitLabel2">
       <Properties>
         <Property name="text" type="java.lang.String" value="&#xb0;C"/>
       </Properties>
@@ -83,7 +83,7 @@
         <Property name="text" type="java.lang.String" value="Set TargetTemperatur:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel4">
+    <Component class="javax.swing.JLabel" name="dataUnitLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" value="&#xb0;C"/>
       </Properties>

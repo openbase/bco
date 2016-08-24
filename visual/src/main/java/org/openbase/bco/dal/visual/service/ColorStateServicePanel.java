@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class ColorServicePanel extends AbstractServicePanel<ColorStateOperationService> {
+public class ColorStateServicePanel extends AbstractServicePanel<ColorStateOperationService> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -44,7 +44,7 @@ public class ColorServicePanel extends AbstractServicePanel<ColorStateOperationS
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public ColorServicePanel() throws InstantiationException {
+    public ColorStateServicePanel() throws InstantiationException {
         initComponents();
 
         colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {

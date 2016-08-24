@@ -21,22 +21,23 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.awt.Color;
 import org.openbase.bco.dal.lib.layer.service.provider.BatteryStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import java.awt.Color;
 
 /**
  *
  * @author mpohling
  */
-public class BatteryProviderPanel extends AbstractServicePanel<BatteryStateProviderService> {
+public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateProviderService> {
 
     /**
      * Creates new form BrightnessService
+     *
+     * @throws org.openbase.jul.exception.InstantiationException
      */
-    public BatteryProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public BatteryStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 
@@ -96,7 +97,6 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryStateProvi
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar batteryLevelBar;
     private javax.swing.JPanel stateColorPanel;
@@ -107,7 +107,7 @@ public class BatteryProviderPanel extends AbstractServicePanel<BatteryStateProvi
     protected void updateDynamicComponents() {
         try {
             batteryLevelBar.setValue((int) getService().getBatteryState().getLevel());
-            batteryLevelBar.setString("Battery Level = "+batteryLevelBar.getValue()+"%");
+            batteryLevelBar.setString("Battery Level = " + batteryLevelBar.getValue() + "%");
             switch (getService().getBatteryState().getValue()) {
                 case OK:
                     stateColorPanel.setBackground(Color.GREEN.darker());

@@ -33,7 +33,7 @@ import rst.vision.HSBColorType.HSBColor;
  *
  * @author mpohling
  */
-public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerConsumptionStateProviderService> {
+public class PowerConsumptionStateServicePanel extends AbstractServicePanel<PowerConsumptionStateProviderService> {
 
     private DecimalFormat numberFormat = new DecimalFormat("#.##");
     private Color currentColor = Color.BLACK;
@@ -41,7 +41,7 @@ public class PowerConsumptionProviderPanel extends AbstractServicePanel<PowerCon
     /**
      * Creates new form BrightnessService
      */
-    public PowerConsumptionProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public PowerConsumptionStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 

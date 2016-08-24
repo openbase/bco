@@ -21,18 +21,18 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.text.DecimalFormat;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import java.text.DecimalFormat;
 import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
  * @author mpohling
  */
-public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTemperatureStateOperationService> {
+public class TargetTemperatureStateServicePanel extends AbstractServicePanel<TargetTemperatureStateOperationService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 
@@ -41,7 +41,7 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public TargetTemperatureServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public TargetTemperatureStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 
@@ -56,9 +56,9 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
 
         jLabel1 = new javax.swing.JLabel();
         setTargetTemperatureValueTextField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        dataUnitLabel2 = new javax.swing.JLabel();
         setTargetTemperatureLabel = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        dataUnitLabel1 = new javax.swing.JLabel();
         currentTargetTemperatureValueTextField = new javax.swing.JTextField();
 
         jLabel1.setText("Current TargetTemperatur:");
@@ -69,11 +69,11 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
             }
         });
 
-        jLabel2.setText("°C");
+        dataUnitLabel2.setText("°C");
 
         setTargetTemperatureLabel.setText("Set TargetTemperatur:");
 
-        jLabel4.setText("°C");
+        dataUnitLabel1.setText("°C");
 
         currentTargetTemperatureValueTextField.setEditable(false);
         currentTargetTemperatureValueTextField.addActionListener(new java.awt.event.ActionListener() {
@@ -94,13 +94,13 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(currentTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(4, 4, 4)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(dataUnitLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(setTargetTemperatureLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(setTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(4, 4, 4)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(dataUnitLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -110,13 +110,13 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(currentTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel4))
+                        .addComponent(dataUnitLabel1))
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(setTargetTemperatureValueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2))
+                        .addComponent(dataUnitLabel2))
                     .addComponent(setTargetTemperatureLabel))
                 .addContainerGap(21, Short.MAX_VALUE))
         );
@@ -136,12 +136,11 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
         // TODO add your handling code here:
     }//GEN-LAST:event_currentTargetTemperatureValueTextFieldActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField currentTargetTemperatureValueTextField;
+    private javax.swing.JLabel dataUnitLabel1;
+    private javax.swing.JLabel dataUnitLabel2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel setTargetTemperatureLabel;
     private javax.swing.JTextField setTargetTemperatureValueTextField;
     // End of variables declaration//GEN-END:variables
@@ -149,8 +148,9 @@ public class TargetTemperatureServicePanel extends AbstractServicePanel<TargetTe
     @Override
     protected void updateDynamicComponents() {
         try {
-//            setTargetTemperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperature()));
-            currentTargetTemperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperatureState()));
+            currentTargetTemperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperatureState().getTemperature()));
+            dataUnitLabel1.setText(getService().getTargetTemperatureState().getTemperatureDataUnit().name());
+            dataUnitLabel2.setText(getService().getTargetTemperatureState().getTemperatureDataUnit().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

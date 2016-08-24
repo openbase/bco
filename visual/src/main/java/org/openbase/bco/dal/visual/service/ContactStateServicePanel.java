@@ -34,13 +34,13 @@ import java.awt.Color;
  *
  * @author kengelma
  */
-public class ReedSwitchProviderPanel extends AbstractServicePanel<ContactStateProviderService> {
+public class ContactStateServicePanel extends AbstractServicePanel<ContactStateProviderService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel
      * @throws org.openbase.jul.exception.InstantiationException can't instantiate
      */
-    public ReedSwitchProviderPanel() throws org.openbase.jul.exception.InstantiationException  {
+    public ContactStateServicePanel() throws org.openbase.jul.exception.InstantiationException  {
         initComponents();
     }
 
@@ -76,8 +76,6 @@ public class ReedSwitchProviderPanel extends AbstractServicePanel<ContactStatePr
             reedSwitchStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(reedSwitchStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-
-        reedSwitchStateLabel.getAccessibleContext().setAccessibleName("ReedSwitchState");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

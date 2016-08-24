@@ -21,19 +21,18 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.awt.Color;
+import java.text.DecimalFormat;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import java.awt.Color;
-import java.text.DecimalFormat;
 
 /**
  *
  * @author mpohling
  */
-public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessStateProviderService> {
+public class BrightnessStateServicePanel extends AbstractServicePanel<BrightnessStateProviderService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 
@@ -45,7 +44,7 @@ public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessStat
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public BrightnessProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public BrightnessStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 
@@ -98,7 +97,6 @@ public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessStat
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel brightnessLevelLabel;
     private javax.swing.JPanel brightnessLevelLabelPanel;
@@ -119,7 +117,7 @@ public class BrightnessProviderPanel extends AbstractServicePanel<BrightnessStat
             brightnessLevelLabel.setForeground(Color.BLACK);
             float colorValue = ((float) Math.max(Math.min(MAX_BRIGHTNESS, brightness), MIN_BRIGHTNESS)) / MAX_BRIGHTNESS;
             brightnessLevelLabelPanel.setBackground(Color.getHSBColor((float) 40 / 360, 1f - colorValue, colorValue));
-            brightnessLevelLabel.setText(numberFormat.format(getService().getBrightnessState()) + " LUX");
+            brightnessLevelLabel.setText(numberFormat.format(getService().getBrightnessState().getBrightness()) + getService().getBrightnessState().getBrightnessDataUnit());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

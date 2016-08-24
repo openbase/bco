@@ -33,7 +33,7 @@ import java.awt.Color;
  *
  * @author kengelma
  */
-public class HandleProviderPanel extends AbstractServicePanel<HandleStateProviderService> {
+public class HandleStateServicePanel extends AbstractServicePanel<HandleStateProviderService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel
@@ -41,7 +41,7 @@ public class HandleProviderPanel extends AbstractServicePanel<HandleStateProvide
      * @throws org.openbase.jul.exception.InstantiationException can't
      * instantiate
      */
-    public HandleProviderPanel() throws org.openbase.jul.exception.InstantiationException {
+    public HandleStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 

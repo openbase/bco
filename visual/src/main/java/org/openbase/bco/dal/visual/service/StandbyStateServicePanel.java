@@ -34,7 +34,7 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
  *
  * @author mpohling
  */
-public class StandbyServicePanel extends AbstractServicePanel<StandbyStateOperationService> {
+public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateOperationService> {
 
     private static final StandbyState RUNNING = StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
     private static final StandbyState STANDBY = StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
@@ -44,7 +44,7 @@ public class StandbyServicePanel extends AbstractServicePanel<StandbyStateOperat
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public StandbyServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public StandbyStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
     }
 

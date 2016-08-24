@@ -32,9 +32,10 @@ import javax.swing.border.TitledBorder;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
-import org.openbase.bco.dal.visual.util.RSBRemoteView;
+import static org.openbase.bco.dal.visual.service.AbstractServicePanel.SERVICE_PANEL_SUFFIX;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;
+import org.openbase.bco.dal.visual.util.UnitRemoteView;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -45,10 +46,11 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.visual.layout.LayoutGenerator;
+import org.openbase.jul.visual.swing.layout.LayoutGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -56,7 +58,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  */
-public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteView<RS> {
+public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteView<RS> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -162,53 +164,65 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
 
     public void updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         updateUnitConfig(unitConfig, ServiceType.UNKNOWN);
-
     }
 
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
-        CachedLocationRegistryRemote.waitForData();
         try {
-            getRemoteService().removeConnectionStateObserver(connectionStateObserver);
 
-        } catch (NotAvailableException ex) {
-            // skip deregistration
-        }
-
-        UnitRemote unitRemote = setUnitRemote(unitConfig);
-        unitRemote.addConnectionStateObserver(connectionStateObserver);
-        updateConnectionState(unitRemote.getConnectionState());
-        if (autoRemove) {
-            contextPanel.removeAll();
-        }
-        componentList = new ArrayList<>();
-        JPanel servicePanel;
-
-        for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-
-            if (serviceType != ServiceType.UNKNOWN && serviceConfig.getServiceTemplate().getType()!= serviceType) {
-                continue;
-            }
-
+            CachedLocationRegistryRemote.waitForData();
             try {
-                servicePanel = new JPanel();
-                servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
-                AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
-                abstractServicePanel.setUnitId(unitConfig.getId());
-                abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
-                servicePanel.add(abstractServicePanel);
-                componentList.add(servicePanel);
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
-            }
-        }
+                getRemoteService().removeConnectionStateObserver(connectionStateObserver);
 
-        LayoutGenerator.designList(contextPanel, componentList);
-        contextPanel.validate();
-        contextPanel.revalidate();
-        contextScrollPane.validate();
-        contextScrollPane.revalidate();
-        validate();
-        revalidate();
+            } catch (NotAvailableException ex) {
+                // skip deregistration
+            }
+
+            UnitRemote unitRemote = setUnitRemote(unitConfig);
+            unitRemote.addConnectionStateObserver(connectionStateObserver);
+            updateConnectionState(unitRemote.getConnectionState());
+            if (autoRemove) {
+                contextPanel.removeAll();
+            }
+            componentList = new ArrayList<>();
+            JPanel servicePanel;
+
+            if (serviceType != ServiceType.UNKNOWN) {
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+
+                    // skip consumer
+                    if (serviceConfig.getServiceTemplate().getPattern().equals(ServicePattern.CONSUMER)) {
+                        continue;
+                    }
+
+                    // filter by service type
+                    if (serviceConfig.getServiceTemplate().getType() != serviceType) {
+                        continue;
+                    }
+
+                    try {
+                        servicePanel = new JPanel();
+                        servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
+                        AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
+                        abstractServicePanel.setUnitId(unitConfig.getId());
+                        abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
+                        servicePanel.add(abstractServicePanel);
+                        componentList.add(servicePanel);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
+                    }
+                }
+            }
+
+            LayoutGenerator.generateHorizontalLayout(contextPanel, componentList);
+            contextPanel.validate();
+            contextPanel.revalidate();
+            contextScrollPane.validate();
+            contextScrollPane.revalidate();
+            validate();
+            revalidate();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update config for unit panel!", ex), logger);
+        }
     }
 
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
@@ -219,7 +233,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
     }
 
     private Class<? extends AbstractServicePanel> loadServicePanelClass(final ServiceType serviceType) throws CouldNotPerformException {
-        String remoteClassName = AbstractServicePanel.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + "Panel";
+        String remoteClassName = AbstractServicePanel.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + SERVICE_PANEL_SUFFIX;
         try {
             return (Class<? extends AbstractServicePanel>) getClass().getClassLoader().loadClass(remoteClassName);
         } catch (Exception ex) {
@@ -289,7 +303,6 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends RSBRemoteVi
             .addComponent(contextScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel contextPanel;

@@ -22,19 +22,18 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 import java.awt.Component;
-import java.awt.Container;
-import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.SyncObject;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.visual.util.StatusPanel;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -48,6 +47,8 @@ import rst.homeautomation.service.ServiceTemplateType;
 public abstract class AbstractServicePanel<S extends Service> extends javax.swing.JPanel {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public static final String SERVICE_PANEL_SUFFIX = "Panel";
 
     private S service;
     private ServiceConfig serviceConfig;
@@ -196,7 +197,6 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
             .addGap(0, 38, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
