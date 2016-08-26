@@ -29,10 +29,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
+import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
-import rst.homeautomation.binding.BindingConfigType.BindingConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -75,7 +75,7 @@ public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBuf
                 }
 
                 if (!deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().equals("UNKNOWN")) {
-                    throw new NotAvailableException("deviceclass.bindingconfig.type");
+                    throw new NotAvailableException("deviceclass.bindingconfig.bindingid");
                 }
 
                 String bindingId = deviceClass.getBindingConfig().getBindingId();
