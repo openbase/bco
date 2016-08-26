@@ -146,6 +146,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     }
 
     public GenericUnitPanel add(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        logger.info("Add " + unitConfig.getLabel() + " to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {
