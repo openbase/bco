@@ -110,9 +110,9 @@ public class ButtonRemoteTest {
     @Test(timeout = 10000)
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
-        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build();
-        ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonProvider(buttonState);
+        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
+        ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
         buttonRemote.requestData().get();
-        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButton().getValue());
+        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
     }
 }

@@ -22,8 +22,8 @@ package org.openbase.bco.manager.location.lib.util;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
-import org.openbase.bco.dal.lib.transform.HSVColorToRGBColorTransformer;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.vision.HSVColorType.HSVColor;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -50,18 +50,18 @@ public class ColorControl {
     public final static Random random = new Random();
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private final List<AmbientLightRemote> ambientLightRemoteList;
+    private final List<ColorableLightRemote> ambientLightRemoteList;
 
     public ColorControl(final String locationId) throws InstantiationException, InterruptedException {
         try {
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.AMBIENT_LIGHT, locationId);
+            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, locationId);
             this.ambientLightRemoteList = new ArrayList<>();
-            AmbientLightRemote ambientLightRemote;
+            ColorableLightRemote ambientLightRemote;
             for (UnitConfig unitConfig : unitConfigs) {
-                ambientLightRemote = new AmbientLightRemote();
+                ambientLightRemote = new ColorableLightRemote();
                 ambientLightRemote.init(unitConfig);
                 ambientLightRemoteList.add(ambientLightRemote);
                 ambientLightRemote.activate();
@@ -72,17 +72,17 @@ public class ColorControl {
         }
     }
 
-    public Future<HSVColor> execute(final Color color) throws InterruptedException, CouldNotPerformException {
-        return execute(HSVColorToRGBColorTransformer.transform(color));
+    public Future<HSBColor> execute(final Color color) throws InterruptedException, CouldNotPerformException {
+        return execute(HSBColorToRGBColorTransformer.transform(color));
     }
     
-    public Future<HSVColor> execute(final HSVColor color) throws InterruptedException, CouldNotPerformException {
+    public Future<HSBColor> execute(final HSBColor color) throws InterruptedException, CouldNotPerformException {
 
-        return GlobalExecutionService.submit(new Callable<HSVColor>() {
+        return GlobalExecutionService.submit(new Callable<HSBColor>() {
 
             @Override
-            public HSVColor call() throws Exception {
-                for (AmbientLightRemote remote : ambientLightRemoteList) {
+            public HSBColor call() throws Exception {
+                for (ColorableLightRemote remote : ambientLightRemoteList) {
                     try {
                         remote.setColor(color);
                     } catch (CouldNotPerformException ex) {

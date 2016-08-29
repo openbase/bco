@@ -28,7 +28,7 @@ import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.HandleStateType.HandleState;
-import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
+import rst.homeautomation.state.ContactStateType.ContactState;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -41,7 +41,7 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedSwitchState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
     }
 
     public ConnectionRemote() {
@@ -65,21 +65,15 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     @Override
-    public HandleState getHandle() throws NotAvailableException {
-        try {
-            return getData().getHandleState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("HandleState", ex);
-        }
+    public HandleState getHandleState() throws NotAvailableException {
+        // TODO: connection has DOOR/WINDOW or PASSAGE state
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public ReedSwitchState getReedSwitch() throws NotAvailableException {
-        try {
-            return getData().getReedSwitchState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ReedSwitchState", ex);
-        }
+    public ContactState getContactState() throws NotAvailableException {
+        // TODO: connection has DOOR/WINDOW or PASSAGE state
+        throw new UnsupportedOperationException();
     }
 
     @Override

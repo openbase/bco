@@ -22,11 +22,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.unit.HandleController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.lib.layer.unit.TamperSwitchController;
-import org.openbase.bco.dal.remote.unit.TamperSwitchRemote;
+import org.openbase.bco.dal.remote.unit.HandleRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -35,28 +35,27 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.TamperStateType.TamperState;
+import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**
  *
  * @author thuxohl
  */
-public class TamperSwitchRemoteTest {
+public class HandleRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperSwitchRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(HandleRemoteTest.class);
 
-    private static TamperSwitchRemote tamperSwitchRemote;
+    private static HandleRemote handleRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
-    private static String label;
 
-    public TamperSwitchRemoteTest() {
+    public HandleRemoteTest() {
     }
 
     @BeforeClass
@@ -68,12 +67,10 @@ public class TamperSwitchRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.TAMPER_SWITCH_LABEL;
-
-        tamperSwitchRemote = new TamperSwitchRemote();
-        tamperSwitchRemote.initByLabel(label);
-        tamperSwitchRemote.activate();
-        tamperSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        handleRemote = new HandleRemote();
+        handleRemote.initByLabel(MockRegistry.HANDLE_LABEL);
+        handleRemote.activate();
+        handleRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -81,8 +78,8 @@ public class TamperSwitchRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (tamperSwitchRemote != null) {
-            tamperSwitchRemote.shutdown();
+        if (handleRemote != null) {
+            handleRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -96,23 +93,23 @@ public class TamperSwitchRemoteTest {
     }
 
     /**
-     * Test of notifyUpdated method, of class TamperSwtichRemote.
+     * Test of notifyUpdated method, of class HandleSensorRemote.
      */
     @Ignore
     public void testNotifyUpdated() {
     }
 
     /**
-     * Test of getTamperState method, of class TamperSwtichRemote.
+     * Test of getRotaryHandleState method, of class HandleSensorRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
-    public void testGetTamperState() throws Exception {
-        System.out.println("getTamperState");
-        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
-        ((TamperSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperSwitchRemote.getId())).updateTamperProvider(tamperState);
-        tamperSwitchRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperSwitchRemote.getTamper().getValue());
+    public void testGetRotaryHandleState() throws Exception {
+        System.out.println("getRotaryHandleState");
+        HandleState handlestate = HandleState.newBuilder().setPosition(90).build();
+        ((HandleController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleRemote.getId())).updateHandleStateProvider(handlestate);
+        handleRemote.requestData().get();
+        Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate, handleRemote.getHandleState());
     }
 }

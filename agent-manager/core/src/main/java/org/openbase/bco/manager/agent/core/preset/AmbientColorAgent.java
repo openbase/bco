@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.core.preset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.openbase.bco.dal.remote.service.ColorServiceRemote;
+import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.manager.agent.core.AgentManagerController;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
@@ -36,7 +36,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rst.homeautomation.control.agent.AgentConfigType;
-import rst.vision.HSVColorType.HSVColor;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -132,8 +132,8 @@ public class AmbientColorAgent extends AbstractAgent {
     private ColoringStrategy strategy;
     private Thread thread;
     private long holdingTime;
-    private final List<ColorServiceRemote> colorRemotes = new ArrayList<>();
-    private final List<HSVColor> colors = new ArrayList<>();
+    private final List<ColorStateServiceRemote> colorRemotes = new ArrayList<>();
+    private final List<HSBColor> colors = new ArrayList<>();
     private final Random random;
 
     public AmbientColorAgent() throws InstantiationException, InterruptedException, CouldNotPerformException {
@@ -155,7 +155,7 @@ public class AmbientColorAgent extends AbstractAgent {
             try {
                 while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
                     logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
-                    ColorServiceRemote remote = new ColorServiceRemote();
+                    ColorStateServiceRemote remote = new ColorStateServiceRemote();
                     remote.init(deviceRegistry.getUnitConfigById(unitId));
                     colorRemotes.add(remote);
                     i++;
@@ -173,7 +173,7 @@ public class AmbientColorAgent extends AbstractAgent {
                     double hue = Double.parseDouble(split[0]);
                     double saturation = Double.parseDouble(split[1]);
                     double brightness = Double.parseDouble(split[2]);
-                    colors.add(HSVColor.newBuilder().setHue(hue).setSaturation(saturation).setValue(brightness).build());
+                    colors.add(HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build());
                     i++;
                 }
             } catch (NotAvailableException ex) {
@@ -193,7 +193,7 @@ public class AmbientColorAgent extends AbstractAgent {
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getClass().getSimpleName() + "]");
-        for (ColorServiceRemote colorRemote : colorRemotes) {
+        for (ColorStateServiceRemote colorRemote : colorRemotes) {
             colorRemote.activate();
         }
         super.activate();
@@ -216,9 +216,9 @@ public class AmbientColorAgent extends AbstractAgent {
     }
 
     private void initColorStates() throws CouldNotPerformException {
-        HSVColor color;
-        for (ColorServiceRemote colorRemote : colorRemotes) {
-            if (!colors.contains(colorRemote.getColor())) {
+        HSBColor color;
+        for (ColorStateServiceRemote colorRemote : colorRemotes) {
+            if (!colors.contains(colorRemote.getColorState())) {
                 color = colors.get(random.nextInt(colors.size()));
                 colorRemote.setColor(color);
             }
@@ -238,15 +238,15 @@ public class AmbientColorAgent extends AbstractAgent {
         }
     }
 
-    public String stringHSV(HSVColor color) {
-        return color.getHue() + SEPERATOR + color.getSaturation() + SEPERATOR + color.getValue();
+    public String stringHSV(HSBColor color) {
+        return color.getHue() + SEPERATOR + color.getSaturation() + SEPERATOR + color.getBrightness();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         super.deactivate();
-        for (ColorServiceRemote colorRemote : colorRemotes) {
+        for (ColorStateServiceRemote colorRemote : colorRemotes) {
             colorRemote.deactivate();
         }
     }
@@ -261,9 +261,9 @@ public class AmbientColorAgent extends AbstractAgent {
                 }
                 final long delay = holdingTime / colorRemotes.size();
                 while (isExecuting() && !Thread.interrupted()) {
-                    for (ColorServiceRemote colorRemote : colorRemotes) {
+                    for (ColorStateServiceRemote colorRemote : colorRemotes) {
                         try {
-                            colorRemote.setColor(choseDifferentElem(colors, colorRemote.getColor()));
+                            colorRemote.setColor(choseDifferentElem(colors, colorRemote.getHSBColor()));
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set/get color of [" + colorRemote.getClass().getName() + "]", ex), logger);
                         }
@@ -280,7 +280,7 @@ public class AmbientColorAgent extends AbstractAgent {
 
         @Override
         public void run() {
-            ColorServiceRemote remote = null;
+            ColorStateServiceRemote remote = null;
             try {
                 if (colorRemotes.isEmpty()) {
                     throw new InvalidStateException("No service remote available!");
@@ -289,7 +289,7 @@ public class AmbientColorAgent extends AbstractAgent {
                 while (isExecuting() && !Thread.interrupted()) {
                     try {
                         remote = choseDifferentElem(colorRemotes, remote);
-                        remote.setColor(choseDifferentElem(colors, remote.getColor()));
+                        remote.setColor(choseDifferentElem(colors, remote.getHSBColor()));
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set/get color of [" + remote + "]", ex), logger);
                     }

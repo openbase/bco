@@ -22,46 +22,45 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.PowerPlugController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.PowerPlugRemote;
+import org.openbase.bco.dal.lib.layer.unit.TamperDetectorController;
+import org.openbase.bco.dal.remote.unit.TamperDetectorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
  * @author thuxohl
  */
-public class PowerPlugRemoteTest {
+public class TamperDetectorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerPlugRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperDetectorRemoteTest.class);
 
-    private static PowerPlugRemote powerPlugRemote;
+    private static TamperDetectorRemote tamperDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
 
-    public PowerPlugRemoteTest() {
+    public TamperDetectorRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockRegistryHolder.newMockRegistry();
 
@@ -69,12 +68,12 @@ public class PowerPlugRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.POWER_PLUG_LABEL;
+        label = MockRegistry.TAMPER_DETECTOR_LABEL;
 
-        powerPlugRemote = new PowerPlugRemote();
-        powerPlugRemote.initByLabel(label);
-        powerPlugRemote.activate();
-        powerPlugRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        tamperDetectorRemote = new TamperDetectorRemote();
+        tamperDetectorRemote.initByLabel(label);
+        tamperDetectorRemote.activate();
+        tamperDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -82,8 +81,8 @@ public class PowerPlugRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (powerPlugRemote != null) {
-            powerPlugRemote.shutdown();
+        if (tamperDetectorRemote != null) {
+            tamperDetectorRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -97,37 +96,23 @@ public class PowerPlugRemoteTest {
     }
 
     /**
-     * Test of setPowerState method, of class PowerPlugRemote.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test(timeout = 10000)
-    public void testSetPowerState() throws Exception {
-        System.out.println("setPowerState");
-        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        powerPlugRemote.setPower(state).get();
-        powerPlugRemote.requestData().get();
-        assertEquals("Power state has not been set in time!", state, powerPlugRemote.getData().getPowerState());
-    }
-
-    /**
-     * Test of getPowerState method, of class PowerPlugRemote.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test(timeout = 10000)
-    public void testGetPowerState() throws Exception {
-        System.out.println("getPowerState");
-        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((PowerPlugController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerPlugRemote.getId())).updatePowerProvider(state);
-        powerPlugRemote.requestData().get();
-        assertEquals("The getter for the power state returns the wrong value!", state, powerPlugRemote.getPower());
-    }
-
-    /**
-     * Test of notifyUpdated method, of class PowerPlugRemote.
+     * Test of notifyUpdated method, of class TamperSwtichRemote.
      */
     @Ignore
     public void testNotifyUpdated() {
+    }
+
+    /**
+     * Test of getTamperState method, of class TamperSwtichRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testGetTamperState() throws Exception {
+        System.out.println("getTamperState");
+        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        tamperDetectorRemote.requestData().get();
+        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
     }
 }

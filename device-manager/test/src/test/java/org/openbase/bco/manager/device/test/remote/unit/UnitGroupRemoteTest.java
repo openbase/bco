@@ -22,30 +22,33 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 
@@ -74,18 +77,30 @@ public class UnitGroupRemoteTest {
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
         unitGroupRemote = new UnitGroupRemote();
-        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceType(ServiceType.POWER_SERVICE).setLabel("testGroup");
+        ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
+        ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
+        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService).setLabel("testGroup");
+
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
-            for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-                if (serviceConfig.getType() == ServiceType.POWER_SERVICE) {
-                    units.add(unit);
-                    unitGroupConfig.addMemberId(unit.getConfig().getId());
-                }
+            if (allServiceTemplatesImplemented(unitGroupConfig, unit.getConfig().getServiceConfigList())) {
+                units.add(unit);
+                unitGroupConfig.addMemberId(unit.getConfig().getId());
             }
         }
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitGroupConfig.build());
         unitGroupRemote.activate();
+    }
+
+    private static boolean allServiceTemplatesImplemented(UnitGroupConfig.Builder unitGroup, List<ServiceConfig> serviceConfigList) {
+        List<ServiceTemplate> fromUnit = new ArrayList<>(), inGroup = new ArrayList<>();
+        serviceConfigList.stream().forEach((serviceConfig) -> {
+            fromUnit.add(serviceConfig.getServiceTemplate());
+        });
+        if (!unitGroup.getServiceTemplateList().stream().noneMatch((serviceTemplate) -> (!fromUnit.contains(serviceTemplate)))) {
+            return false;
+        }
+        return true;
     }
 
     @AfterClass
@@ -118,16 +133,16 @@ public class UnitGroupRemoteTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        unitGroupRemote.setPower(state).get();
+        unitGroupRemote.setPowerState(state).get();
 
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerStateOperationService) unit).getPowerState());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPower(state).get();
+        unitGroupRemote.setPowerState(state).get();
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerOperationService) unit).getPower());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerStateOperationService) unit).getPowerState());
         }
     }
 
@@ -140,8 +155,8 @@ public class UnitGroupRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        unitGroupRemote.setPower(state).get();
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPower());
+        unitGroupRemote.setPowerState(state).get();
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPowerState());
     }
 
     /**
@@ -153,8 +168,9 @@ public class UnitGroupRemoteTest {
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 75d;
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
         try {
-            unitGroupRemote.setBrightness(brightness).get();
+            unitGroupRemote.setBrightnessState(brightnessState).get();
             fail("Brighntess service has been used even though the group config is only defined for power service");
         } catch (CouldNotPerformException ex) {
         }

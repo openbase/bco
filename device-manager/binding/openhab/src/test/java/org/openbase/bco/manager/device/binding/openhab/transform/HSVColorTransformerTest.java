@@ -21,19 +21,20 @@ package org.openbase.bco.manager.device.binding.openhab.transform;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.openbase.jul.extension.openhab.binding.transform.HSBColorTransformer;
 import rst.homeautomation.openhab.HSBType.HSB;
-import rst.vision.HSVColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
+ * Threepwood</a>
  */
 public class HSVColorTransformerTest {
 
@@ -63,8 +64,8 @@ public class HSVColorTransformerTest {
     public void testTransform_HSBType() throws Exception {
         System.out.println("testTransform_HSBType");
         HSB color = HSB.newBuilder().setHue(345).setSaturation(30).setBrightness(50).build();
-        HSVColorType.HSVColor tempResult = HSVColorTransformer.transform(color);
-        HSB result = HSVColorTransformer.transform(tempResult);
+        HSBColor tempResult = HSBColorTransformer.transform(color);
+        HSB result = HSBColorTransformer.transform(tempResult);
         assertEquals(color, result);
     }
 
@@ -74,11 +75,10 @@ public class HSVColorTransformerTest {
     @Test(timeout = 10000)
     public void testTransform_HSVColorTypeHSVColor() throws Exception {
         System.out.println("testTransform_HSVColorTypeHSVColor");
-        HSVColorType.HSVColor color = HSVColorType.HSVColor.newBuilder().setHue(111).setSaturation(56).setValue(57).build();
-        HSB tempResult = HSVColorTransformer.transform(color);
-        HSVColorType.HSVColor result = HSVColorTransformer.transform(tempResult);
+        HSBColor color = HSBColor.newBuilder().setHue(111).setSaturation(56).setBrightness(57).build();
+        HSB tempResult = HSBColorTransformer.transform(color);
+        HSBColor result = HSBColorTransformer.transform(tempResult);
         assertEquals(color, result);
     }
-
 
 }

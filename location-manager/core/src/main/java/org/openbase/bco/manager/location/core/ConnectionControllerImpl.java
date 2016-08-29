@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.provider.HandleProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.ReedSwitchProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -48,10 +48,11 @@ import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.HandleStateType.HandleState;
+import rst.homeautomation.state.ContactStateType.ContactState;
 import rst.homeautomation.state.HandleStateType;
-import rst.homeautomation.state.ReedSwitchStateType;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
@@ -64,6 +65,8 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
     }
 
     private final UnitRemoteFactory factory;
@@ -80,49 +83,41 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
     private boolean isSupportedServiceType(final ServiceType serviceType) {
         switch (serviceType) {
-            case HANDLE_PROVIDER:
-            case REED_SWITCH_PROVIDER:
+            case HANDLE_STATE_SERVICE:
+            case CONTACT_STATE_SERVICE:
                 return true;
             default:
                 return false;
         }
     }
 
-    private boolean isSupportedServiceType(final List<ServiceType> serviceTypes) {
-        return serviceTypes.stream().anyMatch((serviceType) -> (isSupportedServiceType(serviceType)));
+    private boolean isSupportedServiceType(final List<ServiceTemplate> serviceTemplates) {
+        return serviceTemplates.stream().anyMatch((serviceTemplate) -> (isSupportedServiceType(serviceTemplate.getType())));
     }
 
     private void addRemoteToServiceMap(final ServiceType serviceType, final UnitRemote unitRemote) {
         //TODO: should be replaced with generic class loading
         // and the update can be realized with reflections or the setField method and a notify
         switch (serviceType) {
-            case HANDLE_PROVIDER:
-                ((ArrayList<HandleProviderService>) serviceMap.get(ServiceType.HANDLE_PROVIDER)).add((HandleProviderService) unitRemote);
+            case HANDLE_STATE_SERVICE:
+                ((ArrayList<HandleStateProviderService>) serviceMap.get(ServiceType.HANDLE_STATE_SERVICE)).add((HandleStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        HandleStateType.HandleState handle = getHandle();
-                        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setHandleState(handle);
-                        } catch (Exception ex) {
-                            throw new CouldNotPerformException("Could not apply data change!", ex);
-                        }
+                        HandleState handle = getHandleState();
+                        // data has to be fused to build DOOR/WINDOW or PASSAGE States
                     }
                 });
                 break;
-            case REED_SWITCH_PROVIDER:
-                ((ArrayList<ReedSwitchProviderService>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER)).add((ReedSwitchProviderService) unitRemote);
+            case CONTACT_STATE_SERVICE:
+                ((ArrayList<ContactStateProviderService>) serviceMap.get(ServiceType.CONTACT_STATE_SERVICE)).add((ContactStateProviderService) unitRemote);
                 unitRemote.addDataObserver(new Observer() {
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        ReedSwitchStateType.ReedSwitchState reedSwitch = getReedSwitch();
-                        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-                            dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
-                        } catch (Exception ex) {
-                            throw new CouldNotPerformException("Could not apply data change!", ex);
-                        }
+                        ContactState contactState = getContactState();
+                        // data has to be fused to build DOOR/WINDOW or PASSAGE States
                     }
                 });
                 break;
@@ -139,12 +134,12 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 }
             }
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
-            for (UnitConfigType.UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
+            for (UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
                 if (config.getUnitIdList().contains(unitConfig.getId())) {
-                    List<ServiceType> serviceTypes = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList();
+                    List<ServiceTemplate> serviceTemplate = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
                     // ignore units that do not have any service supported by a location
-                    if (!isSupportedServiceType(serviceTypes)) {
+                    if (!isSupportedServiceType(serviceTemplate)) {
                         continue;
                     }
 
@@ -180,18 +175,18 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         for (String newUnitId : newUnitIdList) {
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
             UnitConfig unitConfig = deviceRegistry.getUnitConfigById(newUnitId);
-            List<ServiceType> serviceTypes = new ArrayList<>();
+            List<ServiceTemplate> serviceTemplates = new ArrayList<>();
 
             // ignore units that do not have any service supported by a location
-            if (!isSupportedServiceType(serviceTypes)) {
+            if (!isSupportedServiceType(serviceTemplates)) {
                 continue;
             }
 
             UnitRemote unitRemote = factory.newInitializedInstance(unitConfig);
             unitRemoteMap.put(unitConfig.getId(), unitRemote);
             if (isActive()) {
-                for (ServiceType serviceType : serviceTypes) {
-                    addRemoteToServiceMap(serviceType, unitRemote);
+                for (ServiceTemplate serviceTempaltes : serviceTemplates) {
+                    addRemoteToServiceMap(serviceTempaltes.getType(), unitRemote);
                 }
                 unitRemote.activate();
             }
@@ -216,8 +211,8 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         super.activate();
 
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
-            for (ServiceType serviceType : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTypeList()) {
-                addRemoteToServiceMap(serviceType, unitRemote);
+            for (ServiceTemplate serviceTemplate : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTemplateList()) {
+                addRemoteToServiceMap(serviceTemplate.getType(), unitRemote);
             }
         }
         getCurrentStatus();
@@ -225,11 +220,13 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
     private void getCurrentStatus() {
         try {
-            HandleStateType.HandleState handle = getHandle();
-            ReedSwitchStateType.ReedSwitchState reedSwitch = getReedSwitch();
+            HandleState handleState = getHandleState();
+            ContactState contactState = getContactState();
             try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-                dataBuilder.getInternalBuilder().setHandleState(handle);
-                dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
+                //TODO: data fusion
+                
+                //dataBuilder.getInternalBuilder().setHandleState(handleState);
+                //dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not apply data change!", ex);
             }
@@ -252,12 +249,12 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public Collection<HandleProviderService> getHandleStateProviderServices() {
-        return (Collection<HandleProviderService>) serviceMap.get(ServiceType.HANDLE_PROVIDER);
+    public Collection<HandleStateProviderService> getHandleStateProviderServices() {
+        return (Collection<HandleStateProviderService>) serviceMap.get(ServiceType.HANDLE_STATE_SERVICE);
     }
 
     @Override
-    public Collection<ReedSwitchProviderService> getReedSwitchStateProviderServices() {
-        return (Collection<ReedSwitchProviderService>) serviceMap.get(ServiceType.REED_SWITCH_PROVIDER);
+    public Collection<ContactStateProviderService> getContactStateProviderServices() {
+        return (Collection<ContactStateProviderService>) serviceMap.get(ServiceType.CONTACT_STATE_SERVICE);
     }
 }

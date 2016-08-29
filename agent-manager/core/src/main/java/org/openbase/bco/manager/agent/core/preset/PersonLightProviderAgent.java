@@ -48,7 +48,7 @@ public class PersonLightProviderAgent extends AbstractAgent {
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel()+ "]");
+        logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = new LocationRemote();
         CachedLocationRegistryRemote.waitForData();
         locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getLocationId()));
@@ -84,10 +84,10 @@ public class PersonLightProviderAgent extends AbstractAgent {
     }
 
     private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
-        if (motionState.getValue() == MotionState.State.MOVEMENT) {
-            locationRemote.setPower(PowerState.State.ON);
+        if (motionState.getValue() == MotionState.State.MOTION) {
+            locationRemote.setPowerState(PowerState.State.ON);
         } else {
-            locationRemote.setPower(PowerState.State.OFF);
+            locationRemote.setPowerState(PowerState.State.OFF);
         }
         logger.info("detect: " + motionState.getValue());
     }

@@ -27,8 +27,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
+import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.manager.agent.core.AgentManagerController;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
@@ -89,6 +89,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             @Override
             public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 sourceLatestPowerState = invokeGetPowerState(data).getValue();
+                System.out.println("Received new value [" + sourceLatestPowerState + "] for source");
                 logger.info("Received new value [" + sourceLatestPowerState + "] for source");
                 if (sourceLatestPowerState == PowerState.State.OFF) {
                     if (targetLatestPowerState != PowerState.State.OFF) {
@@ -123,6 +124,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             @Override
             public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) throws Exception {
                 PowerState.State newPowerState = invokeGetPowerState(data).getValue();
+                System.out.println("Received new value [" + targetLatestPowerState + "] for target [" + source + "]");
                 logger.info("Received new value [" + targetLatestPowerState + "] for target [" + source + "]");
                 if (!updateLatestTargetPowerState(newPowerState)) {
                     return;
@@ -213,7 +215,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
     private void invokeSetPower(UnitRemote remote, PowerState powerState) {
         try {
-            Method method = remote.getClass().getMethod("setPower", PowerState.class);
+            Method method = remote.getClass().getMethod("setPowerState", PowerState.class);
             method.invoke(remote, powerState);
         } catch (NoSuchMethodException ex) {
             logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method", ex);

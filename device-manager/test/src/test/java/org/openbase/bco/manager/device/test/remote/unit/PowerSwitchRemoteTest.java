@@ -22,45 +22,46 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.ReedSwitchController;
+import org.openbase.bco.dal.lib.layer.unit.PowerSwitchController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.ReedSwitchRemote;
+import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.ReedSwitchStateType.ReedSwitchState;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author thuxohl
  */
-public class ReedSwitchRemoteTest {
+public class PowerSwitchRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ReedSwitchRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerSwitchRemoteTest.class);
 
-    private static ReedSwitchRemote reedSwitchRemote;
+    private static PowerSwitchRemote powerSwitchRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
 
-    public ReedSwitchRemoteTest() {
+    public PowerSwitchRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockRegistryHolder.newMockRegistry();
 
@@ -68,12 +69,12 @@ public class ReedSwitchRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.REED_SWITCH_LABEL;
+        label = MockRegistry.POWER_SWITCH_LABEL;
 
-        reedSwitchRemote = new ReedSwitchRemote();
-        reedSwitchRemote.initByLabel(label);
-        reedSwitchRemote.activate();
-        reedSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        powerSwitchRemote = new PowerSwitchRemote();
+        powerSwitchRemote.initByLabel(label);
+        powerSwitchRemote.activate();
+        powerSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -81,8 +82,8 @@ public class ReedSwitchRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (reedSwitchRemote != null) {
-            reedSwitchRemote.shutdown();
+        if (powerSwitchRemote != null) {
+            powerSwitchRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -96,23 +97,37 @@ public class ReedSwitchRemoteTest {
     }
 
     /**
-     * Test of notifyUpdated method, of class ReedSwitchRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
-    }
-
-    /**
-     * Test of getReedSwitchState method, of class ReedSwitchRemote.
+     * Test of setPowerState method, of class PowerPlugRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
-    public void testGetReedSwitchState() throws Exception {
-        System.out.println("getReedSwitchState");
-        ReedSwitchState.State state = ReedSwitchState.State.CLOSED;
-        ((ReedSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedSwitchRemote.getId())).updateReedSwitchProvider(state);
-        reedSwitchRemote.requestData().get();
-        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedSwitchRemote.getReedSwitch().getValue());
+    public void testSetPowerState() throws Exception {
+        System.out.println("setPowerState");
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+        powerSwitchRemote.setPowerState(state).get();
+        powerSwitchRemote.requestData().get();
+        assertEquals("Power state has not been set in time!", state, powerSwitchRemote.getData().getPowerState());
+    }
+
+    /**
+     * Test of getPowerState method, of class PowerPlugRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testGetPowerState() throws Exception {
+        System.out.println("getPowerState");
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        ((PowerSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerSwitchRemote.getId())).updatePowerStateProvider(state);
+        powerSwitchRemote.requestData().get();
+        assertEquals("The getter for the power state returns the wrong value!", state, powerSwitchRemote.getPowerState());
+    }
+
+    /**
+     * Test of notifyUpdated method, of class PowerPlugRemote.
+     */
+    @Ignore
+    public void testNotifyUpdated() {
     }
 }

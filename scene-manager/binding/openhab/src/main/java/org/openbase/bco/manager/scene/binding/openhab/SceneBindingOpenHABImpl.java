@@ -31,17 +31,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.openbase.jul.pattern.ObservableImpl;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneRegistryType;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
 

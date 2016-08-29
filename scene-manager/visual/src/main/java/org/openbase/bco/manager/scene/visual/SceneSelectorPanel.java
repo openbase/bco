@@ -21,7 +21,7 @@ package org.openbase.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.visual.util.RSBRemoteView;
+import org.openbase.bco.dal.visual.util.UnitRemoteView;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -36,16 +36,14 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.device.DeviceRegistryType;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -53,7 +51,7 @@ import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
@@ -68,7 +66,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     private DeviceRegistryRemote deviceRegistryRemote;
     private LocationRegistryRemote locationRegistryRemote;
 
-    private RSBRemoteView remoteView;
+    private UnitRemoteView remoteView;
 
     private StatusPanel statusPanel;
 
@@ -122,10 +120,10 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
-        locationRegistryRemote.addDataObserver(new Observer<LocationRegistryType.LocationRegistry>() {
+        locationRegistryRemote.addDataObserver(new Observer<LocationRegistryData>() {
 
             @Override
-            public void update(final Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
+            public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -135,10 +133,10 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             }
         });
 
-        deviceRegistryRemote.addDataObserver(new Observer<DeviceRegistryType.DeviceRegistry>() {
+        deviceRegistryRemote.addDataObserver(new Observer<DeviceRegistryData>() {
 
             @Override
-            public void update(final Observable<DeviceRegistryType.DeviceRegistry> source, DeviceRegistryType.DeviceRegistry data) throws Exception {
+            public void update(final Observable<DeviceRegistryData> source, DeviceRegistryData data) throws Exception {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -256,7 +254,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getDeviceId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -270,7 +268,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getDeviceId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -295,8 +293,8 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             ArrayList<ServiceTypeHolder> serviceTypeHolderList = new ArrayList<>();
             UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
             serviceTypeHolderList.add(ALL_Service);
-            for (ServiceType serviceType : deviceRegistryRemote.getUnitTemplateByType(selectedUnitType).getServiceTypeList()) {
-                serviceTypeHolderList.add(new ServiceTypeHolder(serviceType));
+            for (ServiceTemplate serviceTemplate : deviceRegistryRemote.getUnitTemplateByType(selectedUnitType).getServiceTemplateList()) {
+                serviceTypeHolderList.add(new ServiceTypeHolder(serviceTemplate.getType()));
             }
             Collections.sort(serviceTypeHolderList);
             selectedServiceTypeComboBox.setModel(new DefaultComboBoxModel(serviceTypeHolderList.toArray()));

@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.lib;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.ReedSwitchStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.Controller;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -33,7 +33,7 @@ import rst.spatial.ConnectionDataType.ConnectionData;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public interface ConnectionController extends Connection, Controller<ConnectionData, ConnectionData.Builder>, 
-        HandleStateProviderServiceCollection, ReedSwitchStateProviderServiceCollection {
+        HandleStateProviderServiceCollection, ContactStateProviderServiceCollection {
 
     public void init(final ConnectionConfig config) throws InitializationException, InterruptedException;
 }

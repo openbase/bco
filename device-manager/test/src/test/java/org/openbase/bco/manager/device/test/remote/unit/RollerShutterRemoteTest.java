@@ -22,11 +22,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.RollershutterController;
+import org.openbase.bco.dal.lib.layer.unit.RollerShutterController;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.RollershutterRemote;
+import org.openbase.bco.dal.remote.unit.RollerShutterRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,22 +41,22 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.ShutterStateType.ShutterState;
+import rst.homeautomation.state.BlindStateType.BlindState;
 
 /**
  *
  * @author thuxohl
  */
-public class RollershutterRemoteTest {
+public class RollerShutterRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollershutterRemoteTest.class);
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RollerShutterRemoteTest.class);
 
-    private static RollershutterRemote rollershutterRemote;
+    private static RollerShutterRemote rollerShutterRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
 
-    public RollershutterRemoteTest() {
+    public RollerShutterRemoteTest() {
     }
 
     @BeforeClass
@@ -68,12 +68,12 @@ public class RollershutterRemoteTest {
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.ROLLERSHUTTER_LABEL;
+        label = MockRegistry.ROLLER_SHUTTER_LABEL;
 
-        rollershutterRemote = new RollershutterRemote();
-        rollershutterRemote.initByLabel(label);
-        rollershutterRemote.activate();
-        rollershutterRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        rollerShutterRemote = new RollerShutterRemote();
+        rollerShutterRemote.initByLabel(label);
+        rollerShutterRemote.activate();
+        rollerShutterRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
 
     @AfterClass
@@ -81,8 +81,8 @@ public class RollershutterRemoteTest {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
-        if (rollershutterRemote != null) {
-            rollershutterRemote.shutdown();
+        if (rollerShutterRemote != null) {
+            rollerShutterRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -103,10 +103,10 @@ public class RollershutterRemoteTest {
     @Test(timeout = 10000)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
-        ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.DOWN).build();
-        rollershutterRemote.setShutter(state).get();
-        rollershutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", state, rollershutterRemote.getData().getShutterState());
+        BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).build();
+        rollerShutterRemote.setBlindState(state).get();
+        rollerShutterRemote.requestData().get();
+        assertEquals("Shutter has not been set in time!", state, rollerShutterRemote.getData().getBlindState());
     }
 
     /**
@@ -117,38 +117,10 @@ public class RollershutterRemoteTest {
     @Test(timeout = 10000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
-        ShutterState state = ShutterState.newBuilder().setValue(ShutterState.State.STOP).build();
-        ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateShutterProvider(state);
-        rollershutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", rollershutterRemote.getShutter(), state);
-    }
-
-    /**
-     * Test of setOpeningRatio method, of class RollershutterRemote.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test(timeout = 10000)
-    public void testSetOpeningRatio() throws Exception {
-        System.out.println("setOpeningRatio");
-        double openingRatio = 34.0D;
-        rollershutterRemote.setOpeningRatio(openingRatio).get();
-        rollershutterRemote.requestData().get();
-        assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getData().getOpeningRatio(), 0.1);
-    }
-
-    /**
-     * Test of setOpeningRatio method, of class RollershutterRemote.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test(timeout = 10000)
-    public void testGetOpeningRatio() throws Exception {
-        System.out.println("getOpeningRatio");
-        Double openingRatio = 70.0D;
-        ((RollershutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollershutterRemote.getId())).updateOpeningRatioProvider(openingRatio);
-        rollershutterRemote.requestData().get();
-        assertEquals("Opening ration has not been set in time!", openingRatio, rollershutterRemote.getOpeningRatio());
+        BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
+        ((RollerShutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollerShutterRemote.getId())).updateBlindStateProvider(state);
+        rollerShutterRemote.requestData().get();
+        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState(), state);
     }
 
     /**

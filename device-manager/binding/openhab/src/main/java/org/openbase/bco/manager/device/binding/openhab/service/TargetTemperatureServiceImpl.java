@@ -23,31 +23,32 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class TargetTemperatureServiceImpl<ST extends TargetTemperatureOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureOperationService {
+public class TargetTemperatureServiceImpl<ST extends TargetTemperatureStateOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
 
     public TargetTemperatureServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public Future<Void> setTargetTemperature(final Double value) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newDecimalCommand(value));
+    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newDecimalCommand(temperatureState.getTemperature()));
     }
 
     @Override
-    public Double getTargetTemperature() throws NotAvailableException {
-        return unit.getTargetTemperature();
+    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
+        return unit.getTargetTemperatureState();
     }
 
 }

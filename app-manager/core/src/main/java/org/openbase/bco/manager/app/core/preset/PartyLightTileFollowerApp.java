@@ -20,7 +20,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.spatial.LocationConfigType;
-import rst.vision.HSVColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /*
  * #%L
@@ -85,10 +85,10 @@ public class PartyLightTileFollowerApp extends AbstractApp {
     }
 
     private double brightness = 50;
-    private HSVColorType.HSVColor[] colors = {
-        HSVColorType.HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(brightness).build(),
-        HSVColorType.HSVColor.newBuilder().setHue(290).setSaturation(100).setValue(brightness).build(),
-        HSVColorType.HSVColor.newBuilder().setHue(30).setSaturation(100).setValue(brightness).build(),};
+    private HSBColor[] colors = {
+        HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(brightness).build(),
+        HSBColor.newBuilder().setHue(290).setSaturation(100).setBrightness(brightness).build(),
+        HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
 
     private Future<Void> tileFollowerFuture;
 
@@ -153,12 +153,12 @@ public class PartyLightTileFollowerApp extends AbstractApp {
             return null;
         }
 
-        public void processRoom(final LocationRemote locationRemote, final HSVColorType.HSVColor color) throws CouldNotPerformException, InterruptedException {
+        public void processRoom(final LocationRemote locationRemote, final HSBColor color) throws CouldNotPerformException, InterruptedException {
             logger.info("Set " + locationRemote + " to " + color + "...");
             try {
 
                 // skip if no ambi light is present
-                if (!locationRegistry.getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.AMBIENT_LIGHT, locationRemote.getId()).isEmpty()) {
+                if (!locationRegistry.getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
                     try {
                         locationRemote.setColor(color).get(1, TimeUnit.SECONDS);
                     } catch (TimeoutException ex) {

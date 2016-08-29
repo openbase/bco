@@ -21,7 +21,7 @@ package org.openbase.bco.manager.location.lib.util;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.service.PowerServiceRemote;
+import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InstantiationException;
@@ -45,7 +45,7 @@ public class PowerServiceControl {
 
     public final static Random random = new Random();
 
-    private final PowerServiceRemote powerServiceRemote;
+    private final PowerStateServiceRemote powerServiceRemote;
     private final LocationRegistryRemote locationRegistryRemote;
     private final PowerState powerState;
 
@@ -56,8 +56,8 @@ public class PowerServiceControl {
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
 
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(ServiceType.POWER_SERVICE, locationId);
-            this.powerServiceRemote = new PowerServiceRemote();
+            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(ServiceType.POWER_STATE_SERVICE, locationId);
+            this.powerServiceRemote = new PowerStateServiceRemote();
             try {
                 this.powerServiceRemote.init(unitConfigs);
             } catch (Exception ex) {
@@ -74,7 +74,7 @@ public class PowerServiceControl {
             @Override
             public void run() {
                 try {
-                    powerServiceRemote.setPower(powerState);
+                    powerServiceRemote.setPowerState(powerState);
                 } catch (CouldNotPerformException ex) {
                     Logger.getLogger(PowerServiceControl.class.getName()).log(Level.SEVERE, null, ex);
                 }

@@ -43,11 +43,11 @@ import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.agent.AgentRegistryType.AgentRegistry;
-import rst.homeautomation.control.app.AppRegistryType.AppRegistry;
-import rst.homeautomation.control.scene.SceneRegistryType.SceneRegistry;
-import rst.homeautomation.device.DeviceRegistryType.DeviceRegistry;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
+import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
+import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
+import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  * //TODO: openHAB config generator should maybe become a project on its on. It
@@ -112,19 +112,19 @@ public class OpenHABConfigGenerator {
         agentRegistryRemote.waitForData();
         appRegistryRemote.waitForData();
         
-        this.deviceRegistryRemote.addDataObserver((Observable<DeviceRegistry> source, DeviceRegistry data) -> {
+        this.deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
             generate();
         });
-        this.locationRegistryRemote.addDataObserver((Observable<LocationRegistry> source, LocationRegistry data) -> {
+        this.locationRegistryRemote.addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             generate();
         });
-        this.sceneRegistryRemote.addDataObserver((Observable<SceneRegistry> source, SceneRegistry data) -> {
+        this.sceneRegistryRemote.addDataObserver((Observable<SceneRegistryData> source, SceneRegistryData data) -> {
             generate();
         });
-        this.agentRegistryRemote.addDataObserver((Observable<AgentRegistry> source, AgentRegistry data) -> {
+        this.agentRegistryRemote.addDataObserver((Observable<AgentRegistryData> source, AgentRegistryData data) -> {
             generate();
         });
-        this.appRegistryRemote.addDataObserver((Observable<AppRegistry> source, AppRegistry data) -> {
+        this.appRegistryRemote.addDataObserver((Observable<AppRegistryData> source, AppRegistryData data) -> {
             generate();
         });
     }

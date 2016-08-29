@@ -47,7 +47,6 @@ import nu.xom.Element;
 import org.apache.commons.io.FileUtils;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParsingException;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.state.InventoryStateType;
@@ -101,7 +100,7 @@ public class OpenHABminConfigGenerator {
                     try {
 
                         // check openhab binding type
-                        if (deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
+                        if (!deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
                             continue;
                         }
 
