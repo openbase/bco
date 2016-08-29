@@ -47,8 +47,6 @@ import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -57,10 +55,9 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 /**
  *
  * @author mpohling
+ * @param <RS>
  */
 public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteView<RS> {
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Observer<UnitConfig> unitConfigObserver;
     private final Observer<ConnectionState> connectionStateObserver;
@@ -70,8 +67,6 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 
     /**
      * Creates new form AmbientLightView
-     *
-     * @throws org.openbase.jul.exception.InstantiationException
      */
     public GenericUnitPanel() {
         super();

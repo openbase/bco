@@ -33,6 +33,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.TriggerFilter;
 import java.awt.Color;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +57,7 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
     private static final double MINIMAL_CONSUMPTION = 1d;
     private static final long UPDATE_DELAY = 1000;
 
-    protected static final Logger logger = LoggerFactory.getLogger(DalKNXActuatorCheck.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DalKNXActuatorCheck.class);
 
     private TriggerFilter verifyConsumptionTrigger;
 
@@ -72,8 +73,12 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
-
-    public void init() throws InitializationException {
+    
+    /**
+     * 
+     * @throws InitializationException 
+     */
+    public void init() throws InitializationException, InterruptedException {
         try {
             verifyConsumptionTrigger = new TriggerFilter("VerifyConsumptionTrigger", UPDATE_DELAY) {
 
@@ -110,14 +115,13 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
             verifyConsumptionTrigger.start();
             verifyConsumptionTrigger.trigger();
 
-        } catch (Exception ex) {
+        } catch (InitializationException | NotAvailableException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     private synchronized void verifyConsumption() {
-        Future<Void> future = GlobalExecutionService.submit(
-                new Callable<Void>() {
+        Future<Void> future = GlobalExecutionService.submit(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
@@ -153,8 +157,8 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
                         }
                     });
 
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                } catch (CouldNotPerformException | InvocationTargetException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                     colorPanel.setBackground(Color.RED);
                     stateLabel.setText("Error during consumption verification!");
                 }
@@ -251,9 +255,10 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
                 }
             }
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             System.exit(1);
         }
+        //</editor-fold>
         //</editor-fold>
 
         JPService.setApplicationName("dal-knx-actuator-ckeck");
@@ -272,15 +277,15 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
                         try {
                             dalKNXActuatorCheck.init();
                             dalKNXActuatorCheck.pack();
-                        } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                        } catch (InitializationException | InterruptedException ex) {
+                            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                             System.exit(1);
                         }
                     }
                 }.start();
 
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 System.exit(1);
             }
         });

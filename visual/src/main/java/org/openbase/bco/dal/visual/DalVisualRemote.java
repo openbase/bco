@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DalVisualRemote extends javax.swing.JFrame {
 
-    protected static final Logger logger = LoggerFactory.getLogger(DalVisualRemote.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DalVisualRemote.class);
 
     private static DalVisualRemote instance;
 
@@ -74,7 +74,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         try {
             setIconImage(new ImageIcon(ClassLoader.getSystemResource("dal-visual-remote.png")).getImage());
         } catch(Exception ex) {
-            logger.warn("Could not load app icon!", ex);
+            LOGGER.warn("Could not load app icon!", ex);
         }
     }
 
@@ -83,7 +83,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
             try {
                 selectorPanel.init();
             } catch (InterruptedException | CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, logger);
+                ExceptionPrinter.printHistory(ex, LOGGER);
             }
         });
     }
@@ -156,8 +156,9 @@ public class DalVisualRemote extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | java.lang.InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.warn("Could not setup look and feel!", ex);
+            LOGGER.warn("Could not setup look and feel!", ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         //</editor-fold>
@@ -170,7 +171,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
             try {
                 new DalVisualRemote().setVisible(true);
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(ex, logger);
+                ExceptionPrinter.printHistory(ex, LOGGER);
                 System.exit(1);
             }
         });
