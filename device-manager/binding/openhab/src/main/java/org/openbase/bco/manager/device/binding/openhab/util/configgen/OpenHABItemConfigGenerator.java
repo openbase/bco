@@ -35,6 +35,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -144,7 +145,7 @@ public class OpenHABItemConfigGenerator {
             if (unitType.equals(UnitType.UNKNOWN)) {
                 continue;
             }
-            String unitLabel = "Unit" + StringProcessor.transformUpperCaseToCamelCase(unitType.name());
+            String unitLabel = StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Unit";
             groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
         }
 
@@ -255,7 +256,7 @@ public class OpenHABItemConfigGenerator {
             File configFile = JPService.getProperty(JPOpenHABItemConfig.class).getValue();
 
             configAsString += "/* =================================================== */" + System.lineSeparator();
-            configAsString += "/* === DAL AUTO GENERATED GROUP ENTRIES ============== */" + System.lineSeparator();
+            configAsString += "/* === BCO AUTO GENERATED GROUP ENTRIES ============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += System.lineSeparator();
             for (GroupEntry entry : groupEntryList) {
@@ -264,7 +265,7 @@ public class OpenHABItemConfigGenerator {
             configAsString += System.lineSeparator();
             configAsString += System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
-            configAsString += "/* === DAL AUTO GENERATED ITEM ENTRIES =============== */" + System.lineSeparator();
+            configAsString += "/* === BCO AUTO GENERATED ITEM ENTRIES =============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += System.lineSeparator();
             for (AbstractItemEntry entry : itemEntryList) {
@@ -272,7 +273,8 @@ public class OpenHABItemConfigGenerator {
             }
             configAsString += System.lineSeparator();
 
-            FileUtils.writeStringToFile(configFile, configAsString, false);
+            // TODO need to be tested!
+            FileUtils.writeStringToFile(configFile, configAsString, Charset.forName("UTF8") , false);
 
             logger.info("ItemConfig[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {
