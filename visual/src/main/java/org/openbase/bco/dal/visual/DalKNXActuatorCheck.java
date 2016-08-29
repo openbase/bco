@@ -49,8 +49,7 @@ import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSe
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class DalKNXActuatorCheck extends javax.swing.JFrame {
 
@@ -120,48 +119,48 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
         Future<Void> future = GlobalExecutionService.submit(
                 new Callable<Void>() {
 
-                    @Override
-                    public Void call() throws Exception {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    String minimalActuator = "";
+                    double consumption;
+                    double minimalConsumption = Double.MAX_VALUE;
+                    for (Entry<String, GenericUnitPanel<PowerConsumptionSensorRemote>> entry : (Set<Entry<String, GenericUnitPanel<PowerConsumptionSensorRemote>>>) genericUnitCollectionPanel.getUnitPanelMap().entrySet()) {
                         try {
-                            String minimalActuator = "";
-                            double consumption;
-                            double minimalConsumption = Double.MAX_VALUE;
-                            for (Entry<String, GenericUnitPanel<PowerConsumptionSensorRemote>> entry : (Set<Entry<String, GenericUnitPanel<PowerConsumptionSensorRemote>>>) genericUnitCollectionPanel.getUnitPanelMap().entrySet()) {
-                                try {
-                                    consumption = entry.getValue().getRemoteService().getData().getPowerConsumptionState().getConsumption();
-                                    if (minimalConsumption > consumption) {
-                                        minimalConsumption = consumption;
-                                        minimalActuator = entry.getValue().getRemoteService().getData().getLabel();
-                                    }
-                                } catch (NotAvailableException ex) {
-                                    throw new CouldNotPerformException("Could not detect power consumption of Unit[" + entry.getKey() + "]!");
-                                }
+                            consumption = entry.getValue().getRemoteService().getData().getPowerConsumptionState().getConsumption();
+                            if (minimalConsumption > consumption) {
+                                minimalConsumption = consumption;
+                                minimalActuator = entry.getValue().getRemoteService().getData().getLabel();
                             }
-
-                            final double minConsumption = minimalConsumption;
-                            final String minActuator = minimalActuator;
-                            SwingUtilities.invokeAndWait(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    if (minConsumption < MINIMAL_CONSUMPTION) {
-                                        colorPanel.setBackground(Color.RED);
-                                        stateLabel.setText("KNX failure detected for Actuator[" + minActuator + "]");
-                                    } else {
-                                        colorPanel.setBackground(Color.GREEN);
-                                        stateLabel.setText("KNX OK");
-                                    }
-                                }
-                            });
-
-                        } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-                            colorPanel.setBackground(Color.RED);
-                            stateLabel.setText("Error during consumption verification!");
+                        } catch (NotAvailableException ex) {
+                            throw new CouldNotPerformException("Could not detect power consumption of Unit[" + entry.getKey() + "]!");
                         }
-                        return null;
                     }
-                });
+
+                    final double minConsumption = minimalConsumption;
+                    final String minActuator = minimalActuator;
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (minConsumption < MINIMAL_CONSUMPTION) {
+                                colorPanel.setBackground(Color.RED);
+                                stateLabel.setText("KNX failure detected for Actuator[" + minActuator + "]");
+                            } else {
+                                colorPanel.setBackground(Color.GREEN);
+                                stateLabel.setText("KNX OK");
+                            }
+                        }
+                    });
+
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                    colorPanel.setBackground(Color.RED);
+                    stateLabel.setText("Error during consumption verification!");
+                }
+                return null;
+            }
+        });
 
         statusPanel1.setStatus("Verify Consumption", StatusPanel.StatusType.INFO, future);
     }
