@@ -34,7 +34,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.version.DBVersionConverter;
 
 /**
@@ -118,7 +117,7 @@ public class DeviceClass_0_To_1_DBConverter implements DBVersionConverter {
             JsonPrimitive bindingType = bindingConfig.getAsJsonPrimitive(TYPE_FIELD);
             if (bindingType != null) {
                 bindingConfig.remove(TYPE_FIELD);
-                String bindingId = StringProcessor.transformUpperCaseToCamelCase(bindingType.getAsString());
+                String bindingId = bindingType.getAsString();
                 bindingConfig.addProperty(BINDING_ID_FIELD, bindingId);
             }
             deviceClass.add(BINDING_CONFIG_FIELD, bindingConfig);
