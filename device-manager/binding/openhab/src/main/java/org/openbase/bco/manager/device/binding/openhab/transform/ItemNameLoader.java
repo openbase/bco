@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.transform;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,17 +37,16 @@ public class ItemNameLoader {
 
     public static String getItemName(final Service service, final ServiceConfigType.ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
-            if (!serviceConfig.hasBindingServiceConfig()) {
+            if (!serviceConfig.hasBindingConfig()) {
                 throw new NotAvailableException("binding service config");
             }
 
-            if (!serviceConfig.getBindingServiceConfig().hasMetaConfig()) {
+            if (!serviceConfig.getBindingConfig().hasMetaConfig()) {
                 throw new NotAvailableException("binding service config meta config");
             }
 
-            MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingServiceConfig().getMetaConfig());
-            
-            
+            MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingConfig().getMetaConfig());
+
             return metaConfigVariableProvider.getValue(OPENHAB_BINDING_ITEM_ID);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate item name!", ex);

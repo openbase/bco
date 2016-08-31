@@ -23,7 +23,6 @@ package org.openbase.bco.manager.device.binding.openhab.comm;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandExecutor;
-import org.openbase.bco.manager.device.binding.openhab.transform.OpenhabCommandTransformer;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -31,6 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
+import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**

@@ -24,8 +24,8 @@ package org.openbase.bco.manager.device.binding.openhab.execution;
 
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
-import org.openbase.bco.manager.device.binding.openhab.transform.OpenhabCommandTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

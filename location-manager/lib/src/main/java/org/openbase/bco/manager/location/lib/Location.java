@@ -22,19 +22,18 @@ package org.openbase.bco.manager.location.lib;
  * #L%
  */
 import java.util.List;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.OpeningRatioOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ShutterOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TamperProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
@@ -49,9 +48,9 @@ import rst.spatial.LocationConfigType.LocationConfig;
  * Threepwood</a>
  */
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
-        BrightnessOperationService, ColorOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService,
-        StandbyOperationService, TargetTemperatureOperationService, MotionProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
-        TemperatureProviderService, PowerConsumptionProviderService, TamperProviderService, Snapshotable<Snapshot> {
+        BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
+        StandbyStateOperationService, TargetTemperatureStateOperationService, MotionStateProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
+        TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, Snapshotable<SceneConfig> {
 
     /**
      * Will return controller/remotes in the final implementation. Waiting for a

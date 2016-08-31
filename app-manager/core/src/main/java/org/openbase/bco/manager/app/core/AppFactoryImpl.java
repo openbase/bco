@@ -42,7 +42,6 @@ public class AppFactoryImpl implements AppFactory {
     private static AppFactoryImpl instance;
 
     public synchronized static AppFactoryImpl getInstance() {
-
         if (instance == null) {
             instance = new AppFactoryImpl();
         }
@@ -60,7 +59,8 @@ public class AppFactoryImpl implements AppFactory {
                 throw new NotAvailableException("appconfig");
             }
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AppConfigTypeProvider", config.getMetaConfig());
-            final Class appClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(configVariableProvider.getValue("APP_TYPE")));
+
+            final Class appClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(config));
             logger.info("Creating app of type [" + appClass.getSimpleName() + "]");
             app = (AppController) appClass.newInstance();
             app.init(config);
@@ -70,10 +70,10 @@ public class AppFactoryImpl implements AppFactory {
         return app;
     }
 
-    private String getAppClass(final String appType) {
+    private String getAppClass(final AppConfig config) {
         return AbstractApp.class.getPackage().getName() + "."
                 + "preset."
-                + StringProcessor.transformUpperCaseToCamelCase(appType)
+                + StringProcessor.transformUpperCaseToCamelCase(config.getAppClassId())
                 + "App";
     }
 }

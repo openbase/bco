@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryType.LocationRegistry;
+import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
@@ -89,10 +89,10 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() {
-        locationRegistryRemote.addDataObserver(new Observer<LocationRegistry>() {
+        locationRegistryRemote.addDataObserver(new Observer<LocationRegistryData>() {
 
             @Override
-            public void update(final Observable<LocationRegistry> source, LocationRegistry data) throws Exception {
+            public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
                 updateDynamicComponents();
             }
         });

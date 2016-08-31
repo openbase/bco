@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
@@ -112,9 +113,10 @@ public class TemperatureSensorRemoteTest {
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;
-        ((TemperatureSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperatureProvider(temperature);
+        TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
+        ((TemperatureSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperatureStateProvider(temperatureState);
         temperatureSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperature(), 0.1);
+        Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperatureState().getTemperature(), 0.1);
     }
 
     /**

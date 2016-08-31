@@ -3,10 +3,9 @@ package org.openbase.bco.manager.location.lib;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.OpeningRatioStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.ShutterStateOperationServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
@@ -44,8 +43,7 @@ import rst.spatial.LocationDataType.LocationData;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
 public interface LocationController extends Location, Controller<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
-        ColorStateOperationServiceCollection, OpeningRatioStateOperationServiceCollection,
-        PowerStateOperationServiceCollection, ShutterStateOperationServiceCollection, StandbyStateOperationServiceCollection,
+        ColorStateOperationServiceCollection, PowerStateOperationServiceCollection, BlindStateOperationServiceCollection, StandbyStateOperationServiceCollection,
         TargetTemperatureStateOperationServiceCollection, MotionStateProviderServiceCollection, SmokeAlarmStateProviderServiceCollection,
         SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,
         TamperStateProviderServiceCollection {

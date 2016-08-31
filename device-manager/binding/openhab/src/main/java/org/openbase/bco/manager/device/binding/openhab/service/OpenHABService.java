@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * #L%
  */
 
-import org.openbase.bco.manager.device.binding.openhab.transform.ItemNameLoader;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -31,6 +30,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABImpl;
+import org.openbase.bco.manager.device.binding.openhab.transform.ItemNameLoader;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
 
     private ServiceConfigType.ServiceConfig loadServiceConfig() throws CouldNotPerformException {
         for (ServiceConfigType.ServiceConfig serviceConfig : ((Unit) unit).getConfig().getServiceConfigList()) {
-            if (serviceConfig.getType().equals(serviceType)) {
+            if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
                 return serviceConfig;
             }
         }

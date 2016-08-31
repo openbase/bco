@@ -80,7 +80,7 @@ public class StandbyAgent extends AbstractAgent {
         presenseDetector.init(locationRemote);
 
         this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
-            if (data.getValue().equals(MotionState.State.MOVEMENT)) {
+            if (data.getValue().equals(MotionState.State.MOTION)) {
                 timeout.restart();
                 synchronized (standbySync) {
                     if (standby) {

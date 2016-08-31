@@ -31,16 +31,16 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.GenericDeviceType.GenericDevice;
+import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 
 /**
  *
  * @author Divine Threepwood
  */
-public abstract class AbstractDeviceController extends AbstractSystemUnitController<GenericDevice, GenericDevice.Builder, DeviceConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractSystemUnitController<SystemUnitData, SystemUnitData.Builder, DeviceConfig> implements DeviceController {
 
     public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
-        super(GenericDevice.newBuilder());
+        super(SystemUnitData.newBuilder());
     }
 
     @Override

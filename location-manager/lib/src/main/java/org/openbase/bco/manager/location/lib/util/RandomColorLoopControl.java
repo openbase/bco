@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.lib.util;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.AmbientLightRemote;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.vision.HSVColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -47,20 +47,20 @@ public class RandomColorLoopControl {
     public final static Random random = new Random();
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private final List<AmbientLightRemote> ambientLightRemoteList;
+    private final List<ColorableLightRemote> ambientLightRemoteList;
     private final long delay;
 
-    public RandomColorLoopControl(final String locationId, final Collection<HSVColorType.HSVColor> colors, final long delay) throws InstantiationException, InterruptedException {
+    public RandomColorLoopControl(final String locationId, final Collection<HSBColor> colors, final long delay) throws InstantiationException, InterruptedException {
         try {
             this.delay = delay;
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationRegistryRemote.init();
             this.locationRegistryRemote.activate();
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.AMBIENT_LIGHT, locationId);
+            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, locationId);
             this.ambientLightRemoteList = new ArrayList<>();
-            AmbientLightRemote ambientLightRemote;
+            ColorableLightRemote ambientLightRemote;
             for (UnitConfig unitConfig : unitConfigs) {
-                ambientLightRemote = new AmbientLightRemote();
+                ambientLightRemote = new ColorableLightRemote();
                 ambientLightRemote.init(unitConfig);
                 ambientLightRemoteList.add(ambientLightRemote);
             }
@@ -70,7 +70,7 @@ public class RandomColorLoopControl {
     }
 
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (AmbientLightRemote remote : ambientLightRemoteList) {
+        for (ColorableLightRemote remote : ambientLightRemoteList) {
             remote.activate();
         }
         new Thread() {
@@ -80,7 +80,7 @@ public class RandomColorLoopControl {
                 try {
                     while (!isInterrupted()) {
                         Collections.shuffle(ambientLightRemoteList);
-                        for (AmbientLightRemote remote : ambientLightRemoteList) {
+                        for (ColorableLightRemote remote : ambientLightRemoteList) {
                             try {
                                 remote.setColor(getRandomColor());
                                 if(delay > 0) {

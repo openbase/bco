@@ -36,10 +36,11 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
@@ -61,21 +62,25 @@ public class ServiceItemEntry extends AbstractItemEntry {
     public ServiceItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
         super();
         try {
+            LocationConfig unitLocationConfig = locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId());
+
             configPool = new MetaConfigPool();
-            configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingServiceConfig().getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingConfig().getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", unitLocationConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
             configPool.register(new ProtobufVariableProvider(deviceConfig));
+            configPool.register(new ProtobufVariableProvider(unitLocationConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
 
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (final NotAvailableException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
             }
 
             try {
@@ -93,7 +98,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
             } catch (NotAvailableException ex) {
-                this.commandType = getDefaultCommand(serviceConfig.getType());
+                this.commandType = getDefaultCommand(serviceConfig.getServiceTemplate());
             }
 
             try {
@@ -103,7 +108,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             }
 
             this.groups.add("Unit" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
-            this.groups.add("Service" + StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getType().name()));
+            this.groups.add("Service" + StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()));
 
             try {
                 // just add location group if unit is visible.
@@ -149,19 +154,19 @@ public class ServiceItemEntry extends AbstractItemEntry {
      * @return the related service template for the given service type.
      * @throws NotAvailableException
      */
-    private ServiceTemplate lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
+    private ServiceTemplateConfig lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {
         List<UnitTemplateConfig> unitTemplateConfigList = deviceClass.getUnitTemplateConfigList();
         for (UnitTemplateConfig unitTemplateConfig : unitTemplateConfigList) {
             if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                List<ServiceTemplate> serviceTemplateList = unitTemplateConfig.getServiceTemplateList();
-                for (ServiceTemplate serviceTemplate : serviceTemplateList) {
-                    if (serviceTemplate.getServiceType().equals(serviceConfig.getType())) {
+                List<ServiceTemplateConfig> serviceTemplateList = unitTemplateConfig.getServiceTemplateConfigList();
+                for (ServiceTemplateConfig serviceTemplate : serviceTemplateList) {
+                    if (serviceTemplate.getServiceType().equals(serviceConfig.getServiceTemplate().getType())) {
                         return serviceTemplate;
                     }
                 }
             }
         }
-        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getType().name() + "]");
+        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]");
     }
 
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {

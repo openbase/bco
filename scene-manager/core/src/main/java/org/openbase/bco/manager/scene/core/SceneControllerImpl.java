@@ -48,9 +48,9 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonType;
+import rst.homeautomation.unit.ButtonDataType.ButtonData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
@@ -68,7 +68,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     private final List<Action> actionList;
     private final SyncObject triggerListSync = new SyncObject("TriggerListSync");
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
-    private final Observer<ButtonType.Button> buttonObserver;
+    private final Observer<ButtonData> buttonObserver;
     private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
@@ -76,11 +76,11 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         this.buttonRemoteList = new ArrayList<>();
         this.actionList = new ArrayList<>();
 
-        this.buttonObserver = new Observer<ButtonType.Button>() {
+        this.buttonObserver = new Observer<ButtonData>() {
 
             @Override
-            public void update(final Observable<ButtonType.Button> source, ButtonType.Button data) throws Exception {
-                if (data.getButtonState().getValue().equals(ButtonState.State.CLICKED)) {
+            public void update(final Observable<ButtonData> source, ButtonData data) throws Exception {
+                if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
                     setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
                 }
             }
@@ -111,7 +111,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
                 for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(config.getLabel())) {
                     //TODO implement deviceregistry method get unit by label and type.
-                    if (unitConfig.getType() != UnitTemplateType.UnitTemplate.UnitType.BUTTON) {
+                    if (unitConfig.getType() != UnitTemplate.UnitType.BUTTON) {
                         continue;
                     }
                     try {

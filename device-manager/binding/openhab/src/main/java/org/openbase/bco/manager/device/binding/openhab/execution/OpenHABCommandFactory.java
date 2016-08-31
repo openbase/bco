@@ -22,12 +22,12 @@ package org.openbase.bco.manager.device.binding.openhab.execution;
  * #L%
  */
 
-import org.openbase.bco.manager.device.binding.openhab.transform.HSVColorTransformer;
-import org.openbase.bco.manager.device.binding.openhab.transform.PowerStateTransformer;
-import org.openbase.bco.manager.device.binding.openhab.transform.StopMoveStateTransformer;
-import org.openbase.bco.manager.device.binding.openhab.transform.UpDownStateTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory;
+import org.openbase.jul.extension.openhab.binding.transform.HSBColorTransformer;
+import org.openbase.jul.extension.openhab.binding.transform.PowerStateTransformer;
+import org.openbase.jul.extension.openhab.binding.transform.StopMoveStateTransformer;
+import org.openbase.jul.extension.openhab.binding.transform.UpDownStateTransformer;
 import rst.homeautomation.openhab.HSBType;
 import rst.homeautomation.openhab.OnOffHolderType;
 import rst.homeautomation.openhab.OpenhabCommandType;
@@ -35,9 +35,9 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
 import rst.homeautomation.openhab.PercentType;
 import rst.homeautomation.openhab.StopMoveHolderType;
 import rst.homeautomation.openhab.UpDownHolderType;
+import rst.homeautomation.state.BlindStateType.BlindState;
 import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.state.ShutterStateType.ShutterState;
-import rst.vision.HSVColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -45,8 +45,8 @@ import rst.vision.HSVColorType;
  */
 public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
 
-    public static OpenhabCommandType.OpenhabCommand.Builder newHSBCommand(final HSVColorType.HSVColor color) throws CouldNotPerformException {
-        return newHSBCommand(HSVColorTransformer.transform(color));
+    public static OpenhabCommandType.OpenhabCommand.Builder newHSBCommand(final HSBColor color) throws CouldNotPerformException {
+        return newHSBCommand(HSBColorTransformer.transform(color));
     }
 
     public static OpenhabCommandType.OpenhabCommand.Builder newHSBCommand(final HSBType.HSB color) {
@@ -69,7 +69,7 @@ public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.PERCENT).setPercent(percent);
     }
 
-    public static OpenhabCommandType.OpenhabCommand.Builder newStopMoveCommand(final ShutterState.State state) throws CouldNotPerformException {
+    public static OpenhabCommandType.OpenhabCommand.Builder newStopMoveCommand(final BlindState state) throws CouldNotPerformException {
         return newStopMoveCommand(StopMoveStateTransformer.transform(state));
     }
     
@@ -77,7 +77,7 @@ public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
         return getCommandBuilder().setType(CommandType.STOPMOVE).setStopMove(state);
     }
 
-    public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final ShutterState.State state) throws CouldNotPerformException {
+    public static OpenhabCommandType.OpenhabCommand.Builder newUpDownCommand(final BlindState state) throws CouldNotPerformException {
         return newUpDownCommand(UpDownStateTransformer.transform(state));
     }
 

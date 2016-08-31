@@ -46,7 +46,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonType.Button;
+import rst.homeautomation.unit.ButtonDataType.ButtonData;
 
 /**
  *
@@ -84,16 +84,16 @@ public class SceneRemoteTest {
      */
     //@Test
     public void testScene() throws Exception {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Button.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
 
         ParticipantConfig config = Factory.getInstance().getDefaultParticipantConfig();
         final String scope = "/home/sports/button/pathwaybelowbutton_3/status";
 
-        Informer<Button> informer = Factory.getInstance().createInformer(scope, config);
+        Informer<ButtonData> informer = Factory.getInstance().createInformer(scope, config);
         informer.activate();
 
-        Button button = Button.newBuilder().setButtonState(ButtonState.newBuilder().setValue(ButtonState.State.CLICKED).build()).build();
+        ButtonData button = ButtonData.newBuilder().setButtonState(ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build()).build();
         informer.send(button);
         Event event = new Event(new Scope("/home/sports/button/pathwaybelowbutton_3/status/hallo"), String.class, "Hallo");
 //        System.out.println("event:"+event);

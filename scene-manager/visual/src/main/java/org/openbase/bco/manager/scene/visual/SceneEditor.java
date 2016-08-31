@@ -84,7 +84,7 @@ public class SceneEditor extends javax.swing.JFrame {
                 for (ActionConfig action : data) {
 //                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
                     Object value = serviceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
-                    genericUnitCollectionPanel.add(action.getServiceHolder(), action.getServiceType(), value, true);
+                    genericUnitCollectionPanel.add(action.getUnitId(), action.getServiceType(), value, true);
                 }
             }
         });
@@ -201,7 +201,7 @@ public class SceneEditor extends javax.swing.JFrame {
                     continue;
                 }
                 try {
-                    ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setServiceHolder(panel.getUnitId());
+                    ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setUnitId(panel.getUnitId());
                     Object value = getServiceValue(panel.getService(), panel.getServiceType());
                     actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(value));
                     actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(value));

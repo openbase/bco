@@ -24,14 +24,14 @@ package org.openbase.bco.manager.device.lib;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Controller;
-import rst.homeautomation.device.GenericDeviceType.GenericDevice;
+import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
  * Threepwood</a>
  */
-public interface DeviceController extends Device, Controller<GenericDevice, GenericDevice.Builder> {
+public interface DeviceController extends Device, Controller<SystemUnitData, SystemUnitData.Builder> {
 
     public ServiceFactory getServiceFactory() throws NotAvailableException;
 }

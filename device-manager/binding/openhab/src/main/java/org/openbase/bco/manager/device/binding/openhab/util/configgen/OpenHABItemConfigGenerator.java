@@ -35,6 +35,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,13 +52,13 @@ import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.binding.BindingTypeHolderType;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.EnablingStateType;
 import rst.homeautomation.state.InventoryStateType.InventoryState;
@@ -144,7 +145,7 @@ public class OpenHABItemConfigGenerator {
             if (unitType.equals(UnitType.UNKNOWN)) {
                 continue;
             }
-            String unitLabel = "Unit" + StringProcessor.transformUpperCaseToCamelCase(unitType.name());
+            String unitLabel = StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Unit";
             groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
         }
 
@@ -168,7 +169,7 @@ public class OpenHABItemConfigGenerator {
                 DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId());
 
                 // ignore non openhab items
-                if (deviceClass.getBindingConfig().getType() != BindingTypeHolderType.BindingTypeHolder.BindingType.OPENHAB) {
+                if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
                     continue;
                 }
 
@@ -182,26 +183,28 @@ public class OpenHABItemConfigGenerator {
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
                 }
             }
 
             for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
-                List<ServiceType> serviceTypesOnLocation = new ArrayList<>();
+                List<ServiceTemplate> serviceTemplatesOnLocation = new ArrayList<>();
                 for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
                     if (locationConfig.getUnitIdList().contains(unitConfig.getId())) {
-                        for (ServiceType serviceType : deviceRegistryRemote.getUnitTemplateByType(unitConfig.getType()).getServiceTypeList()) {
-                            if (!serviceTypesOnLocation.contains(serviceType)) {
-                                serviceTypesOnLocation.add(serviceType);
+                        for (ServiceTemplate serviceTemplate : deviceRegistryRemote.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
+                            if (!serviceTemplatesOnLocation.contains(serviceTemplate)) {
+                                serviceTemplatesOnLocation.add(serviceTemplate);
                             }
                         }
                     }
                 }
-                for (ServiceType serviceType : serviceTypesOnLocation) {
-                    if (serviceType == ServiceType.COLOR_SERVICE || serviceType == ServiceType.POWER_SERVICE || serviceType == ServiceType.POWER_CONSUMPTION_PROVIDER) {
-                        LocationItemEntry entry = new LocationItemEntry(locationConfig, serviceType);
+                for (ServiceTemplate serviceTemplate : serviceTemplatesOnLocation) {
+                    if (serviceTemplate.getType() == ServiceType.COLOR_STATE_SERVICE
+                            || serviceTemplate.getType() == ServiceType.POWER_STATE_SERVICE
+                            || serviceTemplate.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
+                        LocationItemEntry entry = new LocationItemEntry(locationConfig, serviceTemplate);
                         itemEntryList.add(entry);
                         logger.info("Added location entry [" + entry.buildStringRep() + "]");
                     }
@@ -255,7 +258,7 @@ public class OpenHABItemConfigGenerator {
             File configFile = JPService.getProperty(JPOpenHABItemConfig.class).getValue();
 
             configAsString += "/* =================================================== */" + System.lineSeparator();
-            configAsString += "/* === DAL AUTO GENERATED GROUP ENTRIES ============== */" + System.lineSeparator();
+            configAsString += "/* === BCO AUTO GENERATED GROUP ENTRIES ============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += System.lineSeparator();
             for (GroupEntry entry : groupEntryList) {
@@ -264,7 +267,7 @@ public class OpenHABItemConfigGenerator {
             configAsString += System.lineSeparator();
             configAsString += System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
-            configAsString += "/* === DAL AUTO GENERATED ITEM ENTRIES =============== */" + System.lineSeparator();
+            configAsString += "/* === BCO AUTO GENERATED ITEM ENTRIES =============== */" + System.lineSeparator();
             configAsString += "/* =================================================== */" + System.lineSeparator();
             configAsString += System.lineSeparator();
             for (AbstractItemEntry entry : itemEntryList) {
@@ -272,7 +275,8 @@ public class OpenHABItemConfigGenerator {
             }
             configAsString += System.lineSeparator();
 
-            FileUtils.writeStringToFile(configFile, configAsString, false);
+            // TODO need to be tested!
+            FileUtils.writeStringToFile(configFile, configAsString, Charset.forName("UTF8") , false);
 
             logger.info("ItemConfig[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {

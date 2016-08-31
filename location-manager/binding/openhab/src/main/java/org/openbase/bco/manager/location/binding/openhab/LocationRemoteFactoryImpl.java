@@ -59,9 +59,9 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
 
                 @Override
                 public void update(final Observable<LocationData> source, LocationData data) throws Exception {
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColor()).setItem(generateItemId(config, ServiceType.COLOR_SERVICE)).build());
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(config, ServiceType.POWER_SERVICE)).build());
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(config, ServiceType.POWER_CONSUMPTION_PROVIDER)).build());
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(config, ServiceType.COLOR_STATE_SERVICE)).build());
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(config, ServiceType.POWER_STATE_SERVICE)).build());
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(config, ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).build());
                 }
             });
             locationRemote.init(config);

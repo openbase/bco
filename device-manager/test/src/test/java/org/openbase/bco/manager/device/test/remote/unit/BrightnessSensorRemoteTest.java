@@ -41,6 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
@@ -110,8 +111,9 @@ public class BrightnessSensorRemoteTest {
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         double brightness = 0.5;
-        ((BrightnessSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightnessProvider(brightness);
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
+        ((BrightnessSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightnessStateProvider(brightnessState);
         brightnessSensorRemote.requestData().get();
-        assertEquals("The getter for the brightness returns the wrong value!", brightness, brightnessSensorRemote.getBrightness(), 0.1);
+        assertEquals("The getter for the brightness returns the wrong value!", brightnessState, brightnessSensorRemote.getBrightnessState());
     }
 }
