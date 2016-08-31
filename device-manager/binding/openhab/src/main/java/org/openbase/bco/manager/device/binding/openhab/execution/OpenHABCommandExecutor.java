@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.execution;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -55,7 +54,7 @@ public class OpenHABCommandExecutor {
 
         private final OpenhabCommandType.OpenhabCommand command;
         private final ServiceTemplate.ServiceType serviceType;
-        private final String unitId;
+        private final String unitScope;
         private final String locationId;
 
         public OpenhabCommandMetaData(OpenhabCommand command) throws CouldNotPerformException {
@@ -69,7 +68,7 @@ public class OpenHABCommandExecutor {
                     throw new CouldNotPerformException("Could not extract location id out of item name!");
                 }
                 try {
-                    this.unitId = (Scope.COMPONENT_SEPARATOR + locationId + Scope.COMPONENT_SEPARATOR + nameSegment[2] + Scope.COMPONENT_SEPARATOR + nameSegment[3] + Scope.COMPONENT_SEPARATOR).toLowerCase();
+                    this.unitScope = (Scope.COMPONENT_SEPARATOR + locationId + Scope.COMPONENT_SEPARATOR + nameSegment[2] + Scope.COMPONENT_SEPARATOR + nameSegment[3] + Scope.COMPONENT_SEPARATOR).toLowerCase();
                 } catch (IndexOutOfBoundsException | NullPointerException ex) {
                     throw new CouldNotPerformException("Could not extract unit id out of item name!");
                 }
@@ -91,8 +90,8 @@ public class OpenHABCommandExecutor {
             return serviceType;
         }
 
-        public String getUnitId() {
-            return unitId;
+        public String getUnitScope() {
+            return unitScope;
         }
 
         public String getLocationId() {
@@ -104,7 +103,7 @@ public class OpenHABCommandExecutor {
         logger.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
-        UnitController unitController = unitControllerRegistry.get(metaData.getUnitId());
+        UnitController unitController = unitControllerRegistry.getUnitByScope(metaData.getUnitScope());
         unitController.applyUpdate(metaData.getServiceType(), serviceData);
     }
 }
