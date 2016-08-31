@@ -28,26 +28,20 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.schedule.Timeout;
 import java.util.ArrayList;
 import java.util.List;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionProviderService;
-import org.openbase.bco.dal.remote.unit.MotionSensorRemote;
-import org.openbase.bco.manager.location.remote.LocationRemote;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.iface.Manageable;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.bco.dal.lib.layer.unit.MotionDetectorInterface;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
-import rst.spatial.LocationDataType;
 
 /**
  *
  * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public class PresenseDetector extends ObservableImpl<MotionState> implements MotionProviderService, Manageable<LocationRemote> {
+public class PresenseDetector extends ObservableImpl<MotionState> implements MotionStateProviderService{
 
     /**
      * Default 3 minute window of no movement unit the state switches to
@@ -57,7 +51,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final List<MotionSensorRemote> motionSensorList;
+    private final List<MotionDetectorInterface> motionSensorList;
     private MotionStateType.MotionState.Builder motionState;
     private Timeout motionTimeout;
 
@@ -65,70 +59,70 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
         this.motionSensorList = new ArrayList<>();
     }
 
-    @Override
-    public void init(final LocationRemote locationRemote) throws InitializationException, InterruptedException {
-        init(locationRemote, MOTION_TIMEOUT);
-    }
-    
-    public void init(final LocationRemote locationRemote, final long motionTimeout) throws InitializationException, InterruptedException {
-        this.motionState = MotionState.newBuilder();
-        this.motionTimeout = new Timeout(motionTimeout) {
+//    @Override
+//    public void init(final LocationRemote locationRemote) throws InitializationException, InterruptedException {
+//        init(locationRemote, MOTION_TIMEOUT);
+//    }
+//    
+//    public void init(final LocationRemote locationRemote, final long motionTimeout) throws InitializationException, InterruptedException {
+//        this.motionState = MotionState.newBuilder();
+//        this.motionTimeout = new Timeout(motionTimeout) {
+//
+//            @Override
+//            public void expired() {
+//                updateMotionState(MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOTION));
+//            }
+//        };
+//
+//        locationRemote.addDataObserver(new Observer<LocationDataType.LocationData>() {
+//
+//            @Override
+//            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
+//                updateMotionState(data.getMotionState());
+//            }
+//        });
+//    }
 
-            @Override
-            public void expired() {
-                updateMotionState(MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOVEMENT));
-            }
-        };
+//    @Override
+//    public void activate() throws CouldNotPerformException, InterruptedException {
+//        for (MotionSensorRemote remote : motionSensorList) {
+//            remote.activate();
+//        }
+//    }
+//
+//    @Override
+//    public void deactivate() throws CouldNotPerformException, InterruptedException {
+//        for (MotionSensorRemote remote : motionSensorList) {
+//            remote.deactivate();
+//        }
+//    }
+//
+//    @Override
+//    public boolean isActive() {
+//        return motionSensorList.stream().noneMatch((remote) -> (!remote.isActive()));
+//    }
 
-        locationRemote.addDataObserver(new Observer<LocationDataType.LocationData>() {
-
-            @Override
-            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
-                updateMotionState(data.getMotionState());
-            }
-        });
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        for (MotionSensorRemote remote : motionSensorList) {
-            remote.activate();
-        }
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        for (MotionSensorRemote remote : motionSensorList) {
-            remote.deactivate();
-        }
-    }
-
-    @Override
-    public boolean isActive() {
-        return motionSensorList.stream().noneMatch((remote) -> (!remote.isActive()));
-    }
-
-    @Override
-    public void shutdown() {
-        try {
-            deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-        super.shutdown();
-    }
+//    @Override
+//    public void shutdown() {
+//        try {
+//            deactivate();
+//        } catch (CouldNotPerformException | InterruptedException ex) {
+//            ExceptionPrinter.printHistory(ex, logger);
+//        }
+//        super.shutdown();
+//    }
 
     private synchronized void updateMotionState(final MotionStateOrBuilder motionState) {
 
         // Filter rush motion predictions.
-        if (motionState.getValue() == MotionStateType.MotionState.State.NO_MOVEMENT && !motionTimeout.isExpired()) {
+        if (motionState.getValue() == MotionStateType.MotionState.State.NO_MOTION && !motionTimeout.isExpired()) {
             return;
         }
 
         // Update Timestemp and reset timer
-        if (motionState.getValue() == MotionStateType.MotionState.State.MOVEMENT) {
+        if (motionState.getValue() == MotionStateType.MotionState.State.MOTION) {
             motionTimeout.restart();
-            this.motionState.getLastMovementBuilder().setTime(Math.max(this.motionState.getLastMovement().getTime(), motionState.getLastMovement().getTime()));
+            this.motionState.getLastMotionBuilder().setTime(Math.max(this.motionState.getLastMotion().getTime(), motionState.getLastMotion().getTime()));
         }
 
         // Filter dublicated state notification
@@ -145,7 +139,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
     }
 
     @Override
-    public MotionState getMotion() throws NotAvailableException {
+    public MotionState getMotionState() throws NotAvailableException {
         return this.motionState.build();
     }
 }
