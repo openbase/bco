@@ -27,6 +27,7 @@ import org.openbase.bco.manager.location.remote.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
@@ -56,10 +57,14 @@ public class PersonLightProviderAgent extends AbstractAgent {
         locationRemote.activate();
 
         this.presenseDetector = new PresenseDetector();
-        presenseDetector.init(locationRemote);
+//        presenseDetector.init(locationRemote);
 
         this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
-            notifyMotionStateChanged(data);
+            try {
+                notifyMotionStateChanged(data);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
+            }
         });
         super.activate();
     }
@@ -74,13 +79,13 @@ public class PersonLightProviderAgent extends AbstractAgent {
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        presenseDetector.activate();
+//        presenseDetector.activate();
         locationRemote.activate();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        presenseDetector.deactivate();
+//        presenseDetector.deactivate();
         locationRemote.deactivate();
     }
 

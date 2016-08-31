@@ -32,7 +32,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
-import rst.homeautomation.control.scene.SceneConfigType;
+import rst.homeautomation.control.action.SnapshotType.Snapshot;
 import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
@@ -48,7 +48,7 @@ public class StandbyAgent extends AbstractAgent {
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
 
-    private SceneConfigType.SceneConfig snapshot;
+    private Snapshot snapshot;
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(false);
@@ -77,18 +77,23 @@ public class StandbyAgent extends AbstractAgent {
         locationRemote.activate();
 
         this.presenseDetector = new PresenseDetector();
-        presenseDetector.init(locationRemote);
+//        presenseDetector.init(locationRemote);
 
-        this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
-            if (data.getValue().equals(MotionState.State.MOTION)) {
-                timeout.restart();
-                synchronized (standbySync) {
-                    if (standby) {
-                        wakeUp();
-                    }
-                }
-            }
-        });
+//        this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
+//            if (data.getValue().equals(MotionState.State.MOTION)) {
+//                timeout.restart();
+//                synchronized (standbySync) {
+//                    if (standby) {
+//                        try {
+//                            wakeUp();
+//                        } catch (CouldNotPerformException ex) {
+//                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
+//                        }
+//E
+//                    }
+//                }
+//            }
+//        });
 
         super.activate();
     }
@@ -97,14 +102,14 @@ public class StandbyAgent extends AbstractAgent {
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         locationRemote.deactivate();
-        presenseDetector.deactivate();
+//        presenseDetector.deactivate();
         super.deactivate();
 
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        presenseDetector.activate();
+//        presenseDetector.activate();
         locationRemote.activate();
         timeout.start();
     }
@@ -112,7 +117,7 @@ public class StandbyAgent extends AbstractAgent {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         timeout.cancel();
-        presenseDetector.deactivate();
+//        presenseDetector.deactivate();
         locationRemote.deactivate();
     }
 
