@@ -40,7 +40,7 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.control.action.SnapshotType.Snapshot;
 import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
@@ -51,7 +51,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
         BrightnessOperationService, ColorOperationService, OpeningRatioOperationService, PowerOperationService, ShutterOperationService,
         StandbyOperationService, TargetTemperatureOperationService, MotionProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
-        TemperatureProviderService, PowerConsumptionProviderService, TamperProviderService, Snapshotable<SceneConfig> {
+        TemperatureProviderService, PowerConsumptionProviderService, TamperProviderService, Snapshotable<Snapshot> {
 
     /**
      * Will return controller/remotes in the final implementation. Waiting for a

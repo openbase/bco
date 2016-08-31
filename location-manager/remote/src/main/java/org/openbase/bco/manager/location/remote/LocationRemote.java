@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.location.lib.Location;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -13,7 +12,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.control.action.SnapshotType.Snapshot;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
@@ -250,12 +249,12 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     }
 
     @Override
-    public Future<SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(this, SceneConfig.class);
+    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(this, Snapshot.class);
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final SceneConfig snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(snapshot, this, Void.class);
     }
 

@@ -50,5 +50,5 @@ public interface LocationController extends Location, Controller<LocationData, L
         SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,
         TamperStateProviderServiceCollection {
 
-    public void init(final LocationConfig config) throws InitializationException, InterruptedException;    
+    public void init(final LocationConfig config) throws InitializationException, InterruptedException;
 }

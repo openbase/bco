@@ -62,8 +62,7 @@ import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
-import rst.homeautomation.control.scene.SceneConfigType;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.control.action.SnapshotType.Snapshot;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.AlarmStateType;
 import rst.homeautomation.state.MotionStateType;
@@ -545,9 +544,9 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Future<SceneConfigType.SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         try {
-            SceneConfig.Builder snapshotBuilder = SceneConfig.newBuilder();
+            Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
             for (UnitRemote remote : unitRemoteMap.values()) {
                 snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get().getActionConfigList());
             }
@@ -558,7 +557,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Future<Void> restoreSnapshot(SceneConfigType.SceneConfig snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             for (final ActionConfig actionConfig : snapshot.getActionConfigList()) {
                 unitRemoteMap.get(actionConfig.getServiceHolder()).applyAction(actionConfig);
@@ -570,7 +569,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Future<Void> applyAction(ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         return unitRemoteMap.get(actionConfig.getServiceHolder()).applyAction(actionConfig);
     }
 

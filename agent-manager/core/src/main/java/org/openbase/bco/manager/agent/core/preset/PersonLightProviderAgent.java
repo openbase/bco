@@ -21,6 +21,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.detector.PresenseDetector;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.manager.location.remote.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
