@@ -148,7 +148,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.visual</artifactId>
+            <artifactId>jul.visual.swing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
