@@ -59,7 +59,6 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
 
     /**
      * Creates new form GenericUnitCollectionPanel
-     *
      */
     public GenericUnitCollectionPanel() {
         unitPanelMap = new HashMap<>();

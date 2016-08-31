@@ -23,7 +23,6 @@ package org.openbase.bco.dal.visual.unit;
  */
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -43,7 +42,6 @@ public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemo
 
     /**
      * Creates new form TestPanel
-     * @throws org.openbase.jul.exception.InstantiationException
      */
     public RemovableGenericUnitPanel() {
         removedObservable = new ObservableImpl<>();
