@@ -21,9 +21,16 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 
 /**
@@ -32,10 +39,54 @@ import org.openbase.jul.storage.registry.RegistryImpl;
  */
 public class UnitControllerRegistryImpl extends RegistryImpl<String, UnitController> implements UnitControllerRegistry {
 
+    public final Map<String, UnitController> scopeControllerMap;
+
     public UnitControllerRegistryImpl() throws InstantiationException {
+        this.scopeControllerMap = new HashMap<>();
+        addObserver(new UnitControllerSynchronizer());
     }
 
     public UnitControllerRegistryImpl(HashMap<String, UnitController> entryMap) throws InstantiationException {
         super(entryMap);
+        this.scopeControllerMap = new HashMap<>();
+        addObserver(new UnitControllerSynchronizer());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws NotAvailableException {@inheritDoc}
+     */
+    @Override
+    public UnitController getUnitByScope(final String scope) throws NotAvailableException {
+        final UnitController controller = scopeControllerMap.get(scope);
+        if (controller == null) {
+            throw new NotAvailableException("UnitController", new InvalidStateException("No unit controller for given scope registered!"));
+        }
+        return controller;
+    }
+
+    /**
+     * Class to synchronize the scope controller map with the unit controller registry.
+     */
+    private class UnitControllerSynchronizer implements Observer<Map<String, UnitController>> {
+
+        @Override
+        public void update(Observable<Map<String, UnitController>> source, Map<String, UnitController> data) throws Exception {
+
+            final Collection<UnitController> unitControllerCollection = data.values();
+            // add new entries to the scope controller map
+            for (UnitController controller : unitControllerCollection) {
+                scopeControllerMap.put(ScopeGenerator.generateStringRep(controller.getScope()), controller);
+            }
+
+            // remove controller which are no longer provided by the registry
+            for (UnitController controller : new ArrayList<>(scopeControllerMap.values())) {
+                if (unitControllerCollection.contains(controller)) {
+                    continue;
+                }
+                scopeControllerMap.remove(ScopeGenerator.generateStringRep(controller.getScope()));
+            }
+        }
     }
 }

@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.RegistryImpl;
 
@@ -30,4 +31,12 @@ import org.openbase.jul.storage.registry.RegistryImpl;
  */
 public interface UnitControllerRegistry extends Registry<String, UnitController, RegistryImpl<String, UnitController>> {
 
+    /**
+     * Returns a unit controller instance with the given scope.
+     *
+     * @param scope the scope of the unit as string.
+     * @return the scope matching unit controller.
+     * @throws NotAvailableException is thrown in case there is no unit registered for the given scope.
+     */
+    public UnitController getUnitByScope(final String scope) throws NotAvailableException;
 }
