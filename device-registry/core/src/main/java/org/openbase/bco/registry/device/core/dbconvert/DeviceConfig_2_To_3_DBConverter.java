@@ -47,7 +47,7 @@ public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
     private static final String UNIT_TEMPLATE_CONFIG_ID_FIELD = "unit_template_config_id";
     private static final String SERVICE_CONFIG_FIELD = "service_config";
     private static final String BINDING_CONFIG_FIELD = "binding_config";
-    private static final String BINDING_SERVICE_CONFIG_FIELD = "binding_config";
+    private static final String BINDING_SERVICE_CONFIG_FIELD = "binding_service_config";
     private static final String BINDING_ID_FIELD = "binding_id";
 
     private final Map<String, String> unitTypeMap;
@@ -150,6 +150,7 @@ public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
                     unitConfig.remove(SERVICE_CONFIG_FIELD);
                     unitConfig.add(SERVICE_CONFIG_FIELD, newServiceConfigs);
                 }
+                newUnitConfigs.add(unitConfig);
             }
 
             deviceConfig.remove(UNIT_CONFIG_FIELD);
