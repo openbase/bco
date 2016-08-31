@@ -62,6 +62,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.action.SnapshotType.Snapshot;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.AlarmStateType;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
@@ -85,8 +86,7 @@ import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, LocationConfig> implements LocationController {
 

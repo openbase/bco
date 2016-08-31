@@ -44,13 +44,12 @@ import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
         BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
         StandbyStateOperationService, TargetTemperatureStateOperationService, MotionStateProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
-        TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, Snapshotable<SceneConfig> {
+        TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, Snapshotable<Snapshot> {
 
     /**
      * Will return controller/remotes in the final implementation. Waiting for a
