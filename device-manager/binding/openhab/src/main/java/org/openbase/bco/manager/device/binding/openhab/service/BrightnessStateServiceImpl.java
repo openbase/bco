@@ -36,9 +36,9 @@ import rst.homeautomation.state.BrightnessStateType.BrightnessState;
  * @author mpohling
  * @param <UNIT> Related unit.
  */
-public class BrightnessServiceImpl<UNIT extends BrightnessStateOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
+public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
 
-    public BrightnessServiceImpl(final UNIT unit) throws InstantiationException {
+    public BrightnessStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);
     }
 

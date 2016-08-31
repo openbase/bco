@@ -35,9 +35,9 @@ import rst.homeautomation.state.TemperatureStateType.TemperatureState;
  * @author thuxohl
  * @param <ST> Related service type.
  */
-public class TargetTemperatureServiceImpl<ST extends TargetTemperatureStateOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
+public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
 
-    public TargetTemperatureServiceImpl(final ST unit) throws InstantiationException {
+    public TargetTemperatureStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 

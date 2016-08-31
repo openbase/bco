@@ -21,34 +21,33 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author mpohling
  * @param <ST> Related service type.
  */
-public class ColorServiceImpl<ST extends ColorStateOperationService & Unit>  extends OpenHABService<ST> implements ColorStateOperationService {
+public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {
 
-    public ColorServiceImpl(final ST unit) throws InstantiationException {
+    public PowerStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public ColorState getColorState() throws NotAvailableException {
-        return unit.getColorState();
+    public PowerState getPowerState() throws NotAvailableException {
+        return unit.getPowerState();
     }
 
     @Override
-    public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newHSBCommand(colorState.getColor().getHsbColor()));
+    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
     }
 }

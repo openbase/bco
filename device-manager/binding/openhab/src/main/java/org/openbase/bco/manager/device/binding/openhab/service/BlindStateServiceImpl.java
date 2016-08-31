@@ -23,31 +23,32 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.state.BlindStateType.BlindState;
 
 /**
  *
- * @author mpohling
+ * @author thuxohl
  * @param <ST> Related service type.
  */
-public class PowerServiceImpl<ST extends PowerStateOperationService & Unit> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {
+public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit> extends OpenHABService<ST> implements BlindStateOperationService {
 
-    public PowerServiceImpl(final ST unit) throws InstantiationException {
+    public BlindStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        return unit.getPowerState();
+    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+        return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
+    public BlindState getBlindState() throws NotAvailableException {
+        return unit.getBlindState();
     }
+
 }

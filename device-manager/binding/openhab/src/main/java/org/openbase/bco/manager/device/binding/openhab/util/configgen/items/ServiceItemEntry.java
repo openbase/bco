@@ -21,18 +21,18 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import java.util.List;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
+import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import java.util.List;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;

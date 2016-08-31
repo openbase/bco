@@ -21,13 +21,12 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -48,22 +47,22 @@ public class OpenhabServiceFactory implements ServiceFactory {
 
     @Override
     public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) throws InstantiationException {
-        return new BrightnessServiceImpl(unit);
+        return new BrightnessStateServiceImpl(unit);
     }
 
     @Override
     public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) throws InstantiationException {
-        return new ColorServiceImpl(unit);
+        return new ColorStateServiceImpl(unit);
     }
 
     @Override
     public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) throws InstantiationException {
-        return new PowerServiceImpl(unit);
+        return new PowerStateServiceImpl(unit);
     }
 
     @Override
     public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) throws InstantiationException {
-        return new BlindServiceImpl(unit);
+        return new BlindStateServiceImpl(unit);
     }
 
     @Override
@@ -73,11 +72,11 @@ public class OpenhabServiceFactory implements ServiceFactory {
 
     @Override
     public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
-        return new TargetTemperatureServiceImpl(unit);
+        return new TargetTemperatureStateServiceImpl(unit);
     }
 
     @Override
     public <UNIT extends IntensityStateOperationService & Unit> IntensityStateOperationService newIntensityStateService(UNIT unit) throws InstantiationException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new IntensityStateServiceImpl(unit);
     }
 }

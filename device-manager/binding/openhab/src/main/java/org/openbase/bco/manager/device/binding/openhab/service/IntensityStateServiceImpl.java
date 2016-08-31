@@ -40,9 +40,9 @@ import rst.homeautomation.state.IntensityStateType.IntensityState;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class IntensityStateOperationServiceImpl<UNIT extends IntensityStateOperationService & Unit> extends OpenHABService<UNIT> implements IntensityStateOperationService {
+public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationService & Unit> extends OpenHABService<UNIT> implements IntensityStateOperationService {
 
-    public IntensityStateOperationServiceImpl(final UNIT unit) throws InstantiationException {
+    public IntensityStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);
     }
 
