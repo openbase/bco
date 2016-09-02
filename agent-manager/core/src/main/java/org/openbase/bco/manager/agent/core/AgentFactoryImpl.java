@@ -77,7 +77,6 @@ public class AgentFactoryImpl implements AgentFactory {
     }
 
     private String getAgentClass(final AgentConfigType.AgentConfig config) {
-        //TODO: after agent class registry implementation the class id need to be resolved!
         return AbstractAgent.class.getPackage().getName() + "."
                 + "preset."
                 + config.getAgentClassId()

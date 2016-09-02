@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -40,6 +42,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType.MotionState;
 
@@ -114,5 +117,40 @@ public class MotionDetectorRemoteTest {
         ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
+    }
+
+    /**
+     * Test if the timestamp in the motionState is set correctly.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test//(timeout = 10000)
+    public void testGetMotionStateTimestamp() throws Exception {
+        logger.debug("testGetMotionStateTimestamp");
+        long timestamp;
+        MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
+        Stopwatch stopwatch = new Stopwatch();
+
+        stopwatch.start();
+        ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        stopwatch.stop();
+        motionDetectorRemote.requestData().get();
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
+        timestamp = motionDetectorRemote.getMotionState().getLastMotion().getTime();
+        String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
+        assertTrue("The last motion timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+
+        // just to be safe that the next test does not set the motion state in the same millisecond 
+        Thread.sleep(1);
+
+        motion = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
+        stopwatch.start();
+        ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        stopwatch.stop();
+        motionDetectorRemote.requestData().get();
+        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
+        timestamp = motionDetectorRemote.getMotionState().getLastMotion().getTime();
+        comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
+        assertFalse("The last motion timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }
 }

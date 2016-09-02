@@ -22,24 +22,27 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.TamperDetectorController;
 import org.openbase.bco.dal.remote.unit.TamperDetectorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.TamperStateType.TamperState;
 
@@ -114,5 +117,40 @@ public class TamperDetectorRemoteTest {
         ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+    }
+
+    /**
+     * Test if the timestamp in the tamperState is set correctly.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testGetTamperStateTimestamp() throws Exception {
+        logger.debug("testGetTamperStateTimestamp");
+        long timestamp;
+        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+        Stopwatch stopwatch = new Stopwatch();
+
+        stopwatch.start();
+        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        stopwatch.stop();
+        tamperDetectorRemote.requestData().get();
+        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        timestamp = tamperDetectorRemote.getTamperState().getLastDetection().getTime();
+        String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
+        assertTrue("The last detection timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+
+        // just to be safe that the next test does not set the motion state in the same millisecond 
+        Thread.sleep(1);
+
+        tamperState = TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
+        stopwatch.start();
+        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        stopwatch.stop();
+        tamperDetectorRemote.requestData().get();
+        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        timestamp = tamperDetectorRemote.getTamperState().getLastDetection().getTime();
+        comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
+        assertFalse("The last detection timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }
 }
