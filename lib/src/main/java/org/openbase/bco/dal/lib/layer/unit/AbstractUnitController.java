@@ -29,14 +29,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
-import java.util.Map.Entry;
-import org.openbase.jul.schedule.Stopwatch;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -57,6 +56,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.Stopwatch;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -380,9 +380,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             // === Verify if all update methods are registered. ===
             for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
 
-                // TODO: replace by service type filer if availbale.
                 // filter other services than provider
-                if (!serviceTemplate.getType().name().contains("Provider")) {
+                if (serviceTemplate.getPattern() != ServiceTemplate.ServicePattern.PROVIDER) {
                     continue;
                 }
 

@@ -58,7 +58,6 @@ public class MotionDetectorController extends AbstractUnitController<MotionDetec
 
             // Update timestemp if necessary
             if (state.getValue() == MotionState.State.MOTION) {
-                //TODO tamino: need to be tested! Please write an unit test.
                 motionStateBuilder.setLastMotion(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 

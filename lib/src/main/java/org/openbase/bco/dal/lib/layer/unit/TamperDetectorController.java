@@ -59,7 +59,6 @@ public class TamperDetectorController extends AbstractUnitController<TamperDetec
 
             // Update timestemp if necessary
             if (state.getValue() == TamperState.State.TAMPER) {
-                //TODO tamino: need to be tested! Please write an unit test.
                 tamperStateBuilder.setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 

@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -53,16 +51,15 @@ public class ButtonController extends AbstractUnitController<ButtonData, ButtonD
         logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
 
         try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
-            
+
             ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
-            
+
             // Update value
             buttonState.setValue(state.getValue());
-            
+
             // Update timestemp if necessary
             if (state.getValue() == ButtonState.State.PRESSED || state.getValue() == ButtonState.State.DOUBLE_PRESSED) {
-                //TODO tamino: need to be tested! Please write an unit test.
-                buttonState.setTimestamp(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
+                buttonState.setLastPressed(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
             }
 
             dataBuilder.getInternalBuilder().setButtonState(buttonState);
@@ -75,7 +72,7 @@ public class ButtonController extends AbstractUnitController<ButtonData, ButtonD
     public ButtonState getButtonState() throws NotAvailableException {
         try {
             return getData().getButtonState();
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("buttonState state", ex);
         }
     }

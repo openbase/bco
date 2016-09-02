@@ -28,7 +28,7 @@ import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;    
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -39,7 +39,7 @@ import rsb.Scope;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
 /**
@@ -49,7 +49,7 @@ import rst.rsb.ScopeType;
  */
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M, UnitConfig> {
 
-    private UnitTemplateType.UnitTemplate template;
+    private UnitTemplate template;
     protected DeviceRegistry deviceRegistry;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
@@ -58,6 +58,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param id
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
@@ -74,6 +75,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param label
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
@@ -100,6 +102,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param scope
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
@@ -116,6 +119,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param scope
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
@@ -131,6 +135,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param scope
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
@@ -154,6 +159,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -169,24 +175,25 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param config
-     * @return 
+     * @return
      * @throws org.openbase.jul.exception.CouldNotPerformException
      * @throws java.lang.InterruptedException
      */
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        // todo check if type or id is the right template access!
-        template = deviceRegistry.getUnitTemplateById(config.getUnitTemplateConfigId());
+        template = deviceRegistry.getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
     }
 
     /**
      * {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public UnitTemplateType.UnitTemplate.UnitType getType() throws NotAvailableException {
+    public UnitTemplate.UnitType getType() throws NotAvailableException {
         try {
             return getConfig().getType();
         } catch (NullPointerException | NotAvailableException ex) {
@@ -196,10 +203,11 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
+    public UnitTemplate getTemplate() throws NotAvailableException {
         if (template == null) {
             throw new NotAvailableException("UnitTemplate");
         }
@@ -208,7 +216,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
-     * @return 
+     *
+     * @return
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
@@ -222,6 +231,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
@@ -236,8 +246,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
+     *
      * @param actionConfig
-     * @return 
+     * @return
      * @throws org.openbase.jul.exception.CouldNotPerformException
      * @throws java.lang.InterruptedException
      */
@@ -248,7 +259,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * {@inheritDoc}
-     * @return 
+     *
+     * @return
      * @throws org.openbase.jul.exception.CouldNotPerformException
      * @throws java.lang.InterruptedException
      */
