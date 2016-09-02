@@ -27,14 +27,14 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
-import org.openbase.bco.registry.user.core.consistency.UserGroupConfigLabelConsistencyHandler;
-import org.openbase.bco.registry.user.core.consistency.UserGroupConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.user.core.consistency.AuthorizationGroupConfigLabelConsistencyHandler;
+import org.openbase.bco.registry.user.core.consistency.AuthorizationGroupConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.user.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.user.lib.UserRegistry;
+import org.openbase.bco.registry.user.lib.generator.AuthorizationGroupConfigIdGenerator;
 import org.openbase.bco.registry.user.lib.generator.UserConfigIdGenerator;
-import org.openbase.bco.registry.user.lib.generator.UserGroupConfigIdGenerator;
+import org.openbase.bco.registry.user.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
 import org.openbase.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
-import org.openbase.bco.registry.user.lib.jp.JPUserGroupConfigDatabaseDirectory;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -55,8 +55,8 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
 import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.rsb.ScopeType;
 
@@ -69,31 +69,31 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserGroupConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
     private ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> userRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> userGroupRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder, UserRegistryData.Builder> authorizationGroupRegistry;
 
     public UserRegistryController() throws InstantiationException, InterruptedException {
         super(UserRegistryData.newBuilder());
         try {
             ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            userGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(UserGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_GROUP_CONFIG_FIELD_NUMBER), new UserGroupConfigIdGenerator(), JPService.getProperty(JPUserGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            authorizationGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(AuthorizationGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_FIELD_NUMBER), new AuthorizationGroupConfigIdGenerator(), JPService.getProperty(JPAuthorizationGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             userRegistry.activateVersionControl(DummyConverter.class.getPackage());
-            userGroupRegistry.activateVersionControl(DummyConverter.class.getPackage());
+            authorizationGroupRegistry.activateVersionControl(DummyConverter.class.getPackage());
 
             userRegistry.loadRegistry();
 
             userRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
             userRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
 
-            userGroupRegistry.loadRegistry();
+            authorizationGroupRegistry.loadRegistry();
 
-            userGroupRegistry.registerConsistencyHandler(new UserGroupConfigLabelConsistencyHandler());
-            userGroupRegistry.registerConsistencyHandler(new UserGroupConfigScopeConsistencyHandler());
+            authorizationGroupRegistry.registerConsistencyHandler(new AuthorizationGroupConfigLabelConsistencyHandler());
+            authorizationGroupRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
 
             userRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UserConfig, UserConfig.Builder>>>() {
 
@@ -103,10 +103,10 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
                 }
             });
 
-            userGroupRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder>>>() {
+            authorizationGroupRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder>>>() {
 
                 @Override
-                public void update(final Observable<Map<String, IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder>> data) throws Exception {
+                public void update(final Observable<Map<String, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder>> data) throws Exception {
                     notifyChange();
                 }
             });
@@ -139,7 +139,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
         }
 
         try {
-            userGroupRegistry.checkConsistency();
+            authorizationGroupRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
         }
@@ -156,8 +156,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             userRegistry.shutdown();
         }
 
-        if (userGroupRegistry != null) {
-            userGroupRegistry.shutdown();
+        if (authorizationGroupRegistry != null) {
+            authorizationGroupRegistry.shutdown();
         }
 
         try {
@@ -171,7 +171,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(UserRegistryData.USER_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userRegistry.isReadOnly());
-        setDataField(UserRegistryData.GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userGroupRegistry.isReadOnly());
+        setDataField(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, authorizationGroupRegistry.isReadOnly());
         super.notifyChange();
     }
 
@@ -184,8 +184,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
         return userRegistry;
     }
 
-    public ProtoBufFileSynchronizedRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> getGroupRegistry() {
-        return userGroupRegistry;
+    public ProtoBufFileSynchronizedRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder, UserRegistryData.Builder> getAuthorizationGroupRegistry() {
+        return authorizationGroupRegistry;
     }
 
     @Override
@@ -229,9 +229,9 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public List<UserConfig> getUserConfigsByUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public List<UserConfig> getUserConfigsByAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
         List<UserConfig> userConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : userGroupRegistry.getEntries()) {
+        for (IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> group : authorizationGroupRegistry.getEntries()) {
             if (group.getMessage().equals(groupConfig)) {
                 for (String memeberId : group.getMessage().getMemberIdList()) {
                     userConfigs.add(getUserConfigById(memeberId));
@@ -243,44 +243,44 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public Future<UserGroupConfig> registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> userGroupRegistry.register(groupConfig));
+    public Future<AuthorizationGroupConfig> registerAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
+        return GlobalExecutionService.submit(() -> authorizationGroupRegistry.register(groupConfig));
     }
 
     @Override
-    public Boolean containsUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return userGroupRegistry.contains(groupConfig);
+    public Boolean containsAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
+        return authorizationGroupRegistry.contains(groupConfig);
     }
 
     @Override
-    public Boolean containsUserGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        return userGroupRegistry.contains(groupConfigId);
+    public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        return authorizationGroupRegistry.contains(groupConfigId);
     }
 
     @Override
-    public Future<UserGroupConfig> updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> userGroupRegistry.update(groupConfig));
+    public Future<AuthorizationGroupConfig> updateAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
+        return GlobalExecutionService.submit(() -> authorizationGroupRegistry.update(groupConfig));
     }
 
     @Override
-    public Future<UserGroupConfig> removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> userGroupRegistry.remove(groupConfig));
+    public Future<AuthorizationGroupConfig> removeAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
+        return GlobalExecutionService.submit(() -> authorizationGroupRegistry.remove(groupConfig));
     }
 
     @Override
-    public UserGroupConfig getUserGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        return userGroupRegistry.get(groupConfigId).getMessage();
+    public AuthorizationGroupConfig getAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        return authorizationGroupRegistry.get(groupConfigId).getMessage();
     }
 
     @Override
-    public List<UserGroupConfig> getUserGroupConfigs() throws CouldNotPerformException {
-        return userGroupRegistry.getMessages();
+    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException {
+        return authorizationGroupRegistry.getMessages();
     }
 
     @Override
-    public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        List<UserGroupConfig> groupConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : userGroupRegistry.getEntries()) {
+    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
+        List<AuthorizationGroupConfig> groupConfigs = new ArrayList<>();
+        for (IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> group : authorizationGroupRegistry.getEntries()) {
             group.getMessage().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
                 groupConfigs.add(group.getMessage());
             });
@@ -289,7 +289,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     @Override
-    public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return userGroupRegistry.isReadOnly();
+    public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        return authorizationGroupRegistry.isReadOnly();
     }
 }

@@ -44,8 +44,8 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
 import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.rsb.ScopeType;
 
@@ -58,17 +58,17 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserGroupConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> userConfigRemoteRegistry;
-    private final RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> groupConfigRemoteRegistry;
+    private final RemoteRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder, UserRegistryData.Builder> authorizationGroupConfigRemoteRegistry;
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(UserRegistryData.class);
         try {
             userConfigRemoteRegistry = new RemoteRegistry<>();
-            groupConfigRemoteRegistry = new RemoteRegistry<>();
+            authorizationGroupConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -125,7 +125,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
     public void shutdown() {
         try {
             userConfigRemoteRegistry.shutdown();
-            groupConfigRemoteRegistry.shutdown();
+            authorizationGroupConfigRemoteRegistry.shutdown();
         } finally {
             super.shutdown();
         }
@@ -134,15 +134,15 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
     @Override
     public void notifyDataUpdate(final UserRegistryData data) throws CouldNotPerformException {
         userConfigRemoteRegistry.notifyRegistryUpdate(data.getUserConfigList());
-        groupConfigRemoteRegistry.notifyRegistryUpdate(data.getUserGroupConfigList());
+        authorizationGroupConfigRemoteRegistry.notifyRegistryUpdate(data.getAuthorizationGroupConfigList());
     }
 
     public RemoteRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> getUserConfigRemoteRegistry() {
         return userConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UserGroupConfig, UserGroupConfig.Builder, UserRegistryData.Builder> getGroupConfigRemoteRegistry() {
-        return groupConfigRemoteRegistry;
+    public RemoteRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder, UserRegistryData.Builder> getGroupConfigRemoteRegistry() {
+        return authorizationGroupConfigRemoteRegistry;
     }
 
     @Override
@@ -212,9 +212,9 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
     }
 
     @Override
-    public List<UserConfig> getUserConfigsByUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public List<UserConfig> getUserConfigsByAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
         List<UserConfig> userConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : groupConfigRemoteRegistry.getEntries()) {
+        for (IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> group : authorizationGroupConfigRemoteRegistry.getEntries()) {
             if (group.getMessage().equals(groupConfig)) {
                 for (String memeberId : group.getMessage().getMemberIdList()) {
                     userConfigs.add(getUserConfigById(memeberId));
@@ -226,61 +226,61 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
     }
 
     @Override
-    public Future<UserGroupConfig> registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<AuthorizationGroupConfig> registerAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(groupConfig, this, UserGroupConfig.class);
+            return RPCHelper.callRemoteMethod(groupConfig, this, AuthorizationGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register group config!", ex);
         }
     }
 
     @Override
-    public Boolean containsUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Boolean containsAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
         validateData();
-        return groupConfigRemoteRegistry.contains(groupConfig);
+        return authorizationGroupConfigRemoteRegistry.contains(groupConfig);
     }
 
     @Override
-    public Boolean containsUserGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+    public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         validateData();
-        return groupConfigRemoteRegistry.contains(groupConfigId);
+        return authorizationGroupConfigRemoteRegistry.contains(groupConfigId);
     }
 
     @Override
-    public Future<UserGroupConfig> updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<AuthorizationGroupConfig> updateAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(groupConfig, this, UserGroupConfig.class);
+            return RPCHelper.callRemoteMethod(groupConfig, this, AuthorizationGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update group config[" + groupConfig + "]!", ex);
         }
     }
 
     @Override
-    public Future<UserGroupConfig> removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException {
+    public Future<AuthorizationGroupConfig> removeAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(groupConfig, this, UserGroupConfig.class);
+            return RPCHelper.callRemoteMethod(groupConfig, this, AuthorizationGroupConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove group config[" + groupConfig + "]!", ex);
         }
     }
 
     @Override
-    public UserGroupConfig getUserGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+    public AuthorizationGroupConfig getAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         validateData();
-        return groupConfigRemoteRegistry.getMessage(groupConfigId);
+        return authorizationGroupConfigRemoteRegistry.getMessage(groupConfigId);
     }
 
     @Override
-    public List<UserGroupConfig> getUserGroupConfigs() throws CouldNotPerformException {
+    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException {
         validateData();
-        return groupConfigRemoteRegistry.getMessages();
+        return authorizationGroupConfigRemoteRegistry.getMessages();
     }
 
     @Override
-    public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
+    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
         validateData();
-        List<UserGroupConfig> groupConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> group : groupConfigRemoteRegistry.getEntries()) {
+        List<AuthorizationGroupConfig> groupConfigs = new ArrayList<>();
+        for (IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> group : authorizationGroupConfigRemoteRegistry.getEntries()) {
             group.getMessage().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
                 groupConfigs.add(group.getMessage());
             });
@@ -289,7 +289,7 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
     }
 
     @Override
-    public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+    public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         validateData();
         try {
             if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
@@ -299,6 +299,6 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        return getData().getGroupConfigRegistryReadOnly();
+        return getData().getAuthorizationGroupConfigRegistryReadOnly();
     }
 }

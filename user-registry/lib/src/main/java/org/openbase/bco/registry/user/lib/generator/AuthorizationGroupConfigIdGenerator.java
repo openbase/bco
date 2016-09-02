@@ -21,20 +21,19 @@ package org.openbase.bco.registry.user.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.util.UUID;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
-import java.util.UUID;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
+import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UserGroupConfigIdGenerator implements IdGenerator<String, UserGroupConfig> {
+public class AuthorizationGroupConfigIdGenerator implements IdGenerator<String, AuthorizationGroupConfig> {
 
     @Override
-    public String generateId(UserGroupConfig message) throws CouldNotPerformException {
+    public String generateId(AuthorizationGroupConfig message) throws CouldNotPerformException {
         return UUID.randomUUID().toString();
     }
 }

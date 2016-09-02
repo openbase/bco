@@ -22,7 +22,7 @@ package org.openbase.bco.registry.user.core;
  * #L%
  */
 import org.openbase.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
-import org.openbase.bco.registry.user.lib.jp.JPUserGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.user.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -84,7 +84,7 @@ public class UserRegistryLauncher {
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPUserConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPUserGroupConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPAuthorizationGroupConfigDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
@@ -103,7 +103,7 @@ public class UserRegistryLauncher {
             exceptionStack = MultiException.push(userRegistry, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
-        if (!userRegistry.getUserRegistry().getGroupRegistry().isConsistent()) {
+        if (!userRegistry.getUserRegistry().getAuthorizationGroupRegistry().isConsistent()) {
             exceptionStack = MultiException.push(userRegistry, new VerificationFailedException("GroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 

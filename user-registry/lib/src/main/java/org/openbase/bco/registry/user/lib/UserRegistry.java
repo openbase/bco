@@ -21,12 +21,12 @@ package org.openbase.bco.registry.user.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
+import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
 
 /**
  *
@@ -48,25 +48,25 @@ public interface UserRegistry extends Shutdownable {
 
     public List<UserConfig> getUserConfigs() throws CouldNotPerformException;
 
-    public List<UserConfig> getUserConfigsByUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
+    public List<UserConfig> getUserConfigsByAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
 
     public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    public Future<UserGroupConfig> registerUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
+    public Future<AuthorizationGroupConfig> registerAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
+    public Boolean containsAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsUserGroupConfigById(String groupConfigId) throws CouldNotPerformException;
+    public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException;
 
-    public Future<UserGroupConfig> updateUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
+    public Future<AuthorizationGroupConfig> updateAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public Future<UserGroupConfig> removeUserGroupConfig(UserGroupConfig groupConfig) throws CouldNotPerformException;
+    public Future<AuthorizationGroupConfig> removeAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
 
-    public UserGroupConfig getUserGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+    public AuthorizationGroupConfig getAuthorizationGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    public List<UserGroupConfig> getUserGroupConfigs() throws CouldNotPerformException;
+    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException;
 
-    public List<UserGroupConfig> getUserGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 
-    public Boolean isUserGroupConfigRegistryReadOnly() throws CouldNotPerformException;
+    public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 }
