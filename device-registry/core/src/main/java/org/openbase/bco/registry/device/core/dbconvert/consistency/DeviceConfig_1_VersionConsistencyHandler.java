@@ -21,6 +21,9 @@ package org.openbase.bco.registry.device.core.dbconvert.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.HashMap;
+import java.util.Map;
+import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -35,9 +38,6 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.FileSynchronizedRegistryInterface;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import java.util.HashMap;
-import java.util.Map;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
@@ -59,7 +59,6 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-
         if (locationRegistry == null) {
             logger.info("Connect to location registry....");
             try {
