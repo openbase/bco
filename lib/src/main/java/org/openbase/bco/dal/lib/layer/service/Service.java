@@ -3,14 +3,11 @@ package org.openbase.bco.dal.lib.layer.service;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.service.ServiceTemplateType;
-import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
-import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 
 /*
@@ -41,15 +38,6 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 public interface Service {
 
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
-    public static final String PROVIDER_SERVICE_LABEL = ProviderService.class.getSimpleName();
-    public static final String CONSUMER_SERVICE_LABEL = ConsumerService.class.getSimpleName();
-    public static final String OPERATION_SERVICE_LABEL = OperationService.class.getSimpleName();
-
-    //TODO add to rst
-    public enum ServiceBaseType {
-
-        PROVIDER, CONSUMER, OPERATION
-    };
 
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException;
 
@@ -57,60 +45,39 @@ public interface Service {
      * This method returns the service base name of the given service type.
      *
      * The base name is the service name without service suffix.
-     * e.g. the base name of service PowerStateProviderService is PowerState.
+     * e.g. the base name of service PowerStateService is PowerState.
      *
      * @param serviceType the service type to extract the base name.
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceTemplate.ServiceType serviceType) {
-        return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.PROVIDER_SERVICE_LABEL, "").replaceAll(Service.CONSUMER_SERVICE_LABEL, "").replaceAll(Service.OPERATION_SERVICE_LABEL, "");
+        return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
     }
 
-    public static ServiceBaseType detectServiceBaseType(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
-        if (serviceType.name().endsWith(ServiceBaseType.PROVIDER.name())) {
-            return ServiceBaseType.PROVIDER;
-        } else if (serviceType.name().endsWith("SERVICE")) {
-            return ServiceBaseType.OPERATION;
-        } else if (serviceType.name().endsWith(ServiceBaseType.PROVIDER.name())) {
-            return ServiceBaseType.CONSUMER;
-        } else {
-            throw new CouldNotPerformException("Could not detect service base type!");
+    public static String getServicePrefix(final ServiceTemplateType.ServiceTemplate.ServicePattern pattern) throws CouldNotPerformException {
+        switch (pattern) {
+            case CONSUMER:
+                return "";
+            case OPERATION:
+                return "set";
+            case PROVIDER:
+                return "get";
+            default:
+                throw new NotSupportedException(pattern, Service.class);
         }
     }
 
-    public static ServiceTemplate.ServiceType getProviderForOperationService(final ServiceTemplateType.ServiceTemplate.ServiceType operationServiceType) throws CouldNotPerformException {
+    public static Method detectServiceMethod(final ServiceTemplateType.ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         try {
-            assert detectServiceBaseType(operationServiceType).equals(ServiceBaseType.OPERATION);
-            return ServiceTemplate.ServiceType.valueOf(operationServiceType.name().replaceFirst(ServiceBaseType.PROVIDER.name(), "SERVICE"));
-        } catch (IllegalArgumentException | CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not detect ProviderService of related OperationService[" + operationServiceType + "]", ex);
-        }
-    }
-
-    public static String getServicePrefix(final ServiceTemplateType.ServiceTemplate.ServiceType type) throws CouldNotPerformException {
-        switch (detectServiceBaseType(type)) {
-        case CONSUMER:
-            return "";
-        case OPERATION:
-            return "set";
-        case PROVIDER:
-            return "get";
-        default:
-            throw new NotSupportedException(type, Service.class);
-        }
-    }
-
-    public static Method detectServiceMethod(final ServiceTemplateType.ServiceTemplate.ServiceType type, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
-        try {
-            return instanceClass.getMethod(getServicePrefix(type) + StringProcessor.transformUpperCaseToCamelCase(type.name()).replaceAll("Service", ""), argumentClasses);
+            return instanceClass.getMethod(getServicePrefix(template.getPattern()) + StringProcessor.transformUpperCaseToCamelCase(template.getType().name()).replaceAll("Service", ""), argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method!", ex);
         }
     }
 
-    public static Object invokeServiceMethod(final ServiceTemplateType.ServiceTemplate.ServiceType type, final Service instance, final Object... arguments) throws CouldNotPerformException {
+    public static Object invokeServiceMethod(final ServiceTemplateType.ServiceTemplate template, final Service instance, final Object... arguments) throws CouldNotPerformException {
         try {
-            return detectServiceMethod(type, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+            return detectServiceMethod(template, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not invoke service method!", ex);
         }

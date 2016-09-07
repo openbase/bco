@@ -412,7 +412,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         try {
             logger.info("applyAction: " + actionConfig.getLabel());
             Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
-            Service.invokeServiceMethod(actionConfig.getServiceType(), this, attribute);
+            // Since its an action it has to be an operation service pattern
+            ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+            Service.invokeServiceMethod(serviceTemplate, this, attribute);
             return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);

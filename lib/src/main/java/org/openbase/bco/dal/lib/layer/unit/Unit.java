@@ -37,9 +37,9 @@ import rst.homeautomation.control.action.ActionAuthorityType;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.control.action.ActionPriorityType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -50,6 +50,7 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
 
     /**
      * Returns the unit type.
+     *
      * @return UnitType
      * @throws NotAvailableException
      */
@@ -57,26 +58,27 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
 
     /**
      * Returns the related template for this unit.
+     *
      * @return UnitTemplate
      * @throws NotAvailableException in case the unit template is not available.
      */
-    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException;
+    public UnitTemplate getTemplate() throws NotAvailableException;
 
     @Override
     public default Future<SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         SceneConfig.Builder snapshotBuilder = SceneConfig.newBuilder();
-        for (ServiceTemplateType.ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+        for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
             try {
                 ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceTemplate.getType()).setUnitId(getId());
 
                 // skip non operation services.
-                if (Service.detectServiceBaseType(serviceTemplate.getType()) != ServiceBaseType.OPERATION) {
+                if (serviceTemplate.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
                     continue;
                 }
 
                 // load service attribute by related provider service
-                Object serviceAttribute = Service.invokeServiceMethod(Service.getProviderForOperationService(serviceTemplate.getType()), this);
+                Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate, this);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
