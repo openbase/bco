@@ -30,14 +30,14 @@ package org.openbase.bco.registry.agent.core.consistency;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -52,7 +52,7 @@ public class AgentConfigAgentClassIdConsistencyHandler extends AbstractProtoBufR
     }
 
     @Override
-    public void processData(final String id, final IdentifiableMessage<String, AgentConfig, AgentConfig.Builder> entry, final ProtoBufMessageMapInterface<String, AgentConfig, AgentConfig.Builder> entryMap, final ProtoBufRegistryInterface<String, AgentConfig, AgentConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(final String id, final IdentifiableMessage<String, AgentConfig, AgentConfig.Builder> entry, final ProtoBufMessageMap<String, AgentConfig, AgentConfig.Builder> entryMap, final ProtoBufRegistry<String, AgentConfig, AgentConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         AgentConfig agentConfig = entry.getMessage();
 
         if (!agentConfig.hasAgentClassId() || agentConfig.getAgentClassId().isEmpty()) {

@@ -27,11 +27,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -46,7 +46,7 @@ public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractPro
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entry, ProtoBufMessageMap<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entryMap, ProtoBufRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         AuthorizationGroupConfig userGroup = entry.getMessage();
 
         if (!userGroup.hasLabel() || userGroup.getLabel().isEmpty()) {

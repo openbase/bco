@@ -28,14 +28,14 @@ import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -50,7 +50,7 @@ public class ConnectionTilesConsistencyHandler extends AbstractProtoBufRegistryC
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry, ProtoBufMessageMapInterface<String, ConnectionConfig, ConnectionConfig.Builder> entryMap, ProtoBufRegistryInterface<String, ConnectionConfig, ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry, ProtoBufMessageMap<String, ConnectionConfig, ConnectionConfig.Builder> entryMap, ProtoBufRegistry<String, ConnectionConfig, ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         ConnectionConfig.Builder connectionConfig = entry.getMessage().toBuilder();
 
         if (connectionConfig.getTileIdList().size() < 2) {

@@ -30,14 +30,14 @@ package org.openbase.bco.registry.app.core.consistency;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -52,7 +52,7 @@ public class AppConfigAppClassIdConsistencyHandler extends AbstractProtoBufRegis
     }
 
     @Override
-    public void processData(final String id, final IdentifiableMessage<String, AppConfig, AppConfig.Builder> entry, final ProtoBufMessageMapInterface<String, AppConfig, AppConfig.Builder> entryMap, final ProtoBufRegistryInterface<String, AppConfig, AppConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(final String id, final IdentifiableMessage<String, AppConfig, AppConfig.Builder> entry, final ProtoBufMessageMap<String, AppConfig, AppConfig.Builder> entryMap, final ProtoBufRegistry<String, AppConfig, AppConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         AppConfig appConfig = entry.getMessage();
 
         if (!appConfig.hasAppClassId() || appConfig.getAppClassId().isEmpty()) {

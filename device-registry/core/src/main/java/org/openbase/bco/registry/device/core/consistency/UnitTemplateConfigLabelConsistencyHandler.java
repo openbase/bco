@@ -24,12 +24,12 @@ package org.openbase.bco.registry.device.core.consistency;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -38,7 +38,7 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder> entry, ProtoBufMessageMapInterface<String, DeviceClass, DeviceClass.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceClass, DeviceClass.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder> entry, ProtoBufMessageMap<String, DeviceClass, DeviceClass.Builder> entryMap, ProtoBufRegistry<String, DeviceClass, DeviceClass.Builder> registry) throws CouldNotPerformException, EntryModification {
         DeviceClass.Builder deviceClass = entry.getMessage().toBuilder();
 
         deviceClass.clearUnitTemplateConfig();

@@ -27,11 +27,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 
 /**
  *
@@ -40,7 +40,7 @@ import rst.spatial.PlacementConfigType;
  */
 public class LocationUtils {
 
-    public static void validateRootLocation(final LocationConfig newRootLocation, final ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, final ConsistencyHandler consistencyHandler) throws CouldNotPerformException, EntryModification {
+    public static void validateRootLocation(final LocationConfig newRootLocation, final ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap, final ConsistencyHandler consistencyHandler) throws CouldNotPerformException, EntryModification {
         try {
             boolean modifiered = false;
             // detect root location
@@ -73,7 +73,7 @@ public class LocationUtils {
         }
     }
 
-    public static LocationConfig getRootLocation(final ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap) throws NotAvailableException, CouldNotPerformException {
+    public static LocationConfig getRootLocation(final ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap) throws NotAvailableException, CouldNotPerformException {
         LocationConfig rootLocation = null;
         try {
             for (LocationConfig locationConfig : entryMap.getMessages()) {
@@ -94,7 +94,7 @@ public class LocationUtils {
         return rootLocation;
     }
 
-    public static LocationConfig detectRootLocation(final LocationConfig currentLocationConfig, final ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, final ConsistencyHandler consistencyHandler) throws CouldNotPerformException, EntryModification {
+    public static LocationConfig detectRootLocation(final LocationConfig currentLocationConfig, final ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap, final ConsistencyHandler consistencyHandler) throws CouldNotPerformException, EntryModification {
         try {
             try {
                 return getRootLocation(entryMap);
@@ -108,7 +108,7 @@ public class LocationUtils {
         }
     }
 
-    public static LocationConfig computeNewRootLocation(final LocationConfig currentLocationConfig, ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap) throws CouldNotPerformException {
+    public static LocationConfig computeNewRootLocation(final LocationConfig currentLocationConfig, ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap) throws CouldNotPerformException {
         try {
             HashMap<String, LocationConfig> rootLocationConfigList = new HashMap<>();
             for (LocationConfig locationConfig : entryMap.getMessages()) {

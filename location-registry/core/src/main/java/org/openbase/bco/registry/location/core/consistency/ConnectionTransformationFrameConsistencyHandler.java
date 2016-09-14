@@ -25,12 +25,12 @@ package org.openbase.bco.registry.location.core.consistency;
 import org.openbase.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -38,12 +38,12 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  */
 public class ConnectionTransformationFrameConsistencyHandler extends AbstractTransformationFrameConsistencyHandler<String, ConnectionConfig, ConnectionConfig.Builder> {
 
-    public ConnectionTransformationFrameConsistencyHandler(final ProtoBufRegistryInterface<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> locationRegistry) {
+    public ConnectionTransformationFrameConsistencyHandler(final ProtoBufRegistry<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> locationRegistry) {
         super(locationRegistry);
     }
 
     @Override
-    public void processData(final String id, final IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry, final ProtoBufMessageMapInterface<String, ConnectionConfig, ConnectionConfig.Builder> entryMap, final ProtoBufRegistryInterface<String, ConnectionConfig, ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(final String id, final IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry, final ProtoBufMessageMap<String, ConnectionConfig, ConnectionConfig.Builder> entryMap, final ProtoBufRegistry<String, ConnectionConfig, ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         ConnectionConfig connectionConfig = entry.getMessage();
         PlacementConfig placementConfig = verifyAndUpdatePlacement(connectionConfig.getLabel(), connectionConfig.getPlacementConfig());
 

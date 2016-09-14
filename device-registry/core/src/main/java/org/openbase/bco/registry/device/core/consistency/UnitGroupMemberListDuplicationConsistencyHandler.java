@@ -24,13 +24,13 @@ package org.openbase.bco.registry.device.core.consistency;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -39,7 +39,7 @@ import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 public class UnitGroupMemberListDuplicationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitGroupConfig, UnitGroupConfig.Builder> {
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, UnitGroupConfig, UnitGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, UnitGroupConfig, UnitGroupConfig.Builder> entry, ProtoBufMessageMap<String, UnitGroupConfig, UnitGroupConfig.Builder> entryMap, ProtoBufRegistry<String, UnitGroupConfig, UnitGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitGroupConfig.Builder unitGroup = entry.getMessage().toBuilder();
 
         unitGroup.clearMemberId();

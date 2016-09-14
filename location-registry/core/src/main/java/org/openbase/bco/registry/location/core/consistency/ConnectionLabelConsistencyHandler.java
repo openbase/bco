@@ -28,12 +28,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.ConnectionConfigType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -48,7 +48,7 @@ public class ConnectionLabelConsistencyHandler extends AbstractProtoBufRegistryC
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder> entry, ProtoBufMessageMapInterface<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder> entryMap, ProtoBufRegistryInterface<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder> entry, ProtoBufMessageMap<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder> entryMap, ProtoBufRegistry<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         ConnectionConfig connection = entry.getMessage();
 
         if (!connection.hasLabel() || connection.getLabel().isEmpty()) {

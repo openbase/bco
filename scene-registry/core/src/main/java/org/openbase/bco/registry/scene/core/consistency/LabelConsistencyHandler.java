@@ -28,11 +28,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -47,7 +47,7 @@ public class LabelConsistencyHandler extends AbstractProtoBufRegistryConsistency
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder> entry, ProtoBufMessageMapInterface<String, SceneConfig, SceneConfig.Builder> entryMap, ProtoBufRegistryInterface<String, SceneConfig, SceneConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder> entry, ProtoBufMessageMap<String, SceneConfig, SceneConfig.Builder> entryMap, ProtoBufRegistry<String, SceneConfig, SceneConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         SceneConfig scene = entry.getMessage();
 
         if (!scene.hasLabel() || scene.getLabel().isEmpty()) {

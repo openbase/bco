@@ -65,7 +65,6 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalExecutionService;
@@ -81,6 +80,7 @@ import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -252,7 +252,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(LocationRegistry.class, this, server);
     }
 
