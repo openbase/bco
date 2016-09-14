@@ -21,19 +21,19 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.MotionDetectorInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.unit.MotionDetectorDataType.MotionDetectorData;
+import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**
  *
  * @author thuxohl
  */
-public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData> implements MotionDetectorInterface {
+public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData> implements MotionDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionDetectorData.getDefaultInstance()));

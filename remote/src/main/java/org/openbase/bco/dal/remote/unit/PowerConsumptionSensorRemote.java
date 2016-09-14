@@ -21,19 +21,19 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
+import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensorData> implements PowerConsumptionSensorInterface {
+public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensorData> implements PowerConsumptionSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));

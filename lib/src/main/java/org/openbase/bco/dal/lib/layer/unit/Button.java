@@ -22,13 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ButtonStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface DimmableLightInterface extends PowerStateOperationService, BrightnessStateOperationService {
+public interface Button extends ButtonStateProviderService {
     
 }

@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface TamperDetectorInterface extends TamperStateProviderService {
+public interface MotionDetector extends MotionStateProviderService {
     
 }

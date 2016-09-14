@@ -1,8 +1,16 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package org.openbase.bco.dal.lib.layer.unit;
+
+import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 
 /*
  * #%L
- * DAL Library
+ * BCO DAL Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,13 +30,10 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
-
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface TemperatureSensorInterface extends TemperatureStateProviderService, TemperatureAlarmStateProviderService {
+public interface Dimmer extends PowerStateOperationService, IntensityStateOperationService {
     
 }

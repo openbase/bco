@@ -22,13 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author thuxohl
  */
-public interface TemperatureControllerInterface extends TemperatureStateProviderService, TargetTemperatureStateOperationService {
+public interface DimmableLight extends PowerStateOperationService, BrightnessStateOperationService {
     
 }

@@ -21,19 +21,19 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.HandleInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.homeautomation.unit.HandleDataType.HandleData;
+import org.openbase.bco.dal.lib.layer.unit.Handle;
 
 /**
  *
  * @author thuxohl
  */
-public class HandleRemote extends AbstractUnitRemote<HandleData> implements HandleInterface {
+public class HandleRemote extends AbstractUnitRemote<HandleData> implements Handle {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleData.getDefaultInstance()));

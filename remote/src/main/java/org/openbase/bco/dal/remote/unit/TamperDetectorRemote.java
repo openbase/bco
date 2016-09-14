@@ -21,19 +21,19 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.TamperDetectorInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TamperStateType.TamperState;
 import rst.homeautomation.unit.TamperDetectorDataType.TamperDetectorData;
+import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 
 /**
  *
  * @author thuxohl
  */
-public class TamperDetectorRemote extends AbstractUnitRemote<TamperDetectorData> implements TamperDetectorInterface {
+public class TamperDetectorRemote extends AbstractUnitRemote<TamperDetectorData> implements TamperDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));

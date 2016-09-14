@@ -1,8 +1,8 @@
-package org.openbase.bco.dal.remote.control.action;
+package org.openbase.bco.dal.lib.layer.unit;
 
 /*
  * #%L
- * DAL Remote
+ * DAL Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,10 +22,12 @@ package org.openbase.bco.dal.remote.control.action;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
+
 /**
  *
- * @author mpohling
+ * @author thuxohl
  */
-public interface ActionInterface {
+public interface Handle extends HandleStateProviderService {
     
 }

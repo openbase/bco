@@ -36,7 +36,7 @@ import rst.homeautomation.unit.ReedContactDataType.ReedContactData;
  *
  * @author thuxohl
  */
-public class ReedContactController extends AbstractUnitController<ReedContactData, ReedContactData.Builder> implements ReedContactInterface {
+public class ReedContactController extends AbstractUnitController<ReedContactData, ReedContactData.Builder> implements ReedContact {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedContactData.getDefaultInstance()));

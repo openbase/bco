@@ -21,19 +21,19 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.ButtonInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonDataType.ButtonData;
+import org.openbase.bco.dal.lib.layer.unit.Button;
 
 /**
  *
  * @author thuxohl
  */
-public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements ButtonInterface {
+public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements Button {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));

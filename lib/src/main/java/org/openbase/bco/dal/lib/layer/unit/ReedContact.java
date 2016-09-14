@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface SmokeDetectorInterface extends SmokeAlarmStateProviderService, SmokeStateProviderService {
+public interface ReedContact extends ContactStateProviderService {
+
 }

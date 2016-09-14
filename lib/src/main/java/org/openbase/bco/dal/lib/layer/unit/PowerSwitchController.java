@@ -38,7 +38,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author mpohling
  */
-public class PowerSwitchController extends AbstractUnitController<PowerSwitchData, PowerSwitchData.Builder> implements PowerSwitchInterface {
+public class PowerSwitchController extends AbstractUnitController<PowerSwitchData, PowerSwitchData.Builder> implements PowerSwitch {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerSwitchData.getDefaultInstance()));

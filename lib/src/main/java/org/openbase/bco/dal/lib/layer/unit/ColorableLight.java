@@ -22,13 +22,14 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 
 /**
  *
- * @author thuxohl
+ * @author mpohling
  */
-public interface MonitorInterface extends PowerStateOperationService, StandbyStateOperationService {
+public interface ColorableLight extends ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService {
     
 }

@@ -22,14 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface ColorableLightInterface extends ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService {
+public interface TemperatureController extends TemperatureStateProviderService, TargetTemperatureStateOperationService {
     
 }

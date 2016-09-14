@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.LightInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -30,12 +29,13 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.LightDataType.LightData;
+import org.openbase.bco.dal.lib.layer.unit.Light;
 
 /**
  *
  * @author thuxohl
  */
-public class LightRemote extends AbstractUnitRemote<LightData> implements LightInterface {
+public class LightRemote extends AbstractUnitRemote<LightData> implements Light {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightData.getDefaultInstance()));

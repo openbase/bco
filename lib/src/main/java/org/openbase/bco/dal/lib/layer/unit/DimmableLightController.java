@@ -39,7 +39,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author thuxohl
  */
-public class DimmableLightController extends AbstractUnitController<DimmableLightData, DimmableLightData.Builder> implements DimmableLightInterface {
+public class DimmableLightController extends AbstractUnitController<DimmableLightData, DimmableLightData.Builder> implements DimmableLight {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmableLightData.getDefaultInstance()));

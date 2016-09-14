@@ -35,7 +35,7 @@ import rst.homeautomation.unit.TemperatureSensorDataType.TemperatureSensorData;
  *
  * @author thuxohl
  */
-public class TemperatureSensorController extends AbstractUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensorInterface {
+public class TemperatureSensorController extends AbstractUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));

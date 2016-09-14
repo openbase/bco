@@ -36,7 +36,7 @@ import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSe
  *
  * @author mpohling
  */
-public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensorInterface {
+public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));

@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.PowerSwitchInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -30,12 +29,13 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.PowerSwitchDataType.PowerSwitchData;
+import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 
 /**
  *
  * @author thuxohl
  */
-public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> implements PowerSwitchInterface {
+public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> implements PowerSwitch {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerSwitchData.getDefaultInstance()));

@@ -38,7 +38,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author thuxohl
  */
-public class RollerShutterController extends AbstractUnitController<RollerShutterData, RollerShutterData.Builder> implements RollerShutterInterface {
+public class RollerShutterController extends AbstractUnitController<RollerShutterData, RollerShutterData.Builder> implements RollerShutter {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollerShutterData.getDefaultInstance()));

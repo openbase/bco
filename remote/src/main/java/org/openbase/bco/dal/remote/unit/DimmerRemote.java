@@ -6,7 +6,6 @@
 package org.openbase.bco.dal.remote.unit;
 
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.DimmerInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -15,6 +14,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.IntensityStateType.IntensityState;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.DimmerDataType.DimmerData;
+import org.openbase.bco.dal.lib.layer.unit.Dimmer;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import rst.homeautomation.unit.DimmerDataType.DimmerData;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements DimmerInterface {
+public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimmer {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));

@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.TemperatureSensorInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
@@ -29,12 +28,13 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 import rst.homeautomation.unit.TemperatureSensorDataType.TemperatureSensorData;
+import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 
 /**
  *
  * @author thuxohl
  */
-public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensorData> implements TemperatureSensorInterface {
+public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensorData> implements TemperatureSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));

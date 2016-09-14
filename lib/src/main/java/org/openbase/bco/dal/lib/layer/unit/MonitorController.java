@@ -40,7 +40,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author mpohling
  */
-public class MonitorController extends AbstractUnitController<MonitorData, MonitorData.Builder> implements MonitorInterface {
+public class MonitorController extends AbstractUnitController<MonitorData, MonitorData.Builder> implements Monitor {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MonitorData.getDefaultInstance()));

@@ -1,16 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openbase.bco.dal.lib.layer.unit;
-
-import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 
 /*
  * #%L
- * BCO DAL Library
+ * DAL Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -30,10 +22,12 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author thuxohl
  */
-public interface DimmerInterface extends PowerStateOperationService, IntensityStateOperationService {
-    
+public interface SmokeDetector extends SmokeAlarmStateProviderService, SmokeStateProviderService {
 }

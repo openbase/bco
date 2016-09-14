@@ -38,7 +38,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author thuxohl
  */
-public class LightController extends AbstractUnitController<LightData, LightData.Builder> implements LightInterface {
+public class LightController extends AbstractUnitController<LightData, LightData.Builder> implements Light {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightData.getDefaultInstance()));

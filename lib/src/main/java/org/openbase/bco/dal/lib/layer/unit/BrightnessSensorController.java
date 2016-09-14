@@ -34,7 +34,7 @@ import rst.homeautomation.unit.BrightnessSensorDataType.BrightnessSensorData;
  *
  * @author thuxohl
  */
-public class BrightnessSensorController extends AbstractUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensorInterface {
+public class BrightnessSensorController extends AbstractUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorData.getDefaultInstance()));

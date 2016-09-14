@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.BatteryStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface LightInterface extends PowerStateOperationService {
+public interface Battery extends BatteryStateProviderService {
     
 }

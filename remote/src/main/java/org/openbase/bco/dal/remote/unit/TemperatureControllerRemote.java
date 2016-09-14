@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureControllerInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -30,12 +29,13 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 import rst.homeautomation.unit.TemperatureControllerDataType.TemperatureControllerData;
+import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 
 /**
  *
  * @author mpohling
  */
-public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureControllerData> implements TemperatureControllerInterface {
+public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureControllerData> implements TemperatureController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureControllerData.getDefaultInstance()));

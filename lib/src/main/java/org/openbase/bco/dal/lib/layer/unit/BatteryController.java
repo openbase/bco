@@ -34,7 +34,7 @@ import rst.homeautomation.unit.BatteryDataType.BatteryData;
  *
  * @author thuxohl
  */
-public class BatteryController extends AbstractUnitController<BatteryData, BatteryData.Builder> implements BatteryInterface {
+public class BatteryController extends AbstractUnitController<BatteryData, BatteryData.Builder> implements Battery {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryData.getDefaultInstance()));

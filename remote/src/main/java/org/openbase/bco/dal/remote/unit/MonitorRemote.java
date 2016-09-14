@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.MonitorInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -31,12 +30,13 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.unit.MonitorDataType.MonitorData;
+import org.openbase.bco.dal.lib.layer.unit.Monitor;
 
 /**
  *
  * @author mpohling
  */
-public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements MonitorInterface {
+public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Monitor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MonitorData.getDefaultInstance()));

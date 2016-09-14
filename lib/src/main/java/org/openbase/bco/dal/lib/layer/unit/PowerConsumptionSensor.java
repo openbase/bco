@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface ReedContactInterface extends ContactStateProviderService {
-
+public interface PowerConsumptionSensor extends PowerConsumptionStateProviderService {
+    
 }

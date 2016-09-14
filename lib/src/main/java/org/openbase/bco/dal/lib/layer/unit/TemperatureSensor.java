@@ -22,12 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureAlarmStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface MotionDetectorInterface extends MotionStateProviderService {
+public interface TemperatureSensor extends TemperatureStateProviderService, TemperatureAlarmStateProviderService {
     
 }

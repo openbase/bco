@@ -21,19 +21,19 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.ReedContactInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ContactStateType.ContactState;
 import rst.homeautomation.unit.ReedContactDataType.ReedContactData;
+import org.openbase.bco.dal.lib.layer.unit.ReedContact;
 
 /**
  *
  * @author thuxohl
  */
-public class ReedContactRemote extends AbstractUnitRemote<ReedContactData> implements ReedContactInterface {
+public class ReedContactRemote extends AbstractUnitRemote<ReedContactData> implements ReedContact {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedContactData.getDefaultInstance()));

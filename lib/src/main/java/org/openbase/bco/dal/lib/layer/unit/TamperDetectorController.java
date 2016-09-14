@@ -35,7 +35,7 @@ import rst.timing.TimestampType;
  *
  * @author thuxohl
  */
-public class TamperDetectorController extends AbstractUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetectorInterface {
+public class TamperDetectorController extends AbstractUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));

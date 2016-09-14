@@ -21,12 +21,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
+
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface RollerShutterInterface extends BlindStateOperationService {
-
+public interface PowerSwitch extends PowerStateOperationService {
+    
 }

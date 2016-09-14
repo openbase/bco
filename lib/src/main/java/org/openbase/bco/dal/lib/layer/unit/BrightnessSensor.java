@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface PowerConsumptionSensorInterface extends PowerConsumptionStateProviderService {
+public interface BrightnessSensor extends BrightnessStateProviderService {
     
 }

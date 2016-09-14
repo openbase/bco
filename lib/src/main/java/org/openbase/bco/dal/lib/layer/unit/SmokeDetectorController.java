@@ -36,7 +36,7 @@ import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
  *
  * @author thuxohl
  */
-public class SmokeDetectorController extends AbstractUnitController<SmokeDetectorData, SmokeDetectorData.Builder> implements SmokeDetectorInterface {
+public class SmokeDetectorController extends AbstractUnitController<SmokeDetectorData, SmokeDetectorData.Builder> implements SmokeDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetectorData.getDefaultInstance()));

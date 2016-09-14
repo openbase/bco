@@ -29,13 +29,13 @@ import org.openbase.jul.schedule.Timeout;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
-import org.openbase.bco.dal.lib.layer.unit.MotionDetectorInterface;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.state.MotionStateType;
 import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
+import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**
  *
@@ -51,7 +51,7 @@ public class PresenseDetector extends ObservableImpl<MotionState> implements Mot
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final List<MotionDetectorInterface> motionSensorList;
+    private final List<MotionDetector> motionSensorList;
     private MotionStateType.MotionState.Builder motionState;
     private Timeout motionTimeout;
 

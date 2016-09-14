@@ -22,12 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface BrightnessSensorInterface extends BrightnessStateProviderService {
+public interface Monitor extends PowerStateOperationService, StandbyStateOperationService {
     
 }

@@ -21,13 +21,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 
 /**
  *
  * @author thuxohl
  */
-public interface HandleInterface extends HandleStateProviderService {
-    
+public interface RollerShutter extends BlindStateOperationService {
+
 }

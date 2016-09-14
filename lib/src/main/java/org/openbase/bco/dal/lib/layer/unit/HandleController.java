@@ -36,7 +36,7 @@ import rst.homeautomation.unit.HandleDataType.HandleData;
  *
  * @author thuxohl
  */
-public class HandleController extends AbstractUnitController<HandleData, HandleData.Builder> implements HandleInterface {
+public class HandleController extends AbstractUnitController<HandleData, HandleData.Builder> implements Handle {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleData.getDefaultInstance()));

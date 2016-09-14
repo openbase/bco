@@ -34,7 +34,7 @@ import rst.timing.TimestampType;
  *
  * @author mpohling
  */
-public class MotionDetectorController extends AbstractUnitController<MotionDetectorData, MotionDetectorData.Builder> implements MotionDetectorInterface {
+public class MotionDetectorController extends AbstractUnitController<MotionDetectorData, MotionDetectorData.Builder> implements MotionDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionDetectorData.getDefaultInstance()));

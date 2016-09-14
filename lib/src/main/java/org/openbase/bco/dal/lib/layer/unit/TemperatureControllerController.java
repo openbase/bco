@@ -39,7 +39,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class TemperatureControllerController extends AbstractUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureControllerInterface {
+public class TemperatureControllerController extends AbstractUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureControllerData.getDefaultInstance()));

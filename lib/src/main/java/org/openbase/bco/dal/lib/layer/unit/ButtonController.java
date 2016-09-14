@@ -35,7 +35,7 @@ import rst.timing.TimestampType;
  *
  * @author mpohling
  */
-public class ButtonController extends AbstractUnitController<ButtonData, ButtonData.Builder> implements ButtonInterface {
+public class ButtonController extends AbstractUnitController<ButtonData, ButtonData.Builder> implements Button {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));

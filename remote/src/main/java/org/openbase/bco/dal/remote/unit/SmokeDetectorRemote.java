@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.SmokeDetectorInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
@@ -29,12 +28,13 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
 import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
+import org.openbase.bco.dal.lib.layer.unit.SmokeDetector;
 
 /**
  *
  * @author thuxohl
  */
-public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetectorData> implements SmokeDetectorInterface {
+public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetectorData> implements SmokeDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetectorData.getDefaultInstance()));

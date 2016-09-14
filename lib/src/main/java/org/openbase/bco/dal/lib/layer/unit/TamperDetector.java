@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.provider.BatteryStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 
 /**
  *
  * @author thuxohl
  */
-public interface BatteryInterface extends BatteryStateProviderService {
+public interface TamperDetector extends TamperStateProviderService {
     
 }

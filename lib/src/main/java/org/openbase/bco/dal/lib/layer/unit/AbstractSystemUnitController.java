@@ -41,11 +41,11 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.unit.SystemUnitDataType;
 import rst.homeautomation.unit.UnitConfigType;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -104,7 +104,7 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
     }
 
     @Override
-    public void registerMethods(RSBLocalServerInterface server) {
+    public void registerMethods(RSBLocalServer server) {
         // dummy construct: For registering methods overwrite this method.
     }
 

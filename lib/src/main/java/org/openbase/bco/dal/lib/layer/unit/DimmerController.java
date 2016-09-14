@@ -45,7 +45,7 @@ import rst.homeautomation.unit.UnitConfigType;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DimmerController extends AbstractUnitController<DimmerData, DimmerData.Builder> implements DimmerInterface {
+public class DimmerController extends AbstractUnitController<DimmerData, DimmerData.Builder> implements Dimmer {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));

@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.ColorableLightInterface;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -35,12 +34,13 @@ import rst.homeautomation.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
+import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 
 /**
  *
  * @author mpohling
  */
-public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData> implements ColorableLightInterface {
+public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData> implements ColorableLight {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorableLightData.getDefaultInstance()));
