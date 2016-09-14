@@ -52,7 +52,7 @@ public class DeviceConfig_1_VersionConsistencyHandler extends AbstractVersionCon
     private org.openbase.bco.registry.location.lib.LocationRegistry locationRegistry;
     private final Map<String, String> locationLabelIdMap;
 
-    public DeviceConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
+    public DeviceConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
         this.locationLabelIdMap = new HashMap<>();
     }

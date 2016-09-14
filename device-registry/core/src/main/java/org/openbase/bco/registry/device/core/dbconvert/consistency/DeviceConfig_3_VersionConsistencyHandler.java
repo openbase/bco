@@ -46,7 +46,7 @@ public class DeviceConfig_3_VersionConsistencyHandler extends AbstractVersionCon
 
     private final Map<String, String> unitConfigIdMap;
 
-    public DeviceConfig_3_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
+    public DeviceConfig_3_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
         this.unitConfigIdMap = new HashMap<>();
     }
