@@ -30,13 +30,13 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.UserActivityType.UserActivity;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserDataType.UserData;
 import rst.authorization.UserPresenceStateType.UserPresenceState;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -65,7 +65,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     }
 
     @Override
-    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(User.class, this, server);
     }
 

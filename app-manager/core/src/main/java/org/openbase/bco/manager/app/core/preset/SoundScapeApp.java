@@ -27,9 +27,8 @@ import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
-import org.openbase.jul.extension.rsb.com.RSBFactory;
+import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBListenerInterface;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.WatchDog;
 import rsb.Event;
@@ -37,6 +36,7 @@ import rsb.Handler;
 import rsb.Scope;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.state.ActivationStateType;
+import org.openbase.jul.extension.rsb.iface.RSBListener;
 
 /**
  *
@@ -53,7 +53,7 @@ public class SoundScapeApp extends AbstractApp {
         ZEN;
     }
 
-    private final RSBListenerInterface listener;
+    private final RSBListener listener;
     private final WatchDog listenerWatchDog;
     private final Scope scope = new Scope("/app/soundscape/theme/");
     private final AgentRegistryRemote agentRegistryRemote;
@@ -76,7 +76,7 @@ public class SoundScapeApp extends AbstractApp {
         agentBathAmbientColorZen = new AgentRemote();
 
         logger.info("Creating sound scape app with scope [" + scope.toString() + "]!");
-        this.listener = RSBFactory.getInstance().createSynchronizedListener(scope, RSBSharedConnectionConfig.getParticipantConfig());
+        this.listener = RSBFactoryImpl.getInstance().createSynchronizedListener(scope, RSBSharedConnectionConfig.getParticipantConfig());
         this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + scope.concat(RSBCommunicationService.SCOPE_SUFFIX_STATUS) + "]");
         listener.addHandler(new Handler() {
 

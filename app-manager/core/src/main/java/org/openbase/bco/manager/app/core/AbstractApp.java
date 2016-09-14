@@ -28,12 +28,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppDataType.AppData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -57,7 +57,7 @@ public abstract class AbstractApp extends AbstractExecutableController<AppData, 
     }
 
     @Override
-    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(App.class, this, server);
     }
 }

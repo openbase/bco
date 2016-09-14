@@ -42,7 +42,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
@@ -56,6 +55,7 @@ import rst.homeautomation.state.HandleStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -199,7 +199,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(Connection.class, this, server);
     }
 

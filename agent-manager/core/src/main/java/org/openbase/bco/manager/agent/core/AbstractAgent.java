@@ -28,13 +28,13 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentDataType;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -59,7 +59,7 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
     }
 
     @Override
-    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(Agent.class, this, server);
     }
 }

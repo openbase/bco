@@ -55,7 +55,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
@@ -83,6 +82,7 @@ import rst.spatial.LocationDataType.LocationData;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -468,7 +468,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public void registerMethods(RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(Location.class, this, server);
     }
 

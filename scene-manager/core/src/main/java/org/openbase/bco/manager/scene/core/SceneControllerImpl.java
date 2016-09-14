@@ -37,7 +37,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
@@ -51,6 +50,7 @@ import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonDataType.ButtonData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -181,7 +181,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public void registerMethods(final RSBLocalServerInterface server) throws CouldNotPerformException {
+    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(Scene.class, this, server);
     }
 
