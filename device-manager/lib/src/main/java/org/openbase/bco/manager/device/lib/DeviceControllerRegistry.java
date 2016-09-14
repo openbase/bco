@@ -21,14 +21,12 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.RegistryImpl;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface DeviceControllerRegistry extends Registry<String, Device, RegistryImpl<String, Device>> {
+public interface DeviceControllerRegistry extends Registry<String, Device> {
 
 }
