@@ -24,14 +24,14 @@ package org.openbase.bco.registry.location.core.consistency;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import java.util.ArrayList;
 import java.util.List;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -43,15 +43,15 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMapInterface<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entryMap, ProtoBufRegistryInterface<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMap<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> entryMap, ProtoBufRegistry<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         loopTestBottomUp(entry.getMessage(), registry);
     }
 
-    private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
         loopTestBottomUp(locationConfig, registry, new ArrayList<>());
     }
 
-    private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestBottomUp(final LocationConfig locationConfig, ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
 
         if (!locationConfig.hasPlacementConfig()) {
             return;
@@ -71,11 +71,11 @@ public class LocationLoopConsistencyHandler extends AbstractProtoBufRegistryCons
         loopTestBottomUp(registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage(), registry, processedLocations);
     }
 
-    private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry) throws InvalidStateException, CouldNotPerformException {
         loopTestTopDown(locationConfig, registry, new ArrayList<>());
     }
 
-    private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
+    private void loopTestTopDown(final LocationConfig locationConfig, ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry, List<String> processedLocations) throws InvalidStateException, CouldNotPerformException {
         markAsProcessed(locationConfig, processedLocations);
 
         for (String locationId : locationConfig.getChildIdList()) {

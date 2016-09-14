@@ -29,16 +29,16 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractVersionConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.FileSynchronizedRegistryInterface;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -49,7 +49,7 @@ public class SceneConfig_1_VersionConsistencyHandler extends AbstractVersionCons
     private DeviceRegistryRemote deviceRegistry;
     private final Map<String, String> unitConfigIdMap;
 
-    public SceneConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>> registry) throws InstantiationException, InterruptedException {
+    public SceneConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistry<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
         try {
             this.unitConfigIdMap = new HashMap<>();
@@ -63,7 +63,7 @@ public class SceneConfig_1_VersionConsistencyHandler extends AbstractVersionCons
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder> entry, ProtoBufMessageMapInterface<String, SceneConfig, SceneConfig.Builder> entryMap, ProtoBufRegistryInterface<String, SceneConfig, SceneConfig.Builder> registry) throws CouldNotPerformException, EntryModification, InitializationException {
+    public void processData(String id, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder> entry, ProtoBufMessageMap<String, SceneConfig, SceneConfig.Builder> entryMap, ProtoBufRegistry<String, SceneConfig, SceneConfig.Builder> registry) throws CouldNotPerformException, EntryModification, InitializationException {
         SceneConfig.Builder sceneConfig = entry.getMessage().toBuilder();
 
         if (unitConfigIdMap.isEmpty()) {

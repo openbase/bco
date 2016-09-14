@@ -26,13 +26,13 @@ import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.rsb.ScopeType.Scope;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -47,7 +47,7 @@ public class ScopeConsistencyHandler extends AbstractProtoBufRegistryConsistency
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder> entry, ProtoBufMessageMapInterface<String, AgentConfig, AgentConfig.Builder> entryMap, ProtoBufRegistryInterface<String, AgentConfig, AgentConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder> entry, ProtoBufMessageMap<String, AgentConfig, AgentConfig.Builder> entryMap, ProtoBufRegistry<String, AgentConfig, AgentConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         AgentConfig agentConfig = entry.getMessage();
 
         if (!agentConfig.hasLocationId()) {

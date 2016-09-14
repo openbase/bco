@@ -29,13 +29,13 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.rsb.ScopeType.Scope;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -52,7 +52,7 @@ public class ScopeConsistencyHandler extends AbstractProtoBufRegistryConsistency
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, AppConfig, AppConfig.Builder> entry, ProtoBufMessageMapInterface<String, AppConfig, AppConfig.Builder> entryMap, ProtoBufRegistryInterface<String, AppConfig, AppConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, AppConfig, AppConfig.Builder> entry, ProtoBufMessageMap<String, AppConfig, AppConfig.Builder> entryMap, ProtoBufRegistry<String, AppConfig, AppConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         AppConfig appConfig = entry.getMessage();
 
         if (!appConfig.hasLocationId()) {

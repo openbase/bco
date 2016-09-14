@@ -24,13 +24,13 @@ package org.openbase.bco.registry.user.core.consistency;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.rsb.ScopeType;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -39,7 +39,7 @@ import rst.rsb.ScopeType;
 public class AuthorizationGroupConfigScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> {
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entry, ProtoBufMessageMap<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entryMap, ProtoBufRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         AuthorizationGroupConfig userGroup = entry.getMessage();
 
         if (!userGroup.hasLabel() || userGroup.getLabel().isEmpty()) {

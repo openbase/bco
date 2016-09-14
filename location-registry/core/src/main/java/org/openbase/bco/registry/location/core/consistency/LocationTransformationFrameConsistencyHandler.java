@@ -25,12 +25,12 @@ package org.openbase.bco.registry.location.core.consistency;
 import org.openbase.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
 import rst.spatial.LocationConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -38,12 +38,12 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  */
 public class LocationTransformationFrameConsistencyHandler extends AbstractTransformationFrameConsistencyHandler<String, LocationConfig, LocationConfig.Builder> {
 
-    public LocationTransformationFrameConsistencyHandler(final ProtoBufRegistryInterface<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> locationRegistry) {
+    public LocationTransformationFrameConsistencyHandler(final ProtoBufRegistry<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> locationRegistry) {
         super(locationRegistry);
     }
 
     @Override
-    public void processData(final String id, final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, final ProtoBufMessageMapInterface<String, LocationConfig, LocationConfig.Builder> entryMap, final ProtoBufRegistryInterface<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(final String id, final IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, final ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap, final ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         LocationConfig locationConfig = entry.getMessage();
         PlacementConfig placementConfig = verifyAndUpdatePlacement(locationConfig.getLabel(), locationConfig.getPlacementConfig());
 
