@@ -47,7 +47,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    private Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> registry;
+    private Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> registry;
 
     public PublishLocationTransformationRegistryPlugin() throws org.openbase.jul.exception.InstantiationException {
         try {
@@ -60,7 +60,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     }
 
     @Override
-    public void init(final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> registry) throws InitializationException, InterruptedException {
+    public void init(final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
             this.registry = registry;
             for (IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry : registry.getEntries()) {
@@ -119,10 +119,10 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             transformation.setAuthority(LocationRegistryLauncher.APP_NAME);
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (CouldNotPerformException | TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct["+registry.isConsistent()+"]", ex), logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct[" + registry.isConsistent() + "]", ex), logger, LogLevel.WARN);
         }
     }
-    
+
     @Override
     public void shutdown() {
         //TODO insert rct shutdown after implementation ;)

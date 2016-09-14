@@ -44,17 +44,15 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class DeviceConfig_3_VersionConsistencyHandler extends AbstractVersionConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 
-    private org.openbase.bco.registry.location.lib.LocationRegistry locationRegistry;
     private final Map<String, String> unitConfigIdMap;
 
-    public DeviceConfig_3_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
+    public DeviceConfig_3_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
         this.unitConfigIdMap = new HashMap<>();
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMapInterface<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistryInterface<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-
         DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
 
         boolean modification = false;

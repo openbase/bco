@@ -49,6 +49,8 @@ public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
     private static final String BINDING_CONFIG_FIELD = "binding_config";
     private static final String BINDING_SERVICE_CONFIG_FIELD = "binding_service_config";
     private static final String BINDING_ID_FIELD = "binding_id";
+    private static final String BOUND_TO_SYSTEM_UNIT_FIELD = "bound_to_system_unit";
+    private static final String BOUND_TO_DEVICE_FIELD = "bound_to_device";
 
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
@@ -122,6 +124,10 @@ public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
                 String unitTemplateConfigId = unitConfig.get(UNIT_TEMPLATE_CONFIG_ID_FIELD).getAsString().replace(oldType, newType);
                 unitConfig.remove(UNIT_TEMPLATE_CONFIG_ID_FIELD);
                 unitConfig.addProperty(UNIT_TEMPLATE_CONFIG_ID_FIELD, unitTemplateConfigId);
+
+                boolean boundToSystemUnit = unitConfig.get(BOUND_TO_DEVICE_FIELD).getAsBoolean();
+                unitConfig.remove(BOUND_TO_DEVICE_FIELD);
+                unitConfig.addProperty(BOUND_TO_SYSTEM_UNIT_FIELD, boundToSystemUnit);
 
                 JsonArray serviceConfigs = unitConfig.getAsJsonArray(SERVICE_CONFIG_FIELD);
                 if (serviceConfigs != null) {

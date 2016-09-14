@@ -49,7 +49,7 @@ public class SceneConfig_1_VersionConsistencyHandler extends AbstractVersionCons
     private DeviceRegistryRemote deviceRegistry;
     private final Map<String, String> unitConfigIdMap;
 
-    public SceneConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>, ProtoBufRegistryInterface<String, SceneConfig, SceneConfig.Builder>> registry) throws InstantiationException, InterruptedException {
+    public SceneConfig_1_VersionConsistencyHandler(final DBVersionControl versionControl, final FileSynchronizedRegistryInterface<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>> registry) throws InstantiationException, InterruptedException {
         super(versionControl, registry);
         try {
             this.unitConfigIdMap = new HashMap<>();

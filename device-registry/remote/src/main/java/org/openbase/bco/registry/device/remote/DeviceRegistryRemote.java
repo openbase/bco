@@ -68,6 +68,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
     }
 
     private final RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRemoteRegistry;
@@ -912,7 +913,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
     @Override
     public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
         try {
-            return getData().getUnitTemplateRegistryConsistent();
+            validateData();
+            return getData().getUnitGroupRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
@@ -927,7 +929,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
     @Override
     public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException {
         try {
-            return getData().getUnitTemplateRegistryConsistent();
+            validateData();
+            return getData().getDeviceClassRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
@@ -942,7 +945,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
     @Override
     public Boolean isDeviceConfigRegistryConsistent() throws CouldNotPerformException {
         try {
-            return getData().getUnitTemplateRegistryConsistent();
+            validateData();
+            return getData().getDeviceConfigRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
@@ -957,6 +961,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
     @Override
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
         try {
+            validateData();
             return getData().getUnitGroupRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);

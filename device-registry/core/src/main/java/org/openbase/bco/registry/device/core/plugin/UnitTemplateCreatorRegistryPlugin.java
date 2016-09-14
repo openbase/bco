@@ -46,7 +46,7 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>, ?> config) throws InitializationException, InterruptedException {
+    public void init(Registry<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>> config) throws InitializationException, InterruptedException {
         try {
             String templateId;
             UnitTemplate template;

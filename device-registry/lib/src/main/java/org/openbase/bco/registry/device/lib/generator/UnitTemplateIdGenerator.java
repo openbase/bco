@@ -21,18 +21,18 @@ package org.openbase.bco.registry.device.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class UnitTemplateIdGenerator implements IdGenerator<String, UnitTemplate>{
+public class UnitTemplateIdGenerator implements IdGenerator<String, UnitTemplate> {
     
     @Override
     public String generateId(final UnitTemplate message) throws CouldNotPerformException {
@@ -41,9 +41,13 @@ public class UnitTemplateIdGenerator implements IdGenerator<String, UnitTemplate
             if (!message.hasType()) {
                 throw new InvalidStateException("Field [UnitType] is missing!");
             }
-            return StringProcessor.transformToIdString(message.getType().name());
+            return generateId(message.getType());
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate id!", ex);
         }
+    }
+    
+    public String generateId(final UnitType type) {
+        return StringProcessor.transformToIdString(type.name());
     }
 }

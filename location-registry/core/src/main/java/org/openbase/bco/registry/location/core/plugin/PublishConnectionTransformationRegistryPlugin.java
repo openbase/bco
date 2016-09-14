@@ -44,13 +44,13 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry;
-    final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> locationRegistry;
+    private Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> registry;
+    final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> locationRegistry;
 
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    public PublishConnectionTransformationRegistryPlugin(final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>, ?> locationRegistry) throws org.openbase.jul.exception.InstantiationException {
+    public PublishConnectionTransformationRegistryPlugin(final Registry<String, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder>> locationRegistry) throws org.openbase.jul.exception.InstantiationException {
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
@@ -61,7 +61,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>, ?> registry) throws InitializationException, InterruptedException {
+    public void init(Registry<String, IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
             this.registry = registry;
             for (IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry : registry.getEntries()) {
@@ -121,7 +121,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
     public void afterUpdate(IdentifiableMessage<String, ConnectionConfig, ConnectionConfig.Builder> entry) throws CouldNotPerformException {
         publishTransformation(entry);
     }
-    
+
     @Override
     public void shutdown() {
         //TODO insert rct shutdown after implementation ;)

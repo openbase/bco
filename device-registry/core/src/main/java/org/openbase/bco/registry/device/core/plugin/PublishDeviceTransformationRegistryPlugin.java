@@ -63,7 +63,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     }
 
     @Override
-    public void init(final Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>, ?> registry) throws InitializationException, InterruptedException {
+    public void init(final Registry<String, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
             for (IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry : registry.getEntries()) {
                 publishTransformation(entry);

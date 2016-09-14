@@ -21,7 +21,6 @@ package org.openbase.bco.registry.user.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -32,23 +31,23 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistryInterface;
-import rst.authorization.UserGroupConfigType.UserGroupConfig;
+import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UserGroupConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UserGroupConfig, UserGroupConfig.Builder> {
+public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> {
 
-    private final Map<String, UserGroupConfig> userGroupMap;
+    private final Map<String, AuthorizationGroupConfig> userGroupMap;
 
-    public UserGroupConfigLabelConsistencyHandler() {
+    public AuthorizationGroupConfigLabelConsistencyHandler() {
         this.userGroupMap = new HashMap<>();
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UserGroupConfig, UserGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, UserGroupConfig, UserGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, UserGroupConfig, UserGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UserGroupConfig userGroup = entry.getMessage();
+    public void processData(String id, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entry, ProtoBufMessageMapInterface<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> entryMap, ProtoBufRegistryInterface<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        AuthorizationGroupConfig userGroup = entry.getMessage();
 
         if (!userGroup.hasLabel() || userGroup.getLabel().isEmpty()) {
             throw new NotAvailableException("userGroup.label");
