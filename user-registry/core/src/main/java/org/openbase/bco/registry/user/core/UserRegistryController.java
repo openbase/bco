@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.AuthorizationGroupConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.user.core.consistency.AuthorizationGroupConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.user.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.generator.AuthorizationGroupConfigIdGenerator;
@@ -136,12 +136,14 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             userRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
         }
 
         try {
             authorizationGroupRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
         }
     }
 
@@ -172,6 +174,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
         // sync read only flags
         setDataField(UserRegistryData.USER_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userRegistry.isReadOnly());
         setDataField(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, authorizationGroupRegistry.isReadOnly());
+        setDataField(UserRegistryData.USER_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, userRegistry.isConsistent());
+        setDataField(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, authorizationGroupRegistry.isConsistent());
         super.notifyChange();
     }
 

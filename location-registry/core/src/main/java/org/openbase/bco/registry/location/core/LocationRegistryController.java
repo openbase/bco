@@ -68,13 +68,11 @@ import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServerInterface;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -100,7 +98,6 @@ public class LocationRegistryController extends RSBCommunicationService<Location
     private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> connectionConfigRegistry;
 
     private final DeviceRegistryRemote deviceRegistryRemote;
-    private Observer<DeviceRegistryData> deviceRegistryUpdateObserver;
 
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(LocationRegistryData.newBuilder());
@@ -110,11 +107,6 @@ public class LocationRegistryController extends RSBCommunicationService<Location
 
             locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
             connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
-
-            deviceRegistryUpdateObserver = (Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
-                locationConfigRegistry.checkConsistency();
-                connectionConfigRegistry.checkConsistency();
-            };
 
             deviceRegistryRemote = new DeviceRegistryRemote();
 
@@ -175,8 +167,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             super.activate();
             deviceRegistryRemote.activate();
             deviceRegistryRemote.waitForData();
-            deviceRegistryRemote.validateData();
-            deviceRegistryRemote.addDataObserver(deviceRegistryUpdateObserver);
+            locationConfigRegistry.registerDependency(deviceRegistryRemote.getDeviceConfigRemoteRegistry());
+            connectionConfigRegistry.registerDependency(deviceRegistryRemote.getDeviceConfigRemoteRegistry());
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
@@ -204,7 +196,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      */
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        deviceRegistryRemote.removeDataObserver(deviceRegistryUpdateObserver);
+        locationConfigRegistry.removeDependency(deviceRegistryRemote.getDeviceConfigRemoteRegistry());
+        connectionConfigRegistry.removeDependency(deviceRegistryRemote.getDeviceConfigRemoteRegistry());
         deviceRegistryRemote.deactivate();
         super.deactivate();
     }
@@ -240,6 +233,7 @@ public class LocationRegistryController extends RSBCommunicationService<Location
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException
      */
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {

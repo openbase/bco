@@ -58,7 +58,6 @@ import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.rsb.ScopeType;
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
@@ -76,7 +75,6 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
     private ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> appConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
 
     public AppRegistryController() throws InstantiationException, InterruptedException {
         super(AppRegistryData.newBuilder());
@@ -88,27 +86,10 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
             appClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
             appConfigRegistry.activateVersionControl(DummyConverter.class.getPackage());
 
-            locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
-
-                @Override
-                public void update(Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
-                    appConfigRegistry.checkConsistency();
-                }
-            };
-
             locationRegistryRemote = new LocationRegistryRemote();
 
             appClassRegistry.loadRegistry();
             appConfigRegistry.loadRegistry();
-
-            appClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>> source, Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> data) throws Exception {
-                    notifyChange();
-                    appConfigRegistry.checkConsistency();
-                }
-            });
 
             //TODO: should be activated but fails in the current db version since appClasses have just been introduced
             //appConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler(appClassRegistry));
@@ -142,22 +123,32 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
             super.activate();
             locationRegistryRemote.activate();
             locationRegistryRemote.waitForData();
-            locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
+
+            appConfigRegistry.registerDependency(appClassRegistry);
+            appConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
 
         try {
             appClassRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            logger.warn("Initial consistency check failed!");
+            notifyChange();
+        }
+
+        try {
             appConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             logger.warn("Initial consistency check failed!");
+            notifyChange();
         }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        locationRegistryRemote.removeDataObserver(locationRegistryUpdateObserver);
+        appConfigRegistry.removeDependency(appClassRegistry);
+        appConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         locationRegistryRemote.deactivate();
         super.deactivate();
     }
@@ -185,6 +176,8 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
         // sync read only flags
         setDataField(AppRegistryData.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
+        setDataField(AppRegistryData.APP_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, appConfigRegistry.isConsistent());
+        setDataField(AppRegistryData.APP_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, appClassRegistry.isConsistent());
         super.notifyChange();
     }
 
