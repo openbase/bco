@@ -185,12 +185,14 @@ public class LocationRegistryController extends RSBCommunicationService<Location
             locationConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
         }
 
         try {
             connectionConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
         }
     }
 
@@ -244,6 +246,8 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         // sync read only flags
         setDataField(LocationRegistryData.LOCATION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, locationConfigRegistry.isReadOnly());
         setDataField(LocationRegistryData.CONNECTION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, connectionConfigRegistry.isReadOnly());
+        setDataField(LocationRegistryData.LOCATION_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, locationConfigRegistry.isConsistent());
+        setDataField(LocationRegistryData.CONNECTION_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, connectionConfigRegistry.isConsistent());
         super.notifyChange();
     }
 
