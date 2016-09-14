@@ -53,7 +53,6 @@ import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.rsb.ScopeType;
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
@@ -70,7 +69,6 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     private ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> sceneConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(SceneRegistryData.newBuilder());
@@ -79,14 +77,6 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
             sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistryData.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
 
             sceneConfigRegistry.activateVersionControl(SceneConfig_0_To_1_DBConverter.class.getPackage());
-
-            locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
-
-                @Override
-                public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
-                    sceneConfigRegistry.checkConsistency();
-                }
-            };
 
             locationRegistryRemote = new LocationRegistryRemote();
 
@@ -122,7 +112,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
             super.activate();
             locationRegistryRemote.activate();
             locationRegistryRemote.waitForData();
-            locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
+            sceneConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
@@ -131,12 +121,13 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
             sceneConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             logger.warn("Initial consistency check failed!");
+            notifyChange();
         }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        locationRegistryRemote.removeDataObserver(locationRegistryUpdateObserver);
+        sceneConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         locationRegistryRemote.deactivate();
         super.deactivate();
     }
@@ -161,6 +152,7 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(SceneRegistryData.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
+        setDataField(SceneRegistryData.SCENE_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, sceneConfigRegistry.isConsistent());
         super.notifyChange();
     }
 

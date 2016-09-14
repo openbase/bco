@@ -57,11 +57,7 @@ import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.rsb.ScopeType;
-<<<<<<< HEAD
-=======
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
->>>>>>> d68c263bc593704a498fd4c1c2f270b49a3c2841
 
 /**
  *

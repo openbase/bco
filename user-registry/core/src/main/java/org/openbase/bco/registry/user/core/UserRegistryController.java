@@ -132,6 +132,8 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
 
+        authorizationGroupRegistry.registerDependency(userRegistry);
+
         try {
             userRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
@@ -149,6 +151,7 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
+        authorizationGroupRegistry.removeDependency(userRegistry);
         super.deactivate();
     }
 

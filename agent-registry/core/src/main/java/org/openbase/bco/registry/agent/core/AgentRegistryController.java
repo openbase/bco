@@ -56,7 +56,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
@@ -75,7 +74,6 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     private ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> agentConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
-    private Observer<LocationRegistryData> locationRegistryUpdateObserver;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(AgentRegistryData.newBuilder());
@@ -87,27 +85,10 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             agentClassRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
             agentConfigRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
 
-            locationRegistryUpdateObserver = new Observer<LocationRegistryData>() {
-
-                @Override
-                public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
-                    agentConfigRegistry.checkConsistency();
-                }
-            };
-
             locationRegistryRemote = new LocationRegistryRemote();
 
             agentClassRegistry.loadRegistry();
             agentConfigRegistry.loadRegistry();
-
-            agentClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>> source, Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> data) throws Exception {
-                    notifyChange();
-                    agentConfigRegistry.checkConsistency();
-                }
-            });
 
             //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
             //agentConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
@@ -141,7 +122,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             super.activate();
             locationRegistryRemote.activate();
             locationRegistryRemote.waitForData();
-            locationRegistryRemote.addDataObserver(locationRegistryUpdateObserver);
+            agentConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
+            agentConfigRegistry.registerDependency(agentClassRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
@@ -151,12 +133,14 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
             agentConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             logger.warn("Initial consistency check failed!");
+            notifyChange();
         }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        locationRegistryRemote.removeDataObserver(locationRegistryUpdateObserver);
+        agentConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
+        agentConfigRegistry.removeDependency(agentClassRegistry);
         locationRegistryRemote.deactivate();
         super.deactivate();
     }
@@ -185,6 +169,8 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
         // sync read only flags
         setDataField(AgentRegistryData.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
+        setDataField(AgentRegistryData.AGENT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, agentConfigRegistry.isConsistent());
+        setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
         super.notifyChange();
     }
 
