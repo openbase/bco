@@ -23,13 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.RegistryImpl;
 
 /**
  *
  * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
-public interface UnitControllerRegistry extends Registry<String, UnitController, RegistryImpl<String, UnitController>> {
+public interface UnitControllerRegistry extends Registry<String, UnitController> {
 
     /**
      * Returns a unit controller instance with the given scope.
