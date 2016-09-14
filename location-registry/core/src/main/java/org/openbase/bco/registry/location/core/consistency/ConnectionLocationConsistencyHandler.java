@@ -22,9 +22,9 @@ package org.openbase.bco.registry.location.core.consistency;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMapInterface;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -64,51 +64,50 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         }
     }
 
-    //TODO tamino: please reimplement more intuitive. May with a treemap where the key is the distance and the value the path.
-    private LocationConfig getLowestCommonParentLocation(List<String> locationIds, ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry) throws CouldNotPerformException {
-        // list that contains a list of location configs from the root location to one of the given locations in order
-        List<List<LocationConfig>> pathToRootLists = new ArrayList<>();
-        // the size of the shortest list with a path from root to parent
-        int shortestList = Integer.MAX_VALUE;
-        // the index of that shortest list
-        int shortestIndex = 0;
+    public static LocationConfig getLowestCommonParentLocation(List<String> locationIds, ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> locationConfigRegistry) throws CouldNotPerformException {
+        // list containing the pathes from root to each location given by locationIds sorted by the lenght of the path, e.g.:
+        //      home, apartment, hallway, entrance
+        //      home, apartment, outdoor
+        List<List<LocationConfig>> pathesFromRootMap = new ArrayList<>();
+
+        // fill the list according to the description above
         for (String id : locationIds) {
             LocationConfig location = locationConfigRegistry.getMessage(id);
-            pathToRootLists.add(new ArrayList<>());
+            List<LocationConfig> pathFromRootList = new ArrayList<>();
+            pathFromRootList.add(location);
             while (!location.getRoot()) {
                 location = locationConfigRegistry.getMessage(location.getPlacementConfig().getLocationId());
-                pathToRootLists.get(pathToRootLists.size() - 1).add(0, location);
+                // when adding a location at the front of the list, every entry is moved an index further
+                pathFromRootList.add(0, location);
             }
-            if (pathToRootLists.get(pathToRootLists.size() - 1).size() < shortestList) {
-                shortestList = pathToRootLists.get(pathToRootLists.size() - 1).size();
-                shortestIndex = pathToRootLists.size() - 1;
-            }
+            pathesFromRootMap.add(pathFromRootList);
         }
 
-        if (shortestList == 0) {
-            throw new NotAvailableException("LowestCommonParentLocation");
-        }
+        // sort the list after their sizes:
+        //      home, apartment, outdoor
+        //      home, apartment, hallway, entrance
+        pathesFromRootMap.sort(new Comparator<List<LocationConfig>>() {
 
-        for (int i = 0; i < shortestList; i++) {
-            for (int j = 0; j < pathToRootLists.size() - 1; j++) {
-                if (!pathToRootLists.get(j).get(i).equals(pathToRootLists.get(j + 1).get(i))) {
-                    if (i - 1 < 0) {
-                        throw new CouldNotPerformException("");
-                    }
-                    return pathToRootLists.get(j).get(i - 1);
+            @Override
+            public int compare(List<LocationConfig> o1, List<LocationConfig> o2) {
+                return o2.size() - o1.size();
+            }
+        });
+
+        // find the lowest common parent, e.g. for the example above apartment
+        // by returning the index before the first elements where the pathes differ
+        int shortestPath = pathesFromRootMap.get(0).size();
+        for (int i = 0; i < shortestPath; ++i) {
+            String currentId = pathesFromRootMap.get(0).get(i).getId();
+            for (int j = 1; j < pathesFromRootMap.size(); ++j) {
+                if (!pathesFromRootMap.get(j).get(i).getId().equals(currentId)) {
+                    return pathesFromRootMap.get(0).get(i - 1);
                 }
             }
         }
-        try {
-            return pathToRootLists.get(shortestIndex).get(pathToRootLists.get(shortestIndex).size() - 1);
-        } catch (IndexOutOfBoundsException ex) {
-            String tiles = "[";
-            for (String id : locationIds) {
-                tiles += id + "; ";
-            }
-            tiles += "]";
-            throw new CouldNotPerformException("Could not find lowest common parent for tiles " + tiles);
-        }
+
+        // checking if a lowst common parent exists should not be necessary since a tile cannot be root
+        return pathesFromRootMap.get(0).get(0);
     }
 
     @Override
