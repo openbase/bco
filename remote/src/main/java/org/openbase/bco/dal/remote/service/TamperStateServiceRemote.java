@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.TamperStateType.TamperState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateProviderService> implements TamperStateProviderServiceCollection {
+public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateProviderService, TamperState> implements TamperStateProviderServiceCollection {
 
     public TamperStateServiceRemote() {
         super(ServiceType.TAMPER_STATE_SERVICE);
@@ -39,5 +44,39 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
     @Override
     public Collection<TamperStateProviderService> getTamperStateProviderServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the tamper state as tamper if at least one underlying service detects tamper and else no tamper.
+     * Additionally the last detection timestamp as set as the latest of the underlying services.
+     *
+     * @throws {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        TamperState.State tamperValue = TamperState.State.NO_TAMPER;
+        long lastDetection = 0;
+        for (TamperStateProviderService provider : getTamperStateProviderServices()) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
+                continue;
+            }
+
+            TamperState tamperState = provider.getTamperState();
+            if (tamperState.getValue() == TamperState.State.TAMPER) {
+                tamperValue = TamperState.State.TAMPER;
+            }
+
+            if (tamperState.getLastDetection().getTime() > lastDetection) {
+                lastDetection = tamperState.getLastDetection().getTime();
+            }
+        }
+
+        serviceState = TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public TamperState getTamperState() throws NotAvailableException {
+        return getServiceState();
     }
 }

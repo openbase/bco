@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.AlarmStateType.AlarmState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAlarmStateProviderService> implements SmokeAlarmStateProviderServiceCollection {
+public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAlarmStateProviderService, AlarmState> implements SmokeAlarmStateProviderServiceCollection {
 
     public SmokeAlarmStateServiceRemote() {
         super(ServiceType.SMOKE_ALARM_STATE_SERVICE);
@@ -39,5 +44,31 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
     @Override
     public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the alarm state as alarm if at least one underlying service is on alarm and else no alarm.
+     *
+     * @throws {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        AlarmState.State alarmValue = AlarmState.State.NO_ALARM;
+        for (SmokeAlarmStateProviderService provider : getSmokeAlarmStateProviderServices()) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
+                continue;
+            }
+
+            if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
+                alarmValue = AlarmState.State.ALARM;
+            }
+        }
+        serviceState = AlarmState.newBuilder().setValue(alarmValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public AlarmState getSmokeAlarmState() throws NotAvailableException {
+        return getServiceState();
     }
 }

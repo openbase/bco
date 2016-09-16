@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateProviderService> implements MotionStateProviderServiceCollection {
+public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateProviderService, MotionState> implements MotionStateProviderServiceCollection {
 
     public MotionStateServiceRemote() {
         super(ServiceType.MOTION_STATE_SERVICE);
@@ -39,5 +44,39 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
     @Override
     public Collection<MotionStateProviderService> getMotionStateProviderServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the motion state as motion if at least one underlying services replies with motion and else no motion.
+     * Additionally the last motion timestamp as set as the latest of the underlying services.
+     *
+     * @throws {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        MotionState.State motionValue = MotionState.State.NO_MOTION;
+        long lastMotion = 0;
+        for (MotionStateProviderService provider : getMotionStateProviderServices()) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
+                continue;
+            }
+
+            MotionState motionState = provider.getMotionState();
+            if (motionState.getValue() == MotionState.State.MOTION) {
+                motionValue = MotionState.State.MOTION;
+            }
+
+            if (motionState.hasLastMotion() && motionState.getLastMotion().getTime() > lastMotion) {
+                lastMotion = motionState.getLastMotion().getTime();
+            }
+        }
+
+        serviceState = MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public MotionState getMotionState() throws NotAvailableException {
+        return getServiceState();
     }
 }

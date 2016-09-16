@@ -51,9 +51,11 @@ public interface ColorStateOperationServiceCollection extends ColorStateOperatio
         return GlobalExecutionService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getColorStateOperationServices());
     }
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns the average rgb value for a collection of color services.
-     * 
+     *
      * @return
      * @throws NotAvailableException
      */

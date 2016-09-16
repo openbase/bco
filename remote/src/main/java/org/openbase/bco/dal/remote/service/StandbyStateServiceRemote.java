@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.StandbyStateType.StandbyState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStateOperationService> implements StandbyStateOperationServiceCollection {
+public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStateOperationService, StandbyState> implements StandbyStateOperationServiceCollection {
 
     public StandbyStateServiceRemote() {
         super(ServiceType.STANDBY_STATE_SERVICE);
@@ -39,5 +44,32 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     @Override
     public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the standby state as running if at least one underlying service is running and else standby.
+     *
+     * @throws {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        StandbyState.State standbyValue = StandbyState.State.STANDBY;
+        for (StandbyStateOperationService service : getStandbyStateOperationServices()) {
+            if (!((UnitRemote) service).isDataAvailable()) {
+                continue;
+            }
+
+            if (service.getStandbyState().getValue() == StandbyState.State.RUNNING) {
+                standbyValue = StandbyState.State.RUNNING;
+            }
+        }
+
+        serviceState = StandbyState.newBuilder().setValue(standbyValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public StandbyState getStandbyState() throws NotAvailableException {
+        return getServiceState();
     }
 }

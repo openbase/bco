@@ -40,6 +40,8 @@ public interface StandbyStateOperationServiceCollection extends StandbyStateOper
         return GlobalExecutionService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), getStandbyStateOperationServices());
     }
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns running if at least one of the standby services is running and
      * else standby.

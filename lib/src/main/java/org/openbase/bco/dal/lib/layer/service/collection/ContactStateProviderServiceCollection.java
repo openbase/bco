@@ -33,6 +33,8 @@ import rst.homeautomation.state.ContactStateType.ContactState;
  */
 public interface ContactStateProviderServiceCollection extends ContactStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns open if at least one of the reed switch providers returns open
      * and else no closed.

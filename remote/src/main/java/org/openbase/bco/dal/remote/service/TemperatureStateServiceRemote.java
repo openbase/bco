@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class TemperatureStateServiceRemote extends AbstractServiceRemote<TemperatureStateProviderService> implements TemperatureStateProviderServiceCollection {
+public class TemperatureStateServiceRemote extends AbstractServiceRemote<TemperatureStateProviderService, TemperatureState> implements TemperatureStateProviderServiceCollection {
 
     public TemperatureStateServiceRemote() {
         super(ServiceType.TEMPERATURE_STATE_SERVICE);
@@ -39,5 +44,34 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
     @Override
     public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the average temperature value.
+     *
+     * @throws {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        Double average = 0d;
+        Collection<TemperatureStateProviderService> temperatureStateProviderServices = getTemperatureStateProviderServices();
+        int amount = temperatureStateProviderServices.size();
+        for (TemperatureStateProviderService provider : temperatureStateProviderServices) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
+                amount--;
+                continue;
+            }
+
+            average += provider.getTemperatureState().getTemperature();
+        }
+        average /= amount;
+
+        serviceState = TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public TemperatureState getTemperatureState() throws NotAvailableException {
+        return getServiceState();
     }
 }

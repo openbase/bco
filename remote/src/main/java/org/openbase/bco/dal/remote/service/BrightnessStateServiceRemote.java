@@ -21,24 +21,54 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class BrightnessStateServiceRemote extends AbstractServiceRemote<BrightnessStateOperationService> implements BrightnessStateOperationServiceCollection {
+public class BrightnessStateServiceRemote extends AbstractServiceRemote<BrightnessStateOperationService, BrightnessState> implements BrightnessStateOperationServiceCollection {
 
     public BrightnessStateServiceRemote() {
         super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE);
     }
-    
+
     @Override
     public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the average brightness value.
+     *
+     * @throws {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        int serviceNumber = getBrightnessStateOperationServices().size();
+        Double average = 0d;
+        for (BrightnessStateOperationService service : getBrightnessStateOperationServices()) {
+            if (!((UnitRemote) service).isDataAvailable()) {
+                serviceNumber--;
+                continue;
+            }
+            average += service.getBrightnessState().getBrightness();
+        }
+        average /= serviceNumber;
+        serviceState = BrightnessState.newBuilder().setBrightness(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public BrightnessState getBrightnessState() throws NotAvailableException {
+        return getServiceState();
     }
 }
