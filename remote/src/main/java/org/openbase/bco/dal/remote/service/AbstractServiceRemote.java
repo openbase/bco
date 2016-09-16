@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
@@ -174,5 +175,49 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
+    }
+
+    /**
+     * Method blocks until an initial data message was received from every remote controller.
+     *
+     * @throws CouldNotPerformException is thrown if any error occurs.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        for (UnitRemote unitRemote : getInternalUnits()) {
+            unitRemote.waitForData();
+        }
+    }
+
+    /**
+     * Method blocks until an initial data message was received from every remote controller or the given timeout is reached.
+     *
+     * @param timeout maximal time to wait for the main controller data. After the timeout is reached a TimeoutException is thrown.
+     * @param timeUnit the time unit of the timeout.
+     * @throws CouldNotPerformException is thrown in case the any error occurs, or if the given timeout is reached. In this case a TimeoutException is thrown.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        for (UnitRemote unitRemote : getInternalUnits()) {
+            unitRemote.waitForData(timeout, timeUnit);
+        }
+    }
+
+    /**
+     * Checks if a server connection is established for every underlying remote.
+     *
+     * @return is true in case that the connection for every underlying remote it established.
+     */
+    public boolean isConnected() {
+        return getInternalUnits().stream().noneMatch((unitRemote) -> (!unitRemote.isConnected()));
+    }
+
+    /**
+     * Check if the data object is already available for every underlying remote.
+     *
+     * @return is true in case that for every underlying remote data is available.
+     */
+    public boolean isDataAvailable() {
+        return getInternalUnits().stream().noneMatch((unitRemote) -> (!unitRemote.isDataAvailable()));
     }
 }
