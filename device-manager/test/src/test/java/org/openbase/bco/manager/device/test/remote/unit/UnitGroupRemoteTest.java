@@ -90,17 +90,15 @@ public class UnitGroupRemoteTest {
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitGroupConfig.build());
         unitGroupRemote.activate();
+        Thread.sleep(3000);
     }
 
     private static boolean allServiceTemplatesImplemented(UnitGroupConfig.Builder unitGroup, List<ServiceConfig> serviceConfigList) {
-        List<ServiceTemplate> fromUnit = new ArrayList<>(), inGroup = new ArrayList<>();
+        List<ServiceTemplate> fromUnit = new ArrayList<>();
         serviceConfigList.stream().forEach((serviceConfig) -> {
             fromUnit.add(serviceConfig.getServiceTemplate());
         });
-        if (!unitGroup.getServiceTemplateList().stream().noneMatch((serviceTemplate) -> (!fromUnit.contains(serviceTemplate)))) {
-            return false;
-        }
-        return true;
+        return unitGroup.getServiceTemplateList().stream().noneMatch((serviceTemplate) -> (!fromUnit.contains(serviceTemplate)));
     }
 
     @AfterClass
@@ -136,13 +134,13 @@ public class UnitGroupRemoteTest {
         unitGroupRemote.setPowerState(state).get();
 
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerStateOperationService) unit).getPowerState());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPowerState(state).get();
         for (Unit unit : units) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state, ((PowerStateOperationService) unit).getPowerState());
+            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
     }
 
@@ -156,7 +154,7 @@ public class UnitGroupRemoteTest {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPowerState(state).get();
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, unitGroupRemote.getPowerState());
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), unitGroupRemote.getPowerState().getValue());
     }
 
     /**

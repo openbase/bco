@@ -30,10 +30,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
@@ -55,6 +55,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
@@ -65,13 +66,13 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.AlarmStateType;
 import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.state.MotionStateType.MotionState;
-import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.BlindStateType.BlindState;
 import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.homeautomation.state.MotionStateType.MotionState;
 import rst.homeautomation.state.PowerConsumptionStateType;
+import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.state.SmokeStateType.SmokeState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.state.TamperStateType.TamperState;
@@ -82,7 +83,6 @@ import rst.spatial.LocationDataType.LocationData;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -534,7 +534,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     @Override
     public Collection<TamperStateProviderService> getTamperStateProviderServices() {
-        return (Collection<TamperStateProviderService>) serviceMap.get(ServiceType.TAMPER_STATE_SERVICE_VALUE);
+        return (Collection<TamperStateProviderService>) serviceMap.get(ServiceType.TAMPER_STATE_SERVICE);
     }
 
     @Override
