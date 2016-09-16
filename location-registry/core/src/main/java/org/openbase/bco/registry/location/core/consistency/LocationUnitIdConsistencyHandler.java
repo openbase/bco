@@ -21,22 +21,22 @@ package org.openbase.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
+import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType;
 import rst.spatial.LocationConfigType.LocationConfig;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -58,7 +58,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
 
         try {
             lookupUnitIds = lookupUnitIds(locationConfig, registry);
-        } catch (NotAvailableException ex) {
+        } catch (CouldNotPerformException ex) {
             lookupUnitIds = new ArrayList<>();
         }
 
@@ -120,9 +120,5 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
             hash += entry.hashCode();
         }
         return hash;
-    }
-
-    @Override
-    public void reset() {
     }
 }
