@@ -21,11 +21,11 @@ package org.openbase.bco.dal.visual.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.awt.Color;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
-import java.awt.Color;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 
@@ -34,10 +34,10 @@ import rsb.Scope;
  * @author nuc
  */
 public class RSBScopePanel extends javax.swing.JPanel {
-
+    
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
-
-    private ObservableImpl<Scope> observable;
+    
+    private final ObservableImpl<Scope> observable;
 
     /**
      * Creates new form ScopePanel
@@ -46,15 +46,15 @@ public class RSBScopePanel extends javax.swing.JPanel {
         initComponents();
         observable = new ObservableImpl<>();
     }
-
+    
     public void addObserver(Observer<Scope> observer) {
         observable.addObserver(observer);
     }
-
+    
     public void removeObserver(Observer<Scope> observer) {
         observable.removeObserver(observer);
     }
-
+    
     public Scope getScope() {
         return new Scope(scopeTextField.getText());
     }
@@ -108,10 +108,10 @@ public class RSBScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-
+        
         scopeTextField.setForeground(Color.BLUE);
         scopeTextField.setEnabled(false);
-
+        
         try {
             //        SwingWorker worker = new SwingWorker<Void, Void>() {
 //
@@ -156,14 +156,14 @@ public class RSBScopePanel extends javax.swing.JPanel {
         } catch (MultiException ex) {
             scopeTextField.setForeground(Color.RED);
             scopeTextField.setEnabled(true);
+            ExceptionPrinter.printHistory(ex, logger);
         }
-
+        
     }//GEN-LAST:event_scopeTextFieldActionPerformed
-
+    
     private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
         scopeTextField.setForeground(Color.BLUE);
     }//GEN-LAST:event_scopeTextFieldKeyTyped
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel scopeLabel;

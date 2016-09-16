@@ -181,30 +181,28 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             componentList = new ArrayList<>();
             JPanel servicePanel;
 
-            if (serviceType != ServiceType.UNKNOWN) {
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                // filter by service type
+                // in case the service type is unknown, all services are loaded, in case the service type is defined only this type will be loaded and all other types are filtered.
+                if (serviceType != ServiceType.UNKNOWN && serviceConfig.getServiceTemplate().getType() != serviceType) {
+                    continue;
+                }
 
-                    // skip consumer
-                    if (serviceConfig.getServiceTemplate().getPattern().equals(ServicePattern.CONSUMER)) {
-                        continue;
-                    }
+                // skip consumer
+                if (serviceConfig.getServiceTemplate().getPattern().equals(ServicePattern.CONSUMER)) {
+                    continue;
+                }
 
-                    // filter by service type
-                    if (serviceConfig.getServiceTemplate().getType() != serviceType) {
-                        continue;
-                    }
-
-                    try {
-                        servicePanel = new JPanel();
-                        servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
-                        AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
-                        abstractServicePanel.setUnitId(unitConfig.getId());
-                        abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
-                        servicePanel.add(abstractServicePanel);
-                        componentList.add(servicePanel);
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
-                    }
+                try {
+                    servicePanel = new JPanel();
+                    servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
+                    AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
+                    abstractServicePanel.setUnitId(unitConfig.getId());
+                    abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
+                    servicePanel.add(abstractServicePanel);
+                    componentList.add(servicePanel);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
                 }
             }
 

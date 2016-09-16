@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jps.core.AbstractJavaProperty;
@@ -45,7 +44,7 @@ public class JPRemoteMethodParameters extends AbstractJavaProperty<List<String>>
 
     @Override
     protected List<String> getPropertyDefaultValue() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override

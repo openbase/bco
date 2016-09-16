@@ -164,92 +164,96 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private synchronized void updateDynamicComponents() {
 
-        if (!init) {
-            return;
-        }
-
         try {
-            selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
-            if (selectedLocationConfigHolder == null) {
+            if (!init) {
+                return;
+            }
+
+            try {
+                selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+                if (selectedLocationConfigHolder == null) {
+                    selectedLocationConfigHolder = ALL_LOCATION;
+                }
+            } catch (Exception ex) {
                 selectedLocationConfigHolder = ALL_LOCATION;
-            }
-        } catch (Exception ex) {
-            selectedLocationConfigHolder = ALL_LOCATION;
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-        }
-
-        try {
-            selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
-        } catch (Exception ex) {
-            selectedUnitConfigHolder = null;
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-
-        try {
-            ArrayList<LocationConfigHolder> locationConfigHolderList = new ArrayList<>();
-            locationConfigHolderList.add(ALL_LOCATION);
-            for (LocationConfig config : locationRegistryRemote.getLocationConfigs()) {
-                locationConfigHolderList.add(new LocationConfigHolder(config));
-            }
-            Collections.sort(locationConfigHolderList);
-            locationComboBox.setModel(new DefaultComboBoxModel(locationConfigHolderList.toArray()));
-
-            int selectedLocationIndex = Collections.binarySearch(locationConfigHolderList, selectedLocationConfigHolder);
-            if (selectedLocationIndex >= 0) {
-                locationComboBox.setSelectedItem(locationConfigHolderList.get(selectedLocationIndex));
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
             }
 
-            locationComboBox.setEnabled(locationConfigHolderList.size() > 0);
-        } catch (CouldNotPerformException ex) {
-            locationComboBox.setEnabled(false);
-            ExceptionPrinter.printHistory(ex, logger);
-        }
+            try {
+                selectedUnitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
+            } catch (Exception ex) {
+                selectedUnitConfigHolder = null;
+                ExceptionPrinter.printHistory(ex, logger);
+            }
 
-        try {
-            ArrayList<UnitConfigHolder> unitConfigHolderList = new ArrayList<>();
-            UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
-            if (selectedUnitType == UnitType.UNKNOWN) {
-                if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
-                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+            try {
+                ArrayList<LocationConfigHolder> locationConfigHolderList = new ArrayList<>();
+                locationConfigHolderList.add(ALL_LOCATION);
+                for (LocationConfig config : locationRegistryRemote.getLocationConfigs()) {
+                    locationConfigHolderList.add(new LocationConfigHolder(config));
+                }
+                Collections.sort(locationConfigHolderList);
+                locationComboBox.setModel(new DefaultComboBoxModel(locationConfigHolderList.toArray()));
+
+                int selectedLocationIndex = Collections.binarySearch(locationConfigHolderList, selectedLocationConfigHolder);
+                if (selectedLocationIndex >= 0) {
+                    locationComboBox.setSelectedItem(locationConfigHolderList.get(selectedLocationIndex));
+                }
+
+                locationComboBox.setEnabled(locationConfigHolderList.size() > 0);
+            } catch (CouldNotPerformException ex) {
+                locationComboBox.setEnabled(false);
+                ExceptionPrinter.printHistory(ex, logger);
+            }
+
+            try {
+                ArrayList<UnitConfigHolder> unitConfigHolderList = new ArrayList<>();
+                UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
+                if (selectedUnitType == UnitType.UNKNOWN) {
+                    if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
+                        for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
+                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                        }
+                    } else {
+                        for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
+
+                            // ignore non installed units
+                            if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                                continue;
+                            }
+                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                        }
                     }
                 } else {
-                    for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
-
-                        // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                            continue;
+                    if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
+                        for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                         }
-                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
-                    }
-                }
-            } else {
-                if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
-                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
-                    }
-                } else {
-                    for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
-                        // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                            continue;
+                    } else {
+                        for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
+                            // ignore non installed units
+                            if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                                continue;
+                            }
+                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                         }
-                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                     }
                 }
-            }
-            Collections.sort(unitConfigHolderList);
-            unitConfigComboBox.setModel(new DefaultComboBoxModel(unitConfigHolderList.toArray()));
-            if (selectedUnitConfigHolder != null) {
-                int selectedUnitIndex = Collections.binarySearch(unitConfigHolderList, selectedUnitConfigHolder);
-                if (selectedUnitIndex >= 0) {
-                    unitConfigComboBox.setSelectedItem(unitConfigHolderList.get(selectedUnitIndex));
+                Collections.sort(unitConfigHolderList);
+                unitConfigComboBox.setModel(new DefaultComboBoxModel(unitConfigHolderList.toArray()));
+                if (selectedUnitConfigHolder != null) {
+                    int selectedUnitIndex = Collections.binarySearch(unitConfigHolderList, selectedUnitConfigHolder);
+                    if (selectedUnitIndex >= 0) {
+                        unitConfigComboBox.setSelectedItem(unitConfigHolderList.get(selectedUnitIndex));
+                    }
                 }
+                unitConfigComboBox.setEnabled(unitConfigHolderList.size() > 0);
+            } catch (CouldNotPerformException ex) {
+                unitConfigComboBox.setEnabled(false);
+                throw ex;
             }
-            unitConfigComboBox.setEnabled(unitConfigHolderList.size() > 0);
-        } catch (CouldNotPerformException ex) {
-            unitConfigComboBox.setEnabled(false);
-            ExceptionPrinter.printHistory(ex, logger);
+        } catch (CouldNotPerformException | NullPointerException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update dynamic components!", ex), logger);
         }
     }
 
