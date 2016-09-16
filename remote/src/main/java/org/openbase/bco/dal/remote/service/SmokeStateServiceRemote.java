@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.SmokeStateType.SmokeState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStateProviderService> implements SmokeStateProviderServiceCollection {
+public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStateProviderService, SmokeState> implements SmokeStateProviderServiceCollection {
 
     public SmokeStateServiceRemote() {
         super(ServiceType.SMOKE_STATE_SERVICE);
@@ -39,5 +44,49 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
     @Override
     public Collection<SmokeStateProviderService> getSmokeStateProviderServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
+     * If no service detects smoke and at least one detects some smoke then that is set and else no smoke.
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        boolean someSmoke = false;
+        SmokeState.State smokeValue = SmokeState.State.NO_SMOKE;
+        Collection<SmokeStateProviderService> smokeStateProviderServices = getSmokeStateProviderServices();
+        int amount = smokeStateProviderServices.size();
+        double averageSmokeLevel = 0;
+        for (SmokeStateProviderService provider : smokeStateProviderServices) {
+            if (((UnitRemote) provider).isDataAvailable()) {
+                amount--;
+                continue;
+            }
+
+            SmokeState smokeState = provider.getSmokeState();
+            if (smokeState.getValue() == SmokeState.State.SMOKE) {
+                smokeValue = SmokeState.State.SMOKE;
+                break;
+            } else if (smokeState.getValue() == SmokeState.State.SOME_SMOKE) {
+                someSmoke = true;
+            }
+
+            averageSmokeLevel += smokeState.getSmokeLevel();
+        }
+
+        if (someSmoke) {
+            smokeValue = SmokeState.State.SOME_SMOKE;
+        }
+        averageSmokeLevel /= amount;
+
+        serviceState = SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public SmokeState getSmokeState() throws NotAvailableException {
+        return getServiceState();
     }
 }

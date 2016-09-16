@@ -33,6 +33,8 @@ import rst.homeautomation.state.TemperatureStateType.TemperatureState;
  */
 public interface TemperatureStateProviderServiceCollection extends TemperatureStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns the average temperature value for a collection of temperature
      * providers.

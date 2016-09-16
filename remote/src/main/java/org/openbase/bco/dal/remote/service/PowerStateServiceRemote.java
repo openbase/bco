@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author mpohling
  */
-public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOperationService> implements PowerStateOperationServiceCollection {
+public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOperationService, PowerState> implements PowerStateOperationServiceCollection {
 
     public PowerStateServiceRemote() {
         super(ServiceType.POWER_STATE_SERVICE);
@@ -39,5 +44,32 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     @Override
     public Collection<PowerStateOperationService> getPowerStateOperationServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the power state as on if at least one underlying service is on and else off.
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        PowerState.State powerStateValue = PowerState.State.OFF;
+        for (PowerStateOperationService service : getPowerStateOperationServices()) {
+            if (!((UnitRemote) service).isDataAvailable()) {
+                continue;
+            }
+
+            if (service.getPowerState().getValue() == PowerState.State.ON) {
+                powerStateValue = PowerState.State.ON;
+            }
+        }
+
+        serviceState = PowerState.newBuilder().setValue(powerStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public PowerState getPowerState() throws NotAvailableException {
+        return getServiceState();
     }
 }

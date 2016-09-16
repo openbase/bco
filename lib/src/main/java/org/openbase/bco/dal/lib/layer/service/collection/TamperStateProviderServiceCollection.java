@@ -33,6 +33,8 @@ import rst.homeautomation.state.TamperStateType.TamperState;
  */
 public interface TamperStateProviderServiceCollection extends TamperStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns tamper if at least one of the tamper providers returns tamper and
      * else no tamper.

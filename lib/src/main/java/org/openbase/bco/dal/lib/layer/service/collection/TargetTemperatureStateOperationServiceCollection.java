@@ -40,6 +40,8 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
         return GlobalExecutionService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getTargetTemperatureStateOperationServices());
     }
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns the average target temperature value for a collection of target
      * temperature services.

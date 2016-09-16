@@ -40,6 +40,8 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
         return GlobalExecutionService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), getPowerStateOperationServices());
     }
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns on if at least one of the power services is on and else off.
      *

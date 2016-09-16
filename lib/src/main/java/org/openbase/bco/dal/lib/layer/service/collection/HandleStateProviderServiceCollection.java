@@ -33,6 +33,8 @@ import rst.homeautomation.state.HandleStateType.HandleState;
  */
 public interface HandleStateProviderServiceCollection extends HandleStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * If at least one handle state provider returns open than that is returned.
      * Else if at least one returns tilted than that is returned. Else no closed

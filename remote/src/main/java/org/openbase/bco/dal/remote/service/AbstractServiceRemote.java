@@ -21,12 +21,14 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -35,14 +37,18 @@ import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Activatable;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -50,8 +56,9 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  *
  * @author mpohling
  * @param <S> generic definition of the overall service type for this remote.
+ * @param <ST> the corresponding state for the service type of this remote.
  */
-public abstract class AbstractServiceRemote<S extends Service> implements Service, Activatable {
+public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements Service, Activatable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -59,11 +66,72 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<String, S> serviceMap;
     private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
+    protected ST serviceState;
+    private final Observer dataObserver;
+    protected final ObservableImpl<ST> dataObservable = new ObservableImpl<>();
+    private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
 
     public AbstractServiceRemote(final ServiceType serviceType) {
         this.serviceType = serviceType;
         this.unitRemoteMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
+        this.dataObserver = new Observer() {
+
+            @Override
+            public void update(Observable source, Object data) throws Exception {
+                updateServiceState();
+            }
+        };
+        serviceState = null;
+    }
+
+    /**
+     * Compute the service state of this service collection if an underlying service changes.
+     *
+     * @throws CouldNotPerformException if an underlying service throws an exception
+     */
+    protected abstract void computeServiceState() throws CouldNotPerformException;
+
+    /**
+     * Compute the current service state and notify observer.
+     *
+     * @throws CouldNotPerformException if the computation fails
+     */
+    private void updateServiceState() throws CouldNotPerformException {
+        synchronized (syncObject) {
+            computeServiceState();
+        }
+        dataObservable.notifyObservers(serviceState);
+    }
+
+    /**
+     *
+     * @return the current service state
+     * @throws NotAvailableException if the service state has not been set at least once.
+     */
+    public ST getServiceState() throws NotAvailableException {
+        if (serviceState == null) {
+            throw new NotAvailableException("servicestate");
+        }
+        return serviceState;
+    }
+
+    /**
+     * Add an observer to get notifications when the service state changes.
+     *
+     * @param observer the observer which is notified
+     */
+    public void addDataObserver(Observer<ST> observer) {
+        dataObservable.addObserver(observer);
+    }
+
+    /**
+     * Remove an observer for the service state.
+     *
+     * @param observer the observer which has been registered
+     */
+    public void removeDataObserver(Observer<ST> observer) {
+        dataObservable.removeObserver(observer);
     }
 
     public void init(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
@@ -98,12 +166,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
     }
 
     private static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
-        for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-            if (serviceConfig.getServiceTemplate().getType() == serviceType) {
-                return true;
-            }
-        }
-        return false;
+        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType() == serviceType));
     }
 
     @Override
@@ -115,6 +178,15 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
             } catch (CouldNotPerformException ex) {
                 exceptionStack = MultiException.push(remote, ex, exceptionStack);
             }
+            GlobalExecutionService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    remote.waitForData();
+                    remote.addDataObserver(dataObserver);
+                    return null;
+                }
+            });
         }
         MultiException.checkAndThrow("Could not activate all service units!", exceptionStack);
     }
@@ -128,6 +200,7 @@ public abstract class AbstractServiceRemote<S extends Service> implements Servic
             } catch (CouldNotPerformException ex) {
                 exceptionStack = MultiException.push(remote, ex, exceptionStack);
             }
+            remote.removeDataObserver(dataObserver);
         }
         MultiException.checkAndThrow("Could not deactivate all service units!", exceptionStack);
     }

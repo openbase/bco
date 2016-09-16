@@ -33,6 +33,8 @@ import rst.homeautomation.state.AlarmStateType.AlarmState;
  */
 public interface SmokeAlarmStateProviderServiceCollection extends SmokeAlarmStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns alarm if at least one smoke alarm state provider returns alarm
      * else no alarm.

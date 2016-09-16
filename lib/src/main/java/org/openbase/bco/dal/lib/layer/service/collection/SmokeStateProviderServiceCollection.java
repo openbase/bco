@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -34,6 +33,8 @@ import rst.homeautomation.state.SmokeStateType.SmokeState;
  */
 public interface SmokeStateProviderServiceCollection extends SmokeStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * If at least one smoke state provider returns smoke than that is returned.
      * Else if at least one returns some smoke than that is returned. Else no
@@ -45,20 +46,20 @@ public interface SmokeStateProviderServiceCollection extends SmokeStateProviderS
     @Override
     default public SmokeState getSmokeState() throws NotAvailableException {
         try {
-        boolean someSmoke = false;
-        for (SmokeStateProviderService provider : getSmokeStateProviderServices()) {
-            if (provider.getSmokeState().getValue() == SmokeState.State.SMOKE) {
-                return SmokeState.newBuilder().setValue(SmokeState.State.SMOKE).build();
+            boolean someSmoke = false;
+            for (SmokeStateProviderService provider : getSmokeStateProviderServices()) {
+                if (provider.getSmokeState().getValue() == SmokeState.State.SMOKE) {
+                    return SmokeState.newBuilder().setValue(SmokeState.State.SMOKE).build();
+                }
+                if (provider.getSmokeState().getValue() == SmokeState.State.SOME_SMOKE) {
+                    someSmoke = true;
+                }
             }
-            if (provider.getSmokeState().getValue() == SmokeState.State.SOME_SMOKE) {
-                someSmoke = true;
+            if (someSmoke) {
+                return SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).build();
+            } else {
+                return SmokeState.newBuilder().setValue(SmokeState.State.NO_SMOKE).build();
             }
-        }
-        if (someSmoke) {
-            return SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).build();
-        } else {
-            return SmokeState.newBuilder().setValue(SmokeState.State.NO_SMOKE).build();
-        }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("SmokeState", ex);
         }

@@ -33,6 +33,8 @@ import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
  */
 public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionStateProviderService {
 
+    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
+    //remove when remote cashing is implemented
     /**
      * Returns an average current and voltage for the underlying provider and
      * the sum of their consumptions.

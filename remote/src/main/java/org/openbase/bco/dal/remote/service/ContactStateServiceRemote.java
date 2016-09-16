@@ -21,16 +21,21 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
+import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.state.ContactStateType.ContactState;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStateProviderService> implements ContactStateProviderServiceCollection {
+public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStateProviderService, ContactState> implements ContactStateProviderServiceCollection {
 
     public ContactStateServiceRemote() {
         super(ServiceType.CONTACT_STATE_SERVICE);
@@ -39,5 +44,32 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
     @Override
     public Collection<ContactStateProviderService> getContactStateProviderServices() {
         return getServices();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Computes the contact state as open if at least one underlying service is open and else closed.
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void computeServiceState() throws CouldNotPerformException {
+        ContactState.State contactValue = ContactState.State.CLOSED;
+        for (ContactStateProviderService provider : getContactStateProviderServices()) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
+                continue;
+            }
+
+            if (provider.getContactState().getValue() == ContactState.State.OPEN) {
+                contactValue = ContactState.State.OPEN;
+            }
+        }
+
+        serviceState = ContactState.newBuilder().setValue(contactValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    }
+
+    @Override
+    public ContactState getContactState() throws NotAvailableException {
+        return getServiceState();
     }
 }
