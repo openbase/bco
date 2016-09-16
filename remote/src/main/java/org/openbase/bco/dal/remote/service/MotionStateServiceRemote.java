@@ -51,7 +51,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
      * Computes the motion state as motion if at least one underlying services replies with motion and else no motion.
      * Additionally the last motion timestamp as set as the latest of the underlying services.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

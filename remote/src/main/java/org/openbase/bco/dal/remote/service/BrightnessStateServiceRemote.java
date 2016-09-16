@@ -50,7 +50,7 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
      * {@inheritDoc}
      * Computes the average brightness value.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

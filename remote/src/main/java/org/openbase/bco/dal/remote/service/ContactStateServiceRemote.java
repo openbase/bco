@@ -50,7 +50,7 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
      * {@inheritDoc}
      * Computes the contact state as open if at least one underlying service is open and else closed.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

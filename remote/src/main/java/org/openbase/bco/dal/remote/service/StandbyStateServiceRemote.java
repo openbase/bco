@@ -50,7 +50,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
      * {@inheritDoc}
      * Computes the standby state as running if at least one underlying service is running and else standby.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

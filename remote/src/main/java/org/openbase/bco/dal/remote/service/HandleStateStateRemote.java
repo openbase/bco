@@ -49,7 +49,7 @@ public class HandleStateStateRemote extends AbstractServiceRemote<HandleStatePro
     /**
      * {@inheritDoc}
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

@@ -51,7 +51,7 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
      * Computes the tamper state as tamper if at least one underlying service detects tamper and else no tamper.
      * Additionally the last detection timestamp as set as the latest of the underlying services.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

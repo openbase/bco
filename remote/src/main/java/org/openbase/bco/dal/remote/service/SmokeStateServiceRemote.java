@@ -51,7 +51,7 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
      * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
      * If no service detects smoke and at least one detects some smoke then that is set and else no smoke.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

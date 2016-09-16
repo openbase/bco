@@ -50,7 +50,7 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
      * {@inheritDoc}
      * Computes the alarm state as alarm if at least one underlying service is on alarm and else no alarm.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

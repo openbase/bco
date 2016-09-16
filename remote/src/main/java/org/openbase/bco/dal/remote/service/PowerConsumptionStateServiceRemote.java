@@ -50,7 +50,7 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
      * {@inheritDoc}
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

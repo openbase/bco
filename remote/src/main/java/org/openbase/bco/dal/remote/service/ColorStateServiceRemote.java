@@ -54,7 +54,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
      * {@inheritDoc}
      * Computes the average RGB color.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

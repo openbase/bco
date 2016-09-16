@@ -50,7 +50,7 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
      * {@inheritDoc}
      * Computes the average temperature value.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

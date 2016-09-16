@@ -50,7 +50,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
      * {@inheritDoc}
      * Computes the power state as on if at least one underlying service is on and else off.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {

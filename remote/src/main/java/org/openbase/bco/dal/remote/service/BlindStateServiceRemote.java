@@ -50,7 +50,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
      * {@inheritDoc}
      * Computes the average opening ratio and the movement state which appears the most.
      *
-     * @throws {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void computeServiceState() throws CouldNotPerformException {
