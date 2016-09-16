@@ -21,19 +21,18 @@ package org.openbase.bco.manager.agent.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import org.openbase.jul.pattern.Controller;
-import rst.homeautomation.control.agent.AgentDataType.AgentData;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.control.agent.AgentDataType.AgentData;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public interface AgentController extends Identifiable<String>, Enableable, Agent, Controller<AgentData, AgentData.Builder> {
+public interface AgentController extends Identifiable<String>, Enableable, Agent, MessageController<AgentData, AgentData.Builder> {
 
     public void init(final AgentConfig config) throws InitializationException, InterruptedException;
 

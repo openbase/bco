@@ -21,11 +21,10 @@ package org.openbase.bco.manager.scene.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import org.openbase.jul.pattern.Controller;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
 
@@ -33,7 +32,7 @@ import rst.homeautomation.control.scene.SceneDataType.SceneData;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface SceneController extends Identifiable<String>, Enableable, Scene, Controller<SceneData, SceneData.Builder> {
+public interface SceneController extends Identifiable<String>, Enableable, Scene, MessageController<SceneData, SceneData.Builder> {
 
     public void init(final SceneConfig config) throws InitializationException, InterruptedException;
 }

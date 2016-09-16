@@ -1,11 +1,11 @@
 package org.openbase.bco.manager.location.lib;
 
+import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
@@ -13,7 +13,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServ
 import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.pattern.Controller;
+import org.openbase.jul.extension.protobuf.MessageController;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationDataType.LocationData;
 
@@ -42,7 +42,7 @@ import rst.spatial.LocationDataType.LocationData;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface LocationController extends Location, Controller<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
+public interface LocationController extends Location, MessageController<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
         ColorStateOperationServiceCollection, PowerStateOperationServiceCollection, BlindStateOperationServiceCollection, StandbyStateOperationServiceCollection,
         TargetTemperatureStateOperationServiceCollection, MotionStateProviderServiceCollection, SmokeAlarmStateProviderServiceCollection,
         SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,

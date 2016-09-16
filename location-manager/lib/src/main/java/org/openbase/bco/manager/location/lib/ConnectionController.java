@@ -21,10 +21,10 @@ package org.openbase.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.pattern.Controller;
+import org.openbase.jul.extension.protobuf.MessageController;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -32,7 +32,7 @@ import rst.spatial.ConnectionDataType.ConnectionData;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public interface ConnectionController extends Connection, Controller<ConnectionData, ConnectionData.Builder>, 
+public interface ConnectionController extends Connection, MessageController<ConnectionData, ConnectionData.Builder>,
         HandleStateProviderServiceCollection, ContactStateProviderServiceCollection {
 
     public void init(final ConnectionConfig config) throws InitializationException, InterruptedException;
