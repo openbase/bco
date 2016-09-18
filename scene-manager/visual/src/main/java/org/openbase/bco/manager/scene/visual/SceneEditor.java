@@ -202,7 +202,7 @@ public class SceneEditor extends javax.swing.JFrame {
                 }
                 try {
                     ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setUnitId(panel.getUnitId());
-                    Object value = getServiceValue(panel.getService(), panel.getServiceType());
+                    Object value = getServiceValue(panel.getOperationService(), panel.getServiceType());
                     actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(value));
                     actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(value));
                     actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
