@@ -27,13 +27,15 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
 import java.text.DecimalFormat;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
  * @author mpohling
  */
-public class PowerConsumptionStateServicePanel extends AbstractServicePanel<PowerConsumptionStateProviderService> {
+public class PowerConsumptionStateServicePanel extends AbstractServicePanel<PowerConsumptionStateProviderService, ConsumerService, OperationService> {
 
     private DecimalFormat numberFormat = new DecimalFormat("#.##");
     private Color currentColor = Color.BLACK;
@@ -139,11 +141,11 @@ public class PowerConsumptionStateServicePanel extends AbstractServicePanel<Powe
     @Override
     protected void updateDynamicComponents() {
         try {
-            voltageValueLabel.setText(numberFormat.format(getService().getPowerConsumptionState().getVoltage()) + " V");
-            currentValueLabel.setText(numberFormat.format(getService().getPowerConsumptionState().getCurrent()) + " A");
-            consumptionBar.setString(numberFormat.format(getService().getPowerConsumptionState().getConsumption()) + " W");
+            voltageValueLabel.setText(numberFormat.format(getProviderService().getPowerConsumptionState().getVoltage()) + " V");
+            currentValueLabel.setText(numberFormat.format(getProviderService().getPowerConsumptionState().getCurrent()) + " A");
+            consumptionBar.setString(numberFormat.format(getProviderService().getPowerConsumptionState().getConsumption()) + " W");
 
-            double level = (getService().getPowerConsumptionState().getCurrent() / 16);
+            double level = (getProviderService().getPowerConsumptionState().getCurrent() / 16);
 
             consumptionBar.setValue((int) (level * 100));
 

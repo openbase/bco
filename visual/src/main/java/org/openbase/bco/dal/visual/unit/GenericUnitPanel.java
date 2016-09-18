@@ -24,6 +24,7 @@ package org.openbase.bco.dal.visual.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -180,6 +181,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             }
             componentList = new ArrayList<>();
             JPanel servicePanel;
+            HashMap<ServiceType, AbstractServicePanel> servicePanelMap = new HashMap<>();
 
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 // filter by service type
@@ -193,16 +195,27 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                     continue;
                 }
 
+                //TODO rst type change: getServiceTemplate().getServicePattern() instead of getPattern()
+                //TODO rst type change: getServiceTemplate().getServiceType() instead of getType()
+                // check if service type is already selected.
+                if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
+                    try {
+                        servicePanel = new JPanel();
+                        servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
+                        AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
+                        abstractServicePanel.setUnitId(unitConfig.getId());
+                        abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
+                        servicePanel.add(abstractServicePanel);
+                        servicePanelMap.put(serviceConfig.getServiceTemplate().getType(), abstractServicePanel);
+                        componentList.add(servicePanel);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
+                    }
+                }
                 try {
-                    servicePanel = new JPanel();
-                    servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
-                    AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
-                    abstractServicePanel.setUnitId(unitConfig.getId());
-                    abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
-                    servicePanel.add(abstractServicePanel);
-                    componentList.add(servicePanel);
+                    servicePanelMap.get(serviceConfig.getServiceTemplate().getType()).bindServiceConfig(serviceConfig);
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not configure service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
                 }
             }
 
@@ -237,7 +250,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
     private AbstractServicePanel instantiatServicePanel(final ServiceConfig serviceConfig, Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             AbstractServicePanel instance = servicePanelClass.newInstance();
-            instance.initService(serviceConfig, unitRemote, unitRemote);
+            instance.initUnit(unitRemote);
             return instance;
         } catch (NullPointerException | InstantiationException | CouldNotPerformException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);

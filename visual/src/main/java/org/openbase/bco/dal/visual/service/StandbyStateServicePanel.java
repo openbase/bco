@@ -27,14 +27,15 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
-import java.util.concurrent.Callable;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.provider.StandbyStateProviderService;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
  * @author mpohling
  */
-public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateOperationService> {
+public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateProviderService, ConsumerService, StandbyStateOperationService> {
 
     private static final StandbyState RUNNING = StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
     private static final StandbyState STANDBY = StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
@@ -114,16 +115,16 @@ public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateO
     private void standbyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standbyButtonActionPerformed
 
         try {
-            switch (getService().getStandbyState().getValue()) {
-            case STANDBY:
-                notifyActionProcessing(getService().setStandbyState(RUNNING));
-                break;
-            case RUNNING:
-            case UNKNOWN:
-                notifyActionProcessing(getService().setStandbyState(STANDBY));
-                break;
-            default:
-                throw new InvalidStateException("State[" + getService().getStandbyState().getValue().name() + "] is unknown.");
+            switch (getProviderService().getStandbyState().getValue()) {
+                case STANDBY:
+                    notifyActionProcessing(getOperationService().setStandbyState(RUNNING));
+                    break;
+                case RUNNING:
+                case UNKNOWN:
+                    notifyActionProcessing(getOperationService().setStandbyState(STANDBY));
+                    break;
+                default:
+                    throw new InvalidStateException("State[" + getProviderService().getStandbyState().getValue().name() + "] is unknown.");
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set standby state!", ex), logger);
@@ -140,27 +141,27 @@ public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateO
     @Override
     protected void updateDynamicComponents() {
         try {
-            switch (getService().getStandbyState().getValue()) {
-            case STANDBY:
-                standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
-                standbyStatePanel.setBackground(Color.BLUE.lightGray);
-                standbyButton.setText("Wakeup");
-                break;
-            case RUNNING:
-                standbyStatusLabel.setForeground(Color.BLACK);
-                standbyStatePanel.setBackground(Color.GREEN.darker());
-                standbyButton.setText("Activate Standby");
-                break;
+            switch (getProviderService().getStandbyState().getValue()) {
+                case STANDBY:
+                    standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
+                    standbyStatePanel.setBackground(Color.BLUE.lightGray);
+                    standbyButton.setText("Wakeup");
+                    break;
+                case RUNNING:
+                    standbyStatusLabel.setForeground(Color.BLACK);
+                    standbyStatePanel.setBackground(Color.GREEN.darker());
+                    standbyButton.setText("Activate Standby");
+                    break;
 
-            case UNKNOWN:
-                standbyStatusLabel.setForeground(Color.BLACK);
-                standbyStatePanel.setBackground(Color.ORANGE.darker());
-                standbyButton.setText("Activate Standby");
-                break;
-            default:
-                throw new InvalidStateException("State[" + getService().getStandbyState().getValue() + "] is unknown.");
+                case UNKNOWN:
+                    standbyStatusLabel.setForeground(Color.BLACK);
+                    standbyStatePanel.setBackground(Color.ORANGE.darker());
+                    standbyButton.setText("Activate Standby");
+                    break;
+                default:
+                    throw new InvalidStateException("State[" + getProviderService().getStandbyState().getValue() + "] is unknown.");
             }
-            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getStandbyState().getValue().name()));
+            standbyStatusLabel.setText("Current StandbyState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getStandbyState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

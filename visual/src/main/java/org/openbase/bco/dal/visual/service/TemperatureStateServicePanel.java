@@ -22,6 +22,8 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 import java.text.DecimalFormat;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -31,7 +33,7 @@ import org.openbase.jul.exception.printer.LogLevel;
  *
  * @author mpohling
  */
-public class TemperatureStateServicePanel extends AbstractServicePanel<TemperatureStateProviderService> {
+public class TemperatureStateServicePanel extends AbstractServicePanel<TemperatureStateProviderService, ConsumerService, OperationService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 
@@ -91,7 +93,7 @@ public class TemperatureStateServicePanel extends AbstractServicePanel<Temperatu
     @Override
     protected void updateDynamicComponents() {
         try {
-            temperatureValueLabel.setText(numberFormat.format(getService().getTemperatureState().getTemperature()) + getService().getTemperatureState().getTemperatureDataUnit().name());
+            temperatureValueLabel.setText(numberFormat.format(getProviderService().getTemperatureState().getTemperature()) + getProviderService().getTemperatureState().getTemperatureDataUnit().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

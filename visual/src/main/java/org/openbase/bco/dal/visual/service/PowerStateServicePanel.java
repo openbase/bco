@@ -27,19 +27,22 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerStateProviderService;
 import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
  * @author mpohling
  */
-public class PowerStateServicePanel extends AbstractServicePanel<PowerStateOperationService> {
+public class PowerStateServicePanel extends AbstractServicePanel<PowerStateProviderService, ConsumerService, PowerStateOperationService> {
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
     /**
      * Creates new form BrightnessService
+     * @throws org.openbase.jul.exception.InstantiationException
      */
     public PowerStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
@@ -104,16 +107,16 @@ public class PowerStateServicePanel extends AbstractServicePanel<PowerStateOpera
 
     private void powerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
         try {
-            switch (getService().getPowerState().getValue()) {
+            switch (getOperationService().getPowerState().getValue()) {
             case ON:
-                notifyActionProcessing(getService().setPowerState(OFF));
+                notifyActionProcessing(getOperationService().setPowerState(OFF));
                 break;
             case OFF:
             case UNKNOWN:
-                notifyActionProcessing(getService().setPowerState(ON));
+                notifyActionProcessing(getOperationService().setPowerState(ON));
                 break;
             default:
-                throw new InvalidStateException("State[" + getService().getPowerState().getValue() + "] is unknown.");
+                throw new InvalidStateException("State[" + getProviderService().getPowerState().getValue() + "] is unknown.");
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set power state!", ex), logger);
@@ -130,8 +133,8 @@ public class PowerStateServicePanel extends AbstractServicePanel<PowerStateOpera
     @Override
     protected void updateDynamicComponents() {
         try {
-            System.out.println("state: " + getService().getPowerState().getValue().name());
-            switch (getService().getPowerState().getValue()) {
+            System.out.println("state: " + getProviderService().getPowerState().getValue().name());
+            switch (getProviderService().getPowerState().getValue()) {
             case ON:
                 powerStatusLabel.setForeground(Color.BLACK);
                 powerStatePanel.setBackground(Color.GREEN.darker());
@@ -148,9 +151,9 @@ public class PowerStateServicePanel extends AbstractServicePanel<PowerStateOpera
                 powerButton.setText("Switch Off");
                 break;
             default:
-                throw new InvalidStateException("State[" + getService().getPowerState().getValue() + "] is unknown.");
+                throw new InvalidStateException("State[" + getProviderService().getPowerState().getValue() + "] is unknown.");
             }
-            powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToCamelCase(getService().getPowerState().getValue().name()));
+            powerStatusLabel.setText("Current PowerState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getPowerState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

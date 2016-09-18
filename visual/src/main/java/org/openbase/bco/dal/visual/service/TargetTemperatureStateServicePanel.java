@@ -22,7 +22,9 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 import java.text.DecimalFormat;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.TargetTemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -32,7 +34,7 @@ import rst.homeautomation.state.TemperatureStateType.TemperatureState;
  *
  * @author mpohling
  */
-public class TargetTemperatureStateServicePanel extends AbstractServicePanel<TargetTemperatureStateOperationService> {
+public class TargetTemperatureStateServicePanel extends AbstractServicePanel<TargetTemperatureStateProviderService, ConsumerService, TargetTemperatureStateOperationService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
 
@@ -126,7 +128,7 @@ public class TargetTemperatureStateServicePanel extends AbstractServicePanel<Tar
 
         try {
             double value = Double.parseDouble(setTargetTemperatureValueTextField.getText());
-            notifyActionProcessing(getService().setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(value).build()));
+            notifyActionProcessing(getOperationService().setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(value).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set target temperature!", ex), logger, LogLevel.ERROR);
         }
@@ -148,9 +150,9 @@ public class TargetTemperatureStateServicePanel extends AbstractServicePanel<Tar
     @Override
     protected void updateDynamicComponents() {
         try {
-            currentTargetTemperatureValueTextField.setText(numberFormat.format(getService().getTargetTemperatureState().getTemperature()));
-            dataUnitLabel1.setText(getService().getTargetTemperatureState().getTemperatureDataUnit().name());
-            dataUnitLabel2.setText(getService().getTargetTemperatureState().getTemperatureDataUnit().name());
+            currentTargetTemperatureValueTextField.setText(numberFormat.format(getProviderService().getTargetTemperatureState().getTemperature()));
+            dataUnitLabel1.setText(getProviderService().getTargetTemperatureState().getTemperatureDataUnit().name());
+            dataUnitLabel2.setText(getProviderService().getTargetTemperatureState().getTemperatureDataUnit().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

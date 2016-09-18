@@ -23,7 +23,9 @@ package org.openbase.bco.dal.visual.service;
  */
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -35,7 +37,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author mpohling
  */
-public class ColorStateServicePanel extends AbstractServicePanel<ColorStateOperationService> {
+public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProviderService, ConsumerService, ColorStateOperationService> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -48,21 +50,21 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateOpera
         initComponents();
 
         colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        try {
-                            notifyActionProcessing(getService().setColor(HSBColorToRGBColorTransformer.transform(colorChooser.getColor())));
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
-                        }
-                    }
-                });
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                try {
+                    notifyActionProcessing(getOperationService().setColor(HSBColorToRGBColorTransformer.transform(colorChooser.getColor())));
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
+                }
+            }
+        });
     }
 
     @Override
     protected void updateDynamicComponents() {
         try {
-            colorPreviewPanel.setBackground(getService().getJavaAWTColor());
+            colorPreviewPanel.setBackground(getProviderService().getJavaAWTColor());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update color value!", ex), logger);
         }

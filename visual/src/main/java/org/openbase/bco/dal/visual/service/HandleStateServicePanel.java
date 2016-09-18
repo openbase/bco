@@ -28,12 +28,14 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 
 /**
  *
  * @author kengelma
  */
-public class HandleStateServicePanel extends AbstractServicePanel<HandleStateProviderService> {
+public class HandleStateServicePanel extends AbstractServicePanel<HandleStateProviderService, ConsumerService, OperationService> {
 
     /**
      * Creates new form ReedSwitchProviderPanel
@@ -107,7 +109,7 @@ public class HandleStateServicePanel extends AbstractServicePanel<HandleStatePro
     @Override
     protected void updateDynamicComponents() {
         try {
-            switch (getService().getHandleState().getPosition()) {
+            switch (getProviderService().getHandleState().getPosition()) {
                 case 0:
                     handleStateLabel.setForeground(Color.WHITE);
                     handleStatePanel.setBackground(Color.BLUE);
@@ -121,9 +123,9 @@ public class HandleStateServicePanel extends AbstractServicePanel<HandleStatePro
                     handleStatePanel.setBackground(Color.GREEN);
                     break;
                 default:
-                    throw new InvalidStateException("State[" + getService().getHandleState().getPosition() + "] is unknown.");
+                    throw new InvalidStateException("State[" + getProviderService().getHandleState().getPosition() + "] is unknown.");
             }
-            handleStateLabel.setText("Current HandleState = " + getService().getHandleState().getPosition());
+            handleStateLabel.setText("Current HandleState = " + getProviderService().getHandleState().getPosition());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }

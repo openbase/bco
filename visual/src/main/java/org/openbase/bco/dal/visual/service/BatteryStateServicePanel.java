@@ -22,6 +22,8 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 import java.awt.Color;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.BatteryStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -30,7 +32,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
  *
  * @author mpohling
  */
-public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateProviderService> {
+public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateProviderService, ConsumerService, OperationService> {
 
     /**
      * Creates new form BrightnessService
@@ -106,9 +108,9 @@ public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateP
     @Override
     protected void updateDynamicComponents() {
         try {
-            batteryLevelBar.setValue((int) getService().getBatteryState().getLevel());
+            batteryLevelBar.setValue((int) getProviderService().getBatteryState().getLevel());
             batteryLevelBar.setString("Battery Level = " + batteryLevelBar.getValue() + "%");
-            switch (getService().getBatteryState().getValue()) {
+            switch (getProviderService().getBatteryState().getValue()) {
                 case OK:
                     stateColorPanel.setBackground(Color.GREEN.darker());
                     break;
@@ -124,7 +126,7 @@ public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateP
                 default:
                     break;
             }
-            stateLabel.setText(getService().getBatteryState().getValue().name());
+            stateLabel.setText(getProviderService().getBatteryState().getValue().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

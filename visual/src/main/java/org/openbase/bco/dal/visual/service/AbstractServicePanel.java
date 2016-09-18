@@ -24,11 +24,15 @@ package org.openbase.bco.dal.visual.service;
 import java.awt.Component;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
-import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.EnumNotSupportedException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -42,16 +46,36 @@ import rst.homeautomation.service.ServiceTemplateType;
 /**
  *
  * @author mpohling
- * @param <S>
+ * @param <PS>
+ * @param <CS>
+ * @param <OS>
  */
-public abstract class AbstractServicePanel<S extends Service> extends javax.swing.JPanel {
+public abstract class AbstractServicePanel<PS extends ProviderService, CS extends ConsumerService, OS extends OperationService> extends javax.swing.JPanel {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String SERVICE_PANEL_SUFFIX = "Panel";
 
-    private S service;
-    private ServiceConfig serviceConfig;
+    private PS providerService;
+    private CS consumerService;
+    private OS operationService;
+
+    private ServiceConfig providerServiceConfig;
+    private ServiceConfig consumerServiceConfig;
+    private ServiceConfig operationServiceConfig;
+
+    private int PROVIDER = 0;
+    private int CONSUMER = 1;
+    private int OPERATION = 2;
+
+    /**
+     * ServiceConfig slots
+     * [0] = providerServiceConfig
+     * [1] = consumerServiceConfig
+     * [2] = operationServiceConfig
+     */
+    private ServiceConfig[] serviceConfigs;
+
     private UnitRemote unitRemote;
     private final Observer<Object> dataObserver;
     private final Observer<ConnectionState> connectionStateObserver;
@@ -69,6 +93,7 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
      */
     public AbstractServicePanel() throws InstantiationException {
         try {
+            this.serviceConfigs = new ServiceConfig[3];
             this.statusPanel = StatusPanel.getInstance();
 //            this.recurrenceActionFilter = new RecurrenceEventFilter<Future>() {
 //
@@ -120,10 +145,12 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
     }
 
     public String getServiceName() {
-        if (service == null) {
-            return "---";
+        for (ServiceConfig serviceConfig : serviceConfigs) {
+            if (serviceConfig != null) {
+                return serviceConfig.getServiceTemplate().getType().name();
+            }
         }
-        return serviceConfig.getServiceTemplate().getType().name();
+        return "---";
     }
 
     public synchronized void notifyActionProcessing(final Future future) {
@@ -134,11 +161,52 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         lastActionFuture = future;
     }
 
-    public S getService() throws NotAvailableException {
-        if (service == null) {
-            throw new NotAvailableException("service");
+    public PS getProviderService() throws NotAvailableException {
+        if (providerService == null) {
+            throw new NotAvailableException("ProviderService");
         }
-        return service;
+        return providerService;
+    }
+
+    public CS getConsumerService() throws NotAvailableException {
+        if (consumerService == null) {
+            throw new NotAvailableException("ConsumerService");
+        }
+        return consumerService;
+    }
+
+    public OS getOperationService() throws NotAvailableException {
+        if (operationService == null) {
+            throw new NotAvailableException("OperationService");
+        }
+        return operationService;
+    }
+
+    public void setProviderServiceConfig(final ServiceConfig providerServiceConfig) {
+        this.providerServiceConfig = providerServiceConfig;
+        this.serviceConfigs[PROVIDER] = providerServiceConfig;
+    }
+
+    public void setConsumerServiceConfig(final ServiceConfig consumerServiceConfig) {
+        this.consumerServiceConfig = consumerServiceConfig;
+        this.serviceConfigs[CONSUMER] = consumerServiceConfig;
+    }
+
+    public void setOperationServiceConfig(final ServiceConfig operationServiceConfig) {
+        this.operationServiceConfig = operationServiceConfig;
+        this.serviceConfigs[OPERATION] = operationServiceConfig;
+    }
+
+    public boolean hasProviderService() {
+        return providerServiceConfig != null;
+    }
+
+    public boolean hasConsumerService() {
+        return providerServiceConfig != null;
+    }
+
+    public boolean hasOperationService() {
+        return providerServiceConfig != null;
     }
 
     public String getUnitId() {
@@ -157,21 +225,77 @@ public abstract class AbstractServicePanel<S extends Service> extends javax.swin
         this.serviceType = serviceType;
     }
 
-    public void initService(ServiceConfig serviceConfig, S service, UnitRemote unitRemote) throws CouldNotPerformException, InterruptedException {
+    /**
+     * Initializes this service panel with the given unit remote.
+     *
+     * @param unitRemote
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     */
+    public void initUnit(final UnitRemote unitRemote) throws CouldNotPerformException, InterruptedException {
+        if (this.unitRemote != null) {
+            unitRemote.removeDataObserver(dataObserver);
+            unitRemote.removeConnectionStateObserver(connectionStateObserver);
+        }
+        this.unitRemote = unitRemote;
+        unitRemote.addDataObserver(dataObserver);
+        unitRemote.addConnectionStateObserver(connectionStateObserver);
+        unitRemote.waitForData();
+    }
+
+    /**
+     * This method binds a service config to this unit service panel.
+     * Make sure the remote unit was initialized before and the service config is compatible with this unit.
+     *
+     * @param serviceConfig the new service config to bind to this unit remote.
+     * @throws CouldNotPerformException is thrown if any error occurs during the binding process.
+     * @throws InterruptedException
+     */
+    public void bindServiceConfig(final ServiceConfig serviceConfig) throws CouldNotPerformException, InterruptedException {
         try {
-            if (this.unitRemote != null) {
-                unitRemote.removeDataObserver(dataObserver);
-                unitRemote.removeConnectionStateObserver(connectionStateObserver);
+            if (unitRemote == null) {
+                throw new InvalidStateException("The unit remote is unknown!!");
             }
-            this.unitRemote = unitRemote;
-            this.service = service;
-            this.serviceConfig = serviceConfig;
-            unitRemote.addDataObserver(dataObserver);
-            unitRemote.addConnectionStateObserver(connectionStateObserver);
-            unitRemote.waitForData();
+            setServiceConfig(serviceConfig);
             updateDynamicComponents();
         } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(unitRemote.getClass(), ex);
+            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceConfig.getServiceTemplate().getType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
+        }
+    }
+
+    private void setServiceConfig(final ServiceConfig serviceConfig) throws CouldNotPerformException {
+        try {
+            try {
+                switch (serviceConfig.getServiceTemplate().getPattern()) {
+                    case PROVIDER:
+                        if (providerServiceConfig != null) {
+                            throw new InvalidStateException("ProviderServiceConfig already bind!");
+                        }
+                        providerService = (PS) unitRemote;
+                        setProviderServiceConfig(serviceConfig);
+                        break;
+                    case CONSUMER:
+                        if (consumerServiceConfig != null) {
+                            throw new InvalidStateException("ConsumerServiceConfig already bind!");
+                        }
+                        consumerService = (CS) unitRemote;
+                        setConsumerServiceConfig(serviceConfig);
+                        break;
+                    case OPERATION:
+                        if (operationServiceConfig != null) {
+                            throw new InvalidStateException("OperationServiceConfig already bind!");
+                        }
+                        operationService = (OS) unitRemote;
+                        setOperationServiceConfig(serviceConfig);
+                        break;
+                    default:
+                        throw new EnumNotSupportedException(serviceConfig.getServiceTemplate().getPattern(), this);
+                }
+            } catch (ClassCastException ex) {
+                throw new InvalidStateException("Given service is not compatible with registered unit!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not set ServiceConfig!");
         }
     }
 
