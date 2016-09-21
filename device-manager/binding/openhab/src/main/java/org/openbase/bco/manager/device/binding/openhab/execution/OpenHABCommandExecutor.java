@@ -104,6 +104,6 @@ public class OpenHABCommandExecutor {
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
         UnitController unitController = unitControllerRegistry.getUnitByScope(metaData.getUnitScope());
-        unitController.applyUpdate(metaData.getServiceType(), serviceData);
+        unitController.applyDataUpdate(metaData.getServiceType(), serviceData);
     }
 }
