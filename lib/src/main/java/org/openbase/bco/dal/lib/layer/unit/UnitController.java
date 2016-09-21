@@ -47,5 +47,5 @@ public interface UnitController extends Unit {
      * @param serviceArgument
      * @throws CouldNotPerformException
      */
-    public void applyUpdate(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException;
+    public void applyDataUpdate(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException;
 }

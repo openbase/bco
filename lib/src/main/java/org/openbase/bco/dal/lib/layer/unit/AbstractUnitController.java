@@ -313,7 +313,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
-    public void applyUpdate(ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException {
+    public void applyDataUpdate(ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException {
         try {
 
             if (serviceArgument == null) {

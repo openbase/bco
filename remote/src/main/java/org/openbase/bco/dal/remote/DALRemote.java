@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.jp.JPRemoteMethod;
 import org.openbase.bco.dal.lib.jp.JPRemoteMethodParameters;
 import org.openbase.bco.dal.lib.jp.JPRemoteService;
