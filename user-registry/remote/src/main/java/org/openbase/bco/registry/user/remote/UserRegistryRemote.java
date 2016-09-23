@@ -301,4 +301,36 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
 
         return getData().getAuthorizationGroupConfigRegistryReadOnly();
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isUserConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getUserConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAuthorizationGroupConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
 }

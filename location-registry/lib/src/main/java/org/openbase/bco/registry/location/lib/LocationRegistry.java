@@ -369,4 +369,20 @@ public interface LocationRegistry {
      */
     public List<LocationConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
 
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the location config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isLocationConfigRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the connection config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException;
+
 }

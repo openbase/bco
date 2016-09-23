@@ -65,6 +65,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalExecutionService;
@@ -80,7 +81,6 @@ import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -696,5 +696,27 @@ public class LocationRegistryController extends RSBCommunicationService<Location
         }
 
         return new ArrayList<>(neighborMap.values());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isLocationConfigRegistryConsistent() throws CouldNotPerformException {
+        return locationConfigRegistry.isConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException {
+        return connectionConfigRegistry.isConsistent();
     }
 }

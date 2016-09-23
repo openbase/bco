@@ -46,6 +46,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -58,7 +59,6 @@ import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.rsb.ScopeType;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -298,5 +298,27 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     @Override
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         return authorizationGroupRegistry.isReadOnly();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isUserConfigRegistryConsistent() throws CouldNotPerformException {
+        return userRegistry.isConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException {
+        return authorizationGroupRegistry.isConsistent();
     }
 }

@@ -285,4 +285,36 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
         validateData();
         return getData().getAgentClassRegistryReadOnly();
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAgentClassRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAgentConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
 }

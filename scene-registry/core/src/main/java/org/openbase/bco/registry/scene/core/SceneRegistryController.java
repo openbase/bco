@@ -41,6 +41,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -53,7 +54,6 @@ import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.rsb.ScopeType;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -203,5 +203,16 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
 
     public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> getSceneConfigRegistry() {
         return sceneConfigRegistry;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException {
+        return sceneConfigRegistry.isConsistent();
     }
 }

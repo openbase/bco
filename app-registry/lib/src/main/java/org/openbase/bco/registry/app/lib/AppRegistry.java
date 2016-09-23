@@ -69,5 +69,21 @@ public interface AppRegistry {
 
     public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
 
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the app class registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the app config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isAppConfigRegistryConsistent() throws CouldNotPerformException;
+
     public void shutdown();
 }

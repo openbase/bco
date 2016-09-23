@@ -46,6 +46,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
@@ -56,7 +57,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -99,6 +99,14 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
 
                 @Override
                 public void update(final Observable<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>> data) throws Exception {
+                    notifyChange();
+                }
+            });
+
+            agentClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>> source, Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> data) throws Exception {
                     notifyChange();
                 }
             });
@@ -276,5 +284,27 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     @Override
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
         return agentClassRegistry.isReadOnly();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException {
+        return agentClassRegistry.isConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException {
+        return agentConfigRegistry.isConsistent();
     }
 }

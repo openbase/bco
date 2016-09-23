@@ -141,6 +141,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
 
     /**
      * {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -170,6 +171,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
 
     /**
      * {@inheritDoc}
+     *
      * @param sceneConfigId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
@@ -230,5 +232,21 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
         }
 
         return getData().getSceneConfigRegistryReadOnly();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getSceneConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
     }
 }

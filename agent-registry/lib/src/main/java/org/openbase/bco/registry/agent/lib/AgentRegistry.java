@@ -68,4 +68,20 @@ public interface AgentRegistry extends Shutdownable {
 
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException;
 
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the agent class registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the agent config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException;
+
 }

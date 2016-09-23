@@ -304,4 +304,36 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
         waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
         return getData().getAppClassRegistryReadOnly();
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAppClassRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isAppConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAppConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
 }
