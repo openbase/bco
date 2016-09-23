@@ -102,6 +102,14 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
                     notifyChange();
                 }
             });
+
+            agentClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>> source, Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> data) throws Exception {
+                    notifyChange();
+                }
+            });
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

@@ -103,6 +103,14 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
                 }
             });
 
+            appClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>> source, Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> data) throws Exception {
+                    notifyChange();
+                }
+            });
+
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
