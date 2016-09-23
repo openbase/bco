@@ -56,6 +56,14 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         super(dataClass, UnitConfig.class);
     }
 
+    private DeviceRegistry getDeviceRegistry() throws InterruptedException, CouldNotPerformException {
+        if (deviceRegistry == null) {
+            deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
+            CachedDeviceRegistryRemote.waitForData();
+        }
+        return deviceRegistry;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -66,8 +74,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
-            CachedDeviceRegistryRemote.waitForData();
-            init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(id));
+            init(getDeviceRegistry().getUnitConfigById(id));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -83,14 +90,11 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
-            CachedDeviceRegistryRemote.waitForData();
-            List<UnitConfig> unitConfigList = CachedDeviceRegistryRemote.getRegistry().getUnitConfigsByLabel(label);
+            List<UnitConfig> unitConfigList = getDeviceRegistry().getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("Unit with Label[" + label + "]");
-            }
-
-            if (unitConfigList.size() > 1) {
+            } else if (unitConfigList.size() > 1) {
                 throw new InvalidStateException("Unit with Label[" + label + "] is not unique!");
             }
 
@@ -110,8 +114,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            CachedDeviceRegistryRemote.waitForData();
-            init(CachedDeviceRegistryRemote.getRegistry().getUnitConfigByScope(scope));
+            init(getDeviceRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -160,22 +163,6 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @throws org.openbase.jul.exception.InitializationException
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    protected void postInit() throws InitializationException, InterruptedException {
-        try {
-            CachedDeviceRegistryRemote.waitForData();
-            deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @param config
      * @return
      * @throws org.openbase.jul.exception.CouldNotPerformException
@@ -183,6 +170,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        if (config == null) {
+            throw new NotAvailableException("UnitConfig");
+        }
         template = deviceRegistry.getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
     }
