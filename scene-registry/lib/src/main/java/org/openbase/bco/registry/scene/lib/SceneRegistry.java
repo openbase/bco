@@ -21,9 +21,9 @@ package org.openbase.bco.registry.scene.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.CouldNotPerformException;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
@@ -48,4 +48,12 @@ public interface SceneRegistry extends Shutdownable {
     public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException;
 
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the scene config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException;
 }

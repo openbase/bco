@@ -69,4 +69,20 @@ public interface UserRegistry extends Shutdownable {
     public List<AuthorizationGroupConfig> getAuthorizationGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
 
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the user config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isUserConfigRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return if the authorization group config registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
+    public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException;
 }

@@ -142,6 +142,7 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryDat
 
     /**
      * {@inheritDoc}
+     *
      * @throws java.lang.InterruptedException {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
@@ -674,5 +675,37 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryDat
         }
 
         return new ArrayList<>(neighborMap.values());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isLocationConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getLocationConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getConnectionConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
     }
 }
