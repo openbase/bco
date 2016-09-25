@@ -54,10 +54,7 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
     @Override
     public String getUserName() throws NotAvailableException {
         try {
-            if (config == null) {
-                throw new NotAvailableException("userconfig");
-            }
-            return config.getUserName();
+            return getConfig().getUserName();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("username", ex);
         }

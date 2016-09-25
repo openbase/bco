@@ -86,10 +86,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     @Override
     public String getLabel() throws NotAvailableException {
         try {
-            if (config == null) {
-                throw new NotAvailableException("locationConfig");
-            }
-            return config.getLabel();
+            return getConfig().getLabel();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("label", ex);
         }
