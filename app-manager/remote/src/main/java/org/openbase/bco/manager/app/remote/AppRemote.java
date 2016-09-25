@@ -34,8 +34,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> implements App {
 
@@ -49,17 +48,7 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
     }
 
     @Override
-    public void notifyDataUpdate(AppData data) throws CouldNotPerformException {
-
-    }
-
-    @Override
     public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(activation, this, Void.class);
-    }
-
-    @Override
-    public AppConfig applyConfigUpdate(AppConfig config) throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

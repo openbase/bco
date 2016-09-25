@@ -53,8 +53,7 @@ import rst.vision.RGBColorType.RGBColor;
  */
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
  */
 public class LocationRemote extends AbstractConfigurableRemote<LocationData, LocationConfig> implements Location {
 

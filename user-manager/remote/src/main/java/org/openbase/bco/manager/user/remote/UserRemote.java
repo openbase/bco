@@ -37,8 +37,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
 public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig> implements User {
 
@@ -50,10 +49,6 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
 
     public UserRemote() {
         super(UserData.class, UserConfig.class);
-    }
-
-    @Override
-    public void notifyDataUpdate(final UserData data) throws CouldNotPerformException {
     }
 
     @Override

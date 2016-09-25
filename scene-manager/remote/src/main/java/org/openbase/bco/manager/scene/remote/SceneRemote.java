@@ -50,10 +50,6 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
         super(SceneData.class, SceneConfig.class);
     }
 
-    @Override
-    public void notifyDataUpdate(SceneData data) throws CouldNotPerformException {
-    }
-
     public Future<Void> setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
         return setActivationState(ActivationState.newBuilder().setValue(activationState).build());
     }
@@ -61,10 +57,5 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
     @Override
     public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(activation, this, Void.class);
-    }
-
-    @Override
-    public SceneConfig applyConfigUpdate(SceneConfig config) throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
