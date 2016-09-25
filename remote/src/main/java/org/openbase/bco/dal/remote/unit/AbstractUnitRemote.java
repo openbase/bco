@@ -50,13 +50,13 @@ import rst.rsb.ScopeType;
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M, UnitConfig> {
 
     private UnitTemplate template;
-    protected DeviceRegistry deviceRegistry;
+    private DeviceRegistry deviceRegistry;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
         super(dataClass, UnitConfig.class);
     }
 
-    private DeviceRegistry getDeviceRegistry() throws InterruptedException, CouldNotPerformException {
+    protected DeviceRegistry getDeviceRegistry() throws InterruptedException, CouldNotPerformException {
         if (deviceRegistry == null) {
             deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
             CachedDeviceRegistryRemote.waitForData();
@@ -173,7 +173,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         if (config == null) {
             throw new NotAvailableException("UnitConfig");
         }
-        template = deviceRegistry.getUnitTemplateByType(config.getType());
+        template = getDeviceRegistry().getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
     }
 
