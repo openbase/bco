@@ -27,8 +27,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.homeautomation.state.ContactStateType.ContactState;
+import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
@@ -54,14 +54,7 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
 
     @Override
     public String getLabel() throws NotAvailableException {
-        try {
-            if (config == null) {
-                throw new NotAvailableException("connectionConfig");
-            }
-            return config.getLabel();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("label", ex);
-        }
+        return getConfig().getLabel();
     }
 
     @Override
