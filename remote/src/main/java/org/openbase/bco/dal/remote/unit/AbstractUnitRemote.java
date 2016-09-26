@@ -30,14 +30,17 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.pattern.Observable;
 import rsb.Scope;
 import rst.homeautomation.control.action.ActionConfigType;
 import rst.homeautomation.control.scene.SceneConfigType;
+import rst.homeautomation.device.DeviceRegistryDataType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -50,6 +53,8 @@ import rst.rsb.ScopeType;
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M, UnitConfig> {
 
     private UnitTemplate template;
+
+    //TODO: switch to unit registry if available
     private DeviceRegistry deviceRegistry;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
@@ -160,6 +165,18 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+//    @Override //TODO allow oberserver registration via registry interface.
+//    protected void postInit() throws InitializationException, InterruptedException {
+//        super.postInit();
+//        try {
+//            getDeviceRegistry().addDataObserver((Observable<DeviceRegistryDataType.DeviceRegistryData> source, DeviceRegistryDataType.DeviceRegistryData data1) -> {
+//                applyConfigUpdate(deviceRegistry.getUnitConfigById(getId()));
+//            });
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory("Could not register unit config update service for " + this, ex, logger);
+//        }
+//    }
+
     /**
      * {@inheritDoc}
      *
@@ -172,6 +189,15 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         if (config == null) {
             throw new NotAvailableException("UnitConfig");
+        }
+
+        try {
+            if (getConfig().equals(config)) {
+                logger.debug("Skip config update because no config change detected!");
+                return config;
+            }
+        } catch (NotAvailableException ex) {
+            // change check failed.
         }
         template = getDeviceRegistry().getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
