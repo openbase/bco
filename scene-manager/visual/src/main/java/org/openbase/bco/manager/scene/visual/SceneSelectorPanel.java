@@ -21,25 +21,25 @@ package org.openbase.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.visual.util.UnitRemoteView;
-import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.pattern.ObservableImpl;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.processing.StringProcessor;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
+import org.openbase.bco.dal.visual.util.StatusPanel;
+import org.openbase.bco.dal.visual.util.UnitRemoteView;
+import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
@@ -254,7 +254,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -268,7 +268,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -642,7 +642,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 //                return null;
 //            }
 //        }));
-
     }//GEN-LAST:event_unitConfigComboBoxActionPerformed
 
     private void scopeApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeApplyButtonActionPerformed
@@ -725,7 +724,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 //            scopeTextField.setForeground(Color.RED.darker());
 //        }
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
