@@ -39,12 +39,11 @@ import rst.spatial.LocationConfigType.LocationConfig;
 public interface LocationRegistry {
 
     /**
-     * This method registered the given location config in the registry.
+     * This method registers the given location config in the registry.
      *
-     * @param locationConfig
-     * @return
-     * @throws CouldNotPerformException is thrown in case if the registered
-     * entry already exists or is inconsistent.
+     * @param locationConfig the location config registered
+     * @return the registered location config
+     * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
      */
     public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
 

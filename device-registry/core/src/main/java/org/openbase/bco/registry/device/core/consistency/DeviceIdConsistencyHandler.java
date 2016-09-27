@@ -21,15 +21,14 @@ package org.openbase.bco.registry.device.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -47,8 +46,8 @@ public class DeviceIdConsistencyHandler extends AbstractProtoBufRegistryConsiste
         deviceConfig.clearUnitConfig();
         boolean modification = false;
         for (UnitConfigType.UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-            if (!unitConfig.hasSystemUnitId()|| unitConfig.getSystemUnitId().isEmpty() || !unitConfig.getSystemUnitId().equals(deviceConfig.getId())) {
-                unitConfig.setSystemUnitId(deviceConfig.getId());
+            if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty() || !unitConfig.getUnitHostId().equals(deviceConfig.getId())) {
+                unitConfig.setUnitHostId(deviceConfig.getId());
                 modification = true;
             }
             deviceConfig.addUnitConfig(unitConfig);

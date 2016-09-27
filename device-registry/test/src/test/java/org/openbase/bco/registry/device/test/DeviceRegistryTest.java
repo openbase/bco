@@ -239,7 +239,7 @@ public class DeviceRegistryTest {
 
         assertEquals("Unit scope is not set properly", expectedUnitScope, ScopeGenerator.generateStringRep(motionSensorConfig.getUnitConfig(0).getScope()));
 
-        assertEquals("Device id is not set in unit", motionSensorConfig.getId(), motionSensorConfig.getUnitConfig(0).getSystemUnitId());
+        assertEquals("Device id is not set in unit", motionSensorConfig.getId(), motionSensorConfig.getUnitConfig(0).getUnitHostId());
     }
 
     /**
@@ -385,7 +385,7 @@ public class DeviceRegistryTest {
 
         DeviceConfig config = deviceRegistry.registerDeviceConfig(getDeviceConfig("BoundToDeviceTestDevice", "boundToDeviceSNR", clazz, null)).get();
         assertTrue("Unit config has not been added to device config", config.getUnitConfigCount() == 1);
-        assertTrue("Unit config has not been set as bound to device", config.getUnitConfig(0).getBoundToSystemUnit());
+        assertTrue("Unit config has not been set as bound to device", config.getUnitConfig(0).getBoundToUnitHost());
         assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
 
         LocationConfig testLocation = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel("BoundToDeviceTestLocation").build()).get();
@@ -395,7 +395,7 @@ public class DeviceRegistryTest {
         assertTrue("Units placement config has not been modified correctly", config.getUnitConfig(0).getPlacementConfig().getLocationId().equals(testLocation.getId()));
 
         config = deviceRegistry.updateDeviceConfig(config).get();
-        assertTrue("Unit is not bound to device anymore", config.getUnitConfig(0).getBoundToSystemUnit());
+        assertTrue("Unit is not bound to device anymore", config.getUnitConfig(0).getBoundToUnitHost());
         assertTrue("Placement config of unit and device do not match although unit is bound to device", config.getUnitConfig(0).getPlacementConfig().equals(config.getPlacementConfig()));
         assertEquals("Location id in placement config of unit does not equals that in device", config.getPlacementConfig().getLocationId(), config.getUnitConfig(0).getPlacementConfig().getLocationId());
 
@@ -509,7 +509,7 @@ public class DeviceRegistryTest {
     }
 
     private UnitConfig getUnitConfig(UnitType type, String label) {
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).setBoundToSystemUnit(false).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).setLabel(label).setBoundToUnitHost(false).build();
     }
 
     private DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {

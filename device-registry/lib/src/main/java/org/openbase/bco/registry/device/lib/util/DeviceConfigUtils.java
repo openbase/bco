@@ -21,11 +21,10 @@ package org.openbase.bco.registry.device.lib.util;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import java.util.ArrayList;
 import java.util.List;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.device.DeviceClassType.DeviceClassOrBuilder;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfigOrBuilder;
 import rst.homeautomation.unit.UnitConfigType;
@@ -83,7 +82,7 @@ public class DeviceConfigUtils {
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final DeviceConfigOrBuilder deviceConfig, final DeviceClassOrBuilder deviceClass, boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
         try {
-            if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToSystemUnit()) {
+            if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToUnitHost()) {
                 if (deviceConfigHasDuplicatedUnitType) {
                     if (unitConfig.hasLabel() && !unitConfig.getLabel().isEmpty()) {
                         return false;
@@ -95,7 +94,7 @@ public class DeviceConfigUtils {
 
                     for (UnitTemplateConfigType.UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                         if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                            if(unitTemplateConfig.getLabel().isEmpty()) {
+                            if (unitTemplateConfig.getLabel().isEmpty()) {
                                 throw new NotAvailableException("unitTemplateConfig.label");
                             }
                             unitConfig.setLabel(deviceConfig.getLabel() + "_" + unitTemplateConfig.getLabel());

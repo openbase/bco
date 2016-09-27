@@ -28,12 +28,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -61,7 +61,7 @@ public class UnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistenc
 
             // check if unit id is unique.
             if (unitMap.containsKey(unitConfig.getId())) {
-                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getSystemUnitId() + "]!");
+                throw new InvalidStateException("Two units with same Id[" + unitConfig.getId() + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitMap.get(unitConfig.getId()).getUnitHostId() + "]!");
             }
             unitMap.put(unitConfig.getId(), unitConfig.build());
             deviceConfig.addUnitConfig(unitConfig);

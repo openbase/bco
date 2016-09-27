@@ -36,6 +36,28 @@ import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BATTERY_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BLIND_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BLIND_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BRIGHTNESS_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BRIGHTNESS_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BUTTON_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.COLOR_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.COLOR_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.CONTACT_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.HANDLE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.INTENSITY_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.INTENSITY_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.MOTION_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_CONSUMPTION_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.SMOKE_ALARM_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.SMOKE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TAMPER_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TEMPERATURE_SPS;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
@@ -57,8 +79,8 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
 import rst.homeautomation.state.InventoryStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
@@ -67,7 +89,6 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.*;
 
 /**
  *
@@ -118,7 +139,7 @@ public class MockRegistry {
     private static LocationConfig paradise;
 
     public enum MockServiceTemplate {
-        
+
         // endings:
         // SOS = STATE_OPERATION_SERVICE
         // SPS = STATE_PROVIDER_SERVICE
@@ -145,22 +166,21 @@ public class MockRegistry {
         TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
         TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
         TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER);
-        
-        
+
         private final ServiceTemplate template;
-        
+
         MockServiceTemplate(ServiceType type, ServicePattern servicePattern) {
             ServiceTemplate.Builder templateBuilder = ServiceTemplate.newBuilder();
             templateBuilder.setType(type);
             templateBuilder.setPattern(servicePattern);
             this.template = templateBuilder.build();
         }
-        
+
         public ServiceTemplate getTemplate() {
             return template;
         }
     }
-    
+
     public enum MockUnitTemplate {
 
         COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
@@ -473,7 +493,7 @@ public class MockRegistry {
 
     public static UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
         UnitTemplate template = MockUnitTemplate.getTemplate(type);
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToSystemUnit(false).build();
+        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToUnitHost(false).build();
     }
 
     public static DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {

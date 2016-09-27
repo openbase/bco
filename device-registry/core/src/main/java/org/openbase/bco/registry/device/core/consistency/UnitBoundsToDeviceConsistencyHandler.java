@@ -24,15 +24,15 @@ package org.openbase.bco.registry.device.core.consistency;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -57,13 +57,13 @@ public class UnitBoundsToDeviceConsistencyHandler extends AbstractProtoBufRegist
         for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
 
             // Setup default bounding
-            if (!unitConfig.hasBoundToSystemUnit()) {
-                unitConfig.setBoundToSystemUnit(DEFAULT_BOUND_TO_DEVICE);
+            if (!unitConfig.hasBoundToUnitHost()) {
+                unitConfig.setBoundToUnitHost(DEFAULT_BOUND_TO_DEVICE);
                 modification = true;
             }
 
             // Copy device placement and label if bound to device is enabled.
-            if (unitConfig.getBoundToSystemUnit()) {
+            if (unitConfig.getBoundToUnitHost()) {
 
                 // copy location id
                 if (!unitConfig.getPlacementConfig().getLocationId().equals(deviceConfig.getPlacementConfig().getLocationId())) {

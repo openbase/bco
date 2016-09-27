@@ -28,15 +28,15 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
@@ -78,7 +78,7 @@ public class UnitScopeConsistencyHandler extends AbstractProtoBufRegistryConsist
             }
 
             if (unitScopeMap.containsKey(ScopeGenerator.generateStringRep(unitConfig.getScope()))) {
-                throw new InvalidStateException("Two units with same scope[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitScopeMap.get(ScopeGenerator.generateStringRep(unitConfig.getScope())).getSystemUnitId() + "]!");
+                throw new InvalidStateException("Two units with same scope[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] detected provided by Device[" + deviceConfig.getId() + "] and Device[" + unitScopeMap.get(ScopeGenerator.generateStringRep(unitConfig.getScope())).getUnitHostId() + "]!");
             }
             unitScopeMap.put(ScopeGenerator.generateStringRep(unitConfig.getScope()), unitConfig.build());
 

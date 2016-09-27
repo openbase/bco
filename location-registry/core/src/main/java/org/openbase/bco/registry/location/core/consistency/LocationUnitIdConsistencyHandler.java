@@ -90,7 +90,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
                     }
 
                     // filter units which are currently not installed
-                    DeviceConfigType.DeviceConfig deviceConfig = deviceRegistryRemote.getDeviceConfigById(unitConfig.getSystemUnitId());
+                    DeviceConfigType.DeviceConfig deviceConfig = deviceRegistryRemote.getDeviceConfigById(unitConfig.getUnitHostId());
                     if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                         continue;
                     }
