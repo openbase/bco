@@ -218,7 +218,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                         for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                             // ignore non installed units
-                            if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                                 continue;
                             }
                             unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
@@ -232,7 +232,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     } else {
                         for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                             // ignore non installed units
-                            if (deviceRegistryRemote.getDeviceConfigById(config.getSystemUnitId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                                 continue;
                             }
                             unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));

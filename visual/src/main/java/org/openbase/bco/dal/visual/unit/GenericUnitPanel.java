@@ -110,7 +110,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
                         + "[" + unitConfig.getLabel() + "]"
                         + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
-                        + " of " + ((UnitConfig) getRemoteService().getConfig()).getSystemUnitId()
+                        + " of " + ((UnitConfig) getRemoteService().getConfig()).getUnitHostId()
                         + " : " + unitConfig.getDescription();
             } catch (CouldNotPerformException ex) {
                 remoteLabel = "?";
