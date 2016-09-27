@@ -171,6 +171,7 @@
         <module>scene-registry</module>
         <module>agent-registry</module>
         <module>app-registry</module>
+        <module>unit-registry</module>
         <module>user-registry</module>
         <module>util</module>
     </modules>
