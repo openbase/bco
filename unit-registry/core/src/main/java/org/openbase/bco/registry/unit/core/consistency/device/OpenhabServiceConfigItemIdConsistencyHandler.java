@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.device;
 
 /*
  * #%L
@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -35,47 +34,50 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
  * @author thuxohl
  */
-public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
+public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
 
-    private final LocationRegistryRemote locationRegistryRemote;
     private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
 
-    public OpenhabServiceConfigItemIdConsistencyHandler(final LocationRegistryRemote locationRegistryRemote, ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry) {
-        this.locationRegistryRemote = locationRegistryRemote;
+    public OpenhabServiceConfigItemIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
+        this.locationRegistry = locationRegistry;
+        this.dalUnitRegistry = dalUnitRegistry;
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMap<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistry<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
+    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        UnitConfig deviceUnitConfig = entry.getMessage();
 
-        deviceConfig.clearUnitConfig();
-        boolean modification = false;
-        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
+        for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+            boolean modification = false;
+            UnitConfig.Builder unitConfig = dalUnitRegistry.getMessage(unitId).toBuilder();
             UnitConfig.Builder unitConfigClone = unitConfig.clone();
             unitConfig.clearServiceConfig();
             for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
 
                 if (!serviceConfig.hasBindingConfig()) {
-                    throw new NotAvailableException("binding service config");
+                    continue;
                 }
 
                 if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
-                    String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.getMessage(deviceConfig.getDeviceClassId()).getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()));
+                    String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.getMessage(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
 
                     MetaConfig metaConfig;
 
@@ -101,15 +103,13 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 }
                 unitConfig.addServiceConfig(serviceConfig);
             }
-            deviceConfig.addUnitConfig(unitConfig);
-        }
-
-        if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig), this);
+            if (modification) {
+                dalUnitRegistry.update(unitConfig.build());
+            }
         }
     }
 
-    public static String generateItemName(final DeviceConfig device, final String deviceClassLabel, final UnitConfig unit, final ServiceConfig service, final LocationConfig location) throws CouldNotPerformException {
+    public static String generateItemName(final UnitConfig device, final String deviceClassLabel, final UnitConfig unit, final ServiceConfig service, final UnitConfig location) throws CouldNotPerformException {
         if (device == null) {
             throw new NotAvailableException("deviceconfig");
         }

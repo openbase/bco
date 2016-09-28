@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.user.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.user;
 
 /*
  * #%L
@@ -21,42 +21,36 @@ package org.openbase.bco.registry.user.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import rst.authorization.UserConfigType.UserConfig;
-import rst.rsb.ScopeType;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.rsb.ScopeType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UserConfigScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UserConfig, UserConfig.Builder> {
+public class UserConfigScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UserConfig, UserConfig.Builder> entry, ProtoBufMessageMap<String, UserConfig, UserConfig.Builder> entryMap, ProtoBufRegistry<String, UserConfig, UserConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UserConfig user = entry.getMessage();
+    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        UnitConfig userUnitConfig = entry.getMessage();
 
-        if (!user.hasUserName()|| user.getUserName().isEmpty()) {
+        if (!userUnitConfig.getUserConfig().hasUserName() || userUnitConfig.getUserConfig().getUserName().isEmpty()) {
             throw new NotAvailableException("user.userName");
         }
 
-        ScopeType.Scope newScope = ScopeGenerator.generateSceneScope(user);
+        ScopeType.Scope newScope = ScopeGenerator.generateSceneScope(userUnitConfig);
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(user.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
-            entry.setMessage(user.toBuilder().setScope(newScope));
-            throw new EntryModification(entry, this);
+        if (!ScopeGenerator.generateStringRep(userUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+            throw new EntryModification(entry.setMessage(userUnitConfig.toBuilder().setScope(newScope)), this);
         }
-    }
-
-    @Override
-    public void reset() {
     }
 }

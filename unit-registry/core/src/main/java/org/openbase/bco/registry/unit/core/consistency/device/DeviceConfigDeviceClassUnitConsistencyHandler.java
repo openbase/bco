@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.device;
 
 /*
  * #%L
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -40,6 +39,7 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 
 /**
@@ -47,27 +47,44 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
  * @author mpohling
  */
 public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
+    
     private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
-
-    public DeviceConfigDeviceClassUnitConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry) {
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
+    
+    public DeviceConfigDeviceClassUnitConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
+        this.dalUnitRegistry = dalUnitRegistry;
     }
-
+    
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-        DeviceConfig.Builder deviceConfig = unitConfig.getDeviceConfigBuilder();
-
+        UnitConfig.Builder deviceUnitConfig = entry.getMessage().toBuilder();
+        DeviceConfig.Builder deviceConfig = deviceUnitConfig.getDeviceConfigBuilder();
+        
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceclass.id");
         }
-
+        
         boolean modification = false;
         DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
-        List<UnitConfig> unitConfigs = new ArrayList<>(deviceConfig.getUnitConfigList());
-        deviceConfig.clearUnitConfig();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (String unitId : deviceConfig.getUnitIdList()) {
+            unitConfigs.add(dalUnitRegistry.getMessage(unitId));
+        }
 
+        // remove all units that do not have an according unitTemplateConfig in the deviceClass
+        deviceConfig.clearUnitId();
+        for (UnitConfig unitConfig : unitConfigs) {
+            if (templateForUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
+                deviceConfig.addUnitId(unitConfig.getId());
+            } else {
+                dalUnitRegistry.remove(unitConfig);
+                modification = true;
+            }
+        }
+
+        // add all non existing units that have an according unitTemplateConfig in the deviceClass
         for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
             if (!unitWithRelatedTemplateExists(unitConfigs, unitTemplateConfig)) {
                 List<ServiceConfig> serviceConfigs = new ArrayList<>();
@@ -76,38 +93,23 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
                     serviceConfig.setServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplateConfig.getServiceType()));
                     serviceConfigs.add(serviceConfig.build());
                 }
-                unitConfigs.add(UnitConfig.newBuilder().setType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).build());
+                
+                UnitConfig dalUnitConfig = UnitConfig.newBuilder().setType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
+                deviceConfig.addUnitId(dalUnitRegistry.register(dalUnitConfig).getId());
                 modification = true;
             }
         }
-        deviceConfig.addAllUnitConfig(unitConfigs);
-
-        for (UnitConfig unitConfig : unitConfigs) {
-            if (!templateForUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
-                throw new VerificationFailedException("Unit Config [" + unitConfig.getId() + "] in device [" + deviceConfig.getId() + "] has no according unit template config in device class [" + deviceClass.getId() + "]");
-            }
-        }
-
+        
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig), this);
+            throw new EntryModification(entry.setMessage(deviceUnitConfig), this);
         }
     }
-
+    
     private boolean unitWithRelatedTemplateExists(final List<UnitConfig> units, final UnitTemplateConfig unitTemplate) {
-        for (UnitConfig unit : units) {
-            if (unit.getUnitTemplateConfigId().equals(unitTemplate.getId())) {
-                return true;
-            }
-        }
-        return false;
+        return units.stream().anyMatch((unit) -> (unit.getUnitTemplateConfigId().equals(unitTemplate.getId())));
     }
-
+    
     private boolean templateForUnitExists(final List<UnitTemplateConfig> units, String id) {
-        for (UnitTemplateConfig unit : units) {
-            if (unit.getId().equals(id)) {
-                return true;
-            }
-        }
-        return false;
+        return units.stream().anyMatch((unit) -> (unit.getId().equals(id)));
     }
 }

@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.user.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.user;
 
 /*
  * #%L
@@ -21,24 +21,24 @@ package org.openbase.bco.registry.user.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import rst.authorization.UserConfigType.UserConfig;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class UserConfigUserNameConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UserConfig, UserConfig.Builder> {
+public class UserConfigUserNameConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final Map<String, UserConfig> userMap;
 
@@ -47,17 +47,18 @@ public class UserConfigUserNameConsistencyHandler extends AbstractProtoBufRegist
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UserConfig, UserConfig.Builder> entry, ProtoBufMessageMap<String, UserConfig, UserConfig.Builder> entryMap, ProtoBufRegistry<String, UserConfig, UserConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UserConfig user = entry.getMessage();
+    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        UnitConfig userUnitConfig = entry.getMessage();
+        UserConfig userConfig = userUnitConfig.getUserConfig();
 
-        if (!user.hasUserName() || user.getUserName().isEmpty()) {
+        if (!userConfig.hasUserName() || userConfig.getUserName().isEmpty()) {
             throw new NotAvailableException("user.userName");
         }
 
-        if (!userMap.containsKey(user.getUserName())) {
-            userMap.put(user.getUserName(), user);
+        if (!userMap.containsKey(userConfig.getUserName())) {
+            userMap.put(userConfig.getUserName(), userConfig);
         } else {
-            throw new InvalidStateException("User [" + user + "] and user [" + userMap.get(user.getUserName()) + "] are registered with the same user name!");
+            throw new InvalidStateException("User [" + userConfig + "] and user [" + userMap.get(userConfig.getUserName()) + "] are registered with the same user name!");
         }
     }
 

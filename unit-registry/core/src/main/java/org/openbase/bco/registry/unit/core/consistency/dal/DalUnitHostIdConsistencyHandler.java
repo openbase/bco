@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.dal;
 
 /*
  * #%L
@@ -22,13 +22,13 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.homeautomation.unit.UnitConfigType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
@@ -46,20 +46,13 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        UnitConfig dalUnitConfig = entry.getMessage();
 
-        deviceConfig.clearUnitId();
-        boolean modification = false;
-        for (UnitConfigType.UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-            if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty() || !unitConfig.getUnitHostId().equals(deviceConfig.getId())) {
-                unitConfig.setUnitHostId(deviceConfig.getId());
-                modification = true;
-            }
-            deviceConfig.addUnitConfig(unitConfig);
-        }
-
-        if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig), this);
+        if (dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+            throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");
+        } else {
+            // throws a could not perform exception if the unit host is not registered
+            unitDeviceConfigRegistry.get(dalUnitConfig.getUnitHostId());
         }
     }
 }
