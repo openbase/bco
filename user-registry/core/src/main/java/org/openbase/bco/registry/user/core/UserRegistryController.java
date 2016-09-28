@@ -23,18 +23,8 @@ package org.openbase.bco.registry.user.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.user.core.consistency.AuthorizationGroupConfigLabelConsistencyHandler;
-import org.openbase.bco.registry.user.core.consistency.AuthorizationGroupConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.user.core.consistency.UserConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.user.core.consistency.UserConfigUserNameConsistencyHandler;
-import org.openbase.bco.registry.user.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.user.lib.UserRegistry;
-import org.openbase.bco.registry.user.lib.generator.AuthorizationGroupConfigIdGenerator;
-import org.openbase.bco.registry.user.lib.generator.UserConfigIdGenerator;
-import org.openbase.bco.registry.user.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
-import org.openbase.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -42,17 +32,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
@@ -72,48 +57,13 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> userRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder, UserRegistryData.Builder> authorizationGroupRegistry;
-
     public UserRegistryController() throws InstantiationException, InterruptedException {
         super(UserRegistryData.newBuilder());
-        try {
-            ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            authorizationGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(AuthorizationGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_FIELD_NUMBER), new AuthorizationGroupConfigIdGenerator(), JPService.getProperty(JPAuthorizationGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-
-            userRegistry.activateVersionControl(DummyConverter.class.getPackage());
-            authorizationGroupRegistry.activateVersionControl(DummyConverter.class.getPackage());
-
-            userRegistry.loadRegistry();
-
-            userRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
-            userRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
-
-            authorizationGroupRegistry.loadRegistry();
-
-            authorizationGroupRegistry.registerConsistencyHandler(new AuthorizationGroupConfigLabelConsistencyHandler());
-            authorizationGroupRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
-
-            userRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UserConfig, UserConfig.Builder>>>() {
-
-                @Override
-                public void update(final Observable<Map<String, IdentifiableMessage<String, UserConfig, UserConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UserConfig, UserConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
-
-            authorizationGroupRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder>>>() {
-
-                @Override
-                public void update(final Observable<Map<String, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
-
-        } catch (JPServiceException | CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+//        try {
+//
+//        } catch (JPServiceException | CouldNotPerformException ex) {
+//            throw new InstantiationException(this, ex);
+//        }
     }
 
     public void init() throws InitializationException, InterruptedException {
@@ -129,42 +79,17 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
         try {
             super.activate();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate location registry!", ex);
-        }
-
-        authorizationGroupRegistry.registerDependency(userRegistry);
-
-        try {
-            userRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
-        }
-
-        try {
-            authorizationGroupRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
+            throw new CouldNotPerformException("Could not activate user registry!", ex);
         }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        authorizationGroupRegistry.removeDependency(userRegistry);
         super.deactivate();
     }
 
     @Override
     public void shutdown() {
-        if (userRegistry != null) {
-            userRegistry.shutdown();
-        }
-
-        if (authorizationGroupRegistry != null) {
-            authorizationGroupRegistry.shutdown();
-        }
-
         try {
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
@@ -175,24 +100,12 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     @Override
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
-        setDataField(UserRegistryData.USER_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userRegistry.isReadOnly());
-        setDataField(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, authorizationGroupRegistry.isReadOnly());
-        setDataField(UserRegistryData.USER_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, userRegistry.isConsistent());
-        setDataField(UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, authorizationGroupRegistry.isConsistent());
         super.notifyChange();
     }
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(UserRegistry.class, this, server);
-    }
-
-    public ProtoBufFileSynchronizedRegistry<String, UserConfig, UserConfig.Builder, UserRegistryData.Builder> getUserRegistry() {
-        return userRegistry;
-    }
-
-    public ProtoBufFileSynchronizedRegistry<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder, UserRegistryData.Builder> getAuthorizationGroupRegistry() {
-        return authorizationGroupRegistry;
     }
 
     @Override

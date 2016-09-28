@@ -43,6 +43,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -60,7 +61,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
  *
  * @author mpohling
  */
-public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryData> implements LocationRegistry, Remote<LocationRegistryData> {
+public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryData> implements LocationRegistry, RegistryRemote<LocationRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
@@ -115,11 +116,12 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryDat
     }
 
     /**
-     * Method initializes the remote with the default registry connection scope.
+     * {@inheritDoc}
      *
      * @throws InitializationException {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
             this.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());

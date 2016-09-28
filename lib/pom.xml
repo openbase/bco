@@ -2,26 +2,26 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.unit.test</artifactId>
+    <artifactId>registry.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Registry Scene Test</name>
+    <name>BCO Registry Lib</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.unit</artifactId>
+        <artifactId>registry</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
     
     <url>https://github.com/openbase/bco.registry/wiki</url>
-    
+
     <licenses>
         <license>
             <name>GPLv3</name>
             <url>http://www.gnu.org/licenses/gpl.html</url>
         </license>
     </licenses>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -75,19 +75,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.unit.lib</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.storage</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.unit.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.unit.remote</artifactId>
-            <version>${project.version}</version>
+         <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rsb.com</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
