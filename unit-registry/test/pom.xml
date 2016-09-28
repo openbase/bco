@@ -2,14 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.scene.test</artifactId>
+    <artifactId>registry.unit.test</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Registry Scene Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.scene</artifactId>
+        <artifactId>registry.unit</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
     
@@ -76,25 +76,18 @@
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.scene.lib</artifactId>
+            <artifactId>registry.unit.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.scene.core</artifactId>
+            <artifactId>registry.unit.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.scene.remote</artifactId>
+            <artifactId>registry.unit.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.location.core</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
