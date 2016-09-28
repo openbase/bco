@@ -39,7 +39,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -60,7 +60,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> implements DeviceRegistry, Remote<DeviceRegistryData> {
+public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));

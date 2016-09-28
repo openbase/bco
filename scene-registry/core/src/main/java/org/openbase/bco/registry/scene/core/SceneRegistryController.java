@@ -24,6 +24,8 @@ package org.openbase.bco.registry.scene.core;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.AbstractRegistryController;
+import org.openbase.bco.registry.lib.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.core.consistency.LabelConsistencyHandler;
 import org.openbase.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
@@ -59,7 +61,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class SceneRegistryController extends RSBCommunicationService<SceneRegistryData, SceneRegistryData.Builder> implements SceneRegistry, Manageable<ScopeType.Scope> {
+public class SceneRegistryController extends AbstractVirtualRegistryController<SceneRegistryData, SceneRegistryData.Builder> implements SceneRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
@@ -95,6 +97,15 @@ public class SceneRegistryController extends RSBCommunicationService<SceneRegist
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerRegistryRemotes() throws CouldNotPerformException {
     }
 
     public void init() throws InitializationException, InterruptedException {

@@ -35,6 +35,7 @@ import org.openbase.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -43,6 +44,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
@@ -54,6 +56,7 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.control.agent.AgentClassType;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
@@ -62,7 +65,7 @@ import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
  *
  * @author mpohling
  */
-public class AgentRegistryController extends RSBCommunicationService<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
+public class AgentRegistryController extends AbstractRegistryController<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
@@ -71,86 +74,102 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     }
 
     private ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> agentConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
-        super(AgentRegistryData.newBuilder());
+        super(JPAgentRegistryScope.class, AgentRegistryData.newBuilder());
         try {
-            ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-
-            agentClassRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
-            agentConfigRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
-
             locationRegistryRemote = new LocationRegistryRemote();
-
-            agentClassRegistry.loadRegistry();
-            agentConfigRegistry.loadRegistry();
-
-            //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
-            //agentConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
-            agentConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler(locationRegistryRemote));
-            agentConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
-            agentConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
-            agentConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>>() {
-
-                @Override
-                public void update(final Observable<Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AgentConfig, AgentConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
-
-            agentClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>>> source, Map<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
-            locationRegistryRemote.init();
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void activateVersionControl() throws CouldNotPerformException {
+        agentClassRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        try {
-            super.activate();
-            locationRegistryRemote.activate();
-            locationRegistryRemote.waitForData();
-            agentConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-            agentConfigRegistry.registerDependency(agentClassRegistry);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate location registry!", ex);
-        }
+    protected void loadRegistries() throws CouldNotPerformException {
+        agentClassRegistry.loadRegistry();
+    }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerConsistencyHandler() throws CouldNotPerformException {
+        // TODO: Implement basic consistency handler if needed
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerRegistryRemotes() throws CouldNotPerformException {
+        registerRegistryRemote(locationRegistryRemote);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerObserver() throws CouldNotPerformException {
+        agentClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, AgentClassType.AgentClass, AgentClassType.AgentClass.Builder>>> source, Map<String, IdentifiableMessage<String, AgentClassType.AgentClass, AgentClassType.AgentClass.Builder>> data) -> {
+            notifyChange();
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerDependencies() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void removeDependencies() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         try {
             agentClassRegistry.checkConsistency();
-            agentConfigRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
             notifyChange();
         }
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        agentConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-        agentConfigRegistry.removeDependency(agentClassRegistry);
-        locationRegistryRemote.deactivate();
-        super.deactivate();
     }
 
     @Override
@@ -307,4 +326,5 @@ public class AgentRegistryController extends RSBCommunicationService<AgentRegist
     public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException {
         return agentConfigRegistry.isConsistent();
     }
+
 }

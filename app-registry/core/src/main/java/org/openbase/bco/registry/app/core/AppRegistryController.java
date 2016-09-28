@@ -34,6 +34,7 @@ import org.openbase.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -44,7 +45,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
@@ -63,7 +63,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class AppRegistryController extends RSBCommunicationService<AppRegistryData, AppRegistryData.Builder> implements AppRegistry, Manageable<ScopeType.Scope> {
+public class AppRegistryController extends AbstractRegistryController<AppRegistryData, AppRegistryData.Builder> implements AppRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
@@ -114,6 +114,78 @@ public class AppRegistryController extends RSBCommunicationService<AppRegistryDa
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void activateVersionControl() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void loadRegistries() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerConsistencyHandler() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerRegistryRemotes() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerObserver() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerDependencies() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void removeDependencies() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void performInitialConsistencyCheck() throws CouldNotPerformException {
     }
 
     public void init() throws InitializationException, InterruptedException {
