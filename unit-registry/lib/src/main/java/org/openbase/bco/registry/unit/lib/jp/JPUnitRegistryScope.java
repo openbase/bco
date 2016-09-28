@@ -30,7 +30,7 @@ import rsb.Scope;
  */
 public class JPUnitRegistryScope extends JPScope {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--scene-registry-scope"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--unit-registry-scope"};
 
     public JPUnitRegistryScope() {
         super(COMMAND_IDENTIFIERS);
@@ -38,11 +38,11 @@ public class JPUnitRegistryScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/registry/scene"));
+        return super.getPropertyDefaultValue().concat(new Scope("/registry/unit"));
     }
 
     @Override
     public String getDescription() {
-        return "Setup the scene registry scope which is used for the rsb communication.";
+        return "Setup the unit registry scope which is used for the rsb communication.";
     }
 }
