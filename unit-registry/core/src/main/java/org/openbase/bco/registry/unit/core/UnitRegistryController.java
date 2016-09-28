@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.scene.lib.jp.JPUnitConfigDatabaseDirectory;
-import org.openbase.bco.registry.unit.core.consistency.UnitTemplateValidationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unittemplate.UnitTemplateValidationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
