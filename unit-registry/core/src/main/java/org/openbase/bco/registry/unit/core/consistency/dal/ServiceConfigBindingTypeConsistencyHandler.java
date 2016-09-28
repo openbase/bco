@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.device.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.dal;
 
 /*
  * #%L
@@ -57,9 +57,9 @@ public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBuf
         UnitConfig deviceUnitConfig = entry.getMessage();
         DeviceConfig deviceConfig = deviceUnitConfig.getDeviceConfig();
 
-        deviceConfig.clearUnitConfig();
-        boolean modification = false;
-        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
+        for (String unitId : deviceConfig.getUnitIdList()) {
+            boolean modification = false;
+            UnitConfig.Builder unitConfig = dalUnitRegistry.getBuilder(unitId);
             UnitConfig.Builder unitConfigClone = unitConfig.clone();
             unitConfig.clearServiceConfig();
             for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
@@ -91,11 +91,9 @@ public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBuf
                 }
                 unitConfig.addServiceConfig(serviceConfig);
             }
-            deviceConfig.addUnitConfig(unitConfig);
-        }
-
-        if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig), this);
+            if (modification) {
+                dalUnitRegistry.update(unitConfig.build());
+            }
         }
     }
 }

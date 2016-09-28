@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.device.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.dal;
 
 /*
  * #%L
