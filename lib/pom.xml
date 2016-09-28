@@ -2,32 +2,33 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.app.lib</artifactId>
+    <artifactId>registry.lib</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Registry App Library</name>
+    <name>BCO Registry Lib</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.app</artifactId>
+        <artifactId>registry</artifactId>
         <version>1.1-SNAPSHOT</version>
-    </parent>    
+    </parent>
     
     <url>https://github.com/openbase/bco.registry/wiki</url>
-    
+
     <licenses>
         <license>
-            <name>LGPLv3</name>
-            <url>http://www.gnu.org/licenses/lgpl.html</url>
+            <name>GPLv3</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
         </license>
     </licenses>
-    
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
+                <version>2.3.2</version>
+                
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -48,7 +49,7 @@
                         </goals>
                         <phase>process-sources</phase>
                         <configuration>
-                            <licenseName>lgpl_v3</licenseName>
+                            <licenseName>gpl_v3</licenseName>
                             <roots>
                                 <root>src/main/java</root>
                                 <root>src/test</root>
@@ -68,17 +69,22 @@
 
     <dependencies>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.storage</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.lib</artifactId>
-            <version>${project.version}</version>
+         <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rsb.com</artifactId>
+            <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
-
 </project>

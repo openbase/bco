@@ -29,7 +29,6 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.device.core.dbconvert.DeviceClass_0_To_1_DBConverter;
-import org.openbase.bco.registry.device.core.plugin.PublishDeviceTransformationRegistryPlugin;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.generator.UnitTemplateIdGenerator;
@@ -46,12 +45,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rsb.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -134,62 +132,27 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
 
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        deviceConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-        deviceConfigRegistry.registerDependency(userRegistryRemote.getUserConfigRemoteRegistry());
-        deviceConfigRegistry.registerDependency(deviceClassRegistry);
         deviceClassRegistry.registerDependency(unitTemplateRegistry);
-        unitGroupConfigRegistry.registerDependency(deviceConfigRegistry);
+        
     }
 
     @Override
     protected void removeDependencies() throws CouldNotPerformException {
-        deviceConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-        deviceConfigRegistry.removeDependency(userRegistryRemote.getUserConfigRemoteRegistry());
-        deviceConfigRegistry.removeDependency(deviceClassRegistry);
         deviceClassRegistry.removeDependency(unitTemplateRegistry);
-        unitGroupConfigRegistry.removeDependency(deviceConfigRegistry);
     }
 
     @Override
     protected void performInitialConsistencyCheck() throws CouldNotPerformException {
-        try {
-            unitTemplateRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
-        }
-
         try {
             deviceClassRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
             notifyChange();
         }
-
-        try {
-            deviceConfigRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
-        }
-
-        try {
-            unitGroupConfigRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
-        }
-
-        try {
-            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationRegistryRemote));
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load all plugins!", ex), logger, LogLevel.ERROR);
-            notifyChange();
-        }
     }
 
     @Override
-    protected void activateRegistries() throws CouldNotPerformException, InterruptedException {
+    protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         locationRegistryRemote.activate();
         userRegistryRemote.activate();
         locationRegistryRemote.waitForData();
@@ -197,7 +160,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     }
 
     @Override
-    protected void deactivateRegistries() throws CouldNotPerformException, InterruptedException {
+    protected void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         locationRegistryRemote.deactivate();
         userRegistryRemote.deactivate();
     }
@@ -209,18 +172,6 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     public void shutdown() {
         if (deviceClassRegistry != null) {
             deviceClassRegistry.shutdown();
-        }
-
-        if (deviceConfigRegistry != null) {
-            deviceConfigRegistry.shutdown();
-        }
-
-        if (unitTemplateRegistry != null) {
-            unitTemplateRegistry.shutdown();
-        }
-
-        if (unitGroupConfigRegistry != null) {
-            unitGroupConfigRegistry.shutdown();
         }
 
         try {
@@ -242,13 +193,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     public final void notifyChange() throws CouldNotPerformException, InterruptedException {
         // sync read only flags
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
-        setDataField(DeviceRegistryData.DEVICE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceConfigRegistry.isReadOnly());
-        setDataField(DeviceRegistryData.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
-        setDataField(DeviceRegistryData.UNIT_GROUP_REGISTRY_READ_ONLY_FIELD_NUMBER, unitGroupConfigRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
-        setDataField(DeviceRegistryData.DEVICE_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceConfigRegistry.isConsistent());
-        setDataField(DeviceRegistryData.UNIT_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRegistry.isConsistent());
-        setDataField(DeviceRegistryData.UNIT_GROUP_REGISTRY_CONSISTENT_FIELD_NUMBER, unitGroupConfigRegistry.isConsistent());
         super.notifyChange();
     }
 

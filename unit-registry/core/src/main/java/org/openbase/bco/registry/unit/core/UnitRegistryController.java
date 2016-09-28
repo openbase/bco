@@ -219,12 +219,20 @@ public class UnitRegistryController extends RSBCommunicationService<UnitRegistry
     protected void registerDependencies() throws CouldNotPerformException {
         unitConfigRegistry.registerDependency(unitTemplateRegistry);
         authorizationGroupRegistry.registerDependency(userRegistry);
+        deviceConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
+        deviceConfigRegistry.registerDependency(userRegistryRemote.getUserConfigRemoteRegistry());
+        deviceConfigRegistry.registerDependency(deviceClassRegistry);
+        unitGroupConfigRegistry.registerDependency(deviceConfigRegistry);
     }
 
     @Override
     protected void removeDependencies() throws CouldNotPerformException {
         unitConfigRegistry.removeDependency(unitTemplateRegistry);
         authorizationGroupRegistry.removeDependency(userRegistry);
+        deviceConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
+        deviceConfigRegistry.removeDependency(userRegistryRemote.getUserConfigRemoteRegistry());
+        deviceConfigRegistry.removeDependency(deviceClassRegistry);
+        unitGroupConfigRegistry.removeDependency(deviceConfigRegistry);
     }
 
     @Override
@@ -254,6 +262,34 @@ public class UnitRegistryController extends RSBCommunicationService<UnitRegistry
             authorizationGroupRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
+        }
+        try {
+            unitTemplateRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
+        }
+
+
+        try {
+            deviceConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
+        }
+
+        try {
+            unitGroupConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
+        }
+
+        try {
+            deviceConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationRegistryRemote));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load all plugins!", ex), logger, LogLevel.ERROR);
             notifyChange();
         }
     }
@@ -295,6 +331,18 @@ public class UnitRegistryController extends RSBCommunicationService<UnitRegistry
         if (unitTemplateRegistry != null) {
             unitTemplateRegistry.shutdown();
         }
+        
+        if (deviceConfigRegistry != null) {
+            deviceConfigRegistry.shutdown();
+        }
+
+        if (unitTemplateRegistry != null) {
+            unitTemplateRegistry.shutdown();
+        }
+
+        if (unitGroupConfigRegistry != null) {
+            unitGroupConfigRegistry.shutdown();
+        }
 
         try {
             deactivate();
@@ -316,6 +364,13 @@ public class UnitRegistryController extends RSBCommunicationService<UnitRegistry
         setDataField(UserRegistryDataType.UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, authorizationGroupRegistry.isReadOnly());
         setDataField(UserRegistryDataType.UserRegistryData.USER_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, userRegistry.isConsistent());
         setDataField(UserRegistryDataType.UserRegistryData.AUTHORIZATION_GROUP_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, authorizationGroupRegistry.isConsistent());
+        
+        setDataField(DeviceRegistryDataType.DeviceRegistryData.DEVICE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceConfigRegistry.isReadOnly());
+        setDataField(DeviceRegistryDataType.DeviceRegistryData.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
+        setDataField(DeviceRegistryDataType.DeviceRegistryData.UNIT_GROUP_REGISTRY_READ_ONLY_FIELD_NUMBER, unitGroupConfigRegistry.isReadOnly());
+        setDataField(DeviceRegistryDataType.DeviceRegistryData.DEVICE_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceConfigRegistry.isConsistent());
+        setDataField(DeviceRegistryDataType.DeviceRegistryData.UNIT_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRegistry.isConsistent());
+        setDataField(DeviceRegistryDataType.DeviceRegistryData.UNIT_GROUP_REGISTRY_CONSISTENT_FIELD_NUMBER, unitGroupConfigRegistry.isConsistent());
 
         super.notifyChange();
     }
