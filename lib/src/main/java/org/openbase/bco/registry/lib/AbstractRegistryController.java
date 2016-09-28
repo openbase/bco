@@ -1,5 +1,27 @@
 package org.openbase.bco.registry.lib;
 
+/*
+ * #%L
+ * BCO Registry Lib
+ * %%
+ * Copyright (C) 2014 - 2016 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +30,12 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
  *
@@ -65,6 +89,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(jpScopePropery).getValue());
+            registerRegistryRemotes();
             initRemoteRegistries();
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -89,6 +114,14 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         removeDependencies();
     }
 
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        for (final RegistryRemote remote : registryRemotes) {
+            remote.shutdown();
+        }
+    }
+
     private void initRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemotes) {
             remote.init();
@@ -109,12 +142,18 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             remote.deactivate();
         }
     }
+    
+    protected void registerRegistryRemote(final RegistryRemote registry) {
+        registryRemotes.add(registry);
+    }
 
     protected abstract void activateVersionControl() throws CouldNotPerformException;
 
     protected abstract void loadRegistries() throws CouldNotPerformException;
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
+    
+    protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
 
     protected abstract void registerObserver() throws CouldNotPerformException;
 
@@ -122,5 +161,5 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     protected abstract void removeDependencies() throws CouldNotPerformException;
 
-    protected abstract void performInitialConsistencyCheck() throws CouldNotPerformException;
+    protected abstract void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException;
 }

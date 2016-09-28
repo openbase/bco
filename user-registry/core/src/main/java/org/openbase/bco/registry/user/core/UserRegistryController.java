@@ -24,17 +24,13 @@ package org.openbase.bco.registry.user.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.schedule.GlobalExecutionService;
@@ -49,7 +45,7 @@ import rst.rsb.ScopeType;
  *
  * @author mpohling
  */
-public class UserRegistryController extends RSBCommunicationService<UserRegistryData, UserRegistryData.Builder> implements UserRegistry, Manageable<ScopeType.Scope> {
+public class UserRegistryController extends AbstractVirtualRegistryController<UserRegistryData, UserRegistryData.Builder> implements UserRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
@@ -58,49 +54,21 @@ public class UserRegistryController extends RSBCommunicationService<UserRegistry
     }
 
     public UserRegistryController() throws InstantiationException, InterruptedException {
-        super(UserRegistryData.newBuilder());
+        super(JPUserRegistryScope.class, UserRegistryData.newBuilder());
 //        try {
 //
 //        } catch (JPServiceException | CouldNotPerformException ex) {
 //            throw new InstantiationException(this, ex);
 //        }
     }
-
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            super.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        try {
-            super.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate user registry!", ex);
-        }
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        super.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        try {
-            deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-    }
-
-    @Override
-    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
-        // sync read only flags
-        super.notifyChange();
+    protected void registerRegistryRemotes() throws CouldNotPerformException {
     }
 
     @Override
