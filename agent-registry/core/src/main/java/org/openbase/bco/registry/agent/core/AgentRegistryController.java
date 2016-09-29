@@ -23,59 +23,90 @@ package org.openbase.bco.registry.agent.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.unit.core.dbconvert.AgentConfig_0_To_1_DBConverter;
+import org.openbase.bco.registry.agent.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentClassType;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryController extends AbstractRegistryController<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
 
-    private final LocationRegistryRemote locationRegistryRemote;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
+    private final UnitRegistryRemote unitRegistryRemote;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(JPAgentRegistryScope.class, AgentRegistryData.newBuilder());
         try {
             agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            locationRegistryRemote = new LocationRegistryRemote();
+            agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            unitRegistryRemote = new UnitRegistryRemote();
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    @Override
+    public void init() throws InitializationException, InterruptedException {
+        super.init();
+        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
+
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                agentUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentUnitConfigList());
+                setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, data.getAgentUnitConfigList());
+                setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAgentUnitConfigRegistryConsistent());
+                setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getAgentUnitConfigRegistryReadOnly());
+                notifyChange();
+            }
+        });
+    }
+
+    @Override
+    public void shutdown() {
+        if (agentClassRegistry != null) {
+            agentClassRegistry.shutdown();
+        }
+
+        super.shutdown();
+        agentUnitConfigRemoteRegistry.shutdown();
     }
 
     /**
@@ -85,7 +116,7 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
      */
     @Override
     protected void activateVersionControl() throws CouldNotPerformException {
-        agentClassRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
+        agentClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
     }
 
     /**
@@ -105,7 +136,6 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
      */
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
-        // TODO: Implement basic consistency handler if needed
     }
 
     /**
@@ -115,19 +145,7 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
-        registerRegistryRemote(locationRegistryRemote);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void registerObserver() throws CouldNotPerformException {
-        agentClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, AgentClassType.AgentClass, AgentClassType.AgentClass.Builder>>> source, Map<String, IdentifiableMessage<String, AgentClassType.AgentClass, AgentClassType.AgentClass.Builder>> data) -> {
-            notifyChange();
-        });
+        registerRegistryRemote(unitRegistryRemote);
     }
 
     /**
@@ -154,6 +172,24 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
+    protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    protected void registerRegistries() throws CouldNotPerformException {
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
     protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         try {
             agentClassRegistry.checkConsistency();
@@ -161,14 +197,6 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
             notifyChange();
         }
-    }
-
-    @Override
-    public void shutdown() {
-        if (agentClassRegistry != null) {
-            agentClassRegistry.shutdown();
-        }
-        super.shutdown();
     }
 
     @Override
@@ -183,67 +211,69 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
     }
 
     @Override
-    public Future<AgentConfig> registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> agentConfigRegistry.register(agentConfig));
+    public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.registerUnitConfig(agentUnitConfig);
     }
 
     @Override
-    public AgentConfig getAgentConfigById(String agentConfigId) throws CouldNotPerformException {
-        return agentConfigRegistry.get(agentConfigId).getMessage();
+    public UnitConfig getAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return agentUnitConfigRemoteRegistry.getMessage(agentUnitConfigId);
     }
 
     @Override
-    public Boolean containsAgentConfigById(String agentConfigId) throws CouldNotPerformException {
-        return agentConfigRegistry.contains(agentConfigId);
+    public Boolean containsAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return agentUnitConfigRemoteRegistry.contains(agentUnitConfigId);
     }
 
     @Override
-    public Boolean containsAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return agentConfigRegistry.contains(agentConfig);
+    public Boolean containsAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return agentUnitConfigRemoteRegistry.contains(agentUnitConfig);
     }
 
     @Override
-    public Future<AgentConfig> updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> agentConfigRegistry.update(agentConfig));
+    public Future<UnitConfig> updateAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.updateUnitConfig(agentUnitConfig);
     }
 
     @Override
-    public Future<AgentConfig> removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> agentConfigRegistry.remove(agentConfig));
+    public Future<UnitConfig> removeAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.removeUnitConfig(agentUnitConfig);
     }
 
     @Override
-    public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException {
-        return agentConfigRegistry.getMessages();
+    public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return agentUnitConfigRemoteRegistry.getMessages();
     }
 
     @Override
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        return agentConfigRegistry.isReadOnly();
-    }
-
-    public ProtoBufFileSynchronizedRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> getAgentConfigRegistry() {
-        return agentConfigRegistry;
+        unitRegistryRemote.validateData();
+        return getData().getAgentUnitConfigRegistryReadOnly();
     }
 
     @Override
-    public List<AgentConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public List<UnitConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return getAgentConfigsByAgentClassId(agentClass.getId());
     }
 
     @Override
-    public List<AgentConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
+    public List<UnitConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
         if (!containsAgentClassById(agentClassId)) {
             throw new NotAvailableException("agentClassId [" + agentClassId + "]");
         }
 
-        List<AgentConfig> agentConfigs = new ArrayList<>();
-        for (AgentConfig agentConfig : getAgentConfigs()) {
-            if (agentConfig.getAgentClassId().equals(agentClassId)) {
-                agentConfigs.add(agentConfig);
+        unitRegistryRemote.validateData();
+        List<UnitConfig> agentUnitConfigs = new ArrayList<>();
+        for (UnitConfig agentUnitConfig : getAgentConfigs()) {
+            if (agentUnitConfig.getAgentConfig().getAgentClassId().equals(agentClassId)) {
+                agentUnitConfigs.add(agentUnitConfig);
             }
         }
-        return agentConfigs;
+        return agentUnitConfigs;
     }
 
     @Override
@@ -300,7 +330,11 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
      */
     @Override
     public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException {
-        return agentConfigRegistry.isConsistent();
+        unitRegistryRemote.validateData();
+        return getData().getAgentUnitConfigRegistryConsistent();
     }
 
+    public ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRegistry() {
+        return agentClassRegistry;
+    }
 }

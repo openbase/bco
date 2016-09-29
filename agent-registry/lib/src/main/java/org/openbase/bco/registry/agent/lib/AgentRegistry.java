@@ -26,31 +26,31 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface AgentRegistry extends Shutdownable {
 
-    public Future<AgentConfig> registerAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
-    public Boolean containsAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Boolean containsAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
-    public Boolean containsAgentConfigById(String agentConfigId) throws CouldNotPerformException;
+    public Boolean containsAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException;
 
-    public Future<AgentConfig> updateAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
-    public Future<AgentConfig> removeAgentConfig(AgentConfig agentConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
-    public AgentConfig getAgentConfigById(final String agentConfigId) throws CouldNotPerformException;
+    public UnitConfig getAgentConfigById(final String agentUnitConfigId) throws CouldNotPerformException;
 
-    public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException;
 
-    public List<AgentConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+    public List<UnitConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
-    public List<AgentConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException;
+    public List<UnitConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException;
 
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
 

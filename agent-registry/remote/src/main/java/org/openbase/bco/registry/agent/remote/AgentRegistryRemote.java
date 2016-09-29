@@ -46,27 +46,29 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> implements AgentRegistry, Remote<AgentRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> agentConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
     private final RemoteRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRemoteRegistry;
 
     public AgentRegistryRemote() throws InstantiationException {
         super(AgentRegistryData.class);
         try {
-            agentConfigRemoteRegistry = new RemoteRegistry<>();
+            agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
             agentClassRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -120,7 +122,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
     @Override
     public void shutdown() {
         try {
-            agentConfigRemoteRegistry.shutdown();
+            agentUnitConfigRemoteRegistry.shutdown();
             agentClassRemoteRegistry.shutdown();
         } finally {
             super.shutdown();
@@ -129,12 +131,12 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
 
     @Override
     public void notifyDataUpdate(final AgentRegistryData data) throws CouldNotPerformException {
-        agentConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentConfigList());
+        agentUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentUnitConfigList());
         agentClassRemoteRegistry.notifyRegistryUpdate(data.getAgentClassList());
     }
 
-    public RemoteRegistry<String, AgentConfig, AgentConfig.Builder, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
-        return agentConfigRemoteRegistry;
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
+        return agentUnitConfigRemoteRegistry;
     }
 
     public RemoteRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRemoteRegistry() {
@@ -142,54 +144,54 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
     }
 
     @Override
-    public Future<AgentConfig> registerAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> registerAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentConfig, this, AgentConfig.class);
+            return RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register agent config!", ex);
         }
     }
 
     @Override
-    public AgentConfig getAgentConfigById(String agentConfigId) throws CouldNotPerformException, NotAvailableException {
+    public UnitConfig getAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException, NotAvailableException {
         validateData();
-        return agentConfigRemoteRegistry.getMessage(agentConfigId);
+        return agentUnitConfigRemoteRegistry.getMessage(agentUnitConfigId);
     }
 
     @Override
-    public Boolean containsAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
+    public Boolean containsAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         validateData();
-        return agentConfigRemoteRegistry.contains(agentConfig);
+        return agentUnitConfigRemoteRegistry.contains(agentUnitConfig);
     }
 
     @Override
-    public Boolean containsAgentConfigById(final String agentConfigId) throws CouldNotPerformException {
+    public Boolean containsAgentConfigById(final String agentUnitConfigId) throws CouldNotPerformException {
         validateData();
-        return agentConfigRemoteRegistry.contains(agentConfigId);
+        return agentUnitConfigRemoteRegistry.contains(agentUnitConfigId);
     }
 
     @Override
-    public Future<AgentConfig> updateAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> updateAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentConfig, this, AgentConfig.class);
+            return RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update agent config!", ex);
         }
     }
 
     @Override
-    public Future<AgentConfig> removeAgentConfig(final AgentConfig agentConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> removeAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentConfig, this, AgentConfig.class);
+            return RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove agent config!", ex);
         }
     }
 
     @Override
-    public List<AgentConfig> getAgentConfigs() throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException, NotAvailableException {
         validateData();
-        List<AgentConfig> messages = agentConfigRemoteRegistry.getMessages();
+        List<UnitConfig> messages = agentUnitConfigRemoteRegistry.getMessages();
         return messages;
     }
 
@@ -204,23 +206,23 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
         }
 
         validateData();
-        return getData().getAgentConfigRegistryReadOnly();
+        return getData().getAgentUnitConfigRegistryReadOnly();
     }
 
     @Override
-    public List<AgentConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+    public List<UnitConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return getAgentConfigsByAgentClassId(agentClass.getId());
     }
 
     @Override
-    public List<AgentConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
+    public List<UnitConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
         if (!containsAgentClassById(agentClassId)) {
             throw new NotAvailableException("agentClassId [" + agentClassId + "]");
         }
 
-        List<AgentConfig> agentConfigs = new ArrayList<>();
-        for (AgentConfig agentConfig : getAgentConfigs()) {
-            if (agentConfig.getAgentClassId().equals(agentClassId)) {
+        List<UnitConfig> agentConfigs = new ArrayList<>();
+        for (UnitConfig agentConfig : getAgentConfigs()) {
+            if (agentConfig.getAgentConfig().getAgentClassId().equals(agentClassId)) {
                 agentConfigs.add(agentConfig);
             }
         }
@@ -312,7 +314,7 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
     public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException {
         try {
             validateData();
-            return getData().getAgentConfigRegistryConsistent();
+            return getData().getAgentUnitConfigRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }

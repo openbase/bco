@@ -82,6 +82,12 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
         });
     }
 
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        sceneUnitConfigRemoteRegistry.shutdown();
+    }
+
     /**
      * {@inheritDoc}
      *
