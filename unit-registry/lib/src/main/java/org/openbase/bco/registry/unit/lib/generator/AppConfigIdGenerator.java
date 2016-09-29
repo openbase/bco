@@ -23,9 +23,8 @@ package org.openbase.bco.registry.unit.lib.generator;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
-import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 
 /**
@@ -38,20 +37,21 @@ public class AppConfigIdGenerator implements IdGenerator<String, AppConfig> {
 
     @Override
     public String generateId(AppConfig message) throws CouldNotPerformException {
-        try {
-
-            if (!message.hasLabel()) {
-                throw new InvalidStateException("Field [Label] is missing!");
-            }
-            
-            String id;
-
-            id = message.getLabel();
-            return StringProcessor.transformToIdString(id);
-
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
+        throw new NotSupportedException("generateId", this);
+//        try {
+//
+//            if (!message.hasLabel()) {
+//                throw new InvalidStateException("Field [Label] is missing!");
+//            }
+//            
+//            String id;
+//
+//            id = message.getLabel();
+//            return StringProcessor.transformToIdString(id);
+//
+//        } catch (CouldNotPerformException ex) {
+//            throw new CouldNotPerformException("Could not generate id!", ex);
+//        }
     }
 
 }

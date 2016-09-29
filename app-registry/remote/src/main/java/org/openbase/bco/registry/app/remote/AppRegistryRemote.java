@@ -40,7 +40,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import static org.openbase.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -54,7 +54,7 @@ import rst.rsb.ScopeType;
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> implements AppRegistry, Remote<AppRegistryData> {
+public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> implements AppRegistry, RegistryRemote<AppRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
