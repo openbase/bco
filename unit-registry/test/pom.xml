@@ -5,7 +5,7 @@
     <artifactId>registry.unit.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Registry Scene Test</name>
+    <name>BCO Registry Unit Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>

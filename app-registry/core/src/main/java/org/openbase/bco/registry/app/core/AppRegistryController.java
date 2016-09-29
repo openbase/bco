@@ -25,32 +25,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.app.core.consistency.LabelConsistencyHandler;
-import org.openbase.bco.registry.app.core.consistency.ScopeConsistencyHandler;
 import org.openbase.bco.registry.app.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
-import org.openbase.bco.registry.app.lib.generator.AppConfigIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
-import org.openbase.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -72,50 +65,19 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     }
 
     private ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> appConfigRegistry;
 
     private final LocationRegistryRemote locationRegistryRemote;
 
     public AppRegistryController() throws InstantiationException, InterruptedException {
-        super(AppRegistryData.newBuilder());
+        super(JPAppRegistryScope.class, AppRegistryData.newBuilder());
         try {
-            ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
             appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CLASS_FIELD_NUMBER), new AppClassIdGenerator(), JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-
-            appClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
-            appConfigRegistry.activateVersionControl(DummyConverter.class.getPackage());
-
             locationRegistryRemote = new LocationRegistryRemote();
-
-            appClassRegistry.loadRegistry();
-            appConfigRegistry.loadRegistry();
-
-            //TODO: should be activated but fails in the current db version since appClasses have just been introduced
-            //appConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler(appClassRegistry));
-            appConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
-            appConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
-            appConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppConfig, AppConfig.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, AppConfig, AppConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AppConfig, AppConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
-
-            appClassRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>> source, Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
-
-        } catch (JPServiceException | CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      *
@@ -123,6 +85,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
      */
     @Override
     protected void activateVersionControl() throws CouldNotPerformException {
+        appClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
     }
 
     /**
@@ -132,6 +95,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
      */
     @Override
     protected void loadRegistries() throws CouldNotPerformException {
+        appClassRegistry.loadRegistry();
     }
 
     /**
@@ -150,6 +114,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
+        registerRegistryRemote(locationRegistryRemote);
     }
 
     /**
@@ -159,6 +124,9 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
      */
     @Override
     protected void registerObserver() throws CouldNotPerformException {
+        appClassRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>>> source, Map<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> data) -> {
+            notifyChange();
+        });
     }
 
     /**
@@ -185,15 +153,12 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void performInitialConsistencyCheck() throws CouldNotPerformException {
-    }
-
-    public void init() throws InitializationException, InterruptedException {
+    protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         try {
-            super.init(JPService.getProperty(JPAppRegistryScope.class).getValue());
-            locationRegistryRemote.init();
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
+            appClassRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
         }
     }
 
@@ -201,54 +166,19 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     public void activate() throws InterruptedException, CouldNotPerformException {
         try {
             super.activate();
-            locationRegistryRemote.activate();
-            locationRegistryRemote.waitForData();
 
-            appConfigRegistry.registerDependency(appClassRegistry);
-            appConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
 
-        try {
-            appClassRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
-            notifyChange();
-        }
-
-        try {
-            appConfigRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
-            notifyChange();
-        }
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        appConfigRegistry.removeDependency(appClassRegistry);
-        appConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-        locationRegistryRemote.deactivate();
-        super.deactivate();
     }
 
     @Override
     public void shutdown() {
-        if (appConfigRegistry != null) {
-            appConfigRegistry.shutdown();
-        }
-
         if (appClassRegistry != null) {
             appClassRegistry.shutdown();
         }
-
-        try {
-            deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-        locationRegistryRemote.shutdown();
+        super.shutdown();
     }
 
     @Override

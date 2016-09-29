@@ -24,9 +24,49 @@ package org.openbase.bco.registry.unit.core;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.device.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
+import org.openbase.bco.registry.device.core.consistency.UnitConfigUnitTemplateConfigIdConsistencyHandler;
+import org.openbase.bco.registry.device.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.lib.AbstractRegistryController;
+import org.openbase.bco.registry.location.core.consistency.RootConsistencyHandler;
+import org.openbase.bco.registry.location.core.consistency.RootLocationExistencConsistencyHandler;
 import org.openbase.bco.registry.scene.lib.jp.JPUnitConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionLocationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionTilesConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dal.UnitTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigDeviceClassIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigDeviceClassUnitConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigLocationIdForInstalledDevicesConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceLocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceOwnerConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.DeviceTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.device.OpenhabServiceConfigItemIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.ChildWithSameLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationChildConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationLoopConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationParentConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationPlacementConfigConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationPositionConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.location.LocationUnitIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberExistsConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberListDuplicationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberListTypesConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupUnitTypeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unittemplate.UnitTemplateValidationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.user.UserConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.user.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -57,6 +97,11 @@ import rst.authorization.UserRegistryDataType;
 import rst.homeautomation.control.agent.AgentClassType;
 import rst.homeautomation.control.agent.AgentConfigType;
 import rst.homeautomation.control.agent.AgentRegistryDataType;
+import rst.homeautomation.control.app.AppClassType;
+import rst.homeautomation.control.app.AppConfigType;
+import rst.homeautomation.control.app.AppRegistryDataType;
+import rst.homeautomation.control.scene.SceneConfigType;
+import rst.homeautomation.control.scene.SceneRegistryDataType;
 import rst.homeautomation.device.DeviceClassType;
 import rst.homeautomation.device.DeviceConfigType;
 import rst.homeautomation.device.DeviceRegistryDataType;
@@ -95,6 +140,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryDataType.AgentRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfigType.AgentConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClassType.AgentClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryDataType.SceneRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfigType.SceneConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryDataType.AppRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfigType.AppConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClassType.AppClass.getDefaultInstance()));
     }
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry;
@@ -105,7 +155,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     private final ProtoBufFileSynchronizedRegistry<String, UnitGroupConfigType.UnitGroupConfig, UnitGroupConfigType.UnitGroupConfig.Builder, DeviceRegistryDataType.DeviceRegistryData.Builder> unitGroupConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder, LocationRegistryDataType.LocationRegistryData.Builder> locationConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, ConnectionConfigType.ConnectionConfig, ConnectionConfigType.ConnectionConfig.Builder, LocationRegistryDataType.LocationRegistryData.Builder> connectionConfigRegistry;
-    private ProtoBufFileSynchronizedRegistry<String, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder, AgentRegistryDataType.AgentRegistryData.Builder> agentConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, AgentConfigType.AgentConfig, AgentConfigType.AgentConfig.Builder, AgentRegistryDataType.AgentRegistryData.Builder> agentConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, SceneConfigType.SceneConfig, SceneConfigType.SceneConfig.Builder, SceneRegistryDataType.SceneRegistryData.Builder> sceneConfigRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, AppConfigType.AppConfig, AppConfigType.AppConfig.Builder, AppRegistryDataType.AppRegistryData.Builder> appConfigRegistry;
 
     public UnitRegistryController() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.newBuilder());
@@ -118,7 +170,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfigType.UnitGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryDataType.DeviceRegistryData.UNIT_GROUP_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfigType.LocationConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryDataType.LocationRegistryData.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
             this.connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfigType.ConnectionConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryDataType.LocationRegistryData.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-            agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfigType.AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryDataType.AgentRegistryData.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfigType.AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryDataType.AgentRegistryData.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfigType.SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistryDataType.SceneRegistryData.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfigType.AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryDataType.AppRegistryData.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
         } catch (JPServiceException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -140,6 +194,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
         connectionConfigRegistry.activateVersionControl(LocationConfig_0_To_1_DBConverter.class.getPackage());
         agentConfigRegistry.activateVersionControl(AgentConfig_0_To_1_DBConverter.class.getPackage());
+        sceneConfigRegistry.activateVersionControl(SceneConfig_0_To_1_DBConverter.class.getPackage());
+        appConfigRegistry.activateVersionControl(DummyConverter.class.getPackage());
     }
 
     /**
@@ -159,6 +215,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationConfigRegistry.loadRegistry();
         connectionConfigRegistry.loadRegistry();
         agentConfigRegistry.loadRegistry();
+        sceneConfigRegistry.loadRegistry();
+        appConfigRegistry.loadRegistry();
     }
 
     /**
@@ -241,6 +299,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         agentConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler(locationRegistryRemote));
         agentConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
         agentConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
+
+        sceneConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
+        sceneConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
+
+        //TODO: should be activated but fails in the current db version since appClasses have just been introduced
+        //appConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler(appClassRegistry));
+        appConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
+        appConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
     }
 
     /**
@@ -289,6 +355,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             notifyChange();
         });
 
+        sceneConfigRegistry.addObserver((final Observable<Map<String, IdentifiableMessage<String, SceneConfigType.SceneConfig, SceneConfigType.SceneConfig.Builder>>> source, Map<String, IdentifiableMessage<String, SceneConfigType.SceneConfig, SceneConfigType.SceneConfig.Builder>> data) -> {
+            notifyChange();
+        });
+        
+        appConfigRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, AppConfigType.AppConfig, AppConfigType.AppConfig.Builder>>> source, Map<String, IdentifiableMessage<String, AppConfigType.AppConfig, AppConfigType.AppConfig.Builder>> data) -> {
+            notifyChange();
+        });
+
     }
 
     /**
@@ -308,6 +382,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionConfigRegistry.registerDependency(deviceRegistryRemote.getDeviceConfigRemoteRegistry());
         agentConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         agentConfigRegistry.registerDependency(agentClassRegistry);
+        sceneConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
+        appConfigRegistry.registerDependency(appClassRegistry);
+            appConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
     }
 
     /**
@@ -327,6 +404,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionConfigRegistry.removeDependency(deviceRegistryRemote.getDeviceConfigRemoteRegistry());
         agentConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
         agentConfigRegistry.removeDependency(agentClassRegistry);
+        sceneConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
+        appConfigRegistry.removeDependency(appClassRegistry);
+        appConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
     }
 
     /**
@@ -411,6 +491,20 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
             notifyChange();
         }
+
+        try {
+            sceneConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
+        }
+        
+        try {
+            appConfigRegistry.checkConsistency();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+            notifyChange();
+        }
     }
 
     /**
@@ -462,11 +556,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             connectionConfigRegistry.shutdown();
         }
 
-        try {
-            deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
+        if (sceneConfigRegistry != null) {
+            sceneConfigRegistry.shutdown();
         }
+        
+        if (appConfigRegistry != null) {
+            appConfigRegistry.shutdown();
+        }
+
+        super.shutdown();
     }
 
     @Override
@@ -494,6 +592,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         setDataField(LocationRegistryDataType.LocationRegistryData.CONNECTION_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, connectionConfigRegistry.isReadOnly());
         setDataField(LocationRegistryDataType.LocationRegistryData.LOCATION_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, locationConfigRegistry.isConsistent());
         setDataField(LocationRegistryDataType.LocationRegistryData.CONNECTION_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, connectionConfigRegistry.isConsistent());
+
+        setDataField(SceneRegistryDataType.SceneRegistryData.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
+        setDataField(SceneRegistryDataType.SceneRegistryData.SCENE_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, sceneConfigRegistry.isConsistent());
 
         super.notifyChange();
     }

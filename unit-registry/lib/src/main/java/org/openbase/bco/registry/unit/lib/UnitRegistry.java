@@ -35,15 +35,15 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface UnitRegistry extends Shutdownable {
 
-    public Future<UnitConfig> registerUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    public Future<UnitConfig> updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    public Future<UnitConfig> removeUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    public Boolean containsUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException;
+    public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    public Boolean containsUnitConfigById(String unitConfigId) throws CouldNotPerformException;
+    public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 

@@ -22,33 +22,17 @@ package org.openbase.bco.registry.scene.core;
  * #L%
  */
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.bco.registry.lib.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import org.openbase.bco.registry.scene.core.consistency.LabelConsistencyHandler;
-import org.openbase.bco.registry.scene.core.consistency.ScopeConsistencyHandler;
-import org.openbase.bco.registry.scene.core.dbconvert.SceneConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
-import org.openbase.bco.registry.scene.lib.generator.SceneConfigIdGenerator;
-import org.openbase.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -68,33 +52,13 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfigType.SceneConfig.getDefaultInstance()));
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> sceneConfigRegistry;
-
     private final LocationRegistryRemote locationRegistryRemote;
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
-        super(SceneRegistryData.newBuilder());
+        super(JPSceneRegistryScope.class, SceneRegistryData.newBuilder());
         try {
-            ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-            sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistryData.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-
-            sceneConfigRegistry.activateVersionControl(SceneConfig_0_To_1_DBConverter.class.getPackage());
-
             locationRegistryRemote = new LocationRegistryRemote();
-
-            sceneConfigRegistry.loadRegistry();
-
-            sceneConfigRegistry.registerConsistencyHandler(new ScopeConsistencyHandler(locationRegistryRemote));
-            sceneConfigRegistry.registerConsistencyHandler(new LabelConsistencyHandler());
-            sceneConfigRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>>>() {
-
-                @Override
-                public void update(final Observable<Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>>> source, Map<String, IdentifiableMessage<String, SceneConfig, SceneConfig.Builder>> data) throws Exception {
-                    notifyChange();
-                }
-            });
-
-        } catch (JPServiceException | CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -106,65 +70,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
-    }
-
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            super.init(JPService.getProperty(JPSceneRegistryScope.class).getValue());
-            locationRegistryRemote.init();
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        try {
-            super.activate();
-            locationRegistryRemote.activate();
-            locationRegistryRemote.waitForData();
-            sceneConfigRegistry.registerDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate location registry!", ex);
-        }
-
-        try {
-            sceneConfigRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            logger.warn("Initial consistency check failed!");
-            notifyChange();
-        }
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        sceneConfigRegistry.removeDependency(locationRegistryRemote.getLocationConfigRemoteRegistry());
-        locationRegistryRemote.deactivate();
-        super.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-
-        if (sceneConfigRegistry != null) {
-            sceneConfigRegistry.shutdown();
-        }
-
-        try {
-            deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-
-        locationRegistryRemote.shutdown();
-    }
-
-    @Override
-    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
-        // sync read only flags
-        setDataField(SceneRegistryData.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
-        setDataField(SceneRegistryData.SCENE_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, sceneConfigRegistry.isConsistent());
-        super.notifyChange();
+        registerRegistryRemote(locationRegistryRemote);
     }
 
     @Override
