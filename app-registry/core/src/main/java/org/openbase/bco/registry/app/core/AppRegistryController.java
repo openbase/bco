@@ -103,10 +103,6 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
     @Override
     public void shutdown() {
-        if (appClassRegistry != null) {
-            appClassRegistry.shutdown();
-        }
-
         super.shutdown();
         appUnitConfigRemoteRegistry.shutdown();
     }

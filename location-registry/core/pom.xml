@@ -97,18 +97,6 @@
             <artifactId>registry.location.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--        <dependency> // should be imported by jul processing
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.1.2</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.1.2</version>
-            <type>jar</type>
-        </dependency>-->
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
@@ -136,7 +124,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.device.remote</artifactId>
+            <artifactId>registry.unit.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

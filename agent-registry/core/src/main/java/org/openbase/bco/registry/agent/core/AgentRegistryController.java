@@ -59,19 +59,19 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryController extends AbstractRegistryController<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
-    
+
     private final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
-    
+
     private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
     private final UnitRegistryRemote unitRegistryRemote;
-    
+
     public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(JPAgentRegistryScope.class, AgentRegistryData.newBuilder());
         try {
@@ -82,12 +82,12 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     @Override
     public void init() throws InitializationException, InterruptedException {
         super.init();
         unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
-            
+
             @Override
             public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
                 agentUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentUnitConfigList());
@@ -98,13 +98,9 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
             }
         });
     }
-    
+
     @Override
     public void shutdown() {
-        if (agentClassRegistry != null) {
-            agentClassRegistry.shutdown();
-        }
-        
         super.shutdown();
         agentUnitConfigRemoteRegistry.shutdown();
     }
@@ -190,74 +186,74 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
             notifyChange();
         }
     }
-    
+
     @Override
     public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
     }
-    
+
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(AgentRegistry.class, this, server);
     }
-    
+
     @Override
     public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         return unitRegistryRemote.registerUnitConfig(agentUnitConfig);
     }
-    
+
     @Override
     public UnitConfig getAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return agentUnitConfigRemoteRegistry.getMessage(agentUnitConfigId);
     }
-    
+
     @Override
     public Boolean containsAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return agentUnitConfigRemoteRegistry.contains(agentUnitConfigId);
     }
-    
+
     @Override
     public Boolean containsAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return agentUnitConfigRemoteRegistry.contains(agentUnitConfig);
     }
-    
+
     @Override
     public Future<UnitConfig> updateAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         return unitRegistryRemote.updateUnitConfig(agentUnitConfig);
     }
-    
+
     @Override
     public Future<UnitConfig> removeAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         return unitRegistryRemote.removeUnitConfig(agentUnitConfig);
     }
-    
+
     @Override
     public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return agentUnitConfigRemoteRegistry.getMessages();
     }
-    
+
     @Override
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return getData().getAgentUnitConfigRegistryReadOnly();
     }
-    
+
     @Override
     public List<UnitConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return getAgentConfigsByAgentClassId(agentClass.getId());
     }
-    
+
     @Override
     public List<UnitConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
         if (!containsAgentClassById(agentClassId)) {
             throw new NotAvailableException("agentClassId [" + agentClassId + "]");
         }
-        
+
         unitRegistryRemote.validateData();
         List<UnitConfig> agentUnitConfigs = new ArrayList<>();
         for (UnitConfig agentUnitConfig : getAgentConfigs()) {
@@ -267,37 +263,37 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
         }
         return agentUnitConfigs;
     }
-    
+
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalExecutionService.submit(() -> agentClassRegistry.register(agentClass));
     }
-    
+
     @Override
     public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return agentClassRegistry.contains(agentClass);
     }
-    
+
     @Override
     public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException {
         return agentClassRegistry.contains(agentClassId);
     }
-    
+
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalExecutionService.submit(() -> agentClassRegistry.update(agentClass));
     }
-    
+
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalExecutionService.submit(() -> agentClassRegistry.remove(agentClass));
     }
-    
+
     @Override
     public List<AgentClass> getAgentClasses() throws CouldNotPerformException {
         return agentClassRegistry.getMessages();
     }
-    
+
     @Override
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
         return agentClassRegistry.isReadOnly();
@@ -325,7 +321,7 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
         unitRegistryRemote.validateData();
         return getData().getAgentUnitConfigRegistryConsistent();
     }
-    
+
     public ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRegistry() {
         return agentClassRegistry;
     }
