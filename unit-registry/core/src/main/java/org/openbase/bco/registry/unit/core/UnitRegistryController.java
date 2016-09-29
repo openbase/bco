@@ -23,6 +23,9 @@ package org.openbase.bco.registry.unit.core;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.registry.app.remote.AppRegistryRemote;
+import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
 import org.openbase.bco.registry.scene.lib.jp.JPUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
@@ -171,6 +174,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appUnitConfigRegistry;
 
+    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final AppRegistryRemote appRegistryRemote;
+    private final AgentRegistryRemote agentRegistryRemote;
+
     public UnitRegistryController() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.newBuilder());
         try {
@@ -185,6 +192,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.agentUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.sceneUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.appUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+
+            this.deviceRegistryRemote = new DeviceRegistryRemote();
+            this.appRegistryRemote = new AppRegistryRemote();
+            this.agentRegistryRemote = new AgentRegistryRemote();
+
         } catch (JPServiceException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -238,7 +250,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
-
+        registerRegistryRemote(deviceRegistryRemote);
+        registerRegistryRemote(appRegistryRemote);
+        registerRegistryRemote(agentRegistryRemote);
     }
 
     /**
@@ -292,7 +306,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         //TODO replace null with device class remote registry
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitHostIdConsistencyHandler(deviceUnitConfigRegistry));
-        dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceClassRegistry, deviceUnitConfigRegistry));
+        dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLocationIdConsistencyHandler(locationUnitConfigRegistry, deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitScopeConsistencyHandler(locationUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceUnitConfigRegistry));
@@ -300,8 +314,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
         //TODO replace null with device class remote registry
-        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
-        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassUnitConsistencyHandler(deviceClassRegistry, dalUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry()));
+        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigLocationIdForInstalledDevicesConsistencyHandler());
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceEnablingStateConsistencyHandler());
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceLabelConsistencyHandler());
@@ -309,8 +323,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceOwnerConsistencyHandler(userUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(deviceClassRegistry, locationUnitConfigRegistry, dalUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceClassRegistry, dalUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), locationUnitConfigRegistry, dalUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry));
 
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
@@ -375,7 +389,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
         deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-        deviceUnitConfigRegistry.registerDependency(deviceClassRegistry);
+        deviceUnitConfigRegistry.registerDependency(deviceRegistryRemote.getDeviceClassRemoteRegistry());
 
         unitGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
         unitGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
@@ -401,11 +415,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
         agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        agentUnitConfigRegistry.registerDependency(agentClassRegistry);
+        agentUnitConfigRegistry.registerDependency(agentRegistryRemote.getAgentConfigRemoteRegistry());
 
         sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-        appUnitConfigRegistry.registerDependency(appClassRegistry);
+        appUnitConfigRegistry.registerDependency(appRegistryRemote.getAppClassRemoteRegistry());
         appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
     }
 
@@ -498,51 +512,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
             notifyChange();
         }
-    }
-
-    @Override
-    public void shutdown() {
-        if (dalUnitConfigRegistry != null) {
-            dalUnitConfigRegistry.shutdown();
-        }
-
-        if (unitTemplateRegistry != null) {
-            unitTemplateRegistry.shutdown();
-        }
-
-        if (deviceUnitConfigRegistry != null) {
-            deviceUnitConfigRegistry.shutdown();
-        }
-
-        if (unitTemplateRegistry != null) {
-            unitTemplateRegistry.shutdown();
-        }
-
-        if (unitGroupUnitConfigRegistry != null) {
-            unitGroupUnitConfigRegistry.shutdown();
-        }
-
-        if (locationUnitConfigRegistry != null) {
-            locationUnitConfigRegistry.shutdown();
-        }
-
-        if (connectionUnitConfigRegistry != null) {
-            connectionUnitConfigRegistry.shutdown();
-        }
-
-        if (sceneUnitConfigRegistry != null) {
-            sceneUnitConfigRegistry.shutdown();
-        }
-
-        if (appUnitConfigRegistry != null) {
-            appUnitConfigRegistry.shutdown();
-        }
-
-        if (agentUnitConfigRegistry != null) {
-            agentUnitConfigRegistry.shutdown();
-        }
-
-        super.shutdown();
     }
 
     @Override

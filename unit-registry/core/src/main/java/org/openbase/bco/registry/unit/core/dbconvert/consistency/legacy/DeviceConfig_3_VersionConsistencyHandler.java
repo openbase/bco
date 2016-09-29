@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.dbconvert.consistency;
+package org.openbase.bco.registry.unit.core.dbconvert.consistency.legacy;
 
 /*
  * #%L
@@ -23,7 +23,6 @@ package org.openbase.bco.registry.unit.core.dbconvert.consistency;
  */
 import java.util.HashMap;
 import java.util.Map;
-import org.openbase.bco.registry.device.lib.generator.UnitConfigIdGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +38,7 @@ import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
- *
+ * Not supported any more because of rst changes.
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DeviceConfig_3_VersionConsistencyHandler extends AbstractVersionConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
@@ -53,24 +52,24 @@ public class DeviceConfig_3_VersionConsistencyHandler extends AbstractVersionCon
 
     @Override
     public void processData(String id, IdentifiableMessage<String, DeviceConfig, DeviceConfig.Builder> entry, ProtoBufMessageMap<String, DeviceConfig, DeviceConfig.Builder> entryMap, ProtoBufRegistry<String, DeviceConfig, DeviceConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
-
-        boolean modification = false;
-
-        deviceConfig.clearUnitConfig();
-        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
-            if (oldUnitconfigGenerateId(unitConfig.build()).equals(unitConfig.getId())) {
-                String newUnitID = UnitConfigIdGenerator.getInstance().generateId(unitConfig.build());
-                unitConfigIdMap.put(unitConfig.getId(), newUnitID);
-                unitConfig.setId(newUnitID);
-                modification = true;
-            }
-            deviceConfig.addUnitConfig(unitConfig);
-        }
-
-        if (modification) {
-            throw new EntryModification(entry.setMessage(deviceConfig), this);
-        }
+//        DeviceConfig.Builder deviceConfig = entry.getMessage().toBuilder();
+//
+//        boolean modification = false;
+//
+//        deviceConfig.clearUnitConfig();
+//        for (UnitConfig.Builder unitConfig : entry.getMessage().toBuilder().getUnitConfigBuilderList()) {
+//            if (oldUnitconfigGenerateId(unitConfig.build()).equals(unitConfig.getId())) {
+//                String newUnitID = UnitConfigIdGenerator.getInstance().generateId(unitConfig.build());
+//                unitConfigIdMap.put(unitConfig.getId(), newUnitID);
+//                unitConfig.setId(newUnitID);
+//                modification = true;
+//            }
+//            deviceConfig.addUnitConfig(unitConfig);
+//        }
+//
+//        if (modification) {
+//            throw new EntryModification(entry.setMessage(deviceConfig), this);
+//        }
     }
 
     /**

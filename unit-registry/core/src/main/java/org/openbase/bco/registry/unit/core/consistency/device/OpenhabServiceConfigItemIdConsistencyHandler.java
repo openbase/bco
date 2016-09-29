@@ -32,9 +32,9 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
@@ -49,11 +49,11 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
     public static final String ITEM_SEGMENT_DELIMITER = "__";
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
 
-    private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
+    private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
 
-    public OpenhabServiceConfigItemIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry,
+    public OpenhabServiceConfigItemIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
@@ -77,7 +77,7 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 }
 
                 if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
-                    String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.getMessage(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
+                    String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage().getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
 
                     MetaConfig metaConfig;
 

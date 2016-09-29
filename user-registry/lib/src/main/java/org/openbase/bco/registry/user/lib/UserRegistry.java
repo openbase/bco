@@ -25,48 +25,47 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UserRegistry extends Shutdownable {
 
-    public Future<UserConfig> registerUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
-    public Boolean containsUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public Boolean containsUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
     public Boolean containsUserConfigById(String userConfigId) throws CouldNotPerformException;
 
-    public Future<UserConfig> updateUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
-    public Future<UserConfig> removeUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
-    public UserConfig getUserConfigById(final String userConfigId) throws CouldNotPerformException;
+    public UnitConfig getUserConfigById(final String userConfigId) throws CouldNotPerformException;
 
-    public List<UserConfig> getUserConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getUserConfigs() throws CouldNotPerformException;
 
-    public List<UserConfig> getUserConfigsByAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
+    public List<UnitConfig> getUserConfigsByAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
     public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    public Future<AuthorizationGroupConfig> registerAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
-    public Boolean containsAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
+    public Boolean containsAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
     public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException;
 
-    public Future<AuthorizationGroupConfig> updateAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
-    public Future<AuthorizationGroupConfig> removeAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
-    public AuthorizationGroupConfig getAuthorizationGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+    public UnitConfig getAuthorizationGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException;
 
-    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException;
+    public List<UnitConfig> getAuthorizationGroupConfigsbyUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
