@@ -21,8 +21,8 @@ package org.openbase.bco.registry.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.user.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
-import org.openbase.bco.registry.user.lib.jp.JPUserConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPUserConfigDatabaseDirectory;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;

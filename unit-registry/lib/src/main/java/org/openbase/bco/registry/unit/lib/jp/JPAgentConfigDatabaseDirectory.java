@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.device.lib.jp;
+package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
- * REM DeviceRegistry Library
+ * REM AgentRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -33,11 +33,11 @@ import java.io.File;
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPUnitTemplateDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPAgentConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--unit-template-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--agent-config-db"};
 
-    public JPUnitTemplateDatabaseDirectory() {
+    public JPAgentConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,11 +48,11 @@ public class JPUnitTemplateDatabaseDirectory extends AbstractJPDatabaseDirectory
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("unit-template-db");
+        return new File("agent-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the unit template database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
+        return "Specifies the agent config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

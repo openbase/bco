@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.scene.lib.jp;
+package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
- * REM SceneRegistry Library
+ * REM AppRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -33,11 +33,11 @@ import java.io.File;
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPSceneClassDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPAppConfigDatabaseDirectory  extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--scene-class-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--app-config-db"};
 
-    public JPSceneClassDatabaseDirectory() {
+    public JPAppConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,11 +48,11 @@ public class JPSceneClassDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("scene-class-db");
+        return new File("app-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the scene class database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
+        return "Specifies the app config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

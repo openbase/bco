@@ -95,8 +95,17 @@ import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlu
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.bco.registry.unit.lib.generator.UnitTemplateIdGenerator;
+import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPSceneConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitGroupDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitTemplateDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPUserConfigDatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;

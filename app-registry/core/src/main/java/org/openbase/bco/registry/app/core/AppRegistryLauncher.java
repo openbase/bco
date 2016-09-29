@@ -23,7 +23,7 @@ package org.openbase.bco.registry.app.core;
  */
 
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
-import org.openbase.bco.registry.app.lib.jp.JPAppConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;

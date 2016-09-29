@@ -27,10 +27,7 @@ package org.openbase.bco.registry.unit.lib.generator;
  * #L%
  */
 
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.extension.protobuf.IdGenerator;
-import org.openbase.jul.processing.StringProcessor;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**

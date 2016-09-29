@@ -22,7 +22,7 @@ package org.openbase.bco.registry.agent.core;
  * #L%
  */
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
-import org.openbase.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;

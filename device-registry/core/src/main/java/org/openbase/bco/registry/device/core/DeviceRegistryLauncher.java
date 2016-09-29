@@ -24,9 +24,9 @@ package org.openbase.bco.registry.device.core;
 
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
-import org.openbase.bco.registry.device.lib.jp.JPDeviceConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.openbase.bco.registry.device.lib.jp.JPUnitGroupDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitGroupDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
