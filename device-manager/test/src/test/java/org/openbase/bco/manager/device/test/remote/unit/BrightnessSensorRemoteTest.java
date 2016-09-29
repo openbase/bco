@@ -45,7 +45,7 @@ import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BrightnessSensorRemoteTest {
 

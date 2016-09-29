@@ -59,7 +59,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ConnectionControllerImpl extends AbstractConfigurableController<ConnectionData, ConnectionData.Builder, ConnectionConfig> implements ConnectionController {
 

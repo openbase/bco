@@ -32,7 +32,7 @@ import rst.homeautomation.state.BlindStateType.BlindState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @param <ST> Related service type.
  */
 public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit> extends OpenHABService<ST> implements BlindStateOperationService {
