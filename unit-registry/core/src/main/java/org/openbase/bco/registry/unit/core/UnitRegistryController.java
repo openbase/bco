@@ -515,51 +515,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public void shutdown() {
-        if (dalUnitConfigRegistry != null) {
-            dalUnitConfigRegistry.shutdown();
-        }
-
-        if (unitTemplateRegistry != null) {
-            unitTemplateRegistry.shutdown();
-        }
-
-        if (deviceUnitConfigRegistry != null) {
-            deviceUnitConfigRegistry.shutdown();
-        }
-
-        if (unitTemplateRegistry != null) {
-            unitTemplateRegistry.shutdown();
-        }
-
-        if (unitGroupUnitConfigRegistry != null) {
-            unitGroupUnitConfigRegistry.shutdown();
-        }
-
-        if (locationUnitConfigRegistry != null) {
-            locationUnitConfigRegistry.shutdown();
-        }
-
-        if (connectionUnitConfigRegistry != null) {
-            connectionUnitConfigRegistry.shutdown();
-        }
-
-        if (sceneUnitConfigRegistry != null) {
-            sceneUnitConfigRegistry.shutdown();
-        }
-
-        if (appUnitConfigRegistry != null) {
-            appUnitConfigRegistry.shutdown();
-        }
-
-        if (agentUnitConfigRegistry != null) {
-            agentUnitConfigRegistry.shutdown();
-        }
-
-        super.shutdown();
-    }
-
-    @Override
     public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, dalUnitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, dalUnitConfigRegistry.isConsistent());
