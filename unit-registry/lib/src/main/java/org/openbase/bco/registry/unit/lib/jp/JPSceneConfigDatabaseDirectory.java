@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.device.lib.jp;
+package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
- * REM DeviceRegistry Library
+ * REM SceneRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -33,11 +33,11 @@ import java.io.File;
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPUnitGroupDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPSceneConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--unit-group-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--scene-config-db"};
 
-    public JPUnitGroupDatabaseDirectory() {
+    public JPSceneConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,11 +48,11 @@ public class JPUnitGroupDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("unit-group-db");
+        return new File("scene-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the unit group database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
+        return "Specifies the scene config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

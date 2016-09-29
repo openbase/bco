@@ -23,8 +23,8 @@ package org.openbase.bco.registry.location.core;
  */
 
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.openbase.bco.registry.location.lib.jp.JPConnectionConfigDatabaseDirectory;
-import org.openbase.bco.registry.location.lib.jp.JPLocationConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPForce;

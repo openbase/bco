@@ -21,7 +21,7 @@ package org.openbase.bco.registry.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.scene.lib.jp.JPSceneConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPSceneConfigDatabaseDirectory;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;

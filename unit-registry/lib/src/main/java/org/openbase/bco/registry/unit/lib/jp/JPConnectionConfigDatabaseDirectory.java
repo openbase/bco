@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.location.lib.jp;
+package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
@@ -22,21 +22,21 @@ package org.openbase.bco.registry.location.lib.jp;
  * #L%
  */
 
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPDatabaseDirectory;
 import java.io.File;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 
 /**
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPLocationConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPConnectionConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--location-config-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--connection-config-db"};
 
-    public JPLocationConfigDatabaseDirectory() {
+    public JPConnectionConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -47,11 +47,11 @@ public class JPLocationConfigDatabaseDirectory extends AbstractJPDatabaseDirecto
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("location-config-db");
+        return new File("connection-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the location config database directory.";
+        return "Specifies the connection config database directory.";
     }
 }

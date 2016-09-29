@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.device.lib.jp;
+package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
- * REM DeviceRegistry Library
+ * REM UserRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,22 +22,22 @@ package org.openbase.bco.registry.device.lib.jp;
  * #L%
  */
 
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import java.io.File;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 
 /**
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPDeviceConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPUserConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--device-config-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--user-config-db"};
 
-    public JPDeviceConfigDatabaseDirectory() {
+    public JPUserConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,11 +48,11 @@ public class JPDeviceConfigDatabaseDirectory extends AbstractJPDatabaseDirectory
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("device-config-db");
+        return new File("user-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the device config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
+        return "Specifies the user config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }
