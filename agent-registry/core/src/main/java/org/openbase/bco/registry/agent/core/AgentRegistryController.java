@@ -54,7 +54,7 @@ import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryController extends AbstractRegistryController<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
 

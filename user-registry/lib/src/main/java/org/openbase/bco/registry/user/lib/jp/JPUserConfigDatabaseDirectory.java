@@ -31,7 +31,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPUserConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 

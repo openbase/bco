@@ -1,9 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openbase.bco.registry.agent.lib.generator;
+
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
+import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 
 /*
  * #%L
@@ -26,20 +24,10 @@ package org.openbase.bco.registry.agent.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import java.util.UUID;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.protobuf.IdGenerator;
-import rst.homeautomation.control.agent.AgentClassType.AgentClass;
-
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class AgentClassIdGenerator implements IdGenerator<String, AgentClass> {
+public class AgentClassIdGenerator extends UUIDGenerator<AgentClass> {
 
-    @Override
-    public String generateId(AgentClass message) throws CouldNotPerformException {
-        return UUID.randomUUID().toString();
-    }
 }

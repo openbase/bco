@@ -30,7 +30,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface AgentRegistry extends Shutdownable {
 

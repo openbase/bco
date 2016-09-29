@@ -30,7 +30,7 @@ import rst.authorization.UserConfigType.UserConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UserRegistry extends Shutdownable {
 

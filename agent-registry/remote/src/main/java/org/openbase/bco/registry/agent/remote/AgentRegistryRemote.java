@@ -50,7 +50,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> implements AgentRegistry, Remote<AgentRegistryData> {
 

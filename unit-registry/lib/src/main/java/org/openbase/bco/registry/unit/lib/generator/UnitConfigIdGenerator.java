@@ -26,7 +26,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitConfigIdGenerator extends UUIDGenerator<UnitConfig> {
     

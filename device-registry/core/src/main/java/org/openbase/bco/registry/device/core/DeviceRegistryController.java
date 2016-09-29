@@ -68,7 +68,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryController extends AbstractRegistryController<DeviceRegistryData, DeviceRegistryData.Builder> implements DeviceRegistry, Manageable<ScopeType.Scope> {
 

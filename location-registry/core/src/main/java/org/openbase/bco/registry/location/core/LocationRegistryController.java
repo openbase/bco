@@ -53,7 +53,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryController extends AbstractVirtualRegistryController<LocationRegistryData, LocationRegistryData.Builder> implements LocationRegistry, Manageable<ScopeType.Scope> {
 

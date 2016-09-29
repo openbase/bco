@@ -21,46 +21,42 @@ package org.openbase.bco.registry.device.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.extension.protobuf.IdGenerator;
-import org.openbase.jul.processing.StringProcessor;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceClassIdGenerator implements IdGenerator<String, DeviceClass>{
-    
-    @Override
-    public String generateId(DeviceClass message) throws CouldNotPerformException {
-        String id;
-        try {
-            if (!message.hasProductNumber()) {
-                throw new InvalidStateException("Field [ProductNumber] is missing!");
-            }
+public class DeviceClassIdGenerator extends UUIDGenerator<DeviceClass> {
 
-            if (message.getProductNumber().isEmpty()) {
-                throw new InvalidStateException("Field [ProductNumber] is empty!");
-            }
-
-            if (!message.hasCompany()) {
-                throw new InvalidStateException("Field [Company] is missing!");
-            }
-
-            if (message.getCompany().isEmpty()) {
-                throw new InvalidStateException("Field [Company] is empty!");
-            }
-
-            id = message.getCompany();
-            id += "_";
-            id += message.getProductNumber();
-
-            return StringProcessor.transformToIdString(id);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
-    }
+//    @Override
+//    public String generateId(DeviceClass message) throws CouldNotPerformException {
+//        String id;
+//        try {
+//            if (!message.hasProductNumber()) {
+//                throw new InvalidStateException("Field [ProductNumber] is missing!");
+//            }
+//
+//            if (message.getProductNumber().isEmpty()) {
+//                throw new InvalidStateException("Field [ProductNumber] is empty!");
+//            }
+//
+//            if (!message.hasCompany()) {
+//                throw new InvalidStateException("Field [Company] is missing!");
+//            }
+//
+//            if (message.getCompany().isEmpty()) {
+//                throw new InvalidStateException("Field [Company] is empty!");
+//            }
+//
+//            id = message.getCompany();
+//            id += "_";
+//            id += message.getProductNumber();
+//
+//            return StringProcessor.transformToIdString(id);
+//        } catch (CouldNotPerformException ex) {
+//            throw new CouldNotPerformException("Could not generate id!", ex);
+//        }
+//    }
 }
