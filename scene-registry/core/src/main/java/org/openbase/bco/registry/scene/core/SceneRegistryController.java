@@ -24,45 +24,64 @@ package org.openbase.bco.registry.scene.core;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryController;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.scene.SceneConfigType;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.rsb.ScopeType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRegistryController extends AbstractVirtualRegistryController<SceneRegistryData, SceneRegistryData.Builder> implements SceneRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfigType.SceneConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
     }
 
-    private final LocationRegistryRemote locationRegistryRemote;
+    private final UnitRegistryRemote unitRegistryRemote;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> sceneUnitConfigRemoteRegistry;
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.newBuilder());
-        try {
-            locationRegistryRemote = new LocationRegistryRemote();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        unitRegistryRemote = new UnitRegistryRemote();
+        sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
     }
-    
+
+    @Override
+    public void init() throws InitializationException, InterruptedException {
+        super.init();
+        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryDataType.UnitRegistryData>() {
+
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                sceneUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneUnitConfigList());
+                setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, data.getSceneUnitConfigList());
+                setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getSceneUnitConfigRegistryConsistent());
+                setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getSceneUnitConfigRegistryReadOnly());
+                notifyChange();
+            }
+        });
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -70,7 +89,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
-        registerRegistryRemote(locationRegistryRemote);
+        registerRegistryRemote(unitRegistryRemote);
     }
 
     @Override
@@ -79,47 +98,9 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
     }
 
     @Override
-    public Future<SceneConfig> registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> sceneConfigRegistry.register(sceneConfig));
-    }
-
-    @Override
-    public SceneConfig getSceneConfigById(String sceneConfigId) throws CouldNotPerformException {
-        return sceneConfigRegistry.get(sceneConfigId).getMessage();
-    }
-
-    @Override
-    public Boolean containsSceneConfigById(String sceneConfigId) throws CouldNotPerformException {
-        return sceneConfigRegistry.contains(sceneConfigId);
-    }
-
-    @Override
-    public Boolean containsSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return sceneConfigRegistry.contains(sceneConfig);
-    }
-
-    @Override
-    public Future<SceneConfig> updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> sceneConfigRegistry.update(sceneConfig));
-    }
-
-    @Override
-    public Future<SceneConfig> removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> sceneConfigRegistry.remove(sceneConfig));
-    }
-
-    @Override
-    public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException {
-        return sceneConfigRegistry.getMessages();
-    }
-
-    @Override
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
-        return sceneConfigRegistry.isReadOnly();
-    }
-
-    public ProtoBufFileSynchronizedRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> getSceneConfigRegistry() {
-        return sceneConfigRegistry;
+        unitRegistryRemote.validateData();
+        return getData().getSceneUnitConfigRegistryReadOnly();
     }
 
     /**
@@ -130,6 +111,46 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
      */
     @Override
     public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException {
-        return sceneConfigRegistry.isConsistent();
+        unitRegistryRemote.validateData();
+        return getData().getSceneUnitConfigRegistryConsistent();
+    }
+
+    @Override
+    public Future<UnitConfig> registerSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.registerUnitConfig(sceneUnitConfig);
+    }
+
+    @Override
+    public Boolean containsSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.contains(sceneUnitConfig);
+    }
+
+    @Override
+    public Boolean containsSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.contains(sceneUnitConfigId);
+    }
+
+    @Override
+    public Future<UnitConfig> updateSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.updateUnitConfig(sceneUnitConfig);
+    }
+
+    @Override
+    public Future<UnitConfig> removeSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.removeUnitConfig(sceneUnitConfig);
+    }
+
+    @Override
+    public UnitConfig getSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.getMessage(sceneUnitConfigId);
+    }
+
+    @Override
+    public List<UnitConfig> getSceneConfigs() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.getMessages();
     }
 }

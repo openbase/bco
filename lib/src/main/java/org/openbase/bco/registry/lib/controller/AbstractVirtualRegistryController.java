@@ -21,7 +21,6 @@ package org.openbase.bco.registry.lib.controller;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -33,12 +32,12 @@ import org.openbase.jul.extension.rsb.scope.jp.JPScope;
  * @param <M>
  * @param <MB>
  */
-public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractRegistryController<M, MB>{
+public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractRegistryController<M, MB> {
 
     public AbstractVirtualRegistryController(Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
         super(jpScopePropery, builder);
     }
-    
+
     @Override
     protected void activateVersionControl() throws CouldNotPerformException {
         // not needed for virtual registries.
@@ -76,6 +75,16 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
 
     @Override
     protected void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
+        // not needed for virtual registries.
+    }
+
+    @Override
+    protected void registerRegistries() throws CouldNotPerformException {
+        // not needed for virtual registries.
+    }
+
+    @Override
+    protected void registerPlugins() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
 }

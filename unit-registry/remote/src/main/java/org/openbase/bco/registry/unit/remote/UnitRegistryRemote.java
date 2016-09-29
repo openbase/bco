@@ -37,7 +37,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
@@ -49,9 +49,9 @@ import rst.rsb.ScopeType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> implements UnitRegistry, Remote<UnitRegistryData> {
+public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> implements UnitRegistry, RegistryRemote<UnitRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitRegistryData.getDefaultInstance()));
@@ -150,7 +150,7 @@ public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> imple
      */
     @Override
     public void notifyDataUpdate(final UnitRegistryData data) throws CouldNotPerformException {
-        unitConfigRemoteRegistry.notifyRegistryUpdate(data.getUnitConfigList());
+//        unitConfigRemoteRegistry.notifyRegistryUpdate(data.getUnitConfigList());
     }
 
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRemoteRegistry() {

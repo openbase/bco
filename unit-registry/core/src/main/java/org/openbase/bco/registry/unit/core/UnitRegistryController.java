@@ -78,7 +78,6 @@ import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMember
 import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberListTypesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupUnitTypeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.unittemplate.UnitTemplateValidationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.user.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.user.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.dbconvert.AgentConfig_0_To_1_DBConverter;
@@ -111,6 +110,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -122,32 +122,23 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.authorization.UserConfigType;
-import rst.authorization.UserRegistryDataType;
-import rst.homeautomation.control.agent.AgentClassType;
-import rst.homeautomation.control.agent.AgentConfigType;
-import rst.homeautomation.control.agent.AgentRegistryDataType;
-import rst.homeautomation.control.app.AppClassType;
-import rst.homeautomation.control.app.AppConfigType;
-import rst.homeautomation.control.app.AppRegistryDataType;
-import rst.homeautomation.control.scene.SceneConfigType;
-import rst.homeautomation.control.scene.SceneRegistryDataType;
-import rst.homeautomation.device.DeviceClassType;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.DeviceRegistryDataType;
+import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitGroupConfigType;
+import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
-import rst.spatial.ConnectionConfigType;
-import rst.spatial.LocationConfigType;
-import rst.spatial.LocationRegistryDataType;
+import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitRegistryController extends AbstractRegistryController<UnitRegistryData, UnitRegistryData.Builder> implements UnitRegistry, Manageable<ScopeType.Scope> {
 
@@ -155,28 +146,17 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryDataType.UserRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfigType.UserConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryDataType.DeviceRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClassType.DeviceClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfigType.DeviceConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfigType.UnitGroupConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryDataType.LocationRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfigType.LocationConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfigType.ConnectionConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryDataType.AgentRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfigType.AgentConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClassType.AgentClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryDataType.SceneRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfigType.SceneConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryDataType.AppRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfigType.AppConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClassType.AppClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfig.getDefaultInstance()));
     }
-    
+
     public final static UnitConfigIdGenerator UNIT_ID_GENERATOR = new UnitConfigIdGenerator();
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
@@ -267,6 +247,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
+    protected void registerRegistries() throws CouldNotPerformException {
+        registerRegistry(unitTemplateRegistry);
+        registerRegistry(agentUnitConfigRegistry);
+        registerRegistry(appUnitConfigRegistry);
+        registerRegistry(authorizationGroupUnitConfigRegistry);
+        registerRegistry(dalUnitConfigRegistry);
+        registerRegistry(deviceUnitConfigRegistry);
+        registerRegistry(locationUnitConfigRegistry);
+        registerRegistry(connectionUnitConfigRegistry);
+        registerRegistry(sceneUnitConfigRegistry);
+        registerRegistry(userUnitConfigRegistry);
+        registerRegistry(unitGroupUnitConfigRegistry);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
         //agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
@@ -288,7 +288,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
-        connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
 
         //TODO replace null with device class remote registry
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
@@ -299,7 +298,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
 
         //TODO replace null with device class remote registry
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceClassRegistry));
@@ -313,10 +311,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(deviceClassRegistry, locationUnitConfigRegistry, dalUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceClassRegistry, dalUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
-
-        unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateValidationConsistencyHandler(unitTemplateRegistry));
-        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
 
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
@@ -339,7 +333,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
-        locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
@@ -354,35 +347,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
      */
     @Override
-    protected void registerDependencies() throws CouldNotPerformException {
-        // add dependencies handler for all unitConfig registries
-        registerDependency(unitTemplateRegistry, UnitConfig.class);
-
-        dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-        dalUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        dalUnitConfigRegistry.registerDependency(deviceClassRegistry);
-
-        authorizationGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-
-        deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-        deviceUnitConfigRegistry.registerDependency(deviceClassRegistry);
-
-        unitGroupUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-
-        locationUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-
-        connectionUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-
-        agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        agentUnitConfigRegistry.registerDependency(agentClassRegistry);
-
-        sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-
-        appUnitConfigRegistry.registerDependency(appClassRegistry);
-        appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+    protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
+        connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
+        dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
+        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+        locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
     }
 
     /**
@@ -391,33 +364,49 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void removeDependencies() throws CouldNotPerformException {
-        // remove dependencies handler for all unitConfig registries
-        removeDependency(unitTemplateRegistry, UnitConfig.class);
+    protected void registerDependencies() throws CouldNotPerformException {
+        // add dependencies handler for all unitConfig registries
+        registerDependency(unitTemplateRegistry, UnitConfig.class);
 
-        dalUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
-        dalUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-        dalUnitConfigRegistry.removeDependency(deviceClassRegistry);
+        dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
+        dalUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-        authorizationGroupUnitConfigRegistry.removeDependency(userUnitConfigRegistry);
+        authorizationGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
 
-        deviceUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-        deviceUnitConfigRegistry.removeDependency(userUnitConfigRegistry);
-        deviceUnitConfigRegistry.removeDependency(deviceClassRegistry);
+        deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+        deviceUnitConfigRegistry.registerDependency(deviceClassRegistry);
 
-        unitGroupUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(authorizationGroupUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(connectionUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(dalUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(unitTemplateRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
 
-        locationUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(authorizationGroupUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(connectionUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(dalUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(unitGroupUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
 
-        connectionUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
+        connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-        agentUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-        agentUnitConfigRegistry.removeDependency(agentClassRegistry);
+        agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        agentUnitConfigRegistry.registerDependency(agentClassRegistry);
 
-        sceneUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
+        sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-        appUnitConfigRegistry.removeDependency(appClassRegistry);
-        appUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
+        appUnitConfigRegistry.registerDependency(appClassRegistry);
+        appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
     }
 
     /**
@@ -509,25 +498,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
             notifyChange();
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws InterruptedException
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-
-        if (userUnitConfigRegistry != null) {
-            userUnitConfigRegistry.deactivate();
-        }
-
-        if (authorizationGroupUnitConfigRegistry != null) {
-            authorizationGroupUnitConfigRegistry.deactivate();
-        }
-        super.deactivate();
     }
 
     @Override
@@ -737,7 +707,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
-        return unitTemplateRegistry.getMessage(((UnitTemplateIdGenerator) unitTemplateRegistry.getIdGenerator()).generateId(type));
+        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
+            if (unitTemplate.getType() == type) {
+                return unitTemplate;
+            }
+        }
+        throw new NotAvailableException("UnitTemplate with type [" + type + "]");
     }
 
     /**
@@ -776,20 +751,5 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     public ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getAuthorizationGroupRegistry() {
         return authorizationGroupUnitConfigRegistry;
-    }
-
-    @Override
-    protected void registerRegistries() throws CouldNotPerformException {
-        registerRegistry(unitTemplateRegistry);
-        registerRegistry(agentUnitConfigRegistry);
-        registerRegistry(appUnitConfigRegistry);
-        registerRegistry(authorizationGroupUnitConfigRegistry);
-        registerRegistry(dalUnitConfigRegistry);
-        registerRegistry(deviceUnitConfigRegistry);
-        registerRegistry(locationUnitConfigRegistry);
-        registerRegistry(connectionUnitConfigRegistry);
-        registerRegistry(sceneUnitConfigRegistry);
-        registerRegistry(userUnitConfigRegistry);
-        registerRegistry(unitGroupUnitConfigRegistry);
     }
 }

@@ -41,7 +41,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M>
  * @param <MB>
  */
@@ -66,11 +66,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         super.postInit();
         try {
             try {
-                registerRegistries();
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not register registries!", ex);
-            }
-            try {
                 registerRegistryRemotes();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could register registry remotes!", ex);
@@ -91,6 +86,11 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 throw new CouldNotPerformException("Could not register consistency handler for all internal registries!", ex);
             }
             try {
+                registerPlugins();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not register plugins for all internal registries!", ex);
+            }
+            try {
                 registerObserver();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register observer for all internal registries!", ex);
@@ -103,6 +103,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(jpScopePropery).getValue());
+            registerRegistries();
             registerRegistryRemotes();
             initRemoteRegistries();
         } catch (JPServiceException | CouldNotPerformException ex) {
@@ -186,9 +187,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         });
     }
 
-    protected void removeDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
-        registries.stream().filter((registry) -> (messageClass.equals(registry.getMessageClass()))).forEach((registry) -> {
-            registry.removeDependency(dependency);
+    protected void removeDependencies() throws CouldNotPerformException {
+        registries.stream().forEach((registry) -> {
+            registry.removeAllDependencies();
         });
     }
 
@@ -210,13 +211,13 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
 
+    protected abstract void registerPlugins() throws CouldNotPerformException, InterruptedException;
+
     protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
 
     protected abstract void registerRegistries() throws CouldNotPerformException;
 
     protected abstract void registerDependencies() throws CouldNotPerformException;
-
-    protected abstract void removeDependencies() throws CouldNotPerformException;
 
     protected abstract void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException;
 

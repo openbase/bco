@@ -28,6 +28,7 @@ import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryControlle
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -43,7 +44,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserRegistryController extends AbstractVirtualRegistryController<UserRegistryData, UserRegistryData.Builder> implements UserRegistry, Manageable<ScopeType.Scope> {
 
@@ -61,7 +62,7 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
 //            throw new InstantiationException(this, ex);
 //        }
     }
-    
+
     /**
      * {@inheritDoc}
      *
@@ -201,5 +202,30 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     @Override
     public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException {
         return authorizationGroupRegistry.isConsistent();
+    }
+
+    @Override
+    public void shutdown() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void init(ScopeType.Scope config) throws InitializationException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isActive() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
