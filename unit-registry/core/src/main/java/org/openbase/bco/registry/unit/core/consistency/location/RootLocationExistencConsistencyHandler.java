@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.location.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.location;
 
 /*
  * #%L
@@ -21,26 +21,25 @@ package org.openbase.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.location.lib.util.LocationUtils;
+import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import rst.spatial.LocationConfigType;
-import rst.spatial.LocationConfigType.LocationConfig;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author mpohling
  */
-public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> {
+public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private LocationConfig rootLocation;
+    private UnitConfig rootLocation;
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         if (rootLocation == null) {
             rootLocation = LocationUtils.detectRootLocation(entry.getMessage(), entryMap, this);
         }

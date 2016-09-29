@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.consistency.location;
+package org.openbase.bco.registry.unit.core.consistency.agent;
 
 /*
  * #%L
- * REM LocationRegistry Core
+ * REM AgentRegistry Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,8 +21,10 @@ package org.openbase.bco.registry.unit.core.consistency.location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.lib.util.LocationUtils;
+import java.util.HashMap;
+import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -33,25 +35,42 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class LocationIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class AgentLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+
+    private final Map<String, UnitConfig> agentMap;
+
+    public AgentLabelConsistencyHandler() {
+        this.agentMap = new HashMap<>();
+    }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder locationUnitConfig = entry.getMessage().toBuilder();
+        UnitConfig agent = entry.getMessage();
 
-        if (!locationUnitConfig.hasPlacementConfig()) {
-            throw new NotAvailableException("locationconfig.placementconfig");
+        if (!agent.hasLabel() || agent.getLabel().isEmpty()) {
+            throw new NotAvailableException("agent.label");
         }
 
-        // check if location id is setuped.
-        if (!locationUnitConfig.getPlacementConfig().hasLocationId()) {
-            // detect root location
-            UnitConfig.Builder setPlacementConfig = locationUnitConfig.setPlacementConfig(locationUnitConfig.getPlacementConfig().toBuilder().setLocationId(LocationUtils.getRootLocation(entryMap).getId()));
-//            LocationConfig.Builder setPlacementConfig = locationConfig.setPlacementConfig(locationConfig.getPlacementConfig().toBuilder().setLocationId(LocationUtils.getRootLocation(locationConfig.build(), entryMap).getId()));
-            entry.setMessage(setPlacementConfig);
-            throw new EntryModification(entry, this);
+        if (!agent.hasPlacementConfig()) {
+            throw new NotAvailableException("agent.placementConfig");
         }
+
+        if (!agent.getPlacementConfig().hasLocationId() || agent.getPlacementConfig().getLocationId().isEmpty()) {
+            throw new NotAvailableException("agent.placementConfig.locationId");
+        }
+
+        String key = agent.getLabel() + agent.getPlacementConfig().getLocationId();
+        if (!agentMap.containsKey(key)) {
+            agentMap.put(key, agent);
+        } else {
+            throw new InvalidStateException("Agent [" + agent + "] and agent [" + agentMap.get(key) + "] are registered with the same label at the same location");
+        }
+    }
+
+    @Override
+    public void reset() {
+        agentMap.clear();
     }
 }

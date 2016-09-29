@@ -29,10 +29,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -42,9 +42,9 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
 
-    public UnitGroupUnitTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, DeviceRegistryData.Builder> unitTemplateRegistry) {
+    public UnitGroupUnitTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
 

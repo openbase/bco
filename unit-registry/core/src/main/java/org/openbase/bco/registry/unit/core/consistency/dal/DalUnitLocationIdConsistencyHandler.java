@@ -21,21 +21,21 @@ package org.openbase.bco.registry.unit.core.consistency.dal;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import rst.spatial.PlacementConfigType;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.spatial.PlacementConfigType;
 
 /**
  *
@@ -48,8 +48,8 @@ public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistr
 
     public DalUnitLocationIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
-        this.deviceRegistry = deviceRegistry;
         this.locationRegistry = locationRegistry;
+        this.deviceRegistry = deviceRegistry;
     }
 
     @Override

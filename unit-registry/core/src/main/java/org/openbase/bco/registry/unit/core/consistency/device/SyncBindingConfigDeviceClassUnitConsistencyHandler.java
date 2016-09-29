@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.dal;
+package org.openbase.bco.registry.unit.core.consistency.device;
 
 /*
  * #%L
@@ -41,12 +41,12 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
  *
  * @author thuxohl
  */
-public class ServiceConfigBindingTypeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
 
-    public ServiceConfigBindingTypeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry,
+    public SyncBindingConfigDeviceClassUnitConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
         this.dalUnitRegistry = dalUnitRegistry;

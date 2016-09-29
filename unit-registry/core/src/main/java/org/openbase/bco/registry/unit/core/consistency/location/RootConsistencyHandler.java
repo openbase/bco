@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.location.core.consistency;
+package org.openbase.bco.registry.unit.core.consistency.location;
 
 /*
  * #%L
@@ -21,66 +21,68 @@ package org.openbase.bco.registry.location.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.location.lib.util.LocationUtils;
-import static org.openbase.bco.registry.location.lib.util.LocationUtils.getRootLocation;
+import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import rst.spatial.LocationConfigType;
-import rst.spatial.LocationConfigType.LocationConfig;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
  * @author mpohling
  */
-public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, LocationConfigType.LocationConfig, LocationConfigType.LocationConfig.Builder> {
+public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, LocationConfig, LocationConfig.Builder> entry, ProtoBufMessageMap<String, LocationConfig, LocationConfig.Builder> entryMap, ProtoBufRegistry<String, LocationConfig, LocationConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        LocationConfig.Builder locationConfig = entry.getMessage().toBuilder();
+    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        UnitConfig.Builder locationUnitConfig = entry.getMessage().toBuilder();
+        LocationConfig.Builder locationConfig = locationUnitConfig.getLocationConfigBuilder();
 
         // check if placement exists.
-        if (!locationConfig.hasPlacementConfig()) {
+        if (!locationUnitConfig.hasPlacementConfig()) {
             throw new NotAvailableException("locationconfig.placementconfig");
         }
 
         // check if root flag is missing for root node.
-        if (locationConfig.getPlacementConfig().hasLocationId() && locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && !locationConfig.getRoot()) {
-            entry.setMessage(locationConfig.setRoot(true).setPlacementConfig(locationConfig.getPlacementConfig().toBuilder()));
+        if (locationUnitConfig.getPlacementConfig().hasLocationId() && locationUnitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId()) && !locationConfig.getRoot()) {
+            locationConfig.setRoot(true);
+            entry.setMessage(locationUnitConfig.setPlacementConfig(locationUnitConfig.getPlacementConfig().toBuilder()));
             throw new EntryModification(entry, this);
         }
 
         // check if root flag is set for child node.
-        if (locationConfig.getPlacementConfig().hasLocationId() && !locationConfig.getPlacementConfig().getLocationId().equals(locationConfig.getId()) && locationConfig.getRoot()) {
+        if (locationUnitConfig.getPlacementConfig().hasLocationId() && !locationUnitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId()) && locationConfig.getRoot()) {
             try {
                 // verify that global root node exists which is not this location.
-                LocationConfig globalRootLocation = LocationUtils.getRootLocation(entryMap);
-                if (globalRootLocation.getId().equals(locationConfig.getId())) {
+                UnitConfig globalRootLocation = LocationUtils.getRootLocation(entryMap);
+                if (globalRootLocation.getId().equals(locationUnitConfig.getId())) {
                     throw new NotAvailableException("valid root node");
                 }
             } catch (NotAvailableException ex) {
                 // no parent node found or given one is invalid.
                 // setup location parent as new root location.
                 try {
-                    LocationUtils.validateRootLocation(entryMap.getMessage(locationConfig.getPlacementConfig().getLocationId()), entryMap, this);
+                    LocationUtils.validateRootLocation(entryMap.getMessage(locationUnitConfig.getPlacementConfig().getLocationId()), entryMap, this);
                 } catch (EntryModification exx) {
                     // parent updated
                 }
             }
 
             // delete invalid root flag for current location.
-            entry.setMessage(locationConfig.setRoot(false).build());
+            locationConfig.setRoot(false);
+            entry.setMessage(locationUnitConfig);
             throw new EntryModification(entry, this);
         }
 
         // check if root field is avaible
         if (!locationConfig.hasRoot()) {
-            entry.setMessage(locationConfig.setRoot(false));
-            throw new EntryModification(entry, this);
+            locationConfig.setRoot(false);
+            throw new EntryModification(entry.setMessage(locationUnitConfig), this);
         }
     }
 }
