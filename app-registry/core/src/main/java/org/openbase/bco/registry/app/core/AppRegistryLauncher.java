@@ -21,12 +21,12 @@ package org.openbase.bco.registry.app.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
-import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -37,13 +37,12 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
-import org.openbase.jps.preset.JPForce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AppRegistryLauncher {
 
@@ -100,8 +99,8 @@ public class AppRegistryLauncher {
 
         MultiException.ExceptionStack exceptionStack = null;
 
-        if (!appRegistry.getAppRegistry().getAppConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(appRegistry, new VerificationFailedException("AppConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        if (!appRegistry.getAppRegistry().getAppClassRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(appRegistry, new VerificationFailedException("AppClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

@@ -48,27 +48,29 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> implements AppRegistry, Remote<AppRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> appConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AppRegistryData.Builder> appUnitConfigRemoteRegistry;
     private final RemoteRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRemoteRegistry;
 
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
         super(AppRegistryData.class);
         try {
-            appConfigRemoteRegistry = new RemoteRegistry<>();
+            appUnitConfigRemoteRegistry = new RemoteRegistry<>();
             appClassRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -133,7 +135,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
     @Override
     public void shutdown() {
         try {
-            appConfigRemoteRegistry.shutdown();
+            appUnitConfigRemoteRegistry.shutdown();
             appClassRemoteRegistry.shutdown();
         } finally {
             super.shutdown();
@@ -142,12 +144,12 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
 
     @Override
     protected void notifyDataUpdate(final AppRegistryData data) throws CouldNotPerformException {
-        appConfigRemoteRegistry.notifyRegistryUpdate(data.getAppConfigList());
+        appUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAppUnitConfigList());
         appClassRemoteRegistry.notifyRegistryUpdate(data.getAppClassList());
     }
 
-    public RemoteRegistry<String, AppConfig, AppConfig.Builder, AppRegistryData.Builder> getAppConfigRemoteRegistry() {
-        return appConfigRemoteRegistry;
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AppRegistryData.Builder> getAppConfigRemoteRegistry() {
+        return appUnitConfigRemoteRegistry;
     }
 
     public RemoteRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> getAppClassRemoteRegistry() {
@@ -155,54 +157,54 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
     }
 
     @Override
-    public Future<AppConfig> registerAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> registerAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(appConfig, this, AppConfig.class);
+            return RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register app config!", ex);
+            throw new CouldNotPerformException("Could not register appUnitConfig!", ex);
         }
     }
 
     @Override
-    public AppConfig getAppConfigById(String appConfigId) throws CouldNotPerformException, NotAvailableException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
-        return appConfigRemoteRegistry.getMessage(appConfigId);
+    public UnitConfig getAppConfigById(String appUnitConfigId) throws CouldNotPerformException, NotAvailableException, InterruptedException {
+        validateData();
+        return appUnitConfigRemoteRegistry.getMessage(appUnitConfigId);
     }
 
     @Override
-    public Boolean containsAppConfig(final AppConfig appConfig) throws CouldNotPerformException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
-        return appConfigRemoteRegistry.contains(appConfig);
+    public Boolean containsAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException, InterruptedException {
+        validateData();
+        return appUnitConfigRemoteRegistry.contains(appUnitConfig);
     }
 
     @Override
-    public Boolean containsAppConfigById(final String appConfigId) throws CouldNotPerformException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
-        return appConfigRemoteRegistry.contains(appConfigId);
+    public Boolean containsAppConfigById(final String appUnitConfigId) throws CouldNotPerformException, InterruptedException {
+        validateData();
+        return appUnitConfigRemoteRegistry.contains(appUnitConfigId);
     }
 
     @Override
-    public Future<AppConfig> updateAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> updateAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(appConfig, this, AppConfig.class);
+            return RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update app config!", ex);
+            throw new CouldNotPerformException("Could not update appUnitConfig!", ex);
         }
     }
 
     @Override
-    public Future<AppConfig> removeAppConfig(final AppConfig appConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> removeAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(appConfig, this, AppConfig.class);
+            return RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not remove app config!", ex);
+            throw new CouldNotPerformException("Could not remove appUnitConfig!", ex);
         }
     }
 
     @Override
-    public List<AppConfig> getAppConfigs() throws CouldNotPerformException, NotAvailableException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
-        List<AppConfig> messages = appConfigRemoteRegistry.getMessages();
+    public List<UnitConfig> getAppConfigs() throws CouldNotPerformException, NotAvailableException, InterruptedException {
+        validateData();
+        List<UnitConfig> messages = appUnitConfigRemoteRegistry.getMessages();
         return messages;
     }
 
@@ -216,24 +218,24 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
-        return getData().getAppConfigRegistryReadOnly();
+        validateData();
+        return getData().getAppUnitConfigRegistryReadOnly();
     }
 
     @Override
-    public List<AppConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
+    public List<UnitConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
         return getAppConfigsByAppClassId(appClass.getId());
     }
 
     @Override
-    public List<AppConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException {
+    public List<UnitConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException {
         if (!containsAppClassById(appClassId)) {
             throw new NotAvailableException("appClassId [" + appClassId + "]");
         }
 
-        List<AppConfig> appConfigs = new ArrayList<>();
-        for (AppConfig appConfig : getAppConfigs()) {
-            if (appConfig.getAppClassId().equals(appClassId)) {
+        List<UnitConfig> appConfigs = new ArrayList<>();
+        for (UnitConfig appConfig : getAppConfigs()) {
+            if (appConfig.getAppConfig().getAppClassId().equals(appClassId)) {
                 appConfigs.add(appConfig);
             }
         }
@@ -251,13 +253,13 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
 
     @Override
     public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return appClassRemoteRegistry.contains(appClass);
     }
 
     @Override
     public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return appClassRemoteRegistry.contains(appClassId);
     }
 
@@ -281,13 +283,13 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
 
     @Override
     public AppClass getAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return appClassRemoteRegistry.getMessage(appClassId);
     }
 
     @Override
     public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException {
-        waitForData(DATA_WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+        validateData();
         return appClassRemoteRegistry.getMessages();
     }
 
@@ -331,7 +333,7 @@ public class AppRegistryRemote extends RSBRemoteService<AppRegistryData> impleme
     public Boolean isAppConfigRegistryConsistent() throws CouldNotPerformException {
         try {
             validateData();
-            return getData().getAppConfigRegistryConsistent();
+            return getData().getAppUnitConfigRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
