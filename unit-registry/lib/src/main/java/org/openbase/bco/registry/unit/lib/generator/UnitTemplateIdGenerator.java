@@ -26,33 +26,32 @@ package org.openbase.bco.registry.unit.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.extension.protobuf.IdGenerator;
-import org.openbase.jul.processing.StringProcessor;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UnitTemplateIdGenerator implements IdGenerator<String, UnitTemplate> {
+public class UnitTemplateIdGenerator extends UUIDGenerator<UnitTemplate> {
 
-    @Override
-    public String generateId(final UnitTemplate message) throws CouldNotPerformException {
-        String id;
-        try {
-            if (!message.hasType()) {
-                throw new InvalidStateException("Field [UnitType] is missing!");
-            }
-            return generateId(message.getType());
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate id!", ex);
-        }
-    }
-
-    public String generateId(final UnitTemplate.UnitType type) {
-        return StringProcessor.transformToIdString(type.name());
-    }
+    // TODO Consistency Handler needed to make sure only one unit template per enum value is registered.
+    
+    // Legency generation
+    //    @Override
+    //    public String generateId(final UnitTemplate message) throws CouldNotPerformException {
+    //        String id;
+    //        try {
+    //            if (!message.hasType()) {
+    //                throw new InvalidStateException("Field [UnitType] is missing!");
+    //            }
+    //            return generateId(message.getType());
+    //        } catch (CouldNotPerformException ex) {
+    //            throw new CouldNotPerformException("Could not generate id!", ex);
+    //        }
+    //    }
+    //
+    //    public String generateId(final UnitTemplate.UnitType type) {
+    //        return StringProcessor.transformToIdString(type.name());
+//    }
 }

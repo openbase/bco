@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.device.core.dbconvert;
+package org.openbase.bco.registry.unit.core.dbconvert;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * BCO Registry Location Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,25 +22,27 @@ package org.openbase.bco.registry.device.core.dbconvert;
  * #L%
  */
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import java.io.File;
 import java.util.Map;
 import org.openbase.jul.storage.registry.version.DBVersionConverter;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
  */
-public class DeviceConfig_1_To_2_DBConverter implements DBVersionConverter {
+public class LocationConfig_4_To_5_DBConverter implements DBVersionConverter {
 
     @Override
-    public JsonObject upgrade(JsonObject deviceConfig, final Map<File, JsonObject> dbSnapshot) {
-        // remove the outdated owner(PersonType) from the inventory state
-        JsonObject inventoryState = deviceConfig.get("inventory_state").getAsJsonObject();
-        deviceConfig.remove("inventory_state");
-        inventoryState.remove("owner");
-        inventoryState.addProperty("owner_id", "");
-        deviceConfig.add("inventory_state", inventoryState);
+    public JsonObject upgrade(JsonObject locationConfig, final Map<File, JsonObject> dbSnapshot) {
 
-        return deviceConfig;
+        // check if location is a tile
+        if (locationConfig.getAsJsonPrimitive("type").getAsString().equalsIgnoreCase("tile")) {
+            JsonObject tileConfig = locationConfig.getAsJsonObject("tile_config");
+            if (tileConfig.getAsJsonPrimitive("type").getAsString().equals("ROOM")) {
+                tileConfig.remove("type");
+                tileConfig.add("type", new JsonPrimitive("INDOOR"));
+            }
+        }
+        return locationConfig;
     }
 }

@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.lib;
+package org.openbase.bco.registry.lib.controller;
 
 /*
  * #%L

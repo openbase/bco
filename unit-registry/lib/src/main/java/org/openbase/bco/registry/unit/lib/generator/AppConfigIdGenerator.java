@@ -2,7 +2,7 @@ package org.openbase.bco.registry.unit.lib.generator;
 
 /*
  * #%L
- * REM UserRegistry Library
+ * REM AppRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -23,18 +23,35 @@ package org.openbase.bco.registry.unit.lib.generator;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
-import java.util.UUID;
-import rst.authorization.UserConfigType.UserConfig;
+import org.openbase.jul.processing.StringProcessor;
+import rst.homeautomation.control.app.AppConfigType.AppConfig;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated use unit config id generator instead
  */
-public class UserConfigIdGenerator implements IdGenerator<String, UserConfig> {
+@Deprecated
+public class AppConfigIdGenerator implements IdGenerator<String, AppConfig> {
 
     @Override
-    public String generateId(UserConfig message) throws CouldNotPerformException {
-        return UUID.randomUUID().toString();
+    public String generateId(AppConfig message) throws CouldNotPerformException {
+        try {
+
+            if (!message.hasLabel()) {
+                throw new InvalidStateException("Field [Label] is missing!");
+            }
+            
+            String id;
+
+            id = message.getLabel();
+            return StringProcessor.transformToIdString(id);
+
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not generate id!", ex);
+        }
     }
+
 }

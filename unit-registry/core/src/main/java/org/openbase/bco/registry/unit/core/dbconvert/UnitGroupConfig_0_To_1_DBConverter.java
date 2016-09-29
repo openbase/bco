@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openbase.bco.registry.device.core.dbconvert;
+package org.openbase.bco.registry.unit.core.dbconvert;
 
 /*
  * #%L

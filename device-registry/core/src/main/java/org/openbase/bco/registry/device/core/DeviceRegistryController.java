@@ -30,7 +30,7 @@ import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdCon
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.device.core.dbconvert.DeviceClass_0_To_1_DBConverter;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
+import org.openbase.bco.registry.unit.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.generator.UnitTemplateIdGenerator;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -45,7 +45,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.bco.registry.lib.AbstractRegistryController;
+import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;

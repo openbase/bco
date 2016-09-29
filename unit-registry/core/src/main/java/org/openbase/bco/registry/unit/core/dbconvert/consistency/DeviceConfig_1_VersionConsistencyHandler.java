@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.device.core.dbconvert.consistency;
+package org.openbase.bco.registry.unit.core.dbconvert.consistency;
 
 /*
  * #%L

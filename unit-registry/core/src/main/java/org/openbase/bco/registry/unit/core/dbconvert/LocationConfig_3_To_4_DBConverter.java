@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.location.core.dbconvert;
+package org.openbase.bco.registry.unit.core.dbconvert;
 
 /*
  * #%L
