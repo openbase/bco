@@ -25,31 +25,31 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.homeautomation.control.app.AppClassType.AppClass;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface AppRegistry {
 
-    public Future<AppConfig> registerAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException;
 
-    public Boolean containsAppConfig(AppConfig appConfig) throws CouldNotPerformException, InterruptedException;
+    public Boolean containsAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException, InterruptedException;
 
     public Boolean containsAppConfigById(String appConfigId) throws CouldNotPerformException, InterruptedException;
 
-    public Future<AppConfig> updateAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateAppConfig(UnitConfig appUnitConfigId) throws CouldNotPerformException;
 
-    public Future<AppConfig> removeAppConfig(AppConfig appConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException;
 
-    public AppConfig getAppConfigById(final String appConfigId) throws CouldNotPerformException, InterruptedException;
+    public UnitConfig getAppConfigById(final String appUnitConfigId) throws CouldNotPerformException, InterruptedException;
 
-    public List<AppConfig> getAppConfigs() throws CouldNotPerformException, InterruptedException;
+    public List<UnitConfig> getAppConfigs() throws CouldNotPerformException, InterruptedException;
 
-    public List<AppConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
+    public List<UnitConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
 
-    public List<AppConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException;
+    public List<UnitConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException;
 
     public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
 
