@@ -41,7 +41,7 @@ import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABCommandFactory extends AbstractOpenHABCommandFactory {
 

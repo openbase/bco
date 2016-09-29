@@ -35,7 +35,7 @@ import org.openbase.jul.exception.NotSupportedException;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenhabServiceFactory implements ServiceFactory {
 

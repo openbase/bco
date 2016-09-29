@@ -54,7 +54,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
  * does not belong to the device manager since it also generates entries for
  * scenes, agents etc
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABConfigGenerator {
 

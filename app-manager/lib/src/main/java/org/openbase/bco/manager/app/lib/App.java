@@ -29,7 +29,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
  */
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface App extends Configurable<String, AppConfigType.AppConfig> {
 

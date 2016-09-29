@@ -31,7 +31,7 @@ import rst.authorization.UserDataType.UserData;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Enableable, User, MessageController<UserData, UserData.Builder> {
 

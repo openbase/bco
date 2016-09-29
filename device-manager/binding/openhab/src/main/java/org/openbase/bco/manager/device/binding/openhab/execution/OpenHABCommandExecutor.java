@@ -35,7 +35,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *
- * @author Divine Threepwood
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABCommandExecutor {
 

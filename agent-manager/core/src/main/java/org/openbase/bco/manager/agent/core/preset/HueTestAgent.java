@@ -41,7 +41,7 @@ package org.openbase.bco.manager.agent.core.preset;
 //
 ///**
 // *
-// * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+// * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
 // */
 //public class HueTestAgent extends AbstractAgent {
 //

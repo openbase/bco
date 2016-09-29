@@ -30,7 +30,7 @@ import rst.homeautomation.control.agent.AgentDataType.AgentData;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface AgentController extends Identifiable<String>, Enableable, Agent, MessageController<AgentData, AgentData.Builder> {
 

@@ -35,7 +35,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConfig> implements Scene {
 

@@ -32,7 +32,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <ST> Related service type.
  */
 public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {

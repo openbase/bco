@@ -42,7 +42,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <ST> related service type
  */
 public abstract class OpenHABService<ST extends Service & Unit> implements Service {

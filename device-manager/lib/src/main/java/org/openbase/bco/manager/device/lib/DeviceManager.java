@@ -34,7 +34,7 @@ import rst.homeautomation.device.DeviceConfigType;
 
 /**
  *
- * @author Divine Threepwood
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface DeviceManager extends LocationRegistryProvider, DeviceRegistryProvider, ServiceFactoryProvider, DeviceFactoryProvider {
 

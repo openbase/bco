@@ -33,7 +33,7 @@ import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <UNIT> Related unit.
  */
 public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessStateOperationService {

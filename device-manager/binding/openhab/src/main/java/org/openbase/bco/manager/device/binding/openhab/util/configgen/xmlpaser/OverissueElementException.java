@@ -27,7 +27,7 @@ import nu.xom.Elements;
 
 /**
  *
- * @author divine
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OverissueElementException extends XMLParsingException {
 	public OverissueElementException(String elementName, Elements childElements, Element parent, Exception e) {

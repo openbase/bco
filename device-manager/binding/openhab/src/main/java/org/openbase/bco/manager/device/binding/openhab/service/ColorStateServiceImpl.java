@@ -33,7 +33,7 @@ import rst.homeautomation.state.ColorStateType.ColorState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <ST> Related service type.
  */
 public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit>  extends OpenHABService<ST> implements ColorStateOperationService {

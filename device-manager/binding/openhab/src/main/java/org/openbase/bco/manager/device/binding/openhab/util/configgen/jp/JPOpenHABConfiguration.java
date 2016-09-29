@@ -30,7 +30,7 @@ import java.io.File;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPOpenHABConfiguration extends AbstractJPDirectory {
     private static final String[] COMMAND_IDENTIFIERS = {"--openhab-config"};

@@ -30,7 +30,7 @@ import rst.homeautomation.state.ActivationStateType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface Agent extends Identifiable<String>, Configurable<String, AgentConfigType.AgentConfig> {
 

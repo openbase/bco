@@ -44,7 +44,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ServiceItemEntry extends AbstractItemEntry {
 

@@ -29,7 +29,7 @@ import rst.homeautomation.service.ServiceConfigType;
 
 /**
  *
- * @author Divine Threepwood
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ItemNameLoader {
 

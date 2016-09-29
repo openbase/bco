@@ -27,7 +27,7 @@ import nu.xom.Nodes;
 
 /**
  *
- * @author divine
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class NotOneNodeException extends XMLParsingException {
 	public NotOneNodeException(String nodeName, Nodes nodes, Node parent, Exception e) {

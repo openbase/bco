@@ -25,7 +25,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser;
 import nu.xom.ParsingException;
 
 /*
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class XMLParsingException extends ParsingException {
 

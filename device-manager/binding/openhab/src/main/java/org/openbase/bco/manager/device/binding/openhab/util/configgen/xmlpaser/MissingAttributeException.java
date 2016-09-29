@@ -26,7 +26,7 @@ import nu.xom.Element;
 
 /**
  *
- * @author divine
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MissingAttributeException extends XMLParsingException {
 

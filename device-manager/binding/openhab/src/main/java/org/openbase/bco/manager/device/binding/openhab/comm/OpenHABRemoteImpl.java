@@ -35,7 +35,7 @@ import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
  * @author thuxohl
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
 
