@@ -45,7 +45,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ *
  * @param <RS> The unit remote service to use.
  */
 public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends javax.swing.JPanel {

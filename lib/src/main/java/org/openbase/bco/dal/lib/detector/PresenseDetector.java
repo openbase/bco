@@ -39,7 +39,7 @@ import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**
  *
- * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
  */
 public class PresenseDetector extends ObservableImpl<MotionState> implements MotionStateProviderService{
 
