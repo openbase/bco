@@ -28,8 +28,8 @@ import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
  */
 public interface DeviceController extends Device, MessageController<SystemUnitData, SystemUnitData.Builder> {
 

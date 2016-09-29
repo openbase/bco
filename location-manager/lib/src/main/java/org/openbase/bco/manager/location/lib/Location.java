@@ -44,7 +44,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
  */
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
         BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,

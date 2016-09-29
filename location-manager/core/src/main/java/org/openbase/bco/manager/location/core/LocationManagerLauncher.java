@@ -31,8 +31,8 @@ import org.openbase.bco.manager.location.lib.LocationManager;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
  */
 public class LocationManagerLauncher {
 

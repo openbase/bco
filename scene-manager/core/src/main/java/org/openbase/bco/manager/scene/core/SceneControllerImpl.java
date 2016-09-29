@@ -54,7 +54,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
- * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
  */
 public class SceneControllerImpl extends AbstractExecutableController<SceneData, SceneData.Builder, SceneConfig> implements SceneController {
 

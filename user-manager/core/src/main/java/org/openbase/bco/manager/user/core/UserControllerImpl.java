@@ -41,7 +41,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ *
  */
 public class UserControllerImpl extends AbstractConfigurableController<UserData, UserData.Builder, UserConfig> implements UserController {
 

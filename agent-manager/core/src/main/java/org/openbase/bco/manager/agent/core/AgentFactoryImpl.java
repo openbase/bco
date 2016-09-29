@@ -34,7 +34,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 
 /**
  *
- * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
  */
 public class AgentFactoryImpl implements AgentFactory {
 

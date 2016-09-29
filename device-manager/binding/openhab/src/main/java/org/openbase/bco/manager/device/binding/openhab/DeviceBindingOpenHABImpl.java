@@ -37,8 +37,8 @@ import rst.homeautomation.device.DeviceConfigType;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine
- * Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
  */
 public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 

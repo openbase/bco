@@ -41,7 +41,7 @@ import rst.vision.HSBColorType.HSBColor;
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
- * Threepwood</a>
+ *
  */
 public class AmbientColorAgent extends AbstractAgent {
 
