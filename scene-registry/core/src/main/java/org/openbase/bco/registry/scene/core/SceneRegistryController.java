@@ -24,7 +24,6 @@ package org.openbase.bco.registry.scene.core;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryController;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -36,6 +35,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
@@ -58,10 +58,12 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
     }
 
     private final UnitRegistryRemote unitRegistryRemote;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> sceneUnitConfigRemoteRegistry;
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.newBuilder());
-        unitRegistryRemote = new LocationRegistryRemote();
+        unitRegistryRemote = new UnitRegistryRemote();
+        sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
     }
 
     @Override
@@ -71,6 +73,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
             @Override
             public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                sceneUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneUnitConfigList());
                 setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, data.getSceneUnitConfigList());
                 setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getSceneUnitConfigRegistryConsistent());
                 setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getSceneUnitConfigRegistryReadOnly());
@@ -96,6 +99,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
     @Override
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
         return getData().getSceneUnitConfigRegistryReadOnly();
     }
 
@@ -107,6 +111,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
      */
     @Override
     public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
         return getData().getSceneUnitConfigRegistryConsistent();
     }
 
@@ -117,31 +122,35 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
     @Override
     public Boolean containsSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.contains(sceneUnitConfig);
     }
 
     @Override
     public Boolean containsSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.contains(sceneUnitConfigId);
     }
 
     @Override
     public Future<UnitConfig> updateSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return unitRegistryRemote.updateUnitConfig(sceneUnitConfig);
     }
 
     @Override
     public Future<UnitConfig> removeSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return unitRegistryRemote.removeUnitConfig(sceneUnitConfig);
     }
 
     @Override
     public UnitConfig getSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.getMessage(sceneUnitConfigId);
     }
 
     @Override
     public List<UnitConfig> getSceneConfigs() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        unitRegistryRemote.validateData();
+        return sceneUnitConfigRemoteRegistry.getMessages();
     }
 }

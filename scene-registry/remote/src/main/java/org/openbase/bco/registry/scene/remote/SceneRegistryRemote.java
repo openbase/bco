@@ -44,20 +44,22 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> sceneConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> sceneConfigRemoteRegistry;
 
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
         super(SceneRegistryData.class);
@@ -114,21 +116,6 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
 
     /**
      * {@inheritDoc}
-     *
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     */
-//    @Override
-//    public void activate() throws InterruptedException, CouldNotPerformException {
-//        super.activate();
-//        try {
-//            waitForData();
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
-//        }
-//    }
-    /**
-     * {@inheritDoc}
      */
     @Override
     public void shutdown() {
@@ -146,24 +133,24 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
      */
     @Override
     public void notifyDataUpdate(final SceneRegistryData data) throws CouldNotPerformException {
-        sceneConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneConfigList());
+        sceneConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneUnitConfigList());
     }
 
-    public RemoteRegistry<String, SceneConfig, SceneConfig.Builder, SceneRegistryData.Builder> getSceneConfigRemoteRegistry() {
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> getSceneConfigRemoteRegistry() {
         return sceneConfigRemoteRegistry;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @param sceneConfig
+     * @param sceneUnitConfig
      * @return
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     @Override
-    public Future<SceneConfig> registerSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> registerSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(sceneConfig, this, SceneConfig.class);
+            return RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register scene config!", ex);
         }
@@ -172,51 +159,51 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
     /**
      * {@inheritDoc}
      *
-     * @param sceneConfigId {@inheritDoc}
+     * @param sceneUnitConfigId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public SceneConfig getSceneConfigById(String sceneConfigId) throws CouldNotPerformException, NotAvailableException {
+    public UnitConfig getSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException, NotAvailableException {
         validateData();
-        return sceneConfigRemoteRegistry.getMessage(sceneConfigId);
+        return sceneConfigRemoteRegistry.getMessage(sceneUnitConfigId);
     }
 
     @Override
-    public Boolean containsSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Boolean containsSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         validateData();
-        return sceneConfigRemoteRegistry.contains(sceneConfig);
+        return sceneConfigRemoteRegistry.contains(sceneUnitConfig);
     }
 
     @Override
-    public Boolean containsSceneConfigById(final String sceneConfigId) throws CouldNotPerformException {
+    public Boolean containsSceneConfigById(final String sceneUnitConfigId) throws CouldNotPerformException {
         validateData();
-        return sceneConfigRemoteRegistry.contains(sceneConfigId);
+        return sceneConfigRemoteRegistry.contains(sceneUnitConfigId);
     }
 
     @Override
-    public Future<SceneConfig> updateSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> updateSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(sceneConfig, this, SceneConfig.class);
+            return RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update scene config!", ex);
         }
     }
 
     @Override
-    public Future<SceneConfig> removeSceneConfig(final SceneConfig sceneConfig) throws CouldNotPerformException {
+    public Future<UnitConfig> removeSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(sceneConfig, this, SceneConfig.class);
+            return RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove scene config!", ex);
         }
     }
 
     @Override
-    public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException, NotAvailableException {
+    public List<UnitConfig> getSceneConfigs() throws CouldNotPerformException, NotAvailableException {
         validateData();
-        List<SceneConfig> messages = sceneConfigRemoteRegistry.getMessages();
+        List<UnitConfig> messages = sceneConfigRemoteRegistry.getMessages();
         return messages;
     }
 
@@ -231,7 +218,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
 
-        return getData().getSceneConfigRegistryReadOnly();
+        return getData().getSceneUnitConfigRegistryReadOnly();
     }
 
     /**
@@ -244,7 +231,7 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
     public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException {
         try {
             validateData();
-            return getData().getSceneConfigRegistryConsistent();
+            return getData().getSceneUnitConfigRegistryReadOnly();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
