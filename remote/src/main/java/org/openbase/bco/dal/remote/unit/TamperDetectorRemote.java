@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TamperDetectorRemote extends AbstractUnitRemote<TamperDetectorData> implements TamperDetector {
 

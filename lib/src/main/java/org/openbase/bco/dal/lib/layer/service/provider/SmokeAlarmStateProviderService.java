@@ -27,7 +27,7 @@ import rst.homeautomation.state.AlarmStateType.AlarmState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface SmokeAlarmStateProviderService extends ProviderService {
 

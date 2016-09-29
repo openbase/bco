@@ -27,7 +27,7 @@ import rst.homeautomation.state.HandleStateType.HandleState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface HandleStateProviderService extends ProviderService {
 

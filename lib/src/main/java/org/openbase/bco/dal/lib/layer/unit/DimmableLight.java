@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface DimmableLight extends PowerStateOperationService, BrightnessStateOperationService {
     

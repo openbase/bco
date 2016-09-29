@@ -31,7 +31,7 @@ import rst.homeautomation.state.ColorStateType.ColorState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ColorStateProviderService extends ProviderService {
 

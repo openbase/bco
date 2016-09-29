@@ -32,7 +32,7 @@ import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensorData> implements TemperatureSensor {
 

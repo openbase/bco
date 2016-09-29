@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.ReedContact;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ReedContactRemote extends AbstractUnitRemote<ReedContactData> implements ReedContact {
 

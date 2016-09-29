@@ -34,7 +34,7 @@ import org.openbase.bco.dal.lib.layer.unit.DimmableLight;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmableLightRemote extends AbstractUnitRemote<DimmableLightData> implements DimmableLight {
 

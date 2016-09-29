@@ -32,7 +32,7 @@ import rst.homeautomation.unit.BrightnessSensorDataType.BrightnessSensorData;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BrightnessSensorController extends AbstractUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensor {
 

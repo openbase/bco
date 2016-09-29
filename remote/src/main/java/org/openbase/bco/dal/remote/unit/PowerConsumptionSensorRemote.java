@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensorData> implements PowerConsumptionSensor {
 

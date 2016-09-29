@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationSer
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface Monitor extends PowerStateOperationService, StandbyStateOperationService {
     

@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProv
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface PowerConsumptionSensor extends PowerConsumptionStateProviderService {
     
