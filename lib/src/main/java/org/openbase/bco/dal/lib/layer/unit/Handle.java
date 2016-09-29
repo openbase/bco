@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderServic
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface Handle extends HandleStateProviderService {
     

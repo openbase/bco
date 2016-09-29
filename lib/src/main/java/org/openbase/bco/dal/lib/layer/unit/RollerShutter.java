@@ -25,7 +25,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationServi
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface RollerShutter extends BlindStateOperationService {
 

@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData> implements MotionDetector {
 

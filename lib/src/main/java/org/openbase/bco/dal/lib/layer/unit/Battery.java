@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.BatteryStateProviderServi
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface Battery extends BatteryStateProviderService {
     

@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface SmokeDetector extends SmokeAlarmStateProviderService, SmokeStateProviderService {
 }

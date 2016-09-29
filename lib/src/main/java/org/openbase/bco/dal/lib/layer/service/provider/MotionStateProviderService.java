@@ -27,7 +27,7 @@ import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface MotionStateProviderService extends ProviderService {
 
