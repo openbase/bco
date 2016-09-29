@@ -203,7 +203,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     }
 
     @Override
-    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
+    public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, appClassRegistry.isConsistent());
     }

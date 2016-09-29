@@ -29,6 +29,8 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.pattern.Observable;
@@ -71,7 +73,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 throw new CouldNotPerformException("Could register registry remotes!", ex);
             }
             try {
-                activateVersionControl();
+                activateVersionControl(getVersionConverterPackage());
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
@@ -143,7 +145,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
-        syncDataTypeFlags();
+        syncRegistryFlags();
         super.notifyChange();
     }
 
@@ -168,6 +170,49 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
     }
 
+    private void removeDependencies() throws CouldNotPerformException {
+        registries.stream().forEach((registry) -> {
+            registry.removeAllDependencies();
+        });
+    }
+
+    private void registerObserver() throws CouldNotPerformException {
+        registries.stream().forEach((registry) -> {
+            registry.addObserver((Observable source, Object data) -> {
+                notifyChange();
+            });
+        });
+    }
+
+    private void loadRegistries() throws CouldNotPerformException {
+        for (final ProtoBufFileSynchronizedRegistry registry : registries) {
+            registry.loadRegistry();
+        }
+    }
+
+    private void activateVersionControl(final Package versionConverterPackage) throws CouldNotPerformException {
+        for (final ProtoBufFileSynchronizedRegistry registry : registries) {
+            registry.activateVersionControl(versionConverterPackage);
+        }
+    }
+
+    private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
+        for (final ProtoBufFileSynchronizedRegistry registry : registries) {
+            try {
+                registry.checkConsistency();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+                notifyChange();
+            }
+        }
+    }
+    
+    protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
+        registries.stream().filter((registry) -> (messageClass.equals(registry.getMessageClass()))).forEach((registry) -> {
+            registry.registerDependency(dependency);
+        });
+    }
+    
     protected void registerRegistryRemote(final RegistryRemote registry) {
         registryRemotes.add(registry);
     }
@@ -176,7 +221,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         registries.add(registry);
     }
 
-    protected void registerConsistencyHandler(ConsistencyHandler consistencyHandler, Class messageClass) throws CouldNotPerformException {
+    protected void registerConsistencyHandler(final ConsistencyHandler consistencyHandler, final Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registries) {
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerConsistencyHandler(consistencyHandler);
@@ -184,33 +229,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
     }
 
-    protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
-        registries.stream().filter((registry) -> (messageClass.equals(registry.getMessageClass()))).forEach((registry) -> {
-            registry.registerDependency(dependency);
-        });
-    }
-
-    protected void removeDependencies() throws CouldNotPerformException {
-        registries.stream().forEach((registry) -> {
-            registry.removeAllDependencies();
-        });
-    }
-
-    protected void registerObserver() throws CouldNotPerformException {
-        registries.stream().forEach((registry) -> {
-            registry.addObserver(new Observer() {
-
-                @Override
-                public void update(Observable source, Object data) throws Exception {
-                    notifyChange();
-                }
-            });
-        });
-    }
-
-    protected abstract void activateVersionControl() throws CouldNotPerformException;
-
-    protected abstract void loadRegistries() throws CouldNotPerformException;
+    protected abstract Package getVersionConverterPackage() throws CouldNotPerformException;
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
 
@@ -222,7 +241,5 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     protected abstract void registerDependencies() throws CouldNotPerformException;
 
-    protected abstract void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException;
-
-    protected abstract void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException;
+    protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
 }

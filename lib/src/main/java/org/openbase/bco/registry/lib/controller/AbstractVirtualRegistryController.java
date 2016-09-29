@@ -74,7 +74,7 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     }
 
     @Override
-    protected void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
+    protected void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
     }
 

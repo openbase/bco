@@ -192,7 +192,7 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
     }
     
     @Override
-    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
+    public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
     }

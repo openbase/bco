@@ -33,11 +33,11 @@ import java.io.File;
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPUnitConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPDalUnitConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--scene-config-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--dal-unit-config-db"};
 
-    public JPUnitConfigDatabaseDirectory() {
+    public JPDalUnitConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,11 +48,11 @@ public class JPUnitConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("scene-config-db");
+        return new File("dal-unit-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the scene config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
+        return "Specifies the dal unit config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

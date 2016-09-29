@@ -180,7 +180,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
+    public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
     }

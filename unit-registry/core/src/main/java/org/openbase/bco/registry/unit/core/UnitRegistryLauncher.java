@@ -21,7 +21,15 @@ package org.openbase.bco.registry.unit.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.scene.lib.jp.JPUnitConfigDatabaseDirectory;
+import org.openbase.bco.registry.scene.lib.jp.JPDalUnitConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPSceneConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitGroupDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.jps.core.JPService;
@@ -84,7 +92,15 @@ public class UnitRegistryLauncher {
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPUnitTemplateDatabaseDirectory.class);
-        JPService.registerProperty(JPUnitConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPAppConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPAuthorizationGroupConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPConnectionConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPDalUnitConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPSceneConfigDatabaseDirectory.class);
+        JPService.registerProperty(JPUnitGroupDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
@@ -102,8 +118,41 @@ public class UnitRegistryLauncher {
         if (!unitRegistry.getUnitRegistry().getUnitTemplateRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        if (!unitRegistry.getUnitRegistry().getUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        
+        if (!unitRegistry.getUnitRegistry().getAgentUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AgentUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getAppUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AppUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getAuthorizationGroupUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AuthorizationGroupUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getConnectionUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("ConnectionUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getDalUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("DalUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getDeviceUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("DeviceUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getLocationUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("LocationUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getSceneUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("SceneUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+        
+        if (!unitRegistry.getUnitRegistry().getUnitGroupUnitConfigRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitGroupUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {
