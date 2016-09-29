@@ -186,9 +186,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         });
     }
 
-    protected void removeDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
-        registries.stream().filter((registry) -> (messageClass.equals(registry.getMessageClass()))).forEach((registry) -> {
-            registry.removeDependency(dependency);
+    protected void removeDependencies() throws CouldNotPerformException {
+        registries.stream().forEach((registry) -> {
+            registry.removeAllDependencies();
         });
     }
 
@@ -215,8 +215,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected abstract void registerRegistries() throws CouldNotPerformException;
 
     protected abstract void registerDependencies() throws CouldNotPerformException;
-
-    protected abstract void removeDependencies() throws CouldNotPerformException;
 
     protected abstract void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException;
 

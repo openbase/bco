@@ -254,6 +254,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
+    protected void registerRegistries() throws CouldNotPerformException {
+        registerRegistry(unitTemplateRegistry);
+        registerRegistry(agentUnitConfigRegistry);
+        registerRegistry(appUnitConfigRegistry);
+        registerRegistry(authorizationGroupUnitConfigRegistry);
+        registerRegistry(dalUnitConfigRegistry);
+        registerRegistry(deviceUnitConfigRegistry);
+        registerRegistry(locationUnitConfigRegistry);
+        registerRegistry(connectionUnitConfigRegistry);
+        registerRegistry(sceneUnitConfigRegistry);
+        registerRegistry(userUnitConfigRegistry);
+        registerRegistry(unitGroupUnitConfigRegistry);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
         //agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
@@ -370,41 +390,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         appUnitConfigRegistry.registerDependency(appClassRegistry);
         appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void removeDependencies() throws CouldNotPerformException {
-        // remove dependencies handler for all unitConfig registries
-        removeDependency(unitTemplateRegistry, UnitConfig.class);
-
-        dalUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
-        dalUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-        dalUnitConfigRegistry.removeDependency(deviceClassRegistry);
-
-        authorizationGroupUnitConfigRegistry.removeDependency(userUnitConfigRegistry);
-
-        deviceUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-        deviceUnitConfigRegistry.removeDependency(userUnitConfigRegistry);
-        deviceUnitConfigRegistry.removeDependency(deviceClassRegistry);
-
-        unitGroupUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
-
-        locationUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
-
-        connectionUnitConfigRegistry.removeDependency(deviceUnitConfigRegistry);
-
-        agentUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-        agentUnitConfigRegistry.removeDependency(agentClassRegistry);
-
-        sceneUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
-
-        appUnitConfigRegistry.removeDependency(appClassRegistry);
-        appUnitConfigRegistry.removeDependency(locationUnitConfigRegistry);
     }
 
     /**
@@ -763,20 +748,5 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     public ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getAuthorizationGroupRegistry() {
         return authorizationGroupUnitConfigRegistry;
-    }
-
-    @Override
-    protected void registerRegistries() throws CouldNotPerformException {
-        registerRegistry(unitTemplateRegistry);
-        registerRegistry(agentUnitConfigRegistry);
-        registerRegistry(appUnitConfigRegistry);
-        registerRegistry(authorizationGroupUnitConfigRegistry);
-        registerRegistry(dalUnitConfigRegistry);
-        registerRegistry(deviceUnitConfigRegistry);
-        registerRegistry(locationUnitConfigRegistry);
-        registerRegistry(connectionUnitConfigRegistry);
-        registerRegistry(sceneUnitConfigRegistry);
-        registerRegistry(userUnitConfigRegistry);
-        registerRegistry(unitGroupUnitConfigRegistry);
     }
 }
