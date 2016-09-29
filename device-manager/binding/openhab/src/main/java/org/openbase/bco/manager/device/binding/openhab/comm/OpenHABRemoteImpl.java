@@ -34,8 +34,8 @@ import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransf
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
- * @author thuxohl
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
 

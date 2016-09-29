@@ -34,7 +34,7 @@ import rst.spatial.ConnectionDataType.ConnectionData;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData, ConnectionConfig> implements Connection {
 

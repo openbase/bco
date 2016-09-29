@@ -30,7 +30,7 @@ import rst.homeautomation.control.scene.SceneDataType.SceneData;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface SceneController extends Identifiable<String>, Enableable, Scene, MessageController<SceneData, SceneData.Builder> {
 

@@ -40,7 +40,7 @@ import rst.spatial.LocationDataType.LocationData;
  */
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface LocationController extends Location, MessageController<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
         ColorStateOperationServiceCollection, PowerStateOperationServiceCollection, BlindStateOperationServiceCollection, StandbyStateOperationServiceCollection,

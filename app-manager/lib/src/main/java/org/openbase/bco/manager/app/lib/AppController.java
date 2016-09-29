@@ -30,7 +30,7 @@ import rst.homeautomation.control.app.AppDataType.AppData;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface AppController extends Identifiable<String>, Enableable, App, MessageController<AppData, AppData.Builder> {
 

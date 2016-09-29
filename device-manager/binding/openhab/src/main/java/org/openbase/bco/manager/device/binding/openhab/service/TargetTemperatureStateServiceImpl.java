@@ -32,7 +32,7 @@ import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @param <ST> Related service type.
  */
 public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
