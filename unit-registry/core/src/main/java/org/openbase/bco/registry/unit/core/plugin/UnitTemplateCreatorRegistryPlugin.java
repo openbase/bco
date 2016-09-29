@@ -26,7 +26,6 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -39,6 +38,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
+ * st
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
  * Threepwood</a>

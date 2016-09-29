@@ -26,7 +26,7 @@ import rst.homeautomation.control.app.AppClassType.AppClass;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class AppClassIdGenerator extends UUIDGenerator<AppClass> {
 }

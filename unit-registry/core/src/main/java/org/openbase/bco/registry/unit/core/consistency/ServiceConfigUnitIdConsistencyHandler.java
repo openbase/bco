@@ -33,7 +33,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 

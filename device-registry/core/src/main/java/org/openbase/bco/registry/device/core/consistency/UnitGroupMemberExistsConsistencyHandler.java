@@ -38,7 +38,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitGroupConfig, UnitGroupConfig.Builder> {
 

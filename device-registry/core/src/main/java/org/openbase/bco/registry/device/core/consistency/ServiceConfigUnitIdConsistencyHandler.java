@@ -35,7 +35,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 

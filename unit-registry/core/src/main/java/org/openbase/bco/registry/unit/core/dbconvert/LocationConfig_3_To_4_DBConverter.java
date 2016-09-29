@@ -30,7 +30,7 @@ import org.openbase.jul.storage.registry.version.DBVersionConverter;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LocationConfig_3_To_4_DBConverter implements DBVersionConverter {
 

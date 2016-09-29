@@ -23,7 +23,7 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 

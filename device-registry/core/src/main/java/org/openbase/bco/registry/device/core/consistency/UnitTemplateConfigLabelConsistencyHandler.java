@@ -33,7 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Marian Pohling</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Marian Pohling</a>
  */
 public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, DeviceClass, DeviceClass.Builder> {
 

@@ -30,7 +30,7 @@ import java.util.Map;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LocationConfig_1_To_2_DBConverter implements DBVersionConverter {
 

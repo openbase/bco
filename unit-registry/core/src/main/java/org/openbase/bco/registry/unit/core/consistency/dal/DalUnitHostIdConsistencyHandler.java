@@ -34,7 +34,7 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
- * @author thuxohl
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 

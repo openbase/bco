@@ -30,7 +30,7 @@ import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 
 /**
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class JPAuthorizationGroupConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
