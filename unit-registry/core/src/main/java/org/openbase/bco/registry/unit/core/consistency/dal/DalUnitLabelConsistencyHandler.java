@@ -21,7 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.dal;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.device.lib.util.DeviceConfigUtils;
+import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -60,7 +60,6 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
 
         UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
-        boolean modification = false;
         boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, registry);
 
         // Setup device label if unit has no label configured.

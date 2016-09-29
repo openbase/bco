@@ -51,13 +51,13 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
         boolean modification = false;
 
         // Setup default bounding
-        if (!dalUnitConfig.hasBoundUnitHost()) {
-            dalUnitConfig.setBoundUnitHost(DEFAULT_BOUND_TO_DEVICE);
+        if (!dalUnitConfig.hasBoundToUnitHost()) {
+            dalUnitConfig.setBoundToUnitHost(DEFAULT_BOUND_TO_DEVICE);
             modification = true;
         }
 
         // Copy device placement and label if bound to device is enabled.
-        if (dalUnitConfig.getBoundUnitHost()) {
+        if (dalUnitConfig.getBoundToUnitHost()) {
             UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
             // copy location id
