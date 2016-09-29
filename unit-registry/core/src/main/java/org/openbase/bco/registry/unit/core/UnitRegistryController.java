@@ -24,9 +24,6 @@ package org.openbase.bco.registry.unit.core;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.device.core.consistency.ServiceConfigBindingTypeConsistencyHandler;
-import org.openbase.bco.registry.device.core.consistency.UnitConfigUnitTemplateConfigIdConsistencyHandler;
-import org.openbase.bco.registry.device.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.bco.registry.location.core.consistency.RootConsistencyHandler;
 import org.openbase.bco.registry.location.core.consistency.RootLocationExistencConsistencyHandler;
@@ -39,6 +36,8 @@ import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionLoca
 import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionTilesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dal.ServiceConfigBindingTypeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dal.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dal.UnitTransformationFrameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigDeviceClassIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigDeviceClassUnitConsistencyHandler;
@@ -85,7 +84,6 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -162,17 +160,17 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public UnitRegistryController() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.newBuilder());
         try {
-            this.unitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_CONFIG_FIELD_NUMBER), new UnitConfigIdGenerator(), JPService.getProperty(JPUnitConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.unitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER), new UnitConfigIdGenerator(), JPService.getProperty(JPUnitConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfigType.UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryDataType.UserRegistryData.USER_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.authorizationGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(AuthorizationGroupConfigType.AuthorizationGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UserRegistryDataType.UserRegistryData.AUTHORIZATION_GROUP_CONFIG_FIELD_NUMBER), new AuthorizationGroupConfigIdGenerator(), JPService.getProperty(JPAuthorizationGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfigType.DeviceConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryDataType.DeviceRegistryData.DEVICE_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfigType.UnitGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryDataType.DeviceRegistryData.UNIT_GROUP_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfigType.LocationConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryDataType.LocationRegistryData.LOCATION_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-            this.connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfigType.ConnectionConfig.class, getBuilderSetup(), getDataFieldDescriptor(LocationRegistryDataType.LocationRegistryData.CONNECTION_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
-            this.agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfigType.AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryDataType.AgentRegistryData.AGENT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfigType.SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(SceneRegistryDataType.SceneRegistryData.SCENE_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfigType.AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryDataType.AppRegistryData.APP_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.userRegistry = new ProtoBufFileSynchronizedRegistry<>(UserConfigType.UserConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER), new UserConfigIdGenerator(), JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.authorizationGroupRegistry = new ProtoBufFileSynchronizedRegistry<>(AuthorizationGroupConfigType.AuthorizationGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER), new AuthorizationGroupConfigIdGenerator(), JPService.getProperty(JPAuthorizationGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.deviceConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceConfigType.DeviceConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER), new DeviceConfigIdGenerator(), JPService.getProperty(JPDeviceConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.unitGroupConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitGroupConfigType.UnitGroupConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER), new UnitGroupIdGenerator(), JPService.getProperty(JPUnitGroupDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.locationConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(LocationConfigType.LocationConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER), new LocationIDGenerator(), JPService.getProperty(JPLocationConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+            this.connectionConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(ConnectionConfigType.ConnectionConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER), new ConnectionIDGenerator(), JPService.getProperty(JPConnectionConfigDatabaseDirectory.class).getValue(), new ProtoBufJSonFileProvider());
+            this.agentConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentConfigType.AgentConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER), new AgentConfigIdGenerator(), JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.sceneConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(SceneConfigType.SceneConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER), new SceneConfigIdGenerator(), JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            appConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(AppConfigType.AppConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER), new AppConfigIdGenerator(), JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
         } catch (JPServiceException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -563,13 +561,16 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         if (appConfigRegistry != null) {
             appConfigRegistry.shutdown();
         }
+        
+        if (agentConfigRegistry != null) {
+            agentConfigRegistry.shutdown();
+        }
 
         super.shutdown();
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
-        // sync flags
+    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitConfigRegistry.isConsistent());
 
@@ -595,6 +596,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         setDataField(SceneRegistryDataType.SceneRegistryData.SCENE_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, sceneConfigRegistry.isReadOnly());
         setDataField(SceneRegistryDataType.SceneRegistryData.SCENE_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, sceneConfigRegistry.isConsistent());
+        
+        setDataField(AgentRegistryDataType.AgentRegistryData.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
+        setDataField(AgentRegistryDataType.AgentRegistryData.AGENT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, agentConfigRegistry.isConsistent());
+        
+        setDataField(AppRegistryDataType.AppRegistryData.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
+        setDataField(AppRegistryDataType.AppRegistryData.APP_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, appConfigRegistry.isConsistent());
 
         super.notifyChange();
     }

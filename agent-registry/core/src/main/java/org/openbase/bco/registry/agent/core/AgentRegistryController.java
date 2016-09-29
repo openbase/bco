@@ -25,34 +25,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.agent.core.consistency.LabelConsistencyHandler;
-import org.openbase.bco.registry.agent.core.consistency.LocationIdConsistencyHandler;
-import org.openbase.bco.registry.agent.core.consistency.ScopeConsistencyHandler;
 import org.openbase.bco.registry.agent.core.dbconvert.AgentConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
-import org.openbase.bco.registry.agent.lib.generator.AgentConfigIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
-import org.openbase.bco.registry.agent.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.AbstractRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -174,31 +165,16 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
 
     @Override
     public void shutdown() {
-        if (agentConfigRegistry != null) {
-            agentConfigRegistry.shutdown();
-        }
-
         if (agentClassRegistry != null) {
             agentClassRegistry.shutdown();
         }
-
-        try {
-            deactivate();
-        } catch (CouldNotPerformException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-
-        locationRegistryRemote.shutdown();
+        super.shutdown();
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
-        // sync read only flags
-        setDataField(AgentRegistryData.AGENT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, agentConfigRegistry.isReadOnly());
+    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
-        setDataField(AgentRegistryData.AGENT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, agentConfigRegistry.isConsistent());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
-        super.notifyChange();
     }
 
     @Override

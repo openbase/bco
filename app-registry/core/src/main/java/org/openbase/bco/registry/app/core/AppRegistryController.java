@@ -163,17 +163,6 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     }
 
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        try {
-            super.activate();
-
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate location registry!", ex);
-        }
-
-    }
-
-    @Override
     public void shutdown() {
         if (appClassRegistry != null) {
             appClassRegistry.shutdown();
@@ -182,13 +171,9 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     }
 
     @Override
-    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
-        // sync read only flags
-        setDataField(AppRegistryData.APP_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appConfigRegistry.isReadOnly());
+    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
-        setDataField(AppRegistryData.APP_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, appConfigRegistry.isConsistent());
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, appClassRegistry.isConsistent());
-        super.notifyChange();
     }
 
     @Override

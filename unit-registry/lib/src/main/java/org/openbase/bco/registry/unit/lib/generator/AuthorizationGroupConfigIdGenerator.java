@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.user.lib.generator;
+package org.openbase.bco.registry.unit.lib.generator;
 
 /*
  * #%L

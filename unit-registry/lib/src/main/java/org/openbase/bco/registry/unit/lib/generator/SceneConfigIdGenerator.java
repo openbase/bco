@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.user.lib.generator;
+package org.openbase.bco.registry.unit.lib.generator;
 
 /*
  * #%L
- * REM UserRegistry Library
+ * REM SceneRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,19 +22,20 @@ package org.openbase.bco.registry.user.lib.generator;
  * #L%
  */
 
+import java.util.UUID;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
-import java.util.UUID;
-import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
 /**
  *
  * @author mpohling
  */
-public class UserConfigIdGenerator implements IdGenerator<String, UserConfig> {
+public class SceneConfigIdGenerator implements IdGenerator<String, SceneConfig> {
 
     @Override
-    public String generateId(UserConfig message) throws CouldNotPerformException {
+    public String generateId(SceneConfig message) throws CouldNotPerformException {
         return UUID.randomUUID().toString();
     }
+
 }

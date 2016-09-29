@@ -30,12 +30,10 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
  *
@@ -122,6 +120,12 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
     }
 
+    @Override
+    public void notifyChange() throws CouldNotPerformException, InterruptedException {
+        syncDataTypeFlags();
+        super.notifyChange();
+    }
+
     private void initRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemotes) {
             remote.init();
@@ -162,4 +166,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected abstract void removeDependencies() throws CouldNotPerformException;
 
     protected abstract void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException;
+    
+    protected abstract void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException;
 }

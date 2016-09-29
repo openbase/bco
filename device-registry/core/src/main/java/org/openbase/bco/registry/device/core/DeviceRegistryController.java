@@ -87,23 +87,13 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     private final UserRegistryRemote userRegistryRemote;
 
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
-        super(DeviceRegistryData.newBuilder());
+        super(JPDeviceRegistryScope.class, DeviceRegistryData.newBuilder());
         try {
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             locationRegistryRemote = new LocationRegistryRemote();
             userRegistryRemote = new UserRegistryRemote();
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
-        }
-    }
-
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            super.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
-            locationRegistryRemote.init();
-            userRegistryRemote.init();
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
         }
     }
 
@@ -142,7 +132,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     }
 
     @Override
-    protected void performInitialConsistencyCheck() throws CouldNotPerformException {
+    protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         try {
             deviceClassRegistry.checkConsistency();
         } catch (CouldNotPerformException ex) {
@@ -190,11 +180,9 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public final void notifyChange() throws CouldNotPerformException, InterruptedException {
-        // sync read only flags
+    public final void syncDataTypeFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
-        super.notifyChange();
     }
 
     /**
