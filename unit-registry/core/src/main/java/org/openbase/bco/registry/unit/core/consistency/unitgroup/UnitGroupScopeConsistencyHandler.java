@@ -36,7 +36,7 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitGroupScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 

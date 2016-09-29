@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.location.core.dbconvert;
+package org.openbase.bco.registry.unit.core.dbconvert;
 
 /*
  * #%L
- * REM LocationRegistry Core
+ * REM DeviceRegistry Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,33 +21,26 @@ package org.openbase.bco.registry.location.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
 import java.io.File;
 import java.util.Map;
+import org.openbase.jul.storage.registry.version.DBVersionConverter;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationConfig_1_To_2_DBConverter implements DBVersionConverter {
+public class DeviceConfig_1_To_2_DBConverter implements DBVersionConverter {
 
     @Override
-    public JsonObject upgrade(JsonObject locationConfig, final Map<File, JsonObject> dbSnapshot) {
+    public JsonObject upgrade(JsonObject deviceConfig, final Map<File, JsonObject> dbSnapshot) {
+        // remove the outdated owner(PersonType) from the inventory state
+        JsonObject inventoryState = deviceConfig.get("inventory_state").getAsJsonObject();
+        deviceConfig.remove("inventory_state");
+        inventoryState.remove("owner");
+        inventoryState.addProperty("owner_id", "");
+        deviceConfig.add("inventory_state", inventoryState);
 
-        // check if child element exists otherwise we are finish
-        JsonElement placement = locationConfig.get("placement_config");
-        if (placement == null) {
-            locationConfig.add("placement_config", copyPlacement(locationConfig));
-        }
-        return locationConfig;
-    }
-
-    private JsonObject copyPlacement(JsonObject locationConfig) {
-        final JsonObject placement = new JsonObject();
-        placement.add("position", locationConfig.get("position"));
-        return placement;
+        return deviceConfig;
     }
 }

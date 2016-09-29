@@ -57,7 +57,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryTest {
 

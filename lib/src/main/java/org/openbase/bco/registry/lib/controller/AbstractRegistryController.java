@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.lib;
+package org.openbase.bco.registry.lib.controller;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  *
- * @author divine
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M>
  * @param <MB>
  */

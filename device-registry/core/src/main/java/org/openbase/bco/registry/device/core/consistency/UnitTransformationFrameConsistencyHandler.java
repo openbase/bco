@@ -34,7 +34,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitTransformationFrameConsistencyHandler extends AbstractTransformationFrameConsistencyHandler<String, DeviceConfig, DeviceConfig.Builder> {
 

@@ -30,7 +30,7 @@ import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
-import org.openbase.bco.registry.lib.AbstractRegistryController;
+import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -54,7 +54,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AppRegistryController extends AbstractRegistryController<AppRegistryData, AppRegistryData.Builder> implements AppRegistry, Manageable<ScopeType.Scope> {
 

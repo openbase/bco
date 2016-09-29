@@ -21,20 +21,13 @@ package org.openbase.bco.registry.unit.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.UUID;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.protobuf.IdGenerator;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UnitConfigIdGenerator implements IdGenerator<String, UnitConfig> {
-
-    @Override
-    public String generateId(UnitConfig message) throws CouldNotPerformException {
-        return UUID.randomUUID().toString();
-    }
-
+public class UnitConfigIdGenerator extends UUIDGenerator<UnitConfig> {
+    
 }

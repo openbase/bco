@@ -76,7 +76,7 @@ import static junit.framework.TestCase.fail;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryTest {
 

@@ -24,7 +24,7 @@ package org.openbase.bco.registry.user.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -43,7 +43,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserRegistryController extends AbstractVirtualRegistryController<UserRegistryData, UserRegistryData.Builder> implements UserRegistry, Manageable<ScopeType.Scope> {
 

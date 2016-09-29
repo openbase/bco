@@ -37,7 +37,7 @@ import rst.rsb.ScopeType.Scope;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 // TODO mpohling: write java doc
 public interface DeviceRegistry {

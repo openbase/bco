@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.location.core.dbconvert;
+package org.openbase.bco.registry.unit.core.dbconvert;
 
 /*
  * #%L
@@ -33,7 +33,7 @@ import java.util.Map;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationConfig_0_To_1_DBConverter implements DBVersionConverter {
 

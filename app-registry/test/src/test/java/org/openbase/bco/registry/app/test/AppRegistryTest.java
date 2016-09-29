@@ -24,7 +24,7 @@ package org.openbase.bco.registry.app.test;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AppRegistryTest {
 

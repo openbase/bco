@@ -23,7 +23,7 @@ package org.openbase.bco.registry.scene.core;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
@@ -43,7 +43,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRegistryController extends AbstractVirtualRegistryController<SceneRegistryData, SceneRegistryData.Builder> implements SceneRegistry, Manageable<ScopeType.Scope> {
 

@@ -48,7 +48,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
 

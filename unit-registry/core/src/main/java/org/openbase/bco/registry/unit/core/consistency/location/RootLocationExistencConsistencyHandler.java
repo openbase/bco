@@ -32,7 +32,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 

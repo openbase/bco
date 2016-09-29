@@ -36,7 +36,7 @@ import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPUnitTemplateDatabaseDirectory extends AbstractJPDatabaseDirectory {
 

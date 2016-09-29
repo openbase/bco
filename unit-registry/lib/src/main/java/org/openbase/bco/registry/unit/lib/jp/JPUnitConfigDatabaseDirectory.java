@@ -31,7 +31,7 @@ import java.io.File;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPUnitConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 

@@ -25,12 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.agent.core.dbconvert.AgentConfig_0_To_1_DBConverter;
+import org.openbase.bco.registry.unit.core.dbconvert.AgentConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
-import org.openbase.bco.registry.lib.AbstractRegistryController;
+import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -54,7 +54,7 @@ import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryController extends AbstractRegistryController<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
 

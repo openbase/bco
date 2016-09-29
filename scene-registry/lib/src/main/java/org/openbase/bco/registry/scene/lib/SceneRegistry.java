@@ -29,7 +29,7 @@ import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface SceneRegistry extends Shutdownable {
 

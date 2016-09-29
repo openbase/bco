@@ -32,7 +32,7 @@ import org.openbase.bco.registry.user.lib.provider.UserRegistryProvider;
 /**
  * Interface provides a collection of globally managed registry instances.
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface RegistryProvider extends AgentRegistryProvider, AppRegistryProvider, DeviceRegistryProvider, LocationRegistryProvider, SceneRegistryProvider, UserRegistryProvider {
 

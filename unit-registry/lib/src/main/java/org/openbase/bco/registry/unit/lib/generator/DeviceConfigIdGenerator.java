@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.app.lib.generator;
+package org.openbase.bco.registry.unit.lib.generator;
 
 /*
  * #%L
- * REM AppRegistry Library
+ * REM DeviceRegistry Library
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -26,25 +26,40 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
- * @author mpohling
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated use unit config id generator instead
  */
-public class AppConfigIdGenerator implements IdGenerator<String, AppConfig> {
+@Deprecated
+public class DeviceConfigIdGenerator implements IdGenerator<String, DeviceConfig> {
 
     @Override
-    public String generateId(AppConfig message) throws CouldNotPerformException {
+    public String generateId(DeviceConfig message) throws CouldNotPerformException {
         try {
-
-            if (!message.hasLabel()) {
-                throw new InvalidStateException("Field [Label] is missing!");
+            if (!message.hasDeviceClassId()) {
+                throw new InvalidStateException("Field [DeviceClassId] is missing!");
             }
-            
+
+            if (message.getDeviceClassId().isEmpty()) {
+                throw new InvalidStateException("Field [DeviceClass.id] is empty!");
+            }
+
+            if (!message.hasSerialNumber()) {
+                throw new InvalidStateException("Field [SerialNumber] is missing!");
+            }
+
+            if (message.getSerialNumber().isEmpty()) {
+                throw new InvalidStateException("Field [SerialNumber] is empty!");
+            }
+
             String id;
 
-            id = message.getLabel();
+            id = message.getDeviceClassId();
+            id += "_";
+            id += message.getSerialNumber();
             return StringProcessor.transformToIdString(id);
 
         } catch (CouldNotPerformException ex) {

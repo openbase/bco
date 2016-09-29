@@ -32,7 +32,7 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationTransformationFrameConsistencyHandler extends AbstractTransformationFrameConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 

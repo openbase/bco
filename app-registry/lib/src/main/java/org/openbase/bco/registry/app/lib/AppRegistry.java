@@ -29,7 +29,7 @@ import rst.homeautomation.control.app.AppConfigType.AppConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface AppRegistry {
 
