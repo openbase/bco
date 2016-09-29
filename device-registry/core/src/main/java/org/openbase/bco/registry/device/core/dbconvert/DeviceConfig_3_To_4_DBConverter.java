@@ -36,7 +36,7 @@ import org.openbase.jul.storage.registry.version.DBVersionConverter;
 /**
  * DBConverter renaming bound_to_system_unit to bound_to_unit_host and system_unit_id to unit_host_id.
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.com">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DeviceConfig_3_To_4_DBConverter implements DBVersionConverter {
 
