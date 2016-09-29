@@ -79,11 +79,6 @@ public class UserRegistryLauncher {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
-        JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPUserConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPAuthorizationGroupConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPGitRegistryPlugin.class);
-        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.parseAndExitOnError(args);
 

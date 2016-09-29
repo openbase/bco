@@ -34,7 +34,6 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -191,6 +190,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void activateVersionControl(final Package versionConverterPackage) throws CouldNotPerformException {
+        if(versionConverterPackage == null) {
+            logger.debug("Skip the activation of registry version control because no package was defined.");
+            return;
+        }
         for (final ProtoBufFileSynchronizedRegistry registry : registries) {
             registry.activateVersionControl(versionConverterPackage);
         }

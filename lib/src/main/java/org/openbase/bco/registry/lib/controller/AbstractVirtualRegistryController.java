@@ -39,37 +39,12 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     }
 
     @Override
-    protected void activateVersionControl() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-
-    @Override
-    protected void loadRegistries() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-
-    @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
 
     @Override
-    protected void registerObserver() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-
-    @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-
-    @Override
-    protected void removeDependencies() throws CouldNotPerformException {
-        // not needed for virtual registries.
-    }
-
-    @Override
-    protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
     }
 
@@ -86,5 +61,11 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     @Override
     protected void registerPlugins() throws CouldNotPerformException {
         // not needed for virtual registries.
+    }
+
+    @Override
+    protected Package getVersionConverterPackage() throws CouldNotPerformException {
+        // not needed for virtual registries.
+        return null;
     }
 }
