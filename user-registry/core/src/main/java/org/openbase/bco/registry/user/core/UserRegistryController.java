@@ -25,21 +25,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserRegistryDataType.UserRegistryData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.rsb.ScopeType;
 
 /**
@@ -50,17 +54,48 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
+    private final UnitRegistryRemote unitRegistryRemote;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> userUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> authorizationGroupUnitConfigRemoteRegistry;
+
     public UserRegistryController() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.newBuilder());
-//        try {
-//
-//        } catch (JPServiceException | CouldNotPerformException ex) {
-//            throw new InstantiationException(this, ex);
-//        }
+        this.unitRegistryRemote = new UnitRegistryRemote();
+        this.userUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        this.authorizationGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
+    }
+
+    @Override
+    public void init() throws InitializationException, InterruptedException {
+        super.init();
+        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
+
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                userUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getUserUnitConfigList());
+                setDataField(UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, data.getUserUnitConfigList());
+                setDataField(UserRegistryData.USER_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getUserUnitConfigRegistryConsistent());
+                setDataField(UserRegistryData.USER_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getUserUnitConfigRegistryReadOnly());
+
+                authorizationGroupUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAuthorizationGroupUnitConfigList());
+                setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, data.getAuthorizationGroupUnitConfigList());
+                setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAuthorizationGroupUnitConfigRegistryConsistent());
+                setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getAuthorizationGroupUnitConfigRegistryReadOnly());
+                notifyChange();
+            }
+        });
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        userUnitConfigRemoteRegistry.shutdown();
+        authorizationGroupUnitConfigRemoteRegistry.shutdown();
     }
 
     /**
@@ -78,51 +113,56 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     }
 
     @Override
-    public Future<UserConfig> registerUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> userRegistry.register(userConfig));
+    public Future<UnitConfig> registerUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.registerUnitConfig(userConfig);
     }
 
     @Override
-    public Boolean containsUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return userRegistry.contains(userConfig);
+    public Boolean containsUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return userUnitConfigRemoteRegistry.contains(userConfig);
     }
 
     @Override
     public Boolean containsUserConfigById(String userConfigId) throws CouldNotPerformException {
-        return userRegistry.contains(userConfigId);
+        unitRegistryRemote.validateData();
+        return userUnitConfigRemoteRegistry.contains(userConfigId);
     }
 
     @Override
-    public Future<UserConfig> updateUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> userRegistry.update(userConfig));
+    public Future<UnitConfig> updateUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.updateUnitConfig(userConfig);
     }
 
     @Override
-    public Future<UserConfig> removeUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> userRegistry.remove(userConfig));
+    public Future<UnitConfig> removeUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.removeUnitConfig(userConfig);
     }
 
     @Override
-    public UserConfig getUserConfigById(String userConfigId) throws CouldNotPerformException {
-        return userRegistry.get(userConfigId).getMessage();
+    public UnitConfig getUserConfigById(String userConfigId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return userUnitConfigRemoteRegistry.getMessage(userConfigId);
     }
 
     @Override
-    public List<UserConfig> getUserConfigs() throws CouldNotPerformException {
-        return userRegistry.getMessages();
+    public List<UnitConfig> getUserConfigs() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return userUnitConfigRemoteRegistry.getMessages();
     }
 
     @Override
     public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException {
-        return userRegistry.isReadOnly();
+        unitRegistryRemote.validateData();
+        return getData().getUserUnitConfigRegistryReadOnly();
     }
 
     @Override
-    public List<UserConfig> getUserConfigsByAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
-        List<UserConfig> userConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> group : authorizationGroupRegistry.getEntries()) {
-            if (group.getMessage().equals(groupConfig)) {
-                for (String memeberId : group.getMessage().getMemberIdList()) {
+    public List<UnitConfig> getUserConfigsByAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        List<UnitConfig> userConfigs = new ArrayList<>();
+        for (UnitConfig group : getAuthorizationGroupConfigs()) {
+            if (group.equals(groupConfig)) {
+                for (String memeberId : group.getAuthorizationGroupConfig().getMemberIdList()) {
                     userConfigs.add(getUserConfigById(memeberId));
                 }
                 return userConfigs;
@@ -132,46 +172,50 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     }
 
     @Override
-    public Future<AuthorizationGroupConfig> registerAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> authorizationGroupRegistry.register(groupConfig));
+    public Future<UnitConfig> registerAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.registerUnitConfig(groupConfig);
     }
 
     @Override
-    public Boolean containsAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
-        return authorizationGroupRegistry.contains(groupConfig);
+    public Boolean containsAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return authorizationGroupUnitConfigRemoteRegistry.contains(groupConfig);
     }
 
     @Override
     public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        return authorizationGroupRegistry.contains(groupConfigId);
+        unitRegistryRemote.validateData();
+        return authorizationGroupUnitConfigRemoteRegistry.contains(groupConfigId);
     }
 
     @Override
-    public Future<AuthorizationGroupConfig> updateAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> authorizationGroupRegistry.update(groupConfig));
+    public Future<UnitConfig> updateAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.updateUnitConfig(groupConfig);
     }
 
     @Override
-    public Future<AuthorizationGroupConfig> removeAuthorizationGroupConfig(AuthorizationGroupConfig groupConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> authorizationGroupRegistry.remove(groupConfig));
+    public Future<UnitConfig> removeAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.removeUnitConfig(groupConfig);
     }
 
     @Override
-    public AuthorizationGroupConfig getAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        return authorizationGroupRegistry.get(groupConfigId).getMessage();
+    public UnitConfig getAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return authorizationGroupUnitConfigRemoteRegistry.getMessage(groupConfigId);
     }
 
     @Override
-    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException {
-        return authorizationGroupRegistry.getMessages();
+    public List<UnitConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return authorizationGroupUnitConfigRemoteRegistry.getMessages();
     }
 
     @Override
-    public List<AuthorizationGroupConfig> getAuthorizationGroupConfigsbyUserConfig(UserConfig userConfig) throws CouldNotPerformException {
-        List<AuthorizationGroupConfig> groupConfigs = new ArrayList<>();
-        for (IdentifiableMessage<String, AuthorizationGroupConfig, AuthorizationGroupConfig.Builder> group : authorizationGroupRegistry.getEntries()) {
-            group.getMessage().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
-                groupConfigs.add(group.getMessage());
+    public List<UnitConfig> getAuthorizationGroupConfigsbyUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        List<UnitConfig> groupConfigs = new ArrayList<>();
+        for (UnitConfig group : getAuthorizationGroupConfigs()) {
+            group.getAuthorizationGroupConfig().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
+                groupConfigs.add(group);
             });
         }
         return groupConfigs;
@@ -179,7 +223,8 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
 
     @Override
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return authorizationGroupRegistry.isReadOnly();
+        unitRegistryRemote.validateData();
+        return getData().getAuthorizationGroupUnitConfigRegistryReadOnly();
     }
 
     /**
@@ -190,7 +235,8 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
      */
     @Override
     public Boolean isUserConfigRegistryConsistent() throws CouldNotPerformException {
-        return userRegistry.isConsistent();
+        unitRegistryRemote.validateData();
+        return getData().getUserUnitConfigRegistryConsistent();
     }
 
     /**
@@ -201,31 +247,7 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
      */
     @Override
     public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException {
-        return authorizationGroupRegistry.isConsistent();
-    }
-
-    @Override
-    public void shutdown() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void init(ScopeType.Scope config) throws InitializationException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isActive() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        unitRegistryRemote.validateData();
+        return getData().getAuthorizationGroupUnitConfigRegistryConsistent();
     }
 }

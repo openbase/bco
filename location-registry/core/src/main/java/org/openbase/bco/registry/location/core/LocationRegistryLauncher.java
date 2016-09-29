@@ -21,19 +21,14 @@ package org.openbase.bco.registry.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
-import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
@@ -43,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryLauncher {
 
@@ -80,7 +75,6 @@ public class LocationRegistryLauncher {
         JPService.setApplicationName(APP_NAME);
 
         JPService.registerProperty(JPLocationRegistryScope.class);
-        JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPInitializeDB.class);
@@ -98,21 +92,6 @@ public class LocationRegistryLauncher {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
-        MultiException.ExceptionStack exceptionStack = null;
-
-        if (!locationRegistry.getLocationRegistry().getLocationConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(locationRegistry, new VerificationFailedException("LocationConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!locationRegistry.getLocationRegistry().getConnectionConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(locationRegistry, new VerificationFailedException("ConnectionConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-        }
         logger.info(APP_NAME + " successfully started.");
     }
 }

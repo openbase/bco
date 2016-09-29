@@ -29,12 +29,10 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
-import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface LocationRegistry {
 
@@ -45,7 +43,7 @@ public interface LocationRegistry {
      * @return the registered location config
      * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
      */
-    public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method returns the location config which is registered with the given
@@ -55,7 +53,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
+    public UnitConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
 
     /**
      * Method returns all location configs which are assigned to the given
@@ -65,7 +63,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
+    public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
 
     /**
      * Method returns true if the location config with the given id is
@@ -76,7 +74,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Boolean containsLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method returns true if the location config with the given id is
@@ -95,7 +93,7 @@ public interface LocationRegistry {
      * @return the updated location config.
      * @throws CouldNotPerformException
      */
-    public Future<LocationConfig> updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method removes the given location config out of the global registry.
@@ -104,7 +102,7 @@ public interface LocationRegistry {
      * @return The removed location config.
      * @throws CouldNotPerformException
      */
-    public Future<LocationConfig> removeLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
      * Method returns all registered location configs.
@@ -113,7 +111,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException;
 
     /**
      * Method returns all unit configurations which are direct or recursive
@@ -218,7 +216,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
+    public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
 
     // TODO mpohling: should be moved with init in a own interface.
     public void shutdown();
@@ -231,7 +229,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException is thrown in case if the registered
      * entry already exists or is inconsistent.
      */
-    public Future<ConnectionConfig> registerConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method returns the connection config which is registered with the given
@@ -241,7 +239,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public ConnectionConfig getConnectionConfigById(final String connectionId) throws CouldNotPerformException;
+    public UnitConfig getConnectionConfigById(final String connectionId) throws CouldNotPerformException;
 
     /**
      * Method returns all connection configs which are assigned to the given
@@ -251,7 +249,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public List<ConnectionConfig> getConnectionConfigsByLabel(final String connectionLabel) throws CouldNotPerformException;
+    public List<UnitConfig> getConnectionConfigsByLabel(final String connectionLabel) throws CouldNotPerformException;
 
     /**
      * Method returns true if the connection config with the given id is
@@ -262,7 +260,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
-    public Boolean containsConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Boolean containsConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method returns true if the connection config with the given id is
@@ -281,7 +279,7 @@ public interface LocationRegistry {
      * @return the updated connection config.
      * @throws CouldNotPerformException
      */
-    public Future<ConnectionConfig> updateConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method removes the given connection config out of the global registry.
@@ -290,7 +288,7 @@ public interface LocationRegistry {
      * @return The removed connection config.
      * @throws CouldNotPerformException
      */
-    public Future<ConnectionConfig> removeConnectionConfig(final ConnectionConfig connectionConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
      * Method returns all registered connection configs.
@@ -299,7 +297,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    public List<ConnectionConfig> getConnectionConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getConnectionConfigs() throws CouldNotPerformException;
 
     /**
      * Method returns all unit configurations which are related to the given
@@ -366,7 +364,7 @@ public interface LocationRegistry {
      * @return all neighbor tiles
      * @throws CouldNotPerformException
      */
-    public List<LocationConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
+    public List<UnitConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underling registry is marked as consistent.

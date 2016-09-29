@@ -30,9 +30,6 @@ import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
@@ -42,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserRegistryLauncher {
 
@@ -97,21 +94,6 @@ public class UserRegistryLauncher {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
 
-        MultiException.ExceptionStack exceptionStack = null;
-
-        if (!userRegistry.getUserRegistry().getUserRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(userRegistry, new VerificationFailedException("UserRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!userRegistry.getUserRegistry().getAuthorizationGroupRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(userRegistry, new VerificationFailedException("GroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(USER_REGISTRY_NAME + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-        }
         logger.info(USER_REGISTRY_NAME + " successfully started.");
     }
 }

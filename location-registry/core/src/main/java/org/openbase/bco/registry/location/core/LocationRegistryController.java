@@ -27,24 +27,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.controller.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.schedule.GlobalExecutionService;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -53,27 +57,56 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryController extends AbstractVirtualRegistryController<LocationRegistryData, LocationRegistryData.Builder> implements LocationRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionConfig.getDefaultInstance()));
     }
 
-    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final UnitRegistryRemote unitRegistryRemote;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> locationUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> connectionUnitConfigRemoteRegistry;
 
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(JPLocationRegistryScope.class, LocationRegistryData.newBuilder());
-        try {
-            deviceRegistryRemote = new DeviceRegistryRemote();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        unitRegistryRemote = new UnitRegistryRemote();
+        locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
     }
-    
+
+    @Override
+    public void init() throws InitializationException, InterruptedException {
+        super.init();
+        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
+
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                locationUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getLocationUnitConfigList());
+                setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, data.getLocationUnitConfigList());
+                setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getLocationUnitConfigRegistryConsistent());
+                setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getLocationUnitConfigRegistryReadOnly());
+
+                connectionUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getConnectionUnitConfigList());
+                setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, data.getConnectionUnitConfigList());
+                setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getConnectionUnitConfigRegistryConsistent());
+                setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getConnectionUnitConfigRegistryReadOnly());
+                notifyChange();
+            }
+        });
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        locationUnitConfigRemoteRegistry.shutdown();
+        connectionUnitConfigRemoteRegistry.shutdown();
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -81,7 +114,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
-        registerRegistryRemote(deviceRegistryRemote);
+        registerRegistryRemote(unitRegistryRemote);
     }
 
     /**
@@ -101,8 +134,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<LocationConfig> registerLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> locationConfigRegistry.register(locationConfig));
+    public Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.registerUnitConfig(locationConfig);
     }
 
     /**
@@ -111,8 +144,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public LocationConfig getLocationConfigById(final String locationId) throws CouldNotPerformException {
-        return locationConfigRegistry.get(locationId).getMessage();
+    public UnitConfig getLocationConfigById(final String locationId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return locationUnitConfigRemoteRegistry.getMessage(locationId);
     }
 
     /**
@@ -121,8 +155,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<LocationConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
-        return locationConfigRegistry.getMessages().stream()
+    public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return locationUnitConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equalsIgnoreCase(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -134,6 +169,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
         return deviceRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
                 .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -146,7 +182,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException {
-        return locationConfigRegistry.contains(locationId);
+        unitRegistryRemote.validateData();
+        return locationUnitConfigRemoteRegistry.contains(locationId);
     }
 
     /**
@@ -155,8 +192,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return locationConfigRegistry.contains(locationConfig);
+    public Boolean containsLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return locationUnitConfigRemoteRegistry.contains(locationConfig);
     }
 
     /**
@@ -165,8 +203,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<LocationConfig> updateLocationConfig(final LocationConfig locationConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> locationConfigRegistry.update(locationConfig));
+    public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.updateUnitConfig(locationConfig);
     }
 
     /**
@@ -175,8 +213,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<LocationConfig> removeLocationConfig(LocationConfig locationConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> locationConfigRegistry.remove(locationConfig));
+    public Future<UnitConfig> removeLocationConfig(UnitConfig locationConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.removeUnitConfig(locationConfig);
     }
 
     /**
@@ -185,8 +223,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<LocationConfig> getLocationConfigs() throws CouldNotPerformException {
-        return locationConfigRegistry.getMessages();
+    public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return locationUnitConfigRemoteRegistry.getMessages();
     }
 
     /**
@@ -211,7 +250,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     @Override
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException {
         HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
-        for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+        for (UnitConfig location : getLocationConfigsByLabel(locationLabel)) {
             for (UnitConfig unitConfig : getUnitConfigsByLocation(location.getId())) {
                 unitConfigMap.put(unitConfig.getId(), unitConfig);
             }
@@ -225,8 +264,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException {
-        List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
+    public List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException {
+        List<ServiceConfig> serviceConfigList = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigsByLocation(locationId)) {
             serviceConfigList.addAll(unitConfig.getServiceConfigList());
         }
@@ -244,7 +283,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
-        for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
+        for (String unitConfigId : getLocationConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 if (unitConfig.getType().equals(type) || deviceRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
@@ -266,7 +305,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     @Override
     public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException {
         HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
-        for (LocationConfig location : getLocationConfigsByLabel(locationLabel)) {
+        for (UnitConfig location : getLocationConfigsByLabel(locationLabel)) {
             for (UnitConfig unitConfig : getUnitConfigsByLocation(unitType, location.getId())) {
                 unitConfigMap.put(unitConfig.getId(), unitConfig);
             }
@@ -285,7 +324,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
-        for (String unitConfigId : getLocationConfigById(locationConfigId).getUnitIdList()) {
+        for (String unitConfigId : getLocationConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -307,9 +346,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public LocationConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
-        for (LocationConfig locationConfig : locationConfigRegistry.getMessages()) {
-            if (locationConfig.hasRoot() && locationConfig.getRoot()) {
+    public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
+        for (UnitConfig locationConfig : getLocationConfigs()) {
+            if (locationConfig.getLocationConfig().hasRoot() && locationConfig.getLocationConfig().getRoot()) {
                 return locationConfig;
             }
         }
@@ -323,25 +362,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException {
-        return locationConfigRegistry.isReadOnly();
-    }
-
-    /**
-     * Returns the internal location config registry.
-     *
-     * @return the location config registry.
-     */
-    public ProtoBufFileSynchronizedRegistry<String, LocationConfig, LocationConfig.Builder, LocationRegistryData.Builder> getLocationConfigRegistry() {
-        return locationConfigRegistry;
-    }
-
-    /**
-     * Returns the internal connection config registry.
-     *
-     * @return the connection config registry.
-     */
-    public ProtoBufFileSynchronizedRegistry<String, ConnectionConfig, ConnectionConfig.Builder, LocationRegistryData.Builder> getConnectionConfigRegistry() {
-        return connectionConfigRegistry;
+        unitRegistryRemote.validateData();
+        return getData().getLocationUnitConfigRegistryReadOnly();
     }
 
     /**
@@ -350,8 +372,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ConnectionConfig> registerConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> connectionConfigRegistry.register(connectionConfig));
+    public Future<UnitConfig> registerConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.registerUnitConfig(connectionConfig);
     }
 
     /**
@@ -360,8 +382,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public ConnectionConfig getConnectionConfigById(String connectionId) throws CouldNotPerformException {
-        return connectionConfigRegistry.get(connectionId).getMessage();
+    public UnitConfig getConnectionConfigById(String connectionId) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return connectionUnitConfigRemoteRegistry.getMessage(connectionId);
     }
 
     /**
@@ -370,8 +393,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<ConnectionConfig> getConnectionConfigsByLabel(String connectionLabel) throws CouldNotPerformException {
-        return connectionConfigRegistry.getMessages().stream()
+    public List<UnitConfig> getConnectionConfigsByLabel(String connectionLabel) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return connectionUnitConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equals(connectionLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -382,8 +406,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Boolean containsConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return connectionConfigRegistry.contains(connectionConfig);
+    public Boolean containsConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return connectionUnitConfigRemoteRegistry.contains(connectionConfig);
     }
 
     /**
@@ -393,7 +418,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Boolean containsConnectionConfigById(String connectionId) throws CouldNotPerformException {
-        return connectionConfigRegistry.contains(connectionId);
+        unitRegistryRemote.validateData();
+        return connectionUnitConfigRemoteRegistry.contains(connectionId);
     }
 
     /**
@@ -402,8 +428,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ConnectionConfig> updateConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> connectionConfigRegistry.update(connectionConfig));
+    public Future<UnitConfig> updateConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.updateUnitConfig(connectionConfig);
     }
 
     /**
@@ -412,8 +438,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public Future<ConnectionConfig> removeConnectionConfig(ConnectionConfig connectionConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> connectionConfigRegistry.remove(connectionConfig));
+    public Future<UnitConfig> removeConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        return unitRegistryRemote.removeUnitConfig(connectionConfig);
     }
 
     /**
@@ -422,8 +448,9 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<ConnectionConfig> getConnectionConfigs() throws CouldNotPerformException {
-        return connectionConfigRegistry.getMessages();
+    public List<UnitConfig> getConnectionConfigs() throws CouldNotPerformException {
+        unitRegistryRemote.validateData();
+        return connectionUnitConfigRemoteRegistry.getMessages();
     }
 
     /**
@@ -434,7 +461,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
+        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
@@ -451,7 +478,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
-        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
+        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 if (unitConfig.getType().equals(type) || deviceRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
@@ -475,7 +502,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
         List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
-        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getUnitIdList()) {
+        for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
                 unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
@@ -511,20 +538,21 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException {
-        return connectionConfigRegistry.isReadOnly();
+        unitRegistryRemote.validateData();
+        return getData().getConnectionUnitConfigRegistryReadOnly();
     }
 
     @Override
-    public List<LocationConfig> getNeighborLocations(String locationId) throws CouldNotPerformException {
-        LocationConfig locationConfig = getLocationConfigById(locationId);
-        if (locationConfig.getType() != LocationConfig.LocationType.TILE) {
+    public List<UnitConfig> getNeighborLocations(String locationId) throws CouldNotPerformException {
+        UnitConfig locationUnitConfig = getLocationConfigById(locationId);
+        if (locationUnitConfig.getLocationConfig().getType() != LocationConfig.LocationType.TILE) {
             throw new CouldNotPerformException("Id[" + locationId + "] does not belong to a tile and therefore its neighbors aren't defined!");
         }
 
-        Map<String, LocationConfig> neighborMap = new HashMap<>();
-        for (ConnectionConfig connectionConfig : getConnectionConfigs()) {
-            if (connectionConfig.getTileIdList().contains(locationId)) {
-                for (String id : connectionConfig.getTileIdList()) {
+        Map<String, UnitConfig> neighborMap = new HashMap<>();
+        for (UnitConfig connectionConfig : getConnectionConfigs()) {
+            if (connectionConfig.getConnectionConfig().getTileIdList().contains(locationId)) {
+                for (String id : connectionConfig.getConnectionConfig().getTileIdList()) {
                     if (id.equals(locationId)) {
                         continue;
                     }
@@ -545,7 +573,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Boolean isLocationConfigRegistryConsistent() throws CouldNotPerformException {
-        return locationConfigRegistry.isConsistent();
+        unitRegistryRemote.validateData();
+        return getData().getLocationUnitConfigRegistryConsistent();
     }
 
     /**
@@ -556,6 +585,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException {
-        return connectionConfigRegistry.isConsistent();
+        unitRegistryRemote.validateData();
+        return getData().getConnectionUnitConfigRegistryConsistent();
     }
 }
