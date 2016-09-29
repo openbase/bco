@@ -34,7 +34,7 @@ import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSe
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensor {
 

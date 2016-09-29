@@ -28,7 +28,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface PowerStateOperationService extends OperationService, PowerStateProviderService {
 

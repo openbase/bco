@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DALRemote {
 

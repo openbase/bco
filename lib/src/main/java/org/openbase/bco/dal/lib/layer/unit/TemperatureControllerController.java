@@ -37,7 +37,7 @@ import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TemperatureControllerController extends AbstractUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureController {
 

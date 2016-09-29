@@ -29,7 +29,7 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface StandbyStateOperationService extends OperationService, StandbyStateProviderService {
 

@@ -57,7 +57,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SelectorPanel extends javax.swing.JPanel {
 

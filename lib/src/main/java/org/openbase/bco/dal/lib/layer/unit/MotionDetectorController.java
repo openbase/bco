@@ -32,7 +32,7 @@ import rst.timing.TimestampType;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MotionDetectorController extends AbstractUnitController<MotionDetectorData, MotionDetectorData.Builder> implements MotionDetector {
 

@@ -38,7 +38,7 @@ import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData> implements ColorableLight {
 

@@ -30,7 +30,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
 

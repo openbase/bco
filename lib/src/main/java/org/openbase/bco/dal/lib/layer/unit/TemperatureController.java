@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderS
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface TemperatureController extends TemperatureStateProviderService, TargetTemperatureStateOperationService {
     

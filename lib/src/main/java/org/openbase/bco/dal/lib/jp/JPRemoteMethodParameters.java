@@ -27,7 +27,7 @@ import org.openbase.jps.core.AbstractJavaProperty;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPRemoteMethodParameters extends AbstractJavaProperty<List<String>> {
 

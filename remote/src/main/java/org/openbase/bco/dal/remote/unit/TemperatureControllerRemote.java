@@ -33,7 +33,7 @@ import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureControllerData> implements TemperatureController {
 

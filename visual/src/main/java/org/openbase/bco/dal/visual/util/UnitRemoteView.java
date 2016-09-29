@@ -40,7 +40,7 @@ import rst.rsb.ScopeType.Scope;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <RS>
  */
 public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {

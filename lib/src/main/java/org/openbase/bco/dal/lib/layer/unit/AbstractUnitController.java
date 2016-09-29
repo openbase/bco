@@ -69,7 +69,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Underling message type.
  * @param <MB> Message related builder.
  */

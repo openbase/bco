@@ -28,7 +28,7 @@ import java.util.HashMap;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ServiceRemoteMap<S extends Service, SR extends AbstractIdentifiableRemote & Service> extends HashMap<String, SR> {
     

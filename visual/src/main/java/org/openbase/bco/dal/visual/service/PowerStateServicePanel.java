@@ -33,7 +33,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerStateServicePanel extends AbstractServicePanel<PowerStateProviderService, ConsumerService, PowerStateOperationService> {
 

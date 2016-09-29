@@ -26,7 +26,7 @@ import org.openbase.jul.storage.registry.Registry;
 
 /**
  *
- * @author * @author <a href="mailto:DivineThreepwood@gmail.com">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitControllerRegistry extends Registry<String, UnitController> {
 

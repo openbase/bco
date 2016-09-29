@@ -28,7 +28,7 @@ import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface BrightnessStateOperationService extends OperationService, BrightnessStateProviderService {
 

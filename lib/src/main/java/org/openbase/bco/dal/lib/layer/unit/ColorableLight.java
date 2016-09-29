@@ -28,7 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface ColorableLight extends ColorStateOperationService, BrightnessStateOperationService, PowerStateOperationService {
     

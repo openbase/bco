@@ -32,7 +32,7 @@ import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
- * @author mpohling
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TargetTemperatureStateServicePanel extends AbstractServicePanel<TargetTemperatureStateProviderService, ConsumerService, TargetTemperatureStateOperationService> {
 

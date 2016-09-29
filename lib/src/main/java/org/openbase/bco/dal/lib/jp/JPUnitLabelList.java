@@ -28,7 +28,7 @@ import org.openbase.jps.preset.AbstractJPBoolean;
 
 /**
  *
- * @author Divine Threepwood
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPUnitLabelList extends AbstractJPBoolean {
 
