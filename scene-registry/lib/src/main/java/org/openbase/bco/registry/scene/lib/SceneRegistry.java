@@ -25,27 +25,27 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface SceneRegistry extends Shutdownable {
 
-    public Future<SceneConfig> registerSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
-    public Boolean containsSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Boolean containsSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
-    public Boolean containsSceneConfigById(String sceneConfigId) throws CouldNotPerformException;
+    public Boolean containsSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException;
 
-    public Future<SceneConfig> updateSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
-    public Future<SceneConfig> removeSceneConfig(SceneConfig sceneConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
-    public SceneConfig getSceneConfigById(final String sceneConfigId) throws CouldNotPerformException;
+    public UnitConfig getSceneConfigById(final String sceneUnitConfigId) throws CouldNotPerformException;
 
-    public List<SceneConfig> getSceneConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getSceneConfigs() throws CouldNotPerformException;
 
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
 
