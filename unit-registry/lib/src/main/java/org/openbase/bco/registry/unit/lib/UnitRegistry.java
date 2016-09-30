@@ -142,4 +142,43 @@ public interface UnitRegistry extends Shutdownable {
         UnitConfigUtils.verifyUnitType(unitConfig, UnitType.UNIT_GROUP);
     }
 
+    public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
 }

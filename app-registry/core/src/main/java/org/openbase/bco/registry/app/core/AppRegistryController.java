@@ -30,6 +30,7 @@ import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -46,7 +47,6 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.app.AppClassType.AppClass;
@@ -72,15 +72,15 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
     private ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRegistry;
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AppRegistryData.Builder> appUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, AppRegistryData.Builder> appUnitConfigRemoteRegistry;
     private final UnitRegistryRemote unitRegistryRemote;
 
     public AppRegistryController() throws InstantiationException, InterruptedException {
         super(JPAppRegistryScope.class, AppRegistryData.newBuilder());
         try {
-            appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CLASS_FIELD_NUMBER), new AppClassIdGenerator(), JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            appUnitConfigRemoteRegistry = new RemoteRegistry<>();
             unitRegistryRemote = new UnitRegistryRemote();
+            appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CLASS_FIELD_NUMBER), new AppClassIdGenerator(), JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -93,8 +93,6 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
             @Override
             public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                appUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAppUnitConfigList());
-                setDataField(AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, data.getAppUnitConfigList());
                 setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAppUnitConfigRegistryConsistent());
                 setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getAppUnitConfigRegistryReadOnly());
                 notifyChange();
@@ -309,5 +307,10 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
     public ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> getAppClassRegistry() {
         return appClassRegistry;
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

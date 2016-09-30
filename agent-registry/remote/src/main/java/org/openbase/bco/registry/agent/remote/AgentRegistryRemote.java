@@ -26,34 +26,29 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter; 
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.rsb.ScopeType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> implements AgentRegistry, RegistryRemote<AgentRegistryData> {
+public class AgentRegistryRemote extends AbstractRegistryRemote<AgentRegistryData> implements AgentRegistry, RegistryRemote<AgentRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
@@ -62,71 +57,23 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, AgentClass, AgentRegistryData.Builder> agentClassRemoteRegistry;
 
     public AgentRegistryRemote() throws InstantiationException {
-        super(AgentRegistryData.class);
+        super(JPAgentRegistryScope.class, AgentRegistryData.class);
         try {
-            agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            agentClassRemoteRegistry = new RemoteRegistry<>();
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, this);
+            agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER, this);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope {@inheritDoc}
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
     @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope {@inheritDoc}
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    @Override
-    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
-        super.init(scope);
-    }
-
-    /**
-     * Method initializes the remote with the default registry connection scope.
-     *
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            this.init(JPService.getProperty(JPAgentRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
-    public void shutdown() {
-        try {
-            agentUnitConfigRemoteRegistry.shutdown();
-            agentClassRemoteRegistry.shutdown();
-        } finally {
-            super.shutdown();
-        }
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(agentClassRemoteRegistry);
+        registerRemoteRegistry(agentUnitConfigRemoteRegistry);
     }
 
     @Override
@@ -135,11 +82,11 @@ public class AgentRegistryRemote extends RSBRemoteService<AgentRegistryData> imp
         agentClassRemoteRegistry.notifyRegistryUpdate(data.getAgentClassList());
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitConfig, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
         return agentUnitConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, AgentClass, AgentRegistryData.Builder> getAgentClassRemoteRegistry() {
         return agentClassRemoteRegistry;
     }
 
