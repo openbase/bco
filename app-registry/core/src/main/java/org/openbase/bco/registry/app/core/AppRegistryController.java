@@ -29,7 +29,7 @@ import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
-import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -50,6 +50,7 @@ import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
@@ -57,7 +58,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AppRegistryController extends AbstractRegistryController<AppRegistryData, AppRegistryData.Builder> implements AppRegistry, Manageable<ScopeType.Scope> {
+public class AppRegistryController extends AbstractVirtualRegistryController<AppRegistryData, AppRegistryData.Builder, UnitRegistryData> implements AppRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
@@ -76,7 +77,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
         try {
             unitRegistryRemote = new UnitRegistryRemote();
             appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CLASS_FIELD_NUMBER), new AppClassIdGenerator(), JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -143,8 +144,13 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, appClassRegistry.isConsistent());
-        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isAppUnitRegistryConsistent());
-        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isAppUnitRegistryReadOnly());
+    }
+
+    @Override
+    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
+        setDataField(AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, realData.getAppUnitConfigList());
+        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getAppUnitConfigRegistryConsistent());
+        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getAppUnitConfigRegistryReadOnly());
     }
 
     @Override

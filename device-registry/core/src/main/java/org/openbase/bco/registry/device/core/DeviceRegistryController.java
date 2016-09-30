@@ -30,7 +30,7 @@ import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -54,6 +54,7 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
@@ -62,7 +63,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryController extends AbstractRegistryController<DeviceRegistryData, DeviceRegistryData.Builder> implements DeviceRegistry, Manageable<ScopeType.Scope> {
+public class DeviceRegistryController extends AbstractVirtualRegistryController<DeviceRegistryData, DeviceRegistryData.Builder, UnitRegistryData> implements DeviceRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));
@@ -83,7 +84,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
         try {
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             unitRegistryRemote = new UnitRegistryRemote();
-            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -135,8 +136,13 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitRegistryConsistent());
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitRegistryReadOnly());
+    }
+
+    @Override
+    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, realData.getDeviceUnitConfigList());
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getDeviceUnitConfigRegistryConsistent());
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getDeviceUnitConfigRegistryReadOnly());
     }
 
     /**

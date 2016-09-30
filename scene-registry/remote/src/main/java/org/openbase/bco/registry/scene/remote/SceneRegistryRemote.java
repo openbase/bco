@@ -23,35 +23,30 @@ package org.openbase.bco.registry.scene.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.rsb.ScopeType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
+public class SceneRegistryRemote extends AbstractRegistryRemote<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
@@ -59,84 +54,23 @@ public class SceneRegistryRemote extends RSBRemoteService<SceneRegistryData> imp
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> sceneConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneConfigRemoteRegistry;
 
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
-        super(SceneRegistryData.class);
+        super(JPSceneRegistryScope.class, SceneRegistryData.class);
         try {
-            sceneConfigRemoteRegistry = new RemoteRegistry<>();
+            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, this);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
     @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(sceneConfigRemoteRegistry);
     }
 
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
-        super.init(scope);
-    }
-
-    /**
-     * Method initializes the remote with the default registry connection scope.
-     *
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            this.init(JPService.getProperty(JPSceneRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void shutdown() {
-        try {
-            sceneConfigRemoteRegistry.shutdown();
-        } finally {
-            super.shutdown();
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void notifyDataUpdate(final SceneRegistryData data) throws CouldNotPerformException {
-        sceneConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneUnitConfigList());
-    }
-
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> getSceneConfigRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getSceneConfigRemoteRegistry() {
         return sceneConfigRemoteRegistry;
     }
 

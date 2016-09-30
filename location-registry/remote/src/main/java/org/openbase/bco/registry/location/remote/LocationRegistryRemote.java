@@ -125,18 +125,6 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
         registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param data {@inheritDoc}
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void notifyDataUpdate(final LocationRegistryData data) throws CouldNotPerformException {
-        locationUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getLocationUnitConfigList());
-        connectionUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getConnectionUnitConfigList());
-    }
-
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getLocationConfigRemoteRegistry() {
         return locationUnitConfigRemoteRegistry;
     }

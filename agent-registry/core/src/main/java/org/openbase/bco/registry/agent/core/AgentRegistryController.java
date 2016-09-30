@@ -29,7 +29,7 @@ import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
-import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -49,13 +49,14 @@ import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentRegistryController extends AbstractRegistryController<AgentRegistryData, AgentRegistryData.Builder> implements AgentRegistry {
+public class AgentRegistryController extends AbstractVirtualRegistryController<AgentRegistryData, AgentRegistryData.Builder, UnitRegistryData> implements AgentRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentRegistryData.getDefaultInstance()));
@@ -74,7 +75,7 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
         try {
             unitRegistryRemote = new UnitRegistryRemote();
             agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -136,8 +137,13 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
-        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isAgentUnitRegistryConsistent());
-        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isAgentUnitRegistryReadOnly());
+    }
+
+    @Override
+    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
+        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, realData.getAgentUnitConfigList());
+        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getAgentUnitConfigRegistryConsistent());
+        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getAgentUnitConfigRegistryReadOnly());
     }
 
     @Override
