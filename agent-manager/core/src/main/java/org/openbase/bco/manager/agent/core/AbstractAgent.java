@@ -38,7 +38,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
- * * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
 public abstract class AbstractAgent extends AbstractExecutableController<AgentDataType.AgentData, AgentDataType.AgentData.Builder, AgentConfig> implements AgentController {
