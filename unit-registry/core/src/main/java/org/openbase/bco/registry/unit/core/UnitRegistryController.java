@@ -278,7 +278,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
-        //TODO replace null with device class remote registry
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitHostIdConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
@@ -288,7 +287,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
-        //TODO replace null with device class remote registry
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry()));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigLocationIdForInstalledDevicesConsistencyHandler());
@@ -432,16 +430,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         setDataField(UnitRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appUnitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, appUnitConfigRegistry.isConsistent());
 
-        setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, dalUnitConfigRegistry.isReadOnly()
-                || unitTemplateRegistry.isReadOnly() || userUnitConfigRegistry.isReadOnly() || authorizationGroupUnitConfigRegistry.isReadOnly()
-                || deviceUnitConfigRegistry.isReadOnly() || unitGroupUnitConfigRegistry.isReadOnly() || locationUnitConfigRegistry.isReadOnly()
-                || connectionUnitConfigRegistry.isReadOnly() || sceneUnitConfigRegistry.isReadOnly() || agentUnitConfigRegistry.isReadOnly()
-                || appUnitConfigRegistry.isReadOnly());
-        setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, dalUnitConfigRegistry.isConsistent()
-                || unitTemplateRegistry.isConsistent() || userUnitConfigRegistry.isConsistent() || authorizationGroupUnitConfigRegistry.isConsistent()
-                || deviceUnitConfigRegistry.isConsistent() || unitGroupUnitConfigRegistry.isConsistent() || locationUnitConfigRegistry.isConsistent()
-                || connectionUnitConfigRegistry.isConsistent() || sceneUnitConfigRegistry.isConsistent() || agentUnitConfigRegistry.isConsistent()
-                || appUnitConfigRegistry.isConsistent());
+        setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, isUnitConfigRegistryReadOnly());
+        setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, isUnitConfigRegistryConsistent());
         super.notifyChange();
     }
 
