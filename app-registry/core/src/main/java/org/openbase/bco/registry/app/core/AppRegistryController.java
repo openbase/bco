@@ -37,8 +37,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -107,24 +105,9 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
         appUnitConfigRemoteRegistry.shutdown();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
     @Override
-    protected void activateVersionControl() throws CouldNotPerformException {
-        appClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void loadRegistries() throws CouldNotPerformException {
-        appClassRegistry.loadRegistry();
+    protected Package getVersionConverterPackage() throws CouldNotPerformException {
+        return DummyConverter.class.getPackage();
     }
 
     /**
@@ -161,15 +144,6 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void removeDependencies() throws CouldNotPerformException {
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
     }
 
@@ -181,21 +155,6 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
         registerRegistry(appClassRegistry);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
-        try {
-            appClassRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
-        }
     }
 
     @Override

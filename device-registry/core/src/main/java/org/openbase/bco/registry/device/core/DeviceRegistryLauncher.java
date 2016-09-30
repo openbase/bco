@@ -21,13 +21,9 @@ package org.openbase.bco.registry.device.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
-import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.openbase.bco.registry.unit.lib.jp.JPUnitGroupDatabaseDirectory;
-import org.openbase.bco.registry.device.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
@@ -48,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryLauncher {
 
@@ -89,10 +85,7 @@ public class DeviceRegistryLauncher {
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPRecoverDB.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPDeviceConfigDatabaseDirectory.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
-        JPService.registerProperty(JPUnitTemplateDatabaseDirectory.class);
-        JPService.registerProperty(JPUnitGroupDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
@@ -107,17 +100,8 @@ public class DeviceRegistryLauncher {
 
         ExceptionStack exceptionStack = null;
 
-        if (!deviceRegistry.getDeviceRegistry().getUnitTemplateRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
         if (!deviceRegistry.getDeviceRegistry().getDeviceClassRegistry().isConsistent()) {
             exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-        if (!deviceRegistry.getDeviceRegistry().getDeviceConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-        if (!deviceRegistry.getDeviceRegistry().getUnitGroupRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("UnitGroupRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
 
         try {

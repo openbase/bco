@@ -37,8 +37,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
@@ -105,24 +103,9 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
         agentUnitConfigRemoteRegistry.shutdown();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
     @Override
-    protected void activateVersionControl() throws CouldNotPerformException {
-        agentClassRegistry.activateVersionControl(DummyConverter.class.getPackage());
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void loadRegistries() throws CouldNotPerformException {
-        agentClassRegistry.loadRegistry();
+    protected Package getVersionConverterPackage() throws CouldNotPerformException {
+        return DummyConverter.class.getPackage();
     }
 
     /**
@@ -170,21 +153,6 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
         registerRegistry(agentClassRegistry);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
-        try {
-            agentClassRegistry.checkConsistency();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
-            notifyChange();
-        }
     }
 
     @Override

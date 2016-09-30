@@ -73,6 +73,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.unit.remote</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.storage</artifactId>
             <version>${dependency.jul.version}</version>
