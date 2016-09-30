@@ -40,6 +40,7 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.RegistryController;
 import org.openbase.jul.storage.registry.RegistryRemote;
+import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
  *
@@ -52,6 +53,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 
     private final List<RegistryRemote> registryRemotes;
+    private final List<RemoteRegistry> remoteRegistries;
     private final List<ProtoBufFileSynchronizedRegistry> registries;
     private final Class<? extends JPScope> jpScopePropery;
 
@@ -60,6 +62,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.jpScopePropery = jpScopePropery;
         this.registryRemotes = new ArrayList<>();
         this.registries = new ArrayList<>();
+        remoteRegistries = new ArrayList<>();
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     }
 
@@ -85,6 +88,12 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 registerRegistryRemotes();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register all registry remotes!", ex);
+            }
+
+            try {
+                registerRemoteRegistries();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
 
             try {
@@ -132,6 +141,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         try {
             super.activate();
             activateRemoteRegistries();
+            activateRegistryRemotes();
             registerDependencies();
             performInitialConsistencyCheck();
         } catch (CouldNotPerformException ex) {
@@ -143,6 +153,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
         deactivateRemoteRegistries();
+        deactivateRegistryRemotes();
         removeDependencies();
     }
 
@@ -154,6 +165,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         });
         registryRemotes.stream().forEach((remote) -> {
             remote.shutdown();
+        });
+        remoteRegistries.stream().forEach((remoteRegistry) -> {
+            remoteRegistry.shutdown();
         });
     }
 
@@ -170,6 +184,15 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
+        for (RemoteRegistry remoteRegistry : remoteRegistries) {
+            if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
+                ((SynchronizedRemoteRegistry) remoteRegistry).activate();
+            }
+        }
+    }
+
+    private void activateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
+
         for (final RegistryRemote remote : registryRemotes) {
             remote.activate();
         }
@@ -179,6 +202,14 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
+        for (RemoteRegistry remoteRegistry : remoteRegistries) {
+            if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
+                ((SynchronizedRemoteRegistry) remoteRegistry).deactivate();
+            }
+        }
+    }
+
+    private void deactivateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemotes) {
             remote.deactivate();
         }
@@ -239,6 +270,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         registries.add(registry);
     }
 
+    protected void registerRemoteRegistry(final RemoteRegistry registry) {
+        remoteRegistries.add(registry);
+    }
+
     protected void registerConsistencyHandler(final ConsistencyHandler consistencyHandler, final Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registries) {
             if (messageClass.equals(registry.getMessageClass())) {
@@ -260,4 +295,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected abstract void registerDependencies() throws CouldNotPerformException;
 
     protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
+
+    protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
 }

@@ -30,6 +30,7 @@ import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -45,7 +46,6 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.agent.AgentClassType.AgentClass;
@@ -70,15 +70,15 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
 
     private final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
     private final UnitRegistryRemote unitRegistryRemote;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(JPAgentRegistryScope.class, AgentRegistryData.newBuilder());
         try {
-            agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
             unitRegistryRemote = new UnitRegistryRemote();
+            agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -91,19 +91,11 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
 
             @Override
             public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                agentUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAgentUnitConfigList());
-                setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, data.getAgentUnitConfigList());
                 setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAgentUnitConfigRegistryConsistent());
                 setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getAgentUnitConfigRegistryReadOnly());
                 notifyChange();
             }
         });
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        agentUnitConfigRemoteRegistry.shutdown();
     }
 
     @Override
@@ -303,5 +295,10 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
 
     public ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRegistry() {
         return agentClassRegistry;
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
