@@ -24,36 +24,32 @@ package org.openbase.bco.registry.user.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.rsb.ScopeType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> implements UserRegistry, Remote<UserRegistryData> {
+public class UserRegistryRemote extends AbstractRegistryRemote<UserRegistryData> implements UserRegistry, Remote<UserRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
@@ -62,87 +58,30 @@ public class UserRegistryRemote extends RSBRemoteService<UserRegistryData> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> userConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> authorizationGroupConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupConfigRemoteRegistry;
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
-        super(UserRegistryData.class);
+        super(JPUserRegistryScope.class, UserRegistryData.class);
         try {
-            userConfigRemoteRegistry = new RemoteRegistry<>();
-            authorizationGroupConfigRemoteRegistry = new RemoteRegistry<>();
+            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, this);
+            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, this);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
     @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(userConfigRemoteRegistry);
+        registerRemoteRegistry(authorizationGroupConfigRemoteRegistry);
     }
 
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
-        super.init(scope);
-    }
-
-    /**
-     * Method initializes the remote with the default registry connection scope.
-     *
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            this.init(JPService.getProperty(JPUserRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void shutdown() {
-        try {
-            userConfigRemoteRegistry.shutdown();
-            authorizationGroupConfigRemoteRegistry.shutdown();
-        } finally {
-            super.shutdown();
-        }
-    }
-
-    @Override
-    public void notifyDataUpdate(final UserRegistryData data) throws CouldNotPerformException {
-        userConfigRemoteRegistry.notifyRegistryUpdate(data.getUserUnitConfigList());
-        authorizationGroupConfigRemoteRegistry.notifyRegistryUpdate(data.getAuthorizationGroupUnitConfigList());
-    }
-
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> getUserConfigRemoteRegistry() {
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUserConfigRemoteRegistry() {
         return userConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> getGroupConfigRemoteRegistry() {
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getGroupConfigRemoteRegistry() {
         return authorizationGroupConfigRemoteRegistry;
     }
 
