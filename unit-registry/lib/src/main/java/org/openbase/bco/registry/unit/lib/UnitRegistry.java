@@ -23,7 +23,9 @@ package org.openbase.bco.registry.unit.lib;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Shutdownable;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
@@ -135,5 +137,9 @@ public interface UnitRegistry extends Shutdownable {
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
+    
+    public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.UNIT_GROUP);
+    }
 
 }

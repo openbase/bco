@@ -465,10 +465,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         }
     }
 
-    private void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.UNIT_GROUP);
-    }
-
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalExecutionService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig));
@@ -621,7 +617,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigs().stream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
+        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
             unitConfigs.add(unitConfig);
         });
         return unitConfigs;
@@ -876,9 +872,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-
         List<UnitConfig> unitConfigs = getUnitConfigs(type);
-
         boolean foundServiceType;
 
         for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
