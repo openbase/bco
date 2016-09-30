@@ -29,7 +29,6 @@ import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
-import org.openbase.bco.registry.scene.lib.jp.JPDalUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
@@ -98,6 +97,7 @@ import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPDalUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPSceneConfigDatabaseDirectory;
@@ -808,7 +808,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRegistry.getMessages()) {
-            if (unitGroupUnitConfig.getType()== type || getSubUnitTypesOfUnitType(type).contains(unitGroupUnitConfig.getType())) {
+            if (unitGroupUnitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupUnitConfig.getType())) {
                 unitConfigList.add(unitGroupUnitConfig);
             }
         }

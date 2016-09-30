@@ -21,11 +21,11 @@ package org.openbase.bco.registry.unit.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.scene.lib.jp.JPDalUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPDalUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPSceneConfigDatabaseDirectory;
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitRegistryLauncher {
 
@@ -118,39 +118,39 @@ public class UnitRegistryLauncher {
         if (!unitRegistry.getUnitRegistry().getUnitTemplateRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getAgentUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AgentUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getAppUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AppUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getAuthorizationGroupUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AuthorizationGroupUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getConnectionUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("ConnectionUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getDalUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("DalUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getDeviceUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("DeviceUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getLocationUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("LocationUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getSceneUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("SceneUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
-        
+
         if (!unitRegistry.getUnitRegistry().getUnitGroupUnitConfigRegistry().isConsistent()) {
             exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitGroupUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
         }
