@@ -34,7 +34,7 @@ import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SmokeDetectorController extends AbstractUnitController<SmokeDetectorData, SmokeDetectorData.Builder> implements SmokeDetector {
 

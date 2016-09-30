@@ -33,7 +33,7 @@ import rst.homeautomation.state.StandbyStateType.StandbyState;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateProviderService, ConsumerService, StandbyStateOperationService> {
 

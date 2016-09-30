@@ -34,7 +34,7 @@ import org.openbase.bco.dal.lib.layer.unit.Monitor;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Monitor {
 

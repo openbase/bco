@@ -44,7 +44,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
  *
  * @param <RS> The unit remote service to use.
  */

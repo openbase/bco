@@ -36,7 +36,7 @@ import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LightController extends AbstractUnitController<LightData, LightData.Builder> implements Light {
 

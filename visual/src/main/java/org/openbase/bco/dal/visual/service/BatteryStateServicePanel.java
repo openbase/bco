@@ -30,7 +30,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateProviderService, ConsumerService, OperationService> {
 

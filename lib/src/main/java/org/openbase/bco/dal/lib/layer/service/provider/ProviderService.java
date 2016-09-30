@@ -30,7 +30,7 @@ import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ProviderService extends Service {
 

@@ -29,7 +29,7 @@ import rst.homeautomation.state.TamperStateType.TamperState;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface TamperStateProviderServiceCollection extends TamperStateProviderService {
 

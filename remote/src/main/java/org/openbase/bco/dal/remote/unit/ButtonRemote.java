@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.Button;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements Button {
 

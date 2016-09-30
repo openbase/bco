@@ -33,7 +33,7 @@ import org.openbase.bco.dal.lib.layer.unit.Light;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LightRemote extends AbstractUnitRemote<LightData> implements Light {
 

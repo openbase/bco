@@ -35,8 +35,8 @@ import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.com">Marian Pohling</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.com">Marian Pohling</a>
  */
 public interface ColorStateOperationServiceCollection extends ColorStateOperationService {
 

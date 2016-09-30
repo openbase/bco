@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderServic
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface MotionDetector extends MotionStateProviderService {
     

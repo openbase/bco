@@ -34,7 +34,7 @@ import rst.homeautomation.unit.ReedContactDataType.ReedContactData;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ReedContactController extends AbstractUnitController<ReedContactData, ReedContactData.Builder> implements ReedContact {
 

@@ -35,7 +35,7 @@ import org.openbase.jul.storage.registry.RegistryImpl;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitControllerRegistryImpl extends RegistryImpl<String, UnitController> implements UnitControllerRegistry {
 

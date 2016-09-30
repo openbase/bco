@@ -27,7 +27,7 @@ import rst.homeautomation.state.ButtonStateType.ButtonState;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface ButtonStateProviderService extends ProviderService {
 

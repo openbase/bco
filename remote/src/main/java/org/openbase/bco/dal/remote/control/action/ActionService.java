@@ -29,7 +29,7 @@ import rst.homeautomation.control.action.ActionConfigType;
 
 /**
  *
- * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
+ * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public interface ActionService extends Service {
 

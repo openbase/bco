@@ -33,7 +33,7 @@ import rst.timing.TimestampType;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TamperDetectorController extends AbstractUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
 

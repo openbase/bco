@@ -31,7 +31,7 @@ import org.openbase.jps.preset.JPTestMode;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPHardwareSimulationMode extends AbstractJPBoolean {
 

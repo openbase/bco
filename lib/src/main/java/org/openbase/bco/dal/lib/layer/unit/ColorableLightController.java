@@ -43,8 +43,8 @@ import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
- * @author Tamino Huxohl
- * @author Marian Pohling
+ * * @author Tamino Huxohl
+ * * @author Marian Pohling
  */
 public class ColorableLightController extends AbstractUnitController<ColorableLightData, ColorableLightData.Builder> implements ColorableLight {
 

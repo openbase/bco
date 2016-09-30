@@ -29,7 +29,7 @@ import rst.homeautomation.control.action.ActionConfigType;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface ConsumerService extends Service {
 

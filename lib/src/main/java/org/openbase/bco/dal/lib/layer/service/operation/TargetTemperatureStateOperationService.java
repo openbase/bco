@@ -28,7 +28,7 @@ import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface TargetTemperatureStateOperationService extends OperationService, TargetTemperatureStateProviderService {
 

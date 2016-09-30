@@ -33,7 +33,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
  */
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface Service {
 

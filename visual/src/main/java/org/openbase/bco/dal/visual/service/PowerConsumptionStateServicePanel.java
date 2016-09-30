@@ -33,7 +33,7 @@ import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerConsumptionStateServicePanel extends AbstractServicePanel<PowerConsumptionStateProviderService, ConsumerService, OperationService> {
 

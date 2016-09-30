@@ -33,7 +33,7 @@ import rst.homeautomation.unit.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorController extends AbstractUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensor {
 

@@ -35,7 +35,7 @@ import org.openbase.bco.dal.lib.layer.unit.Dimmer;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimmer {
 

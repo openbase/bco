@@ -36,7 +36,7 @@ import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerSwitchController extends AbstractUnitController<PowerSwitchData, PowerSwitchData.Builder> implements PowerSwitch {
 

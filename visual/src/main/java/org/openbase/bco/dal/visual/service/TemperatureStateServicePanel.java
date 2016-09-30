@@ -31,7 +31,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TemperatureStateServicePanel extends AbstractServicePanel<TemperatureStateProviderService, ConsumerService, OperationService> {
 

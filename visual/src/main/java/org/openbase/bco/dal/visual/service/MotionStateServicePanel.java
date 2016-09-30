@@ -35,7 +35,7 @@ import org.openbase.jul.processing.StringProcessor;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MotionStateServicePanel extends AbstractServicePanel<MotionStateProviderService, ConsumerService, OperationService> {
 

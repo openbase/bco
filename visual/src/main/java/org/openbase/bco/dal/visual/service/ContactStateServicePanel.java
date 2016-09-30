@@ -34,7 +34,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 
 /**
  *
- * @author kengelma
+ * * @author kengelma
  */
 public class ContactStateServicePanel extends AbstractServicePanel<ContactStateProviderService, ConsumerService, OperationService> {
 

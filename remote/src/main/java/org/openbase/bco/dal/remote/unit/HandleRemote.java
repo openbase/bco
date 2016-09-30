@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.unit.Handle;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class HandleRemote extends AbstractUnitRemote<HandleData> implements Handle {
 

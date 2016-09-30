@@ -31,7 +31,7 @@ import rsb.Scope;
 
 /**
  *
- * @author nuc
+ * * @author nuc
  */
 public class RSBScopePanel extends javax.swing.JPanel {
     

@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.ButtonStateProviderServic
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface Button extends ButtonStateProviderService {
     

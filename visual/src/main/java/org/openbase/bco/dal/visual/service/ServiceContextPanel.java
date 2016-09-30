@@ -24,7 +24,7 @@ package org.openbase.bco.dal.visual.service;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ServiceContextPanel extends javax.swing.JPanel {
 

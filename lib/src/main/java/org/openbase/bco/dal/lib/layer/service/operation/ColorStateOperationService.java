@@ -32,7 +32,7 @@ import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface ColorStateOperationService extends OperationService, ColorStateProviderService {
 

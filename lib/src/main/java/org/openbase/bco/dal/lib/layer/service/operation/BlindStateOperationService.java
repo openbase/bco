@@ -28,7 +28,7 @@ import rst.homeautomation.state.BlindStateType.BlindState;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BlindStateOperationService extends OperationService, BlindStateProviderService {
 

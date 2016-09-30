@@ -32,7 +32,7 @@ import rst.homeautomation.unit.BatteryDataType.BatteryData;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BatteryController extends AbstractUnitController<BatteryData, BatteryData.Builder> implements Battery {
 

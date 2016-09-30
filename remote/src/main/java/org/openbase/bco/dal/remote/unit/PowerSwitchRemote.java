@@ -33,7 +33,7 @@ import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> implements PowerSwitch {
 

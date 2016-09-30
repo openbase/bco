@@ -45,7 +45,7 @@ import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <PS>
  * @param <CS>
  * @param <OS>

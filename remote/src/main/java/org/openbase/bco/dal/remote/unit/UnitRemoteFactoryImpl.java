@@ -32,7 +32,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
  * A unit remote factory which can be used to create unit remote instances out
  * of device- and location-manager delivered unit configurations.
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
 

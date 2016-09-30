@@ -27,7 +27,7 @@ import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPRemoteService extends AbstractJPClass<RSBRemoteService> {
 

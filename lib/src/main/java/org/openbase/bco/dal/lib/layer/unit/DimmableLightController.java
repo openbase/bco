@@ -37,7 +37,7 @@ import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmableLightController extends AbstractUnitController<DimmableLightData, DimmableLightData.Builder> implements DimmableLight {
 

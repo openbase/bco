@@ -33,7 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ButtonStateServicePanel extends AbstractServicePanel<ButtonStateProviderService, ConsumerService, OperationService> {
 

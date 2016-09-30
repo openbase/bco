@@ -48,7 +48,7 @@ import rst.homeautomation.control.action.ActionStateType.ActionState;
 
 /**
  *
- * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
+ * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class Action implements ActionService, Initializable<ActionConfig> {
 

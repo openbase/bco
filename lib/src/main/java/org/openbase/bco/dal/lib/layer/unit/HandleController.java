@@ -34,7 +34,7 @@ import rst.homeautomation.unit.HandleDataType.HandleData;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class HandleController extends AbstractUnitController<HandleData, HandleData.Builder> implements Handle {
 

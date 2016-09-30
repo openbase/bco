@@ -27,7 +27,7 @@ import rst.homeautomation.state.BatteryStateType.BatteryState;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface BatteryStateProviderService extends ProviderService {
 

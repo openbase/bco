@@ -33,7 +33,7 @@ import rst.timing.TimestampType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ButtonController extends AbstractUnitController<ButtonData, ButtonData.Builder> implements Button {
 
