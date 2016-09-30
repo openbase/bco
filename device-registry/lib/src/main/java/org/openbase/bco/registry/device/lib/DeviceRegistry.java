@@ -25,28 +25,26 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 // TODO mpohling: write java doc
 public interface DeviceRegistry {
 
-    public Future<DeviceConfig> registerDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> registerDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException;
 
-    public Future<DeviceConfig> updateDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> updateDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException;
 
-    public Future<DeviceConfig> removeDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public Future<UnitConfig> removeDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException;
 
     public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
@@ -54,19 +52,25 @@ public interface DeviceRegistry {
 
     public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
+    @Deprecated
     public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
-    public Future<UnitGroupConfig> registerUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    @Deprecated
+    public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
-    public Future<UnitGroupConfig> updateUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    @Deprecated
+    public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
-    public Future<UnitGroupConfig> removeUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    @Deprecated
+    public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException;
 
-    public Boolean containsDeviceConfig(final DeviceConfig deviceConfig) throws CouldNotPerformException;
+    public Boolean containsDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException;
 
     public Boolean containsDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException;
 
@@ -74,12 +78,14 @@ public interface DeviceRegistry {
 
     public Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
+    @Deprecated
     public UnitTemplate getUnitTemplateById(final String unitTemplate) throws CouldNotPerformException, InterruptedException;
 
     public DeviceClass getDeviceClassById(final String deviceClassId) throws CouldNotPerformException, InterruptedException;
 
-    public DeviceConfig getDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException, InterruptedException;
+    public UnitConfig getDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException, InterruptedException;
 
+    @Deprecated
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException, InterruptedException;
 
     /**
@@ -90,56 +96,76 @@ public interface DeviceRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @Deprecated
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
+    @Deprecated
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
 
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException;
 
-    public List<DeviceConfig> getDeviceConfigs() throws CouldNotPerformException;
+    public List<UnitConfig> getDeviceConfigs() throws CouldNotPerformException;
 
+    @Deprecated
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
+    @Deprecated
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 
+    @Deprecated
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
-    public List<ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
+    @Deprecated
+    public List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
 
+    @Deprecated
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException;
 
     public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException;
 
     public Boolean isDeviceConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException;
 
     public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException;
 
     public Boolean isDeviceConfigRegistryConsistent() throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
 
-    public Boolean containsUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    @Deprecated
+    public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @Deprecated
     public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    public UnitGroupConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+    @Deprecated
+    public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigs() throws CouldNotPerformException;
+    @Deprecated
+    public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigsbyUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    @Deprecated
+    public List<UnitConfig> getUnitGroupConfigsbyUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
+    @Deprecated
+    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 
-    public List<UnitGroupConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
+    @Deprecated
+    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitGroupConfig groupConfig) throws CouldNotPerformException;
+    @Deprecated
+    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @Deprecated
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
     /**
@@ -151,8 +177,10 @@ public interface DeviceRegistry {
      * @return the unit config matching the given scope.
      * @throws CouldNotPerformException
      */
+    @Deprecated
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
+    @Deprecated
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
     public void shutdown();

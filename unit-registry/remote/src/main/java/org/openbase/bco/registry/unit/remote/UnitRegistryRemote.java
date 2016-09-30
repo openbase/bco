@@ -279,7 +279,7 @@ public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> imple
     }
 
     @Override
-    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, InterruptedException {
+    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
         validateData();
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }

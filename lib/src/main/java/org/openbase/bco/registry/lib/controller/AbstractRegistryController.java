@@ -67,11 +67,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         super.postInit();
         try {
             try {
-                registerRegistryRemotes();
-            } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could register registry remotes!", ex);
-            }
-            try {
                 activateVersionControl(getVersionConverterPackage());
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
@@ -190,7 +185,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void activateVersionControl(final Package versionConverterPackage) throws CouldNotPerformException {
-        if(versionConverterPackage == null) {
+        if (versionConverterPackage == null) {
             logger.debug("Skip the activation of registry version control because no package was defined.");
             return;
         }
@@ -209,13 +204,13 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-    
+
     protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
         registries.stream().filter((registry) -> (messageClass.equals(registry.getMessageClass()))).forEach((registry) -> {
             registry.registerDependency(dependency);
         });
     }
-    
+
     protected void registerRegistryRemote(final RegistryRemote registry) {
         registryRemotes.add(registry);
     }

@@ -94,12 +94,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.location.remote</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.user.remote</artifactId>
+            <artifactId>registry.unit.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -107,18 +102,6 @@
             <artifactId>registry.device.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--        <dependency> // should be imported by jul processing
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.1.2</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.1.2</version>
-            <type>jar</type>
-        </dependency>-->
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
