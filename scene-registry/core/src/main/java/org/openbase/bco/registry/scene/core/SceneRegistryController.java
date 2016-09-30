@@ -66,10 +66,12 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
     }
 
     @Override
-    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
-        setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, realData.getSceneUnitConfigList());
-        setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getSceneUnitConfigRegistryConsistent());
-        setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getSceneUnitConfigRegistryReadOnly());
+    protected void syncVirtualRegistryFields(final SceneRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
+        virtualDataBuilder.clearSceneUnitConfig();
+        virtualDataBuilder.addAllSceneUnitConfig(realData.getSceneUnitConfigList());
+
+        virtualDataBuilder.setSceneUnitConfigRegistryConsistent(realData.getSceneUnitConfigRegistryConsistent());
+        virtualDataBuilder.setSceneUnitConfigRegistryReadOnly(realData.getSceneUnitConfigRegistryReadOnly());
     }
 
     @Override

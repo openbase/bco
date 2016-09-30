@@ -147,10 +147,12 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
     }
 
     @Override
-    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
-        setDataField(AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, realData.getAppUnitConfigList());
-        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getAppUnitConfigRegistryConsistent());
-        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getAppUnitConfigRegistryReadOnly());
+    protected void syncVirtualRegistryFields(final AppRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
+        virtualDataBuilder.clearAppUnitConfig();
+        virtualDataBuilder.addAllAppUnitConfig(realData.getAppUnitConfigList());
+
+        virtualDataBuilder.setAppUnitConfigRegistryConsistent(realData.getAppUnitConfigRegistryConsistent());
+        virtualDataBuilder.setAppUnitConfigRegistryReadOnly(realData.getAppUnitConfigRegistryReadOnly());
     }
 
     @Override

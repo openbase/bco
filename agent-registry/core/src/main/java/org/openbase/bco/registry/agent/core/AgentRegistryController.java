@@ -140,10 +140,12 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
     }
 
     @Override
-    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
-        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, realData.getAgentUnitConfigList());
-        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getAgentUnitConfigRegistryConsistent());
-        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getAgentUnitConfigRegistryReadOnly());
+    protected void syncVirtualRegistryFields(final AgentRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
+        virtualDataBuilder.clearAgentUnitConfig();
+        virtualDataBuilder.addAllAgentUnitConfig(realData.getAgentUnitConfigList());
+
+        virtualDataBuilder.setAgentUnitConfigRegistryConsistent(realData.getAgentUnitConfigRegistryConsistent());
+        virtualDataBuilder.setAgentUnitConfigRegistryReadOnly(realData.getAgentUnitConfigRegistryReadOnly());
     }
 
     @Override

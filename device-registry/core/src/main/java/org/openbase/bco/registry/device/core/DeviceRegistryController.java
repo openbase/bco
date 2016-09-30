@@ -139,10 +139,12 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     }
 
     @Override
-    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, realData.getDeviceUnitConfigList());
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getDeviceUnitConfigRegistryConsistent());
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getDeviceUnitConfigRegistryReadOnly());
+    protected void syncVirtualRegistryFields(final DeviceRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
+        virtualDataBuilder.clearDeviceUnitConfig();
+        virtualDataBuilder.addAllDeviceUnitConfig(realData.getDeviceUnitConfigList());
+
+        virtualDataBuilder.setDeviceUnitConfigRegistryConsistent(realData.getDeviceUnitConfigRegistryConsistent());
+        virtualDataBuilder.setDeviceUnitConfigRegistryReadOnly(realData.getDeviceUnitConfigRegistryReadOnly());
     }
 
     /**

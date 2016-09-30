@@ -79,14 +79,18 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     }
 
     @Override
-    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, realData.getLocationUnitConfigList());
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getLocationUnitConfigRegistryConsistent());
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getLocationUnitConfigRegistryReadOnly());
+    protected void syncVirtualRegistryFields(final LocationRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
+        virtualDataBuilder.clearLocationUnitConfig();
+        virtualDataBuilder.addAllLocationUnitConfig(realData.getLocationUnitConfigList());
 
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, realData.getConnectionUnitConfigList());
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getConnectionUnitConfigRegistryConsistent());
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getConnectionUnitConfigRegistryReadOnly());
+        virtualDataBuilder.clearConnectionUnitConfig();
+        virtualDataBuilder.addAllConnectionUnitConfig(realData.getConnectionUnitConfigList());
+
+        virtualDataBuilder.setLocationUnitConfigRegistryConsistent(realData.getLocationUnitConfigRegistryConsistent());
+        virtualDataBuilder.setLocationUnitConfigRegistryReadOnly(realData.getLocationUnitConfigRegistryReadOnly());
+
+        virtualDataBuilder.setConnectionUnitConfigRegistryConsistent(realData.getConnectionUnitConfigRegistryConsistent());
+        virtualDataBuilder.setConnectionUnitConfigRegistryReadOnly(realData.getConnectionUnitConfigRegistryReadOnly());
     }
 
     /**
