@@ -31,23 +31,20 @@ import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -57,7 +54,6 @@ import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
@@ -80,38 +76,17 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
 
     private final UnitRegistryRemote unitRegistryRemote;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, DeviceRegistryData.Builder> deviceUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
 
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.newBuilder());
         try {
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             unitRegistryRemote = new UnitRegistryRemote();
-            deviceUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    @Override
-    public void init() throws InitializationException, InterruptedException {
-        super.init();
-        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
-
-            @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                deviceUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceUnitConfigList());
-                setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, data.getDeviceUnitConfigList());
-                setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getDeviceUnitConfigRegistryConsistent());
-                setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getDeviceUnitConfigRegistryReadOnly());
-            }
-        });
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        deviceUnitConfigRemoteRegistry.shutdown();
     }
 
     @Override
@@ -141,6 +116,11 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     }
 
     @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
+    }
+
+    @Override
     protected void registerRegistries() throws CouldNotPerformException {
         registerRegistry(deviceClassRegistry);
     }
@@ -155,6 +135,8 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitConfigRegistryConsistent());
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitConfigRegistryReadOnly());
     }
 
     /**
@@ -673,7 +655,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      */
     @Override
     public List<UnitConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitGroupConfigsbyUnitConfig(unitConfig);
+        return unitRegistryRemote.getUnitGroupConfigsByUnitConfig(unitConfig);
     }
 
     /**

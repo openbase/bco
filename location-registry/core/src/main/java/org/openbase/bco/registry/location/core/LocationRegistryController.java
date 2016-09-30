@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -41,16 +41,12 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -71,42 +67,14 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     }
 
     private final UnitRegistryRemote unitRegistryRemote;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> locationUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> connectionUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> connectionUnitConfigRemoteRegistry;
 
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(JPLocationRegistryScope.class, LocationRegistryData.newBuilder());
         unitRegistryRemote = new UnitRegistryRemote();
-        locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
-    }
-
-    @Override
-    public void init() throws InitializationException, InterruptedException {
-        super.init();
-        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
-
-            @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                locationUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getLocationUnitConfigList());
-                setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, data.getLocationUnitConfigList());
-                setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getLocationUnitConfigRegistryConsistent());
-                setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getLocationUnitConfigRegistryReadOnly());
-
-                connectionUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getConnectionUnitConfigList());
-                setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, data.getConnectionUnitConfigList());
-                setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getConnectionUnitConfigRegistryConsistent());
-                setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getConnectionUnitConfigRegistryReadOnly());
-                notifyChange();
-            }
-        });
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        locationUnitConfigRemoteRegistry.shutdown();
-        connectionUnitConfigRemoteRegistry.shutdown();
+        locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+        connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
     }
 
     /**
@@ -117,6 +85,22 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
         registerRegistryRemote(unitRegistryRemote);
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
+        registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
+    }
+
+    @Override
+    protected void syncRegistryFlags() {
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isLocationUnitConfigRegistryConsistent());
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isLocationUnitConfigRegistryReadOnly());
+
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitConfigRegistryConsistent());
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitConfigRegistryReadOnly());
+        super.notifyChange();
     }
 
     /**

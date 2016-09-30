@@ -36,15 +36,12 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -53,7 +50,6 @@ import rst.homeautomation.control.app.AppClassType.AppClass;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
@@ -72,7 +68,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
     private ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRegistry;
 
-    private final SynchronizedRemoteRegistry<String, UnitConfig, AppRegistryData.Builder> appUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
     private final UnitRegistryRemote unitRegistryRemote;
 
     public AppRegistryController() throws InstantiationException, InterruptedException {
@@ -84,26 +80,6 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    @Override
-    public void init() throws InitializationException, InterruptedException {
-        super.init();
-        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
-
-            @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAppUnitConfigRegistryConsistent());
-                setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getAppUnitConfigRegistryReadOnly());
-                notifyChange();
-            }
-        });
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        appUnitConfigRemoteRegistry.shutdown();
     }
 
     @Override
@@ -159,9 +135,16 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
     }
 
     @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(appUnitConfigRemoteRegistry);
+    }
+
+    @Override
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, appClassRegistry.isConsistent());
+        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isAppUnitRegistryConsistent());
+        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isAppUnitConfigRegistryReadOnly());
     }
 
     @Override
@@ -307,10 +290,5 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
     public ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> getAppClassRegistry() {
         return appClassRegistry;
-    }
-
-    @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

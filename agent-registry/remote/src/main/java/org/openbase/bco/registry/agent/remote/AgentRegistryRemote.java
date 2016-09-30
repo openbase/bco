@@ -57,8 +57,8 @@ public class AgentRegistryRemote extends AbstractRegistryRemote<AgentRegistryDat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
 
-    private final SynchronizedRemoteRegistry<String, UnitConfig, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
-    private final SynchronizedRemoteRegistry<String, AgentClass, AgentRegistryData.Builder> agentClassRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> agentClassRemoteRegistry;
 
     public AgentRegistryRemote() throws InstantiationException {
         super(JPAgentRegistryScope.class, AgentRegistryData.class);
@@ -82,11 +82,11 @@ public class AgentRegistryRemote extends AbstractRegistryRemote<AgentRegistryDat
         agentClassRemoteRegistry.notifyRegistryUpdate(data.getAgentClassList());
     }
 
-    public SynchronizedRemoteRegistry<String, UnitConfig, AgentRegistryData.Builder> getAgentConfigRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAgentConfigRemoteRegistry() {
         return agentUnitConfigRemoteRegistry;
     }
 
-    public SynchronizedRemoteRegistry<String, AgentClass, AgentRegistryData.Builder> getAgentClassRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> getAgentClassRemoteRegistry() {
         return agentClassRemoteRegistry;
     }
 

@@ -26,22 +26,18 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
@@ -59,7 +55,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
+public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));
@@ -70,64 +66,20 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
 
     private final UnitRegistryRemote unitRegistryRemote;
 
     public DeviceRegistryRemote() throws InstantiationException, InterruptedException {
-        super(DeviceRegistryData.class);
+        super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
-            deviceClassRemoteRegistry = new RemoteRegistry<>();
-            deviceUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER, this);
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, this);
             unitRegistryRemote = new UnitRegistryRemote();
+            unitRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
-        }
-    }
-
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope {@inheritDoc}
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope {@inheritDoc}
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    @Override
-    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
-        super.init(scope);
-        unitRegistryRemote.init();
-    }
-
-    /**
-     * Method initializes the remote with the default registry connection scope.
-     *
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            this.init(JPService.getProperty(JPDeviceRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
         }
     }
 
@@ -140,12 +92,16 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
     @Override
     public void shutdown() {
         try {
-            deviceClassRemoteRegistry.shutdown();
-            deviceUnitConfigRemoteRegistry.shutdown();
             unitRegistryRemote.shutdown();
         } finally {
             super.shutdown();
         }
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(deviceClassRemoteRegistry);
+        registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
     }
 
     /**
@@ -160,11 +116,11 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
         deviceUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceUnitConfigList());
     }
 
-    public RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> getDeviceClassRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> getDeviceClassRemoteRegistry() {
         return deviceClassRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, DeviceRegistryData.Builder> getDeviceConfigRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDeviceConfigRemoteRegistry() {
         return deviceUnitConfigRemoteRegistry;
     }
 
@@ -665,7 +621,7 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
      */
     @Override
     public List<UnitConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitGroupConfigsbyUnitConfig(unitConfig);
+        return unitRegistryRemote.getUnitGroupConfigsByUnitConfig(unitConfig);
     }
 
     /**

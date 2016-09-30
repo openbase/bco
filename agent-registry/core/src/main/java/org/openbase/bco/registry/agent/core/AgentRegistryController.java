@@ -36,14 +36,11 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -52,7 +49,6 @@ import rst.homeautomation.control.agent.AgentClassType.AgentClass;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -70,7 +66,7 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
 
     private final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
 
-    private final SynchronizedRemoteRegistry<String, UnitConfig, AgentRegistryData.Builder> agentUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
     private final UnitRegistryRemote unitRegistryRemote;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
@@ -82,20 +78,6 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    @Override
-    public void init() throws InitializationException, InterruptedException {
-        super.init();
-        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
-
-            @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAgentUnitConfigRegistryConsistent());
-                setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getAgentUnitConfigRegistryReadOnly());
-                notifyChange();
-            }
-        });
     }
 
     @Override
@@ -154,6 +136,8 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
+        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isAgentUnitConfigRegistryConsistent());
+        setDataField(AgentRegistryData.AGENT_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isAgentUnitConfigRegistryReadOnly());
     }
 
     @Override

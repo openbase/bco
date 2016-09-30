@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -34,24 +36,17 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
@@ -60,7 +55,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryData> implements LocationRegistry, RegistryRemote<LocationRegistryData> {
+public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegistryData> implements LocationRegistry, RegistryRemote<LocationRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
@@ -69,64 +64,19 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryDat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> locationUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> connectionUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> connectionUnitConfigRemoteRegistry;
     private final UnitRegistryRemote unitRegistryRemote;
 
     public LocationRegistryRemote() throws InstantiationException, InterruptedException {
-        super(LocationRegistryData.class);
+        super(JPLocationRegistryScope.class, LocationRegistryData.class);
         try {
-            this.locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, this);
             unitRegistryRemote = new UnitRegistryRemote();
+            unitRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
-        }
-    }
-
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
-        unitRegistryRemote.init();
-        super.init(scope);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    @Override
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            this.init(JPService.getProperty(JPLocationRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
         }
     }
 
@@ -164,11 +114,15 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryDat
     public void shutdown() {
         try {
             unitRegistryRemote.shutdown();
-            locationUnitConfigRemoteRegistry.shutdown();
-            connectionUnitConfigRemoteRegistry.shutdown();
         } finally {
             super.shutdown();
         }
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
+        registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
     }
 
     /**
@@ -183,11 +137,11 @@ public class LocationRegistryRemote extends RSBRemoteService<LocationRegistryDat
         connectionUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getConnectionUnitConfigList());
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> getLocationConfigRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getLocationConfigRemoteRegistry() {
         return locationUnitConfigRemoteRegistry;
     }
 
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, LocationRegistryData.Builder> getConnectionConfigRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getConnectionConfigRemoteRegistry() {
         return connectionUnitConfigRemoteRegistry;
     }
 
