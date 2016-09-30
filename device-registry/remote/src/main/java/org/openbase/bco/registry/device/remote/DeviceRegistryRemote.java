@@ -70,8 +70,8 @@ public class DeviceRegistryRemote extends RSBRemoteService<DeviceRegistryData> i
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, DeviceRegistryData.Builder> deviceUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
 
     private final UnitRegistryRemote unitRegistryRemote;
 

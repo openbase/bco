@@ -24,22 +24,19 @@ package org.openbase.bco.registry.unit.remote;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
-import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.service.ServiceConfigType;
@@ -56,38 +53,38 @@ import rst.rsb.ScopeType;
 public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData> implements UnitRegistry, RegistryRemote<UnitRegistryData> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(final UnitRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(final UnitConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(final UnitTemplate.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> unitTemplateRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitGroupUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> connectionUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
 
     public UnitRegistryRemote() throws InstantiationException, InterruptedException {
-        super(UnitRegistryData.class);
+        super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
-            this.unitTemplateRemoteRegistry = new RemoteRegistry<>();
-            this.dalUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.userUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.authorizationGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.deviceUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.unitGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.appUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER, this);
+            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(final UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(final UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, this);
             this.unitConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -95,104 +92,74 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
-        } catch (CouldNotTransformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * Method initializes the remote with the given scope for the server
-     * registry connection.
-     *
-     * @param scope
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public synchronized void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
-        super.init(scope);
-    }
-
-    /**
-     * Method initializes the remote with the default registry connection scope.
-     *
-     * @throws InitializationException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     */
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            this.init(JPService.getProperty(JPUnitRegistryScope.class).getValue());
-        } catch (JPServiceException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
      * {@inheritDoc}
      *
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     */
-//    @Override
-//    public void activate() throws InterruptedException, CouldNotPerformException {
-//        super.activate();
-//        try {
-//            waitForData();
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial registry sync failed!", ex), logger, LogLevel.ERROR);
-//        }
-//    }
-    /**
-     * {@inheritDoc}
+     * @throws org.openbase.jul.exception.InitializationException {@inheritDoc}
      */
     @Override
-    public void shutdown() {
-        try {
-            unitConfigRemoteRegistry.shutdown();
-        } finally {
-            super.shutdown();
-        }
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(unitTemplateRemoteRegistry);
+        registerRemoteRegistry(dalUnitConfigRemoteRegistry);
+        registerRemoteRegistry(userUnitConfigRemoteRegistry);
+        registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
+        registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
+        registerRemoteRegistry(unitGroupUnitConfigRemoteRegistry);
+        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
+        registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
+        registerRemoteRegistry(agentUnitConfigRemoteRegistry);
+        registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
+        registerRemoteRegistry(appUnitConfigRemoteRegistry);
+        registerRemoteRegistry(unitConfigRemoteRegistry);
     }
+    
+    // todo: sync unitConfigRemoteRegistry
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void notifyDataUpdate(final UnitRegistryData data) throws CouldNotPerformException {
-//        unitConfigRemoteRegistry.notifyRegistryUpdate(data.getUnitConfigList());
-        unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
-        dalUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        userUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        authorizationGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        deviceUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        unitGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        appUnitConfigRemoteRegistry = new RemoteRegistry<>();
-        unitConfigRemoteRegistry = new RemoteRegistry<>();
-    }
-
-    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRemoteRegistry() {
-        return unitConfigRemoteRegistry;
-    }
-
-    public RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> getUnitTemplateRemoteRegistry() {
+    public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() {
         return unitTemplateRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry() {
+        return dalUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUserUnitConfigRemoteRegistry() {
+        return userUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAuthorizationGroupUnitConfigRemoteRegistry() {
+        return authorizationGroupUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDeviceUnitConfigRemoteRegistry() {
+        return deviceUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitGroupUnitConfigRemoteRegistry() {
+        return unitGroupUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getLocationUnitConfigRemoteRegistry() {
+        return locationUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getConnectionUnitConfigRemoteRegistry() {
+        return connectionUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAgentUnitConfigRemoteRegistry() {
+        return agentUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getSceneUnitConfigRemoteRegistry() {
+        return sceneUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getAppUnitConfigRemoteRegistry() {
+        return appUnitConfigRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitConfigRemoteRegistry() {
+        return unitConfigRemoteRegistry;
     }
 
     /**
@@ -220,7 +187,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException, NotAvailableException {
+    public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException, NotAvailableException {
         validateData();
         return unitConfigRemoteRegistry.getMessage(unitConfigId);
     }
@@ -292,7 +259,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
         try {
             return RPCHelper.callRemoteMethod(unitTemplate, this, UnitTemplate.class);
         } catch (CouldNotPerformException ex) {
@@ -301,19 +268,19 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public Boolean containsUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
         validateData();
         return unitTemplateRemoteRegistry.contains(unitTemplate);
     }
 
     @Override
-    public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+    public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException {
         validateData();
         return unitTemplateRemoteRegistry.contains(unitTemplateId);
     }
 
     @Override
-    public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
+    public UnitTemplate getUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException {
         validateData();
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
@@ -325,9 +292,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public UnitTemplate getUnitTemplateByType(UnitTemplate.UnitType type) throws CouldNotPerformException {
+    public UnitTemplate getUnitTemplateByType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
         validateData();
-        for (UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
+        for (final UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
             if (unitTemplate.getType() == type) {
                 return unitTemplate;
             }
@@ -360,107 +327,92 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public List<UnitConfig> getUnitConfigList() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not register group unit config!", ex);
+        }
     }
 
     @Override
-    public Future<UnitConfig> registerUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update unit config!", ex);
+        }
     }
 
     @Override
-    public Future<UnitConfig> updateUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
     }
 
     @Override
-    public Future<UnitConfig> removeUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
     }
 
     @Override
-    public Boolean containsUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException {
     }
 
     @Override
-    public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
     }
 
     @Override
-    public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<UnitConfig> getUnitConfigs(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitConfigs(final UnitTemplate.UnitType type) throws CouldNotPerformException {
     }
 
     @Override
     public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
     }
 
     @Override
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public UnitConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException {
     }
 
     @Override
     public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
     }
 
     @Override
-    public List<UnitConfig> getUnitGroupConfigsByUnitType(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
     }
 
     @Override
-    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
     }
 
     @Override
-    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
     }
 
     @Override
-    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(UnitTemplate.UnitType type, List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitTemplate.UnitType type, List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
     }
 
     @Override
     public UnitConfig getUnitConfigByScope(ScopeType.Scope scope) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<UnitTemplate.UnitType> getSubUnitTypesOfUnitType(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<UnitTemplate.UnitType> getSubUnitTypesOfUnitType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
     }
 }

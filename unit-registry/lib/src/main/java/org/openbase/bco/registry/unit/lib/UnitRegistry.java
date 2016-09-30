@@ -51,7 +51,7 @@ public interface UnitRegistry extends Shutdownable {
 
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitConfigList() throws CouldNotPerformException;
+    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
     public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 

@@ -494,7 +494,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public List<UnitConfig> getUnitConfigList() throws CouldNotPerformException {
+    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
         for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
             unitConfigList.addAll(unitConfigRegistry.getMessages());
@@ -615,7 +615,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigList().stream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
+        getUnitConfigs().stream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
             unitConfigs.add(unitConfig);
         });
         return unitConfigs;
@@ -630,7 +630,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigList()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
         return serviceConfigs;
@@ -668,7 +668,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigList()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             if (type == UnitType.UNKNOWN || unitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                 unitConfigs.add(unitConfig);
             }
@@ -686,7 +686,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigList()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 if (serviceConfig.getServiceTemplate().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
@@ -896,7 +896,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     public UnitConfig getUnitConfigByScope(final ScopeType.Scope scope) throws CouldNotPerformException {
-        for (UnitConfig unitConfig : getUnitConfigList()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
             if (unitConfig.getScope().equals(scope)) {
                 return unitConfig;
             }
