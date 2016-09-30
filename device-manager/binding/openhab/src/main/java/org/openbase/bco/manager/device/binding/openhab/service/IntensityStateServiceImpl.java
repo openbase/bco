@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openbase.bco.manager.device.binding.openhab.service;
 
 /*
@@ -39,6 +34,7 @@ import rst.homeautomation.state.IntensityStateType.IntensityState;
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @param <UNIT>
  */
 public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationService & Unit> extends OpenHABService<UNIT> implements IntensityStateOperationService {
 

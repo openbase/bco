@@ -22,11 +22,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 
-///*
-// * To change this license header, choose License Headers in Project Properties.
-// * To change this template file, choose Tools | Templates
-// * and open the template in the editor.
-// */
 //package org.openbase.bco.dal.remote.control.agent.preset;
 //
 //import com.philips.lighting.hue.sdk.PHAccessPoint;
