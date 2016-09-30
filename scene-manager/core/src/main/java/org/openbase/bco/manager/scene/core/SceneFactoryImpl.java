@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -53,11 +53,11 @@ public class SceneFactoryImpl implements SceneFactory {
     }
 
     @Override
-    public SceneController newInstance(final SceneConfig config) throws org.openbase.jul.exception.InstantiationException {
+    public SceneController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException {
         SceneController scene;
         try {
             if (config == null) {
-                throw new NotAvailableException("sceneConfig");
+                throw new NotAvailableException("UnitConfig");
             }
             logger.info("Creating scene [" + config.getId() + "]");
             scene = new SceneControllerImpl();

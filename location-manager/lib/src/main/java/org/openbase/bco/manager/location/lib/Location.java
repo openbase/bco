@@ -40,13 +40,13 @@ import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import rst.homeautomation.control.action.SnapshotType.Snapshot;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ UnitConfig
  */
-public interface Location extends ScopeProvider, LabelProvider, Configurable<String, LocationConfig>,
+public interface Location extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>,
         BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
         StandbyStateOperationService, TargetTemperatureStateOperationService, MotionStateProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
         TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, Snapshotable<Snapshot> {

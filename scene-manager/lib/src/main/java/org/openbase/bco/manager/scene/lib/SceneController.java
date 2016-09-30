@@ -25,8 +25,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -34,5 +34,5 @@ import rst.homeautomation.control.scene.SceneDataType.SceneData;
  */
 public interface SceneController extends Identifiable<String>, Enableable, Scene, MessageController<SceneData, SceneData.Builder> {
 
-    public void init(final SceneConfig config) throws InitializationException, InterruptedException;
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }

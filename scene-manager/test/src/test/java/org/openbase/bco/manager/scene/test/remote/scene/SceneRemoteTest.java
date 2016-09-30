@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.openbase.bco.manager.scene.remote.SceneRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.NotAvailableException;
@@ -43,10 +42,10 @@ import rsb.Scope;
 import rsb.config.ParticipantConfig;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.state.ActivationStateType;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
 import rst.homeautomation.unit.ButtonDataType.ButtonData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -112,8 +111,8 @@ public class SceneRemoteTest {
         sceneRegistry.activate();
         sceneRegistry.waitForData();
 
-        SceneConfig config = null;
-        for (SceneConfig sceneConfig : sceneRegistry.getSceneConfigs()) {
+        UnitConfig config = null;
+        for (UnitConfig sceneConfig : sceneRegistry.getSceneConfigs()) {
             if (sceneConfig.getLabel().equals("TestScene")) {
                 config = sceneConfig;
             }

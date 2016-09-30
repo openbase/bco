@@ -27,12 +27,12 @@ import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable, Configurable<String, DeviceConfig> {
+public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable, Configurable<String, UnitConfig> {
 
 }

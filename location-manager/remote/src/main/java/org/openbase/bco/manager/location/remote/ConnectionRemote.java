@@ -29,14 +29,14 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.state.ContactStateType.ContactState;
 import rst.homeautomation.state.HandleStateType.HandleState;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData, ConnectionConfig> implements Connection {
+public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData, UnitConfig> implements Connection {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
@@ -45,11 +45,11 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     public ConnectionRemote() {
-        super(ConnectionData.class, ConnectionConfig.class);
+        super(ConnectionData.class, UnitConfig.class);
     }
 
     @Override
-    public void notifyDataUpdate(ConnectionData data) throws CouldNotPerformException {
+    public void notifyDataUpdate(final ConnectionData data) throws CouldNotPerformException {
     }
 
     @Override
@@ -67,10 +67,5 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     public ContactState getContactState() throws NotAvailableException {
         // TODO: connection has DOOR/WINDOW or PASSAGE state
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ConnectionConfig applyConfigUpdate(ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

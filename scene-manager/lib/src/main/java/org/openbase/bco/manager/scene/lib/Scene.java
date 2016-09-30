@@ -26,14 +26,14 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.state.ActivationStateType;
+import rst.homeautomation.unit.UnitConfigType;
 
 /**
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Scene extends Identifiable<String>, Configurable<String, SceneConfig> {
+public interface Scene extends Identifiable<String>, Configurable<String, UnitConfigType.UnitConfig> {
 
     public Future<Void> setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
 }

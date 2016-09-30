@@ -32,19 +32,20 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceController extends AbstractSystemUnitController<SystemUnitData, SystemUnitData.Builder, DeviceConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractSystemUnitController<SystemUnitData, SystemUnitData.Builder, UnitConfig> implements DeviceController {
 
     public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
         super(SystemUnitData.newBuilder());
     }
 
     @Override
-    public void init(final DeviceConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
@@ -69,7 +70,7 @@ public abstract class AbstractDeviceController extends AbstractSystemUnitControl
             super.init(config);
 
             try {
-                registerUnits(config.getUnitConfigList());
+                registerUnits(config.getDeviceConfig().getUnitIdList()); //todo: need to be resolved
 
                 for (UnitController unit : getUnits()) {
                     DeviceManagerController.getDeviceManager().getUnitControllerRegistry().register(unit);
@@ -86,7 +87,7 @@ public abstract class AbstractDeviceController extends AbstractSystemUnitControl
     @Override
     public final String getId() throws NotAvailableException {
         try {
-            DeviceConfig tmpConfig = getConfig();
+            UnitConfig tmpConfig = getConfig();
             if (!tmpConfig.hasId()) {
                 throw new NotAvailableException("unitconfig.id");
             }
@@ -104,7 +105,7 @@ public abstract class AbstractDeviceController extends AbstractSystemUnitControl
     @Override
     public String getLabel() throws NotAvailableException {
         try {
-            DeviceConfig tmpConfig = getConfig();
+            UnitConfig tmpConfig = getConfig();
             if (!tmpConfig.hasId()) {
                 throw new NotAvailableException("unitconfig.label");
             }
@@ -119,7 +120,7 @@ public abstract class AbstractDeviceController extends AbstractSystemUnitControl
     }
 
     @Override
-    public DeviceConfig applyConfigUpdate(DeviceConfig config) throws CouldNotPerformException, InterruptedException {
+    public DeviceConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         //TODO: which changes need to be applied here and in the AbstractSystemUnitController?
 
         return super.applyConfigUpdate(config); //To change body of generated methods, choose Tools | Templates.

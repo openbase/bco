@@ -23,12 +23,12 @@ package org.openbase.bco.manager.location.lib;
  */
 
 import org.openbase.jul.pattern.Factory;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ConnectionFactory extends Factory<ConnectionController, ConnectionConfig> {
+public interface ConnectionFactory extends Factory<ConnectionController, UnitConfig> {
     
 }

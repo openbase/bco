@@ -21,7 +21,6 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.manager.user.lib.UserFactory;
 import org.openbase.bco.manager.user.lib.UserManager;
@@ -35,12 +34,12 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.authorization.UserConfigType;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserManagerController implements UserRegistryProvider, UserManager {
 
@@ -50,7 +49,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
     private final UserFactory factory;
     private final ControllerRegistry<String, UserController> userRegistry;
     private final UserRegistryRemote userRegistryRemote;
-    private final EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
 
     public UserManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -59,10 +58,10 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
             this.userRegistry = new ControllerRegistry<>();
             this.userRegistryRemote = new UserRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UserConfigType.UserConfig, UserConfigType.UserConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {
 
                 @Override
-                public boolean enablingCondition(UserConfigType.UserConfig config) {
+                public boolean enablingCondition(UnitConfig config) {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };

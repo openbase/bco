@@ -34,8 +34,8 @@ import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.state.EnablingStateType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -49,7 +49,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
     private final SceneFactory factory;
     private final ControllerRegistry<String, SceneController> sceneRegistry;
     private final SceneRegistryRemote sceneRegistryRemote;
-    private final EnableableEntryRegistrySynchronizer<String, SceneController, SceneConfig, SceneConfig.Builder> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
 
     public SceneManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -58,10 +58,10 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
             this.sceneRegistry = new ControllerRegistry<>();
             this.sceneRegistryRemote = new SceneRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, SceneConfig, SceneConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
 
                 @Override
-                public boolean enablingCondition(SceneConfig config) {
+                public boolean enablingCondition(UnitConfig config) {
                     return config.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
                 }
             };

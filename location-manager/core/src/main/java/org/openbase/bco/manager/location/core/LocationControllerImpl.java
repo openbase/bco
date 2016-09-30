@@ -86,9 +86,9 @@ import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ UnitConfig
  */
-public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, LocationConfig> implements LocationController {
+public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, UnitConfig> implements LocationController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
@@ -113,7 +113,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     private final Map<ServiceType, Collection<? extends Service>> serviceMap;
     private List<String> originalUnitIdList;
 
-    public LocationControllerImpl(final LocationConfig config) throws InstantiationException {
+    public LocationControllerImpl() throws InstantiationException {
         super(LocationData.newBuilder());
         this.factory = UnitRemoteFactoryImpl.getInstance();
         this.unitRemoteMap = new HashMap<>();
@@ -334,10 +334,10 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public void init(final LocationConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         logger.debug("Init location [" + config.getLabel() + "]");
         try {
-            originalUnitIdList = config.getUnitIdList();
+            originalUnitIdList = config.getLocationConfig().getUnitIdList();
             for (ServiceType serviceType : ServiceType.values()) {
                 if (isSupportedServiceType(serviceType)) {
                     serviceMap.put(serviceType, new ArrayList<>());
@@ -345,7 +345,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             }
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
             for (UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
-                if (config.getUnitIdList().contains(unitConfig.getId())) {
+                if (config.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
                     List<ServiceTemplate> serviceTemplates = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
                     // ignore units that do not have any service supported by a location
@@ -364,10 +364,10 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public LocationConfig applyConfigUpdate(final LocationConfig config) throws CouldNotPerformException, InterruptedException {
-        List<String> newUnitIdList = new ArrayList<>(config.getUnitIdList());
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        List<String> newUnitIdList = new ArrayList<>(config.getLocationConfig().getUnitIdList());
         for (String originalId : originalUnitIdList) {
-            if (config.getUnitIdList().contains(originalId)) {
+            if (config.getLocationConfig().getUnitIdList().contains(originalId)) {
                 newUnitIdList.remove(originalId);
             } else {
                 unitRemoteMap.get(originalId).deactivate();
@@ -404,7 +404,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         if (isActive()) {
             getCurrentStatus();
         }
-        originalUnitIdList = config.getUnitIdList();
+        originalUnitIdList = config.getLocationConfig().getUnitIdList();
         return super.applyConfigUpdate(config);
     }
 
@@ -570,7 +570,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     @Override
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
-        for (LocationConfig locationConfig : LocationManagerController.getInstance().getLocationRegistry().getNeighborLocations(getId())) {
+        for (UnitConfig locationConfig : LocationManagerController.getInstance().getLocationRegistry().getNeighborLocations(getId())) {
             neighborIdList.add(locationConfig.getId());
         }
         return neighborIdList;

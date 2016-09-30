@@ -34,12 +34,13 @@ import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserDataType.UserData;
 import rst.authorization.UserPresenceStateType.UserPresenceState;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig> implements User {
+public class UserRemote extends AbstractConfigurableRemote<UserData, UnitConfig> implements User {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -48,13 +49,13 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UserConfig>
     }
 
     public UserRemote() {
-        super(UserData.class, UserConfig.class);
+        super(UserData.class, UnitConfig.class);
     }
 
     @Override
     public String getUserName() throws NotAvailableException {
         try {
-            return getConfig().getUserName();
+            return getConfig().getUserConfig().getUserName();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("username", ex);
         }

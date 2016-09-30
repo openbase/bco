@@ -51,9 +51,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.HandleStateType.HandleState;
 import rst.homeautomation.state.ContactStateType.ContactState;
-import rst.homeautomation.state.HandleStateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
@@ -61,7 +59,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionControllerImpl extends AbstractConfigurableController<ConnectionData, ConnectionData.Builder, ConnectionConfig> implements ConnectionController {
+public class ConnectionControllerImpl extends AbstractConfigurableController<ConnectionData, ConnectionData.Builder, UnitConfig> implements ConnectionController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
@@ -74,7 +72,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     private final Map<ServiceTemplateType.ServiceTemplate.ServiceType, Collection<? extends Service>> serviceMap;
     private List<String> originalUnitIdList;
 
-    public ConnectionControllerImpl(ConnectionConfig connection) throws InstantiationException {
+    public ConnectionControllerImpl() throws InstantiationException {
         super(ConnectionData.newBuilder());
         this.factory = UnitRemoteFactoryImpl.getInstance();
         this.unitRemoteMap = new HashMap<>();
@@ -125,9 +123,9 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public void init(final ConnectionConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
-            originalUnitIdList = config.getUnitIdList();
+            originalUnitIdList = config.getConnectionConfig().getUnitIdList();
             for (ServiceType serviceType : ServiceType.values()) {
                 if (isSupportedServiceType(serviceType)) {
                     serviceMap.put(serviceType, new ArrayList<>());
@@ -135,7 +133,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             }
             DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
             for (UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
-                if (config.getUnitIdList().contains(unitConfig.getId())) {
+                if (config.getConnectionConfig().getUnitIdList().contains(unitConfig.getId())) {
                     List<ServiceTemplate> serviceTemplate = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
                     // ignore units that do not have any service supported by a location
@@ -154,10 +152,10 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public ConnectionConfig applyConfigUpdate(final ConnectionConfig config) throws CouldNotPerformException, InterruptedException {
-        List<String> newUnitIdList = new ArrayList<>(config.getUnitIdList());
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        List<String> newUnitIdList = new ArrayList<>(config.getConnectionConfig().getUnitIdList());
         for (String originalId : originalUnitIdList) {
-            if (config.getUnitIdList().contains(originalId)) {
+            if (config.getConnectionConfig().getUnitIdList().contains(originalId)) {
                 newUnitIdList.remove(originalId);
             } else {
                 unitRemoteMap.get(originalId).deactivate();
@@ -194,7 +192,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         if (isActive()) {
             getCurrentStatus();
         }
-        originalUnitIdList = config.getUnitIdList();
+        originalUnitIdList = config.getConnectionConfig().getUnitIdList();
         return super.applyConfigUpdate(config);
     }
 
@@ -224,7 +222,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             ContactState contactState = getContactState();
             try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
                 //TODO: data fusion
-                
+
                 //dataBuilder.getInternalBuilder().setHandleState(handleState);
                 //dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
             } catch (Exception ex) {

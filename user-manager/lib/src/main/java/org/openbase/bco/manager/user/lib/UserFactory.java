@@ -24,15 +24,16 @@ package org.openbase.bco.manager.user.lib;
 
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UserFactory extends Factory<UserController, UserConfig> {
+public interface UserFactory extends Factory<UserController, UnitConfigType.UnitConfig> {
 
     @Override
-    public UserController newInstance(final UserConfig config) throws InstantiationException;
+    public UserController newInstance(final UnitConfig config) throws InstantiationException;
 
 }

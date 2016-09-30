@@ -36,7 +36,7 @@ import rst.homeautomation.state.PowerStateType.PowerState;
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PersonLightProviderAgent extends AbstractAgent {
 

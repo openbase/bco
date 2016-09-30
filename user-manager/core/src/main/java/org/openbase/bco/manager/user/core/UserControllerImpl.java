@@ -33,17 +33,17 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.authorization.UserActivityType.UserActivity;
-import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserDataType.UserData;
 import rst.authorization.UserPresenceStateType.UserPresenceState;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class UserControllerImpl extends AbstractConfigurableController<UserData, UserData.Builder, UserConfig> implements UserController {
+public class UserControllerImpl extends AbstractConfigurableController<UserData, UserData.Builder, UnitConfig> implements UserController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -51,14 +51,14 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
 
     private boolean enabled;
 
-    protected UserConfig config;
+    protected UnitConfig config;
 
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UserData.newBuilder());
     }
 
     @Override
-    public void init(final UserConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         this.config = config;
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] with scope [" + config.getScope().toString() + "]");
         super.init(config);
@@ -75,13 +75,13 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     }
 
     @Override
-    public UserConfig getConfig() throws NotAvailableException {
+    public UnitConfig getConfig() throws NotAvailableException {
         return config;
     }
 
     @Override
-    public UserConfig applyConfigUpdate(UserConfig config) throws CouldNotPerformException, InterruptedException {
-        setDataField(TYPE_FIELD_USER_NAME, config.getUserName());
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        setDataField(TYPE_FIELD_USER_NAME, config.getUserConfig().getUserName());
         return super.applyConfigUpdate(config);
     }
 
@@ -108,7 +108,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
             if (config == null) {
                 throw new NotAvailableException("userconfig");
             }
-            return config.getUserName();
+            return config.getUserConfig().getUserName();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("username", ex);
         }

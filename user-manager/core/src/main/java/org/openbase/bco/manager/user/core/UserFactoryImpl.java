@@ -29,11 +29,11 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserFactoryImpl implements UserFactory {
 
@@ -53,13 +53,13 @@ public class UserFactoryImpl implements UserFactory {
     }
 
     @Override
-    public UserController newInstance(final UserConfig config) throws InstantiationException {
+    public UserController newInstance(final UnitConfig config) throws InstantiationException {
         UserController user;
         try {
             if (config == null) {
-                throw new NotAvailableException("userconfig");
+                throw new NotAvailableException("unitconfig");
             }
-            logger.info("Creating user [" + config.getUserName() + "]");
+            logger.info("Creating user [" + config.getUserConfig().getUserName() + "]");
             user = new UserControllerImpl();
             user.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {

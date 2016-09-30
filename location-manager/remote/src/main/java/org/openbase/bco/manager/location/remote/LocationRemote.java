@@ -24,7 +24,7 @@ import rst.homeautomation.state.SmokeStateType.SmokeState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.state.TamperStateType.TamperState;
 import rst.homeautomation.state.TemperatureStateType.TemperatureState;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationDataType.LocationData;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
@@ -55,7 +55,7 @@ import rst.vision.RGBColorType.RGBColor;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRemote extends AbstractConfigurableRemote<LocationData, LocationConfig> implements Location {
+public class LocationRemote extends AbstractConfigurableRemote<LocationData, UnitConfig> implements Location {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
@@ -76,7 +76,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     }
 
     public LocationRemote() {
-        super(LocationData.class, LocationConfig.class);
+        super(LocationData.class, UnitConfig.class);
     }
 
     @Override
@@ -259,7 +259,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Loc
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
         try {
-            for (LocationConfig locationConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
+            for (UnitConfig locationConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
                 neighborIdList.add(locationConfig.getId());
             }
         } catch (InterruptedException ex) {

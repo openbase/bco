@@ -43,7 +43,6 @@ import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import rst.homeautomation.state.ButtonStateType.ButtonState;
@@ -54,9 +53,9 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ UnitConfig
  */
-public class SceneControllerImpl extends AbstractExecutableController<SceneData, SceneData.Builder, SceneConfig> implements SceneController {
+public class SceneControllerImpl extends AbstractExecutableController<SceneData, SceneData.Builder, UnitConfig> implements SceneController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
@@ -88,7 +87,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public void init(final SceneConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             CachedDeviceRegistryRemote.waitForData();
             this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
@@ -99,7 +98,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public SceneConfig applyConfigUpdate(final SceneConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         synchronized (triggerListSync) {
             try {
                 for (ButtonRemote buttonRemote : buttonRemoteList) {
@@ -142,7 +141,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         synchronized (actionListSync) {
             actionList.clear();
             Action action;
-            for (ActionConfig actionConfig : config.getActionConfigList()) {
+            for (ActionConfig actionConfig : config.getSceneConfig().getActionConfigList()) {
                 action = new Action();
                 try {
                     action.init(actionConfig);

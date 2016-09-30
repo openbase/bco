@@ -26,7 +26,7 @@ import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -44,13 +44,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     }
 
     @Override
-    public ConnectionController newInstance(ConnectionConfig config) throws InstantiationException, InterruptedException {
+    public ConnectionController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
         ConnectionController connectionController;
         try {
             if (config == null) {
                 throw new NotAvailableException("connectionConfig");
             }
-            connectionController = new ConnectionControllerImpl(config);
+            connectionController = new ConnectionControllerImpl();
             connectionController.init(config);
             return connectionController;
         } catch (InstantiationException | NotAvailableException | InitializationException ex) {

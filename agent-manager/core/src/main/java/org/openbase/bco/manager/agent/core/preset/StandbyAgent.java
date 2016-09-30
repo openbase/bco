@@ -37,7 +37,7 @@ import rst.homeautomation.state.MotionStateType.MotionState;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class StandbyAgent extends AbstractAgent {
 

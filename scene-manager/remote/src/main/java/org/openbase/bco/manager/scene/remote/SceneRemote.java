@@ -29,15 +29,15 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConfig> implements Scene {
+public class SceneRemote extends AbstractConfigurableRemote<SceneData, UnitConfig> implements Scene {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
@@ -47,7 +47,7 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, SceneConf
 
 
     public SceneRemote() {
-        super(SceneData.class, SceneConfig.class);
+        super(SceneData.class, UnitConfig.class);
     }
 
     public Future<Void> setActivationState(ActivationState.State activationState) throws CouldNotPerformException {

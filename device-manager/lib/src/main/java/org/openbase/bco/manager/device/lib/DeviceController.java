@@ -28,7 +28,7 @@ import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
 public interface DeviceController extends Device, MessageController<SystemUnitData, SystemUnitData.Builder> {

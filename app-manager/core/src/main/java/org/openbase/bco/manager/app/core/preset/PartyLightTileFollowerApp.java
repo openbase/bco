@@ -44,7 +44,7 @@ import rst.vision.HSBColorType.HSBColor;
  * #L%
  */
 /**
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ UnitConfig
  */
 public class PartyLightTileFollowerApp extends AbstractApp {
 

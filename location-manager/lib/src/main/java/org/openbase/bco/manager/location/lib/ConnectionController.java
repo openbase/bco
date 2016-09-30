@@ -25,7 +25,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderSer
 import org.openbase.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
 /**
@@ -35,5 +35,5 @@ import rst.spatial.ConnectionDataType.ConnectionData;
 public interface ConnectionController extends Connection, MessageController<ConnectionData, ConnectionData.Builder>,
         HandleStateProviderServiceCollection, ContactStateProviderServiceCollection {
 
-    public void init(final ConnectionConfig config) throws InitializationException, InterruptedException;
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }

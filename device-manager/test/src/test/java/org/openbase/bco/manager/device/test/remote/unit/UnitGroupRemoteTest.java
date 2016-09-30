@@ -50,6 +50,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePat
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.state.BrightnessStateType.BrightnessState;
 import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 
 /**
@@ -79,7 +80,8 @@ public class UnitGroupRemoteTest {
         unitGroupRemote = new UnitGroupRemote();
         ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
         ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService).setLabel("testGroup");
+        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
 
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
             if (allServiceTemplatesImplemented(unitGroupConfig, unit.getConfig().getServiceConfigList())) {
@@ -88,7 +90,7 @@ public class UnitGroupRemoteTest {
             }
         }
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
-        unitGroupRemote.init(unitGroupConfig.build());
+        unitGroupRemote.init(unitConfig.build());
         unitGroupRemote.activate();
         Thread.sleep(3000);
     }

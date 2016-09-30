@@ -34,7 +34,7 @@ import rst.homeautomation.state.ActivationStateType.ActivationState;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConfig> implements Agent {
 

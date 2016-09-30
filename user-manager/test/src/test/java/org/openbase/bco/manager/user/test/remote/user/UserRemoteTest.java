@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 import rst.authorization.UserActivityType.UserActivity;
 import rst.authorization.UserActivityType.UserActivity.Activity;
 import rst.authorization.UserPresenceStateType.UserPresenceState;
-import rst.authorization.UserConfigType.UserConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -67,9 +67,9 @@ public class UserRemoteTest {
         userManagerLauncher = new UserManagerLauncher();
         userManagerLauncher.launch();
 
-        UserConfig userConfig = MockRegistry.testUser;
+        UnitConfig unitConfig = MockRegistry.testUser;
         userRemote = new UserRemote();
-        userRemote.init(userConfig);
+        userRemote.init(unitConfig);
         userRemote.activate();
     }
 

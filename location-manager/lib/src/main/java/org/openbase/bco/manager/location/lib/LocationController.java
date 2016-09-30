@@ -14,7 +14,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateO
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationDataType.LocationData;
 
 /*
@@ -48,5 +48,5 @@ public interface LocationController extends Location, MessageController<Location
         SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,
         TamperStateProviderServiceCollection {
 
-    public void init(final LocationConfig config) throws InitializationException, InterruptedException;
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }

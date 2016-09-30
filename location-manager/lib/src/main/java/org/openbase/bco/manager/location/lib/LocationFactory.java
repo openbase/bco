@@ -22,12 +22,12 @@ package org.openbase.bco.manager.location.lib;
  * #L%
  */
 import org.openbase.jul.pattern.Factory;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface LocationFactory extends Factory<LocationController, LocationConfig> {
+public interface LocationFactory extends Factory<LocationController, UnitConfig> {
 
 }

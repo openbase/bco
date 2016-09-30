@@ -26,15 +26,15 @@ import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserDataType.UserData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UserController extends Identifiable<String>, Configurable<String, UserConfig>, Enableable, User, MessageController<UserData, UserData.Builder> {
+public interface UserController extends Identifiable<String>, Configurable<String, UnitConfig>, Enableable, User, MessageController<UserData, UserData.Builder> {
 
-    public void init(final UserConfig config) throws InitializationException, InterruptedException;
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
 }

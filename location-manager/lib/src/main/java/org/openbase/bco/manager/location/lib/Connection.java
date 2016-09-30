@@ -26,12 +26,12 @@ import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderServi
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, ConnectionConfig>, HandleStateProviderService, ContactStateProviderService {
+public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>, HandleStateProviderService, ContactStateProviderService {
 
 }

@@ -23,14 +23,14 @@ package org.openbase.bco.manager.scene.lib;
  */
 
 import org.openbase.jul.pattern.Factory;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface SceneFactory extends Factory<SceneController, SceneConfig> {
+public interface SceneFactory extends Factory<SceneController, UnitConfig> {
 
     @Override
-    public SceneController newInstance(final SceneConfig config) throws org.openbase.jul.exception.InstantiationException;
+    public SceneController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
 }

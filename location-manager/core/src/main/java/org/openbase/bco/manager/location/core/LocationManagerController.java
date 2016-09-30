@@ -38,6 +38,7 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
 import rst.spatial.LocationConfigType.LocationConfig;
 
@@ -56,8 +57,8 @@ public class LocationManagerController implements LocationManager {
     private final ConnectionFactory connectionFactory;
     private final ControllerRegistry<String, LocationController> locationRegistry;
     private final ControllerRegistry<String, ConnectionController> connectionRegistry;
-    private final ActivatableEntryRegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
-    private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
 
     public LocationManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -68,17 +69,17 @@ public class LocationManagerController implements LocationManager {
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistry<>();
             this.connectionRegistry = new ControllerRegistry<>();
-            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, LocationConfig, LocationConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory) {
+            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory) {
 
                 @Override
-                public boolean activationCondition(LocationConfig config) {
+                public boolean activationCondition(final UnitConfig config) {
                     return true;
                 }
             };
-            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, ConnectionConfig, ConnectionConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionFactory) {
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionFactory) {
 
                 @Override
-                public boolean activationCondition(ConnectionConfig config) {
+                public boolean activationCondition(final UnitConfig config) {
                     return true;
                 }
             };
