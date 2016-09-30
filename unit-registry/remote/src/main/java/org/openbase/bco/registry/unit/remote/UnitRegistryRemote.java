@@ -37,7 +37,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -546,5 +545,245 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             }
         }
         return unitTypes;
+    }
+
+    @Override
+    public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getDalUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getUserUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getAuthorizationGroupUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getDeviceUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getUnitGroupUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getLocationUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getConnectionUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getAgentUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getAppUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getSceneUnitConfigRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getDalUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getUserUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAuthorizationGroupUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getDeviceUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getUnitGroupUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getLocationUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getConnectionUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAgentUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getAppUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    @Override
+    public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getSceneUnitConfigRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
     }
 }
