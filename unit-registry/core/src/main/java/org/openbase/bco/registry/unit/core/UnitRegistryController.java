@@ -996,4 +996,104 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> getUnitConfigRegistryList() {
         return unitConfigRegistryList;
     }
+
+    @Override
+    public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException {
+        return dalUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException {
+        return userUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException {
+        return authorizationGroupUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException {
+        return deviceUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException {
+        return unitGroupUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException {
+        return locationUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException {
+        return connectionUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException {
+        return agentUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException {
+        return appUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException {
+        return sceneUnitConfigRegistry.isReadOnly();
+    }
+
+    @Override
+    public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException {
+        return dalUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException {
+        return userUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException {
+        return authorizationGroupUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException {
+        return deviceUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException {
+        return unitGroupUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException {
+        return locationUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException {
+        return connectionUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException {
+        return agentUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException {
+        return appUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException {
+        return sceneUnitConfigRegistry.isConsistent();
+    }
 }
