@@ -144,7 +144,7 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, appClassRegistry.isReadOnly());
         setDataField(AppRegistryData.APP_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, appClassRegistry.isConsistent());
         setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isAppUnitRegistryConsistent());
-        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isAppUnitConfigRegistryReadOnly());
+        setDataField(AppRegistryData.APP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isAppUnitRegistryReadOnly());
     }
 
     @Override

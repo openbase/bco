@@ -94,12 +94,12 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     }
 
     @Override
-    protected void syncRegistryFlags() {
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isLocationUnitConfigRegistryConsistent());
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isLocationUnitConfigRegistryReadOnly());
+    protected void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isLocationUnitRegistryConsistent());
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isLocationUnitRegistryReadOnly());
 
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitConfigRegistryConsistent());
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitConfigRegistryReadOnly());
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitRegistryConsistent());
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitRegistryReadOnly());
         super.notifyChange();
     }
 

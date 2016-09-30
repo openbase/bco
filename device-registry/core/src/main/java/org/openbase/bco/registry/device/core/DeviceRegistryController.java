@@ -135,8 +135,8 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitConfigRegistryConsistent());
-        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitConfigRegistryReadOnly());
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitRegistryConsistent());
+        setDataField(DeviceRegistryData.DEVICE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isDeviceUnitRegistryReadOnly());
     }
 
     /**
