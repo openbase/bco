@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -35,13 +36,14 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
@@ -51,7 +53,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> implements UnitRegistry, RegistryRemote<UnitRegistryData> {
+public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData> implements UnitRegistry, RegistryRemote<UnitRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitRegistryData.getDefaultInstance()));
@@ -59,14 +61,34 @@ public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> imple
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
     }
 
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRemoteRegistry;
     private final RemoteRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appUnitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRemoteRegistry;
 
     public UnitRegistryRemote() throws InstantiationException, InterruptedException {
         super(UnitRegistryData.class);
         try {
-            unitConfigRemoteRegistry = new RemoteRegistry<>();
-            unitTemplateRemoteRegistry = new RemoteRegistry<>();
+            this.unitTemplateRemoteRegistry = new RemoteRegistry<>();
+            this.dalUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.userUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.authorizationGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.deviceUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.unitGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.appUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.unitConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -151,6 +173,18 @@ public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> imple
     @Override
     public void notifyDataUpdate(final UnitRegistryData data) throws CouldNotPerformException {
 //        unitConfigRemoteRegistry.notifyRegistryUpdate(data.getUnitConfigList());
+        unitTemplateRemoteRegistry.notifyRegistryUpdate(data.getUnitTemplateList());
+        dalUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        userUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        authorizationGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        deviceUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        unitGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        locationUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        connectionUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        agentUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        appUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        unitConfigRemoteRegistry = new RemoteRegistry<>();
     }
 
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRemoteRegistry() {
@@ -323,5 +357,110 @@ public class UnitRegistryRemote extends RSBRemoteService<UnitRegistryData> imple
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigList() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Future<UnitConfig> registerUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Future<UnitConfig> updateUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Future<UnitConfig> removeUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Boolean containsUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigs(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public UnitConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitGroupConfigsByUnitType(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(UnitTemplate.UnitType type, List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public UnitConfig getUnitConfigByScope(ScopeType.Scope scope) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<UnitTemplate.UnitType> getSubUnitTypesOfUnitType(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
