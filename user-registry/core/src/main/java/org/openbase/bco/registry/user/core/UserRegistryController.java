@@ -71,15 +71,18 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     }
 
     @Override
-    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
-        setDataField(UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, realData.getUserUnitConfigList());
+    protected void syncVirtualRegistryFields(final UserRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
+        virtualDataBuilder.clearUserUnitConfig();
+        virtualDataBuilder.addAllUserUnitConfig(realData.getUserUnitConfigList());
+        
+        virtualDataBuilder.clearAuthorizationGroupUnitConfig();
+        virtualDataBuilder.addAllAuthorizationGroupUnitConfig(realData.getAuthorizationGroupUnitConfigList());
 
-        setDataField(UserRegistryData.USER_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getUserUnitConfigRegistryConsistent());
-        setDataField(UserRegistryData.USER_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getUserUnitConfigRegistryReadOnly());
-
-        setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, realData.getAuthorizationGroupUnitConfigList());
-        setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getAuthorizationGroupUnitConfigRegistryConsistent());
-        setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getAuthorizationGroupUnitConfigRegistryReadOnly());
+        virtualDataBuilder.setUserUnitConfigRegistryConsistent(realData.getUserUnitConfigRegistryConsistent());
+        virtualDataBuilder.setUserUnitConfigRegistryReadOnly(realData.getUserUnitConfigRegistryReadOnly());
+        
+        virtualDataBuilder.setAuthorizationGroupUnitConfigRegistryConsistent(realData.getAuthorizationGroupUnitConfigRegistryConsistent());
+        virtualDataBuilder.setAuthorizationGroupUnitConfigRegistryReadOnly(realData.getAuthorizationGroupUnitConfigRegistryReadOnly());
     }
 
     /**

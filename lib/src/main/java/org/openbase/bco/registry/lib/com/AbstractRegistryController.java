@@ -282,6 +282,18 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
     }
 
+    protected List<RegistryRemote> getRegistryRemotes() {
+        return registryRemotes;
+    }
+
+    protected List<RemoteRegistry> getRemoteRegistries() {
+        return remoteRegistries;
+    }
+
+    protected List<ProtoBufFileSynchronizedRegistry> getRegistries() {
+        return registries;
+    }
+
     protected abstract Package getVersionConverterPackage() throws CouldNotPerformException;
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
