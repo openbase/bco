@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.Service;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface OperationService extends Service {
 

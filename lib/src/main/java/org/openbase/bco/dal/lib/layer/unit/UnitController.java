@@ -28,7 +28,7 @@ import rst.homeautomation.service.ServiceTemplateType;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitController extends Unit {
 

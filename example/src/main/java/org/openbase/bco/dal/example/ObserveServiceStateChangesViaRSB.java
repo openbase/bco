@@ -21,10 +21,12 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
@@ -34,6 +36,7 @@ import rsb.Event;
 import rsb.Factory;
 import rsb.Handler;
 import rsb.Listener;
+import rsb.RSBException;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -45,10 +48,11 @@ import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.ColorableLightDataType.ColorableLightData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ObserveServiceStateChangesViaRSB {
 
@@ -77,16 +81,15 @@ public class ObserveServiceStateChangesViaRSB {
         List<UnitConfig> unitConfigList = new ArrayList<>();
 
         try {
-            final RemoteServer deviceRegistryRemoteServer = Factory.getInstance().createRemoteServer("/registry/device/ctrl");
-            deviceRegistryRemoteServer.activate();
-            final DeviceRegistryData deviceRegistry = (DeviceRegistryData) deviceRegistryRemoteServer.call("requestStatus").getData();
+            final RemoteServer unitRegistryRemoteServer = Factory.getInstance().createRemoteServer("/registry/unit/ctrl");
+            unitRegistryRemoteServer.activate();
+            final UnitRegistryData unitRegistryData = (UnitRegistryData) unitRegistryRemoteServer.call("requestStatus").getData();
 
-            for (DeviceConfig deviceConfig : deviceRegistry.getDeviceConfigList()) {
-                for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
-                    for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
-                            unitConfigList.add(unitConfig);
-                        }
+            // request all units of the given service type
+            for (UnitConfig unitConfig : unitRegistryData.getDalUnitConfigList()) {
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
+                        unitConfigList.add(unitConfig);
                     }
                 }
             }
@@ -98,18 +101,14 @@ public class ObserveServiceStateChangesViaRSB {
                 scope = ScopeTransformer.transform(unitConfig.getScope()).concat(new Scope("/status"));
                 logger.info("Register listener on Scope[" + scope + "]");
                 listener = Factory.getInstance().createListener(scope);
-                listener.addHandler(new Handler() {
-
-                    @Override
-                    public void internalNotify(Event event) {
-                        logger.info("Got Event[" + event.getData() + "]");
-                    }
+                listener.addHandler((Event event) -> {
+                    logger.info("Got Event[" + event.getData() + "]");
                 }, true);
                 listener.activate();
             }
 
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        } catch (RSBException | CouldNotPerformException | ExecutionException | TimeoutException ex) {
+            ExceptionPrinter.printHistory(ex, logger);
         }
         logger.info("Waiting for " + serviceType.name() + " events...");
     }

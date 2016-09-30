@@ -47,7 +47,7 @@ import rst.rsb.ScopeType;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M>
  */
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M, UnitConfig> {

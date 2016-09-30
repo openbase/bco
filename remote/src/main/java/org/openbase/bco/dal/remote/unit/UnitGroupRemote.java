@@ -43,7 +43,6 @@ import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
 import org.openbase.bco.dal.remote.service.StandbyStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -59,25 +58,24 @@ import rst.homeautomation.state.BlindStateType.BlindState;
 import rst.homeautomation.state.StandbyStateType.StandbyState;
 import rst.homeautomation.state.TemperatureStateType.TemperatureState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
+public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitConfig> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
 
     private final Map<ServiceTemplate, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
     private final ServiceRemoteFactory serviceRemoteFactory;
 
     public UnitGroupRemote() throws InstantiationException {
         //TODO: why is the group config used as data type? May we should use a configurable remote instead?
-        super(UnitGroupConfig.class);
+        super(UnitConfig.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
     }
 
     @Override
-    public void notifyDataUpdate(UnitGroupConfig data) throws CouldNotPerformException {
+    public void notifyDataUpdate(UnitConfig data) throws CouldNotPerformException {
     }
 
     @Override
@@ -189,16 +187,16 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitGroupConfig>
         return serviceRemoteMap.values().stream().noneMatch((remote) -> (!remote.isActive()));
     }
 
-    public void init(UnitGroupConfig unitGroupConfig) throws InstantiationException, InitializationException, InterruptedException, CouldNotPerformException {
+    public void init(UnitConfig unitGroupConfig) throws InstantiationException, InitializationException, InterruptedException, CouldNotPerformException {
         CachedDeviceRegistryRemote.waitForData();
 
         List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (String unitConfigId : unitGroupConfig.getMemberIdList()) {
+        for (String unitConfigId : unitGroupConfig.getUnitGroupConfig().getMemberIdList()) {
             unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
         }
 
         List<UnitConfig> unitConfigsByService = new ArrayList<>();
-        for (ServiceTemplate serviceTemplate : unitGroupConfig.getServiceTemplateList()) {
+        for (ServiceTemplate serviceTemplate : unitGroupConfig.getUnitGroupConfig().getServiceTemplateList()) {
             unitConfigs.stream().filter((unitConfig) -> (unitHasService(unitConfig, serviceTemplate))).forEach((unitConfig) -> {
                 unitConfigsByService.add(unitConfig);
             });

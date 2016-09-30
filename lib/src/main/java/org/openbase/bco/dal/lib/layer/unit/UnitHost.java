@@ -28,7 +28,7 @@ import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 
 /**
  *
- * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitHost extends ServiceFactoryProvider, LocationRegistryProvider, DeviceRegistryProvider {
 
