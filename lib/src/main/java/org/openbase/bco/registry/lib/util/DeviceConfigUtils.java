@@ -35,7 +35,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 /**
  * A collection of utils to manipulate or analyse unit device configs.
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ UnitConfig
  */
 public class DeviceConfigUtils {
 
