@@ -35,7 +35,7 @@ import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDeviceController extends AbstractSystemUnitController<SystemUnitData, SystemUnitData.Builder, DeviceConfig> implements DeviceController {
 

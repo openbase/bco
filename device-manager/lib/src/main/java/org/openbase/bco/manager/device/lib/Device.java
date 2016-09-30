@@ -31,7 +31,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable, Configurable<String, DeviceConfig> {
 

@@ -42,7 +42,7 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
 public class BrightnessStateFutionProvider extends ObservableImpl<Double> implements BrightnessStateProviderService {

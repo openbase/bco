@@ -25,7 +25,7 @@ import org.openbase.jul.storage.registry.Registry;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface DeviceControllerRegistry extends Registry<String, Device> {
 

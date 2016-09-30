@@ -29,7 +29,7 @@ import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface DeviceFactory extends Factory<DeviceController, DeviceConfig> {
 

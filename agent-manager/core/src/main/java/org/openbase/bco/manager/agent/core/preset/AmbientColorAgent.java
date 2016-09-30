@@ -40,7 +40,7 @@ import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ * * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
  *
  */
 public class AmbientColorAgent extends AbstractAgent {

@@ -34,7 +34,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
  */
 public class AgentTest {
 

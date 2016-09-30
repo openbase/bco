@@ -30,7 +30,7 @@ import rst.authorization.UserPresenceStateType.UserPresenceState;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface User extends Identifiable<String> {
 

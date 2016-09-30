@@ -47,7 +47,7 @@ import rst.homeautomation.state.InventoryStateType;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
 public class DeviceManagerController implements DeviceManager {
