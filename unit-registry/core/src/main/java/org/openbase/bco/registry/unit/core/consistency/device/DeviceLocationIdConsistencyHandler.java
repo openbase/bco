@@ -21,12 +21,12 @@ package org.openbase.bco.registry.unit.core.consistency.device;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -40,20 +40,14 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
-    private String rootLocationId;
 
     public DeviceLocationIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
         this.locationRegistry = locationRegistry;
-        try {
-            rootLocationId = getRootLocationId();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
     }
 
     @Override
@@ -67,7 +61,7 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
 
         // setup base location of device has no location configured.
         if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-            unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(rootLocationId));
+            unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(LocationUtils.getRootLocation(locationRegistry.getMessages()).getId()));
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
 
@@ -81,7 +75,7 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
                 throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Device[" + unitConfig.getId() + "] is unknown and can not be recovered!", ex);
             }
             // recover device location with root location.
-            unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(rootLocationId));
+            unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(LocationUtils.getRootLocation(locationRegistry.getMessages()).getId()));
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
@@ -93,14 +87,5 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
             }
         }
         throw new NotAvailableException("rootLocation");
-    }
-
-    @Override
-    public void reset() {
-        try {
-            rootLocationId = getRootLocationId();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
     }
 }
