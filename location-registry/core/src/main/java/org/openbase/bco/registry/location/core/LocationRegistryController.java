@@ -169,8 +169,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
-        unitRegistryRemote.validateData();
-        return deviceRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
+        return unitRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
                 .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -236,8 +235,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (String unitConfigId : getLocationConfigById(locationId).getUnitIdList()) {
-            unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
+        for (String unitConfigId : getLocationConfigById(locationId).getLocationConfig().getUnitIdList()) {
+            unitConfigList.add(unitRegistryRemote.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
     }
@@ -285,8 +284,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
 
         for (String unitConfigId : getLocationConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
-                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type) || deviceRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type) || unitRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -326,7 +325,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
 
         for (String unitConfigId : getLocationConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
-                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
@@ -462,7 +461,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
-            unitConfigList.add(deviceRegistryRemote.getUnitConfigById(unitConfigId));
+            unitConfigList.add(unitRegistryRemote.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
     }
@@ -480,8 +479,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
 
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
-                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type) || deviceRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type) || unitRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -504,7 +503,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
 
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
-                unitConfig = deviceRegistryRemote.getUnitConfigById(unitConfigId);
+                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);

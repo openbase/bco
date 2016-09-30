@@ -75,7 +75,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.device.remote</artifactId>
+            <artifactId>registry.unit.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

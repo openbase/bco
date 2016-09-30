@@ -21,8 +21,6 @@ package org.openbase.bco.registry.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
-import org.openbase.bco.registry.unit.lib.jp.JPUserConfigDatabaseDirectory;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -31,9 +29,6 @@ import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
-import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
