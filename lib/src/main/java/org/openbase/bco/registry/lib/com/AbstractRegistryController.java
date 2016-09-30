@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.lib.controller;
+package org.openbase.bco.registry.lib.com;
 
 /*
  * #%L
@@ -38,6 +38,7 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
+import org.openbase.jul.storage.registry.RegistryController;
 import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
@@ -46,7 +47,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @param <M>
  * @param <MB>
  */
-public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> {
+public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M> {
 
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 
@@ -62,47 +63,66 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     }
 
+    public void init() throws InitializationException, InterruptedException {
+        try {
+            super.init(JPService.getProperty(jpScopePropery).getValue());
+        } catch (JPServiceException | CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
         try {
             try {
+                registerRegistries();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not register all internal registries!", ex);
+            }
+
+            try {
+                registerRegistryRemotes();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not register all registry remotes!", ex);
+            }
+
+            try {
+                initRemoteRegistries();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not init all remote registries!", ex);
+            }
+
+            try {
                 activateVersionControl(getVersionConverterPackage());
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
+
             try {
                 loadRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not load all internal registries!", ex);
             }
+
             try {
                 registerConsistencyHandler();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register consistency handler for all internal registries!", ex);
             }
+
             try {
                 registerPlugins();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register plugins for all internal registries!", ex);
             }
+
             try {
                 registerObserver();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register observer for all internal registries!", ex);
             }
         } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    public void init() throws InitializationException, InterruptedException {
-        try {
-            super.init(JPService.getProperty(jpScopePropery).getValue());
-            registerRegistries();
-            registerRegistryRemotes();
-            initRemoteRegistries();
-        } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }

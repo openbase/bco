@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;

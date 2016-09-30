@@ -29,7 +29,7 @@ import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
-import org.openbase.bco.registry.lib.controller.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
