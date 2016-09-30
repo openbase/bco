@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -35,6 +36,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -128,6 +130,14 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
         RPCHelper.registerInterface(LocationRegistry.class, this, server);
     }
 
+    private void verifyLocationUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.LOCATION);
+    }
+
+    private void verifyConnectionUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.CONNECTION);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -135,6 +145,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
+        verifyLocationUnitConfig(locationConfig);
         return unitRegistryRemote.registerUnitConfig(locationConfig);
     }
 
@@ -203,6 +214,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
+        verifyLocationUnitConfig(locationConfig);
         return unitRegistryRemote.updateUnitConfig(locationConfig);
     }
 
@@ -213,6 +225,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Future<UnitConfig> removeLocationConfig(UnitConfig locationConfig) throws CouldNotPerformException {
+        verifyLocationUnitConfig(locationConfig);
         return unitRegistryRemote.removeUnitConfig(locationConfig);
     }
 
@@ -372,6 +385,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Future<UnitConfig> registerConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        verifyConnectionUnitConfig(connectionConfig);
         return unitRegistryRemote.registerUnitConfig(connectionConfig);
     }
 
@@ -428,6 +442,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Future<UnitConfig> updateConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        verifyConnectionUnitConfig(connectionConfig);
         return unitRegistryRemote.updateUnitConfig(connectionConfig);
     }
 
@@ -438,6 +453,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public Future<UnitConfig> removeConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
+        verifyConnectionUnitConfig(connectionConfig);
         return unitRegistryRemote.removeUnitConfig(connectionConfig);
     }
 

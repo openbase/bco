@@ -30,6 +30,7 @@ import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -37,6 +38,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
@@ -51,6 +53,7 @@ import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -166,8 +169,13 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
         RPCHelper.registerInterface(AgentRegistry.class, this, server);
     }
 
+    private void verifyAgentUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.AGENT);
+    }
+
     @Override
     public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        verifyAgentUnitConfig(agentUnitConfig);
         return unitRegistryRemote.registerUnitConfig(agentUnitConfig);
     }
 
@@ -185,17 +193,20 @@ public class AgentRegistryController extends AbstractRegistryController<AgentReg
 
     @Override
     public Boolean containsAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        verifyAgentUnitConfig(agentUnitConfig);
         unitRegistryRemote.validateData();
         return agentUnitConfigRemoteRegistry.contains(agentUnitConfig);
     }
 
     @Override
     public Future<UnitConfig> updateAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        verifyAgentUnitConfig(agentUnitConfig);
         return unitRegistryRemote.updateUnitConfig(agentUnitConfig);
     }
 
     @Override
     public Future<UnitConfig> removeAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
+        verifyAgentUnitConfig(agentUnitConfig);
         return unitRegistryRemote.removeUnitConfig(agentUnitConfig);
     }
 
