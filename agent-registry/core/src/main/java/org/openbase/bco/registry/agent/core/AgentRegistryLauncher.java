@@ -22,7 +22,6 @@ package org.openbase.bco.registry.agent.core;
  * #L%
  */
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
-import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -83,7 +82,6 @@ public class AgentRegistryLauncher {
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
         JPService.registerProperty(JPAgentClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);

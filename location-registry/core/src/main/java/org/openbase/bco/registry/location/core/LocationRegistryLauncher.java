@@ -22,17 +22,13 @@ package org.openbase.bco.registry.location.core;
  * #L%
  */
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
-import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
-import org.openbase.bco.registry.unit.lib.jp.JPLocationConfigDatabaseDirectory;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
-import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,11 +73,7 @@ public class LocationRegistryLauncher {
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
-        JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPLocationConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPConnectionConfigDatabaseDirectory.class);
-        JPService.registerProperty(JPGitRegistryPlugin.class);
-        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+        JPService.registerProperty(JPDebugMode.class);
 
         JPService.parseAndExitOnError(args);
 

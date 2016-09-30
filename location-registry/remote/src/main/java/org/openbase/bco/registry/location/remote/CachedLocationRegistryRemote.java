@@ -24,7 +24,6 @@ package org.openbase.bco.registry.location.remote;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -59,7 +58,7 @@ public class CachedLocationRegistryRemote {
             getRegistry();
             locationRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not reinitialize " + CachedDeviceRegistryRemote.class.getSimpleName() + "!", ex);
+            throw new CouldNotPerformException("Could not reinitialize " + CachedLocationRegistryRemote.class.getSimpleName() + "!", ex);
         }
     }
 
@@ -92,14 +91,14 @@ public class CachedLocationRegistryRemote {
             throw new NotAvailableException("cached location registry", ex);
         }
     }
-    
+
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
         if (locationRegistryRemote == null) {
             getRegistry();
         }
         locationRegistryRemote.waitForData();
     }
-    
+
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         if (locationRegistryRemote == null) {
             getRegistry();
