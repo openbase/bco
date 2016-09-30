@@ -30,6 +30,7 @@ import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -37,6 +38,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -52,6 +54,7 @@ import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -168,8 +171,13 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
         RPCHelper.registerInterface(AppRegistry.class, this, server);
     }
 
+    private void verifyAppUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.APP);
+    }
+
     @Override
     public Future<UnitConfig> registerAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException {
+        verifyAppUnitConfig(appUnitConfig);
         return unitRegistryRemote.registerUnitConfig(appUnitConfig);
     }
 
@@ -193,11 +201,13 @@ public class AppRegistryController extends AbstractRegistryController<AppRegistr
 
     @Override
     public Future<UnitConfig> updateAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException {
+        verifyAppUnitConfig(appUnitConfig);
         return unitRegistryRemote.updateUnitConfig(appUnitConfig);
     }
 
     @Override
     public Future<UnitConfig> removeAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException {
+        verifyAppUnitConfig(appUnitConfig);
         return unitRegistryRemote.removeUnitConfig(appUnitConfig);
     }
 

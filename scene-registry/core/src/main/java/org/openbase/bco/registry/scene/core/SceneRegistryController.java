@@ -24,12 +24,14 @@ package org.openbase.bco.registry.scene.core;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -43,6 +45,7 @@ import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -103,6 +106,10 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
         RPCHelper.registerInterface(SceneRegistry.class, this, server);
     }
 
+    private void verifySceneUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.SCENE);
+    }
+
     @Override
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
@@ -123,6 +130,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
     @Override
     public Future<UnitConfig> registerSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        verifySceneUnitConfig(sceneUnitConfig);
         return unitRegistryRemote.registerUnitConfig(sceneUnitConfig);
     }
 
@@ -140,11 +148,13 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
     @Override
     public Future<UnitConfig> updateSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        verifySceneUnitConfig(sceneUnitConfig);
         return unitRegistryRemote.updateUnitConfig(sceneUnitConfig);
     }
 
     @Override
     public Future<UnitConfig> removeSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException {
+        verifySceneUnitConfig(sceneUnitConfig);
         return unitRegistryRemote.removeUnitConfig(sceneUnitConfig);
     }
 

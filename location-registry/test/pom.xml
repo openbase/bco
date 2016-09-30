@@ -96,7 +96,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.user.core</artifactId>
+            <artifactId>registry.unit.core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

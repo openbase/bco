@@ -31,6 +31,7 @@ import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -38,6 +39,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -166,6 +168,10 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
         RPCHelper.registerInterface(DeviceRegistry.class, this, server);
     }
 
+    private void verifyDeviceUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.DEVICE);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -175,6 +181,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      */
     @Override
     public Future<UnitConfig> registerDeviceConfig(UnitConfig deviceConfig) throws CouldNotPerformException {
+        verifyDeviceUnitConfig(deviceConfig);
         return unitRegistryRemote.registerUnitConfig(deviceConfig);
     }
 
@@ -211,7 +218,8 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      */
     @Override
     public UnitConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigById(deviceConfigId);
+        unitRegistryRemote.validateData();
+        return deviceUnitConfigRemoteRegistry.getMessage(deviceConfigId);
     }
 
     /**
@@ -310,6 +318,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      */
     @Override
     public Future<UnitConfig> updateDeviceConfig(UnitConfig deviceConfig) throws CouldNotPerformException {
+        verifyDeviceUnitConfig(deviceConfig);
         return unitRegistryRemote.updateUnitConfig(deviceConfig);
     }
 
@@ -322,6 +331,7 @@ public class DeviceRegistryController extends AbstractRegistryController<DeviceR
      */
     @Override
     public Future<UnitConfig> removeDeviceConfig(UnitConfig deviceConfig) throws CouldNotPerformException {
+        verifyDeviceUnitConfig(deviceConfig);
         return unitRegistryRemote.removeUnitConfig(deviceConfig);
     }
 

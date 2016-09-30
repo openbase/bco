@@ -25,12 +25,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -44,6 +46,7 @@ import rst.authorization.UserConfigType.UserConfig;
 import rst.authorization.UserRegistryDataType.UserRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -51,37 +54,37 @@ import rst.rsb.ScopeType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserRegistryController extends AbstractVirtualRegistryController<UserRegistryData, UserRegistryData.Builder> implements UserRegistry, Manageable<ScopeType.Scope> {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
-
+    
     private final UnitRegistryRemote unitRegistryRemote;
     private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> userUnitConfigRemoteRegistry;
     private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, UserRegistryData.Builder> authorizationGroupUnitConfigRemoteRegistry;
-
+    
     public UserRegistryController() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.newBuilder());
         this.unitRegistryRemote = new UnitRegistryRemote();
         this.userUnitConfigRemoteRegistry = new RemoteRegistry<>();
         this.authorizationGroupUnitConfigRemoteRegistry = new RemoteRegistry<>();
     }
-
+    
     @Override
     public void init() throws InitializationException, InterruptedException {
         super.init();
         unitRegistryRemote.addDataObserver(new Observer<UnitRegistryData>() {
-
+            
             @Override
             public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
                 userUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getUserUnitConfigList());
                 setDataField(UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, data.getUserUnitConfigList());
                 setDataField(UserRegistryData.USER_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getUserUnitConfigRegistryConsistent());
                 setDataField(UserRegistryData.USER_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getUserUnitConfigRegistryReadOnly());
-
+                
                 authorizationGroupUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAuthorizationGroupUnitConfigList());
                 setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, data.getAuthorizationGroupUnitConfigList());
                 setDataField(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getAuthorizationGroupUnitConfigRegistryConsistent());
@@ -90,7 +93,7 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
             }
         });
     }
-
+    
     @Override
     public void shutdown() {
         super.shutdown();
@@ -106,59 +109,71 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
     }
-
+    
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(UserRegistry.class, this, server);
     }
-
+    
+    private void verifyAuthorizationGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.AUTHORIZATION_GROUP);
+    }
+    
+    private void verifyUserUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.USER);
+    }
+    
     @Override
     public Future<UnitConfig> registerUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        verifyUserUnitConfig(userConfig);
         return unitRegistryRemote.registerUnitConfig(userConfig);
     }
-
+    
     @Override
     public Boolean containsUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return userUnitConfigRemoteRegistry.contains(userConfig);
     }
-
+    
     @Override
     public Boolean containsUserConfigById(String userConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return userUnitConfigRemoteRegistry.contains(userConfigId);
     }
-
+    
     @Override
     public Future<UnitConfig> updateUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        verifyUserUnitConfig(userConfig);
         return unitRegistryRemote.updateUnitConfig(userConfig);
     }
-
+    
     @Override
     public Future<UnitConfig> removeUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        verifyUserUnitConfig(userConfig);
         return unitRegistryRemote.removeUnitConfig(userConfig);
     }
-
+    
     @Override
     public UnitConfig getUserConfigById(String userConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return userUnitConfigRemoteRegistry.getMessage(userConfigId);
     }
-
+    
     @Override
     public List<UnitConfig> getUserConfigs() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return userUnitConfigRemoteRegistry.getMessages();
     }
-
+    
     @Override
     public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return getData().getUserUnitConfigRegistryReadOnly();
     }
-
+    
     @Override
     public List<UnitConfig> getUserConfigsByAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        verifyAuthorizationGroupUnitConfig(groupConfig);
         List<UnitConfig> userConfigs = new ArrayList<>();
         for (UnitConfig group : getAuthorizationGroupConfigs()) {
             if (group.equals(groupConfig)) {
@@ -170,48 +185,52 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
         }
         return userConfigs;
     }
-
+    
     @Override
     public Future<UnitConfig> registerAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        verifyAuthorizationGroupUnitConfig(groupConfig);
         return unitRegistryRemote.registerUnitConfig(groupConfig);
     }
-
+    
     @Override
     public Boolean containsAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return authorizationGroupUnitConfigRemoteRegistry.contains(groupConfig);
     }
-
+    
     @Override
     public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return authorizationGroupUnitConfigRemoteRegistry.contains(groupConfigId);
     }
-
+    
     @Override
     public Future<UnitConfig> updateAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        verifyAuthorizationGroupUnitConfig(groupConfig);
         return unitRegistryRemote.updateUnitConfig(groupConfig);
     }
-
+    
     @Override
     public Future<UnitConfig> removeAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
+        verifyAuthorizationGroupUnitConfig(groupConfig);
         return unitRegistryRemote.removeUnitConfig(groupConfig);
     }
-
+    
     @Override
     public UnitConfig getAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return authorizationGroupUnitConfigRemoteRegistry.getMessage(groupConfigId);
     }
-
+    
     @Override
     public List<UnitConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return authorizationGroupUnitConfigRemoteRegistry.getMessages();
     }
-
+    
     @Override
     public List<UnitConfig> getAuthorizationGroupConfigsbyUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
+        verifyUserUnitConfig(userConfig);
         List<UnitConfig> groupConfigs = new ArrayList<>();
         for (UnitConfig group : getAuthorizationGroupConfigs()) {
             group.getAuthorizationGroupConfig().getMemberIdList().stream().filter((memeberId) -> (userConfig.getId().equals(memeberId))).forEach((_item) -> {
@@ -220,7 +239,7 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
         }
         return groupConfigs;
     }
-
+    
     @Override
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         unitRegistryRemote.validateData();

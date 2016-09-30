@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.scene.lib.jp;
+package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
@@ -21,17 +21,16 @@ package org.openbase.bco.registry.scene.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.io.File;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
-import java.io.File;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPDalUnitConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 

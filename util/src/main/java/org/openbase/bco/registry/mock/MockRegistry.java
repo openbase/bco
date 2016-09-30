@@ -22,7 +22,9 @@ package org.openbase.bco.registry.mock;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -60,6 +62,8 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TA
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TEMPERATURE_SPS;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
+import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.jps.core.JPService;
@@ -99,7 +103,7 @@ public class MockRegistry {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MockRegistry.class);
 
     public static final String USER_NAME = "uSeRnAmE";
-    public static UserConfig testUser;
+    public static UnitConfig testUser;
 
     public static final String COLORABLE_LIGHT_LABEL = "Ambient_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
@@ -125,6 +129,7 @@ public class MockRegistry {
     private static AppRegistryLauncher appRegistryLauncher;
     private static SceneRegistryLauncher sceneRegistryLauncher;
     private static UserRegistryLauncher userRegistryLauncher;
+    private static UnitRegistryLauncher unitRegistryLauncher;
 
     private static DeviceRegistry deviceRegistry;
     private static LocationRegistry locationRegistry;
@@ -132,11 +137,11 @@ public class MockRegistry {
     private static AppRegistry appRegistry;
     private static SceneRegistry sceneRegistry;
     private static UserRegistry userRegisty;
+    private static UnitRegistry unitRegistry;
 
-//    private final DeviceRegistryRemote deviceRegistry;
-//    private final LocationRegistryRemote locationRemote;
-//    private final UserRegistryRemote userRemote;
-    private static LocationConfig paradise;
+    private static UnitConfig paradiseLocation;
+
+    public static final Map<UnitType, String> UNIT_TYPE_LABEL_MAP = new HashMap<>();
 
     public enum MockServiceTemplate {
 
@@ -229,6 +234,21 @@ public class MockRegistry {
         try {
             JPService.setupJUnitTestMode();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        unitRegistryLauncher = new UnitRegistryLauncher();
+                        unitRegistry = unitRegistryLauncher.getUnitRegistry();
+                        registerUser();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                    }
+                    return null;
+                }
+            }));
+
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
@@ -360,6 +380,25 @@ public class MockRegistry {
                 task.get();
             }
 
+            if (UNIT_TYPE_LABEL_MAP.isEmpty()) {
+                UNIT_TYPE_LABEL_MAP.put(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.LIGHT, LIGHT_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.BUTTON, BUTTON_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMER, DIMMABLE_LIGHT_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.HANDLE, HANDLE_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_SWITCH, POWER_SWITCH_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.REED_CONTACT, REED_CONTACT_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.ROLLER_SHUTTER, ROLLER_SHUTTER_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.TAMPER_DETECTOR, TAMPER_DETECTOR_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL);
+                UNIT_TYPE_LABEL_MAP.put(UnitType.BATTERY, BATTERY_LABEL);
+            }
+
             logger.info("Started app/agent/scene registries!");
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
@@ -382,7 +421,8 @@ public class MockRegistry {
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
-            paradise = locationRegistry.registerLocationConfig(LocationConfig.newBuilder().setLabel("Paradise").build()).get();
+            LocationConfig defaultLocation = LocationConfig.getDefaultInstance();
+            paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Paradise").setLocationConfig(defaultLocation).build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -390,89 +430,74 @@ public class MockRegistry {
 
     private void registerUser() throws CouldNotPerformException, InterruptedException {
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
-        config.setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
+        UnitConfig userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build();
         try {
-            testUser = userRegisty.registerUserConfig(config.build()).get();
+            testUser = userRegisty.registerUserConfig(userUnitConfig).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
     }
 
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
-        ArrayList<UnitConfig> units = new ArrayList<>();
-
         try {
             // ambient light
             DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
-            units.add(getUnitConfig(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass));
 
-            units.clear();
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
-            units.add(getUnitConfig(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL));
-            units.add(getUnitConfig(UnitType.BATTERY, BATTERY_LABEL));
-            units.add(getUnitConfig(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL));
-            units.add(getUnitConfig(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL));
-            units.add(getUnitConfig(UnitType.TAMPER_DETECTOR, TAMPER_DETECTOR_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
 
-            units.clear();
             // button
             DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.BUTTON, BUTTON_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
-            units.clear();
             // dimmer
             DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.DIMMER, DIMMABLE_LIGHT_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
-            units.clear();
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.HANDLE, HANDLE_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass, units)).get();
-            units.clear();
+            registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
+
             // light
             DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.LIGHT, LIGHT_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
-            units.clear();
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.POWER_SWITCH, POWER_SWITCH_LABEL));
-            units.add(getUnitConfig(UnitTemplate.UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
-            units.clear();
             // reedSwitch
             DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.REED_CONTACT, REED_CONTACT_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
 
-            units.clear();
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.ROLLER_SHUTTER, ROLLER_SHUTTER_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
 
-            units.clear();
             // smoke detector
             DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
-            units.clear();
             // temperature controller
             DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
-            units.add(getUnitConfig(UnitTemplate.UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass, units)).get();
+            registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
+    }
+
+    private static void updateUnitLabel(List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        for (String unitId : unitIds) {
+            UnitConfig tmp = unitRegistry.getUnitConfigById(unitId);
+            unitRegistry.updateUnitConfig(tmp.toBuilder().setLabel(UNIT_TYPE_LABEL_MAP.get(tmp.getType())).build()).get();
+        }
+    }
+
+    private static void registerDeviceUnitConfig(UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        UnitConfig tmp = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
+        updateUnitLabel(tmp.getDeviceConfig().getUnitIdList());
     }
 
     public static PlacementConfig getDefaultPlacement() {
@@ -484,10 +509,10 @@ public class MockRegistry {
 
     public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        for (ServiceTemplate serviceTemplate : template.getServiceTemplateList()) {
+        template.getServiceTemplateList().stream().forEach((serviceTemplate) -> {
             BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
             serviceConfigList.add(ServiceConfig.newBuilder().setServiceTemplate(serviceTemplate).setBindingConfig(bindingServiceConfig).build());
-        }
+        });
         return serviceConfigList;
     }
 
@@ -496,14 +521,16 @@ public class MockRegistry {
         return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToUnitHost(false).build();
     }
 
-    public static DeviceConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, ArrayList<UnitConfig> units) {
-        return DeviceConfig.newBuilder()
-                .setPlacementConfig(getDefaultPlacement())
-                .setLabel(label)
+    public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz) {
+        DeviceConfig tmp = DeviceConfig.newBuilder()
                 .setSerialNumber(serialNumber)
                 .setDeviceClassId(clazz.getId())
-                .addAllUnitConfig(units)
                 .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.INSTALLED))
+                .build();
+        return UnitConfig.newBuilder()
+                .setPlacementConfig(getDefaultPlacement())
+                .setLabel(label)
+                .setDeviceConfig(tmp)
                 .build();
     }
 
@@ -535,7 +562,7 @@ public class MockRegistry {
         return bindingConfigBuilder.build();
     }
 
-    public static LocationConfig getLocation() {
-        return paradise;
+    public static UnitConfig getLocation() {
+        return paradiseLocation;
     }
 }
