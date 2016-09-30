@@ -104,18 +104,6 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param data {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void notifyDataUpdate(final DeviceRegistryData data) throws CouldNotPerformException {
-        deviceClassRemoteRegistry.notifyRegistryUpdate(data.getDeviceClassList());
-        deviceUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getDeviceUnitConfigList());
-    }
-
     public SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> getDeviceClassRemoteRegistry() {
         return deviceClassRemoteRegistry;
     }

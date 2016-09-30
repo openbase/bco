@@ -30,7 +30,7 @@ import org.openbase.jul.extension.rsb.scope.jp.JPScope;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> The virtual registry message type.
- * @param <MB> The virtual registry message  builder.
+ * @param <MB> The virtual registry message builder.
  * @param <RM> The message type of the real registry which is mirrored by this virtual registry.
  */
 public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>, RM> extends AbstractRegistryController<M, MB> {
@@ -60,7 +60,7 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     }
 
     @Override
-    protected void registerPlugins() throws CouldNotPerformException {
+    protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
     }
 
@@ -69,6 +69,6 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         // not needed for virtual registries.
         return null;
     }
-    
+
     protected abstract void syncVirtualRegistryFields(final RM realData) throws CouldNotPerformException;
 }

@@ -47,6 +47,7 @@ import rst.homeautomation.service.ServiceConfigType;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.spatial.ConnectionConfigType.ConnectionConfig;
@@ -57,7 +58,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRegistryController extends AbstractVirtualRegistryController<LocationRegistryData, LocationRegistryData.Builder> implements LocationRegistry, Manageable<ScopeType.Scope> {
+public class LocationRegistryController extends AbstractVirtualRegistryController<LocationRegistryData, LocationRegistryData.Builder, UnitRegistryData> implements LocationRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationRegistryData.getDefaultInstance()));
@@ -73,8 +74,19 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(JPLocationRegistryScope.class, LocationRegistryData.newBuilder());
         unitRegistryRemote = new UnitRegistryRemote();
-        locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
-        connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+        locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+        connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+    }
+
+    @Override
+    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, realData.getLocationUnitConfigList());
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getLocationUnitConfigRegistryConsistent());
+        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getLocationUnitConfigRegistryReadOnly());
+
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, realData.getConnectionUnitConfigList());
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getConnectionUnitConfigRegistryConsistent());
+        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getConnectionUnitConfigRegistryReadOnly());
     }
 
     /**
@@ -91,16 +103,6 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(locationUnitConfigRemoteRegistry);
         registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
-    }
-
-    @Override
-    protected void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isLocationUnitRegistryConsistent());
-        setDataField(LocationRegistryData.LOCATION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isLocationUnitRegistryReadOnly());
-
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitRegistryConsistent());
-        setDataField(LocationRegistryData.CONNECTION_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, unitRegistryRemote.isConnectionUnitRegistryReadOnly());
-        super.notifyChange();
     }
 
     /**

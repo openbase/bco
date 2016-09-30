@@ -24,26 +24,22 @@ package org.openbase.bco.registry.scene.core;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
@@ -52,7 +48,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRegistryController extends AbstractVirtualRegistryController<SceneRegistryData, SceneRegistryData.Builder> implements SceneRegistry, Manageable<ScopeType.Scope> {
+public class SceneRegistryController extends AbstractVirtualRegistryController<SceneRegistryData, SceneRegistryData.Builder, UnitRegistryData> implements SceneRegistry, Manageable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
@@ -61,34 +57,24 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
     }
 
     private final UnitRegistryRemote unitRegistryRemote;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder, SceneRegistryData.Builder> sceneUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneUnitConfigRemoteRegistry;
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.newBuilder());
         unitRegistryRemote = new UnitRegistryRemote();
-        sceneUnitConfigRemoteRegistry = new RemoteRegistry<>();
+        sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
-        super.init();
-        unitRegistryRemote.addDataObserver(new Observer<UnitRegistryDataType.UnitRegistryData>() {
-
-            @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                sceneUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getSceneUnitConfigList());
-                setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, data.getSceneUnitConfigList());
-                setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, data.getSceneUnitConfigRegistryConsistent());
-                setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, data.getSceneUnitConfigRegistryReadOnly());
-                notifyChange();
-            }
-        });
+    protected void syncVirtualRegistryFields(final UnitRegistryData realData) throws CouldNotPerformException {
+        setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, realData.getSceneUnitConfigList());
+        setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, realData.getSceneUnitConfigRegistryConsistent());
+        setDataField(SceneRegistryData.SCENE_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, realData.getSceneUnitConfigRegistryReadOnly());
     }
 
     @Override
-    public void shutdown() {
-        super.shutdown();
-        sceneUnitConfigRemoteRegistry.shutdown();
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
     }
 
     /**

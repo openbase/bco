@@ -29,7 +29,6 @@ import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
@@ -111,7 +110,6 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -1095,5 +1093,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException {
         return sceneUnitConfigRegistry.isConsistent();
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
 }
