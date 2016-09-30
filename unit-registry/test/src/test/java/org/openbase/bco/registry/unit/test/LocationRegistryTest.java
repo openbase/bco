@@ -32,6 +32,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.registry.agent.core.AgentRegistryController;
+import org.openbase.bco.registry.app.core.AppRegistryController;
+import org.openbase.bco.registry.device.core.DeviceRegistryController;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -54,25 +57,34 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryTest {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(LocationRegistryTest.class);
-    
+
     private static UnitRegistryController unitRegistry;
+    private static DeviceRegistryController deviceRegistry;
+    private static AppRegistryController appRegistry;
+    private static AgentRegistryController agentRegistry;
 
 //    private static LocationRegistryRemote remote;
     public LocationRegistryTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, JPServiceException, InterruptedException, CouldNotPerformException {
         JPService.registerProperty(JPDebugMode.class, true);
         JPService.setupJUnitTestMode();
-        
+
         unitRegistry = new UnitRegistryController();
+        deviceRegistry = new DeviceRegistryController();
+        appRegistry = new AppRegistryController();
+        agentRegistry = new AgentRegistryController();
         unitRegistry.init();
-        
+        deviceRegistry.init();
+        appRegistry.init();
+        agentRegistry.init();
+
         Thread unitRegistryThread = new Thread(new Runnable() {
-            
+
             @Override
             public void run() {
                 try {
@@ -82,15 +94,54 @@ public class LocationRegistryTest {
                 }
             }
         });
-        
+        Thread deviceRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    deviceRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+        Thread appRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    appRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+        Thread agentRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    agentRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+
         unitRegistryThread.start();
+        deviceRegistryThread.start();
+        appRegistryThread.start();
+        agentRegistryThread.start();
         unitRegistryThread.join();
+        deviceRegistryThread.join();
+        appRegistryThread.join();
+        agentRegistryThread.join();
 
 //        remote = new LocationRegistryRemote();
 //        remote.init();
 //        remote.activate();
     }
-    
+
     @AfterClass
     public static void tearDownClass() throws InterruptedException, CouldNotPerformException {
 //        remote.shutdown();
@@ -98,7 +149,7 @@ public class LocationRegistryTest {
             unitRegistry.shutdown();
         }
     }
-    
+
     @Before
     public void setUp() throws CouldNotPerformException {
 //        deviceRegistry.getUnitGroupRegistry().clear();
@@ -107,24 +158,24 @@ public class LocationRegistryTest {
         unitRegistry.getLocationUnitConfigRegistry().clear();
 //        userRegistry.getUserRegistry().clear();
     }
-    
+
     @After
     public void tearDown() {
     }
-    
+
     private static UnitConfig.Builder getLocationUnitBuilder() {
         return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.LOCATION).setLocationConfig(LocationConfig.getDefaultInstance());
     }
-    
+
     private static UnitConfig.Builder getLocationUnitBuilder(LocationConfig.LocationType locationType) {
         LocationConfig locationConfig = LocationConfig.getDefaultInstance().toBuilder().setType(locationType).build();
         return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.LOCATION).setLocationConfig(locationConfig);
     }
-    
+
     private static UnitConfig.Builder getConnectionUnitBuilder() {
         return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.CONNECTION).setConnectionConfig(ConnectionConfig.getDefaultInstance());
     }
-    
+
     private static UnitConfig.Builder getConnectionUnitBuilder(ConnectionConfig.ConnectionType connectionType) {
         ConnectionConfig connectionConfig = ConnectionConfig.getDefaultInstance().toBuilder().setType(connectionType).build();
         return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.LOCATION).setConnectionConfig(connectionConfig);
@@ -141,16 +192,16 @@ public class LocationRegistryTest {
         System.out.println("TestRootConsisntency");
         UnitConfig root = getLocationUnitBuilder().setLabel("TestRootLocation").build();
         UnitConfig registeredRoot = unitRegistry.registerUnitConfig(root).get();
-        
+
         assertTrue("The new location isn't registered as a root location.", registeredRoot.getLocationConfig().getRoot());
         assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
-        
+
         UnitConfig child = getLocationUnitBuilder().setLabel("TestChildLocation").setPlacementConfig(PlacementConfig.newBuilder().setLocationId(registeredRoot.getId()).build()).build();
         UnitConfig registeredChild = unitRegistry.registerUnitConfig(child).get();
         assertTrue("The new location isn't registered as a child location.", !registeredChild.getLocationConfig().getRoot());
         assertTrue("The child location isn't represented in its parent.", unitRegistry.getUnitConfigById(registeredRoot.getId()).getLocationConfig().getChildIdList().contains(registeredChild.getId()));
         assertTrue("The root node contains more than one child.", unitRegistry.getUnitConfigById(registeredRoot.getId()).getLocationConfig().getChildIdCount() == 1);
-        
+
         UnitConfig removedLocation = unitRegistry.removeUnitConfig(registeredRoot).get();
         assertFalse("The deleted root location is still available.", unitRegistry.containsUnitConfig(removedLocation));
         assertTrue("Child hasn't become a root location after the removal of its parent.", unitRegistry.getUnitConfigById(registeredChild.getId()).getLocationConfig().getRoot());
@@ -170,7 +221,7 @@ public class LocationRegistryTest {
         UnitConfig registeredLiving = unitRegistry.removeUnitConfig(living).get();
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getLocationConfig().getRoot());
         assertEquals("Label has not been set", label, registeredLiving.getLabel());
-        
+
         String rootLocationConfigLabel = "Test3RootLocation";
         UnitConfig rootLocationConfig = getLocationUnitBuilder().setLabel(rootLocationConfigLabel).build();
         UnitConfig registeredRootLocationConfig = unitRegistry.registerUnitConfig(rootLocationConfig).get();
@@ -178,7 +229,7 @@ public class LocationRegistryTest {
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
         unitRegistry.updateUnitConfig(registeredLivingBuilder.build()).get();
         assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
-        
+
         UnitConfig home = getLocationUnitBuilder().setLabel("Test2Home").build();
         UnitConfig registeredHome = unitRegistry.removeUnitConfig(home).get();
         registeredLivingBuilder = unitRegistry.getUnitConfigById(registeredRootLocationConfig.getId()).toBuilder();
@@ -195,27 +246,27 @@ public class LocationRegistryTest {
     @Test(timeout = 5000)
     public void testParentIdUpdateConsistency() throws Exception {
         System.out.println("testParentIdUpdateConsistency");
-        
+
         String rootLocationConfigLabel = "Test3RootLocation";
         UnitConfig rootLocationConfig = getLocationUnitBuilder().setLabel(rootLocationConfigLabel).build();
         UnitConfig registeredRootLocationConfig = unitRegistry.registerUnitConfig(rootLocationConfig).get();
-        
+
         String childLocationConfigLabel = "Test3ChildLocation";
         UnitConfig.Builder childLocationConfigBuilder = getLocationUnitBuilder();
         childLocationConfigBuilder.setLabel(childLocationConfigLabel);
         childLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
         UnitConfig registeredChildLocationConfig = unitRegistry.registerUnitConfig(childLocationConfigBuilder.build()).get();
-        
+
         String parentLabel = "Test3ParentLocation";
         UnitConfig.Builder parentLocationConfigBuilder = getLocationUnitBuilder().setLabel(parentLabel);
         UnitConfig registeredParentLocationConfig = unitRegistry.registerUnitConfig(parentLocationConfigBuilder.build()).get();
-        
+
         assertEquals("The new location isn't registered as child of Location[" + rootLocationConfigLabel + "]!", registeredRootLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
-        
+
         UnitConfig.Builder registeredChildLocationConfigBuilder = registeredChildLocationConfig.toBuilder();
         registeredChildLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredParentLocationConfig.getId());
         registeredChildLocationConfig = unitRegistry.updateUnitConfig(registeredChildLocationConfigBuilder.build()).get();
-        
+
         assertEquals("The parent location of child was not updated as new placement location id after update.", registeredParentLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
         assertEquals("The parent location of child was not updated as new placement location id in global registry.", registeredParentLocationConfig.getId(), unitRegistry.getUnitConfigsByLabel(childLocationConfigLabel).get(0).getPlacementConfig().getLocationId());
     }
@@ -229,19 +280,19 @@ public class LocationRegistryTest {
     @Test(timeout = 5000)
     public void testLoopConsistency() throws Exception {
         System.out.println("TestLoopConsistency");
-        
+
         String rootLabel = "Root";
         String firstChildLabel = "FirstChild";
         String SecondChildLabel = "SecondChild";
         UnitConfig root = getLocationUnitBuilder().setLabel(rootLabel).build();
         root = unitRegistry.registerUnitConfig(root).get();
-        
+
         UnitConfig firstChild = getLocationUnitBuilder().setLabel(firstChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         unitRegistry.registerUnitConfig(firstChild);
-        
+
         UnitConfig secondChild = getLocationUnitBuilder().setLabel(SecondChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         secondChild = unitRegistry.registerUnitConfig(secondChild).get();
-        
+
         try {
             // register loop
             root = unitRegistry.getUnitConfigById(root.getId());
@@ -265,15 +316,15 @@ public class LocationRegistryTest {
     @Test(timeout = 5000)
     public void testChildWithSameLabelConsistency() throws Exception {
         System.out.println("TestChildWithSameLabelConsistency");
-        
+
         String rootLabel = "RootWithChildrenWithSameLabel";
         String childLabel = "childWithSameLabel";
         UnitConfig root = getLocationUnitBuilder().setLabel(rootLabel).build();
         root = unitRegistry.registerUnitConfig(root).get();
-        
+
         UnitConfig firstChild = getLocationUnitBuilder().setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         unitRegistry.registerUnitConfig(firstChild).get();
-        
+
         try {
             UnitConfig secondChild = getLocationUnitBuilder().setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
@@ -293,7 +344,7 @@ public class LocationRegistryTest {
     @Test(timeout = 5000)
     public void testConnectionLocationAndScopeAndLabelConsistency() throws Exception {
         System.out.println("TestConnectionLocationAndScopeAndLabelConsistency");
-        
+
         String rootLabel = "RootZoneForConnectionTest";
         String zoneLabel = "SubZone";
         String tile1Label = "Tile1";
@@ -304,20 +355,20 @@ public class LocationRegistryTest {
         UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
         UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).build()).get();
         UnitConfig tile3 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).build()).get();
-        
+
         String connection1Label = "Connection1";
         String connection2Label = "Connection2";
         ConnectionConfig connectionConfig1 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build();
         ConnectionConfig connectionConfig2 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
         UnitConfig connection1 = unitRegistry.registerUnitConfig(getConnectionUnitBuilder().setLabel(connection1Label).setConnectionConfig(connectionConfig1).build()).get();
         UnitConfig connection2 = unitRegistry.registerUnitConfig(getConnectionUnitBuilder().setLabel(connection2Label).setConnectionConfig(connectionConfig2).build()).get();
-        
+
         assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
         assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
-        
+
         assertEquals("/rootzoneforconnectiontest/door/connection1/", ScopeGenerator.generateStringRep(connection1.getScope()));
         assertEquals(ScopeGenerator.generateConnectionScope(connection2, zone), connection2.getScope());
-        
+
         ConnectionConfig connectionConfig3 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
         UnitConfig connection3 = getConnectionUnitBuilder().setConnectionConfig(connectionConfig3).build();
         try {
@@ -338,7 +389,7 @@ public class LocationRegistryTest {
     @Test(timeout = 5000)
     public void testConnectionTilesConsistency() throws Exception {
         System.out.println("TestConnectionTilesConsistency");
-        
+
         String rootLabel = "ConnectionTestRootZone";
         String noTileLabel = "NoTile";
         String tile1Label = "RealTile1";
@@ -347,7 +398,7 @@ public class LocationRegistryTest {
         UnitConfig noTile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.REGION).setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
         UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
         UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
-        
+
         String connectionFailLabel = "ConnectionFail";
         String connectionLabel = "TilesTestConnection";
         ConnectionConfig connectionFail = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile2.getId()).build();
@@ -360,7 +411,7 @@ public class LocationRegistryTest {
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
-        
+
         ConnectionConfig.Builder connectionBuilder = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW);
         connectionBuilder.addTileId(noTile.getId());
         connectionBuilder.addTileId(tile1.getId());
@@ -370,7 +421,7 @@ public class LocationRegistryTest {
         connectionBuilder.addTileId("fakeLocationId");
         UnitConfig connectionUnit = unitRegistry.registerUnitConfig(getConnectionUnitBuilder().setLabel(connectionLabel).setConnectionConfig(connectionBuilder.build()).build()).get();
         ConnectionConfig connection = connectionUnit.getConnectionConfig();
-        
+
         assertEquals("Doubled tiles or locations that aren't tiles or that do not exists do not have been removed", 2, connection.getTileIdCount());
         assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile1.getId()));
         assertTrue("The tile list does not contain the expected tile", connection.getTileIdList().contains(tile2.getId()));
