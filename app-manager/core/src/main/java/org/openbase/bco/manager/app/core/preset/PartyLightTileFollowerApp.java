@@ -18,6 +18,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.GlobalExecutionService;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.spatial.LocationConfigType;
 import rst.vision.HSBColorType.HSBColor;
@@ -44,7 +45,7 @@ import rst.vision.HSBColorType.HSBColor;
  * #L%
  */
 /**
- UnitConfig
+ * UnitConfig
  */
 public class PartyLightTileFollowerApp extends AbstractApp {
 
@@ -60,13 +61,13 @@ public class PartyLightTileFollowerApp extends AbstractApp {
 
             LocationRemote locationRemote;
             // init tile remotes
-            for (LocationConfigType.LocationConfig locationConfig : locationRegistry.getLocationConfigs()) {
-                if (!locationConfig.getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
+            for (UnitConfig locationUnitConfig : locationRegistry.getLocationConfigs()) {
+                if (!locationUnitConfig.getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
                     continue;
                 }
                 locationRemote = new LocationRemote();
-                locationRemoteMap.put(locationConfig.getId(), locationRemote);
-                locationRemote.init(locationConfig);
+                locationRemoteMap.put(locationUnitConfig.getId(), locationRemote);
+                locationRemote.init(locationUnitConfig);
                 locationRemote.activate();
             }
 
@@ -96,7 +97,7 @@ public class PartyLightTileFollowerApp extends AbstractApp {
     protected void execute() throws CouldNotPerformException, InterruptedException {
 
         // verify
-        if (!locationRegistry.getLocationConfigById(getConfig().getLocationId()).getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
+        if (!locationRegistry.getLocationConfigById(getConfig().getId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
             throw new InvalidStateException("App location is not a tile!");
         }
 
@@ -139,7 +140,7 @@ public class PartyLightTileFollowerApp extends AbstractApp {
                     processedLocations.clear();
 
                     // select inital room
-                    locationRemote = locationRemoteMap.get(getConfig().getLocationId());
+                    locationRemote = locationRemoteMap.get(getConfig().getId());
 
                     processRoom(locationRemote, colors[colorIndex]);
 

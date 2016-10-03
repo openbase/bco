@@ -120,9 +120,9 @@ public abstract class AbstractDeviceController extends AbstractSystemUnitControl
     }
 
     @Override
-    public DeviceConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         //TODO: which changes need to be applied here and in the AbstractSystemUnitController?
 
-        return super.applyConfigUpdate(config); //To change body of generated methods, choose Tools | Templates.
+        return super.applyConfigUpdate(config);
     }
 }

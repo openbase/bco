@@ -33,14 +33,14 @@ import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AgentRemoteFactoryImpl implements Factory<AgentRemote, AgentConfig> {
+public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> {
 
     private OpenHABRemote openHABRemote;
 
@@ -52,15 +52,11 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, AgentConfig>
     }
 
     @Override
-    public AgentRemote newInstance(AgentConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public AgentRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         AgentRemote agentRemote = new AgentRemote();
         try {
-            agentRemote.addDataObserver(new Observer<AgentData>() {
-
-                @Override
-                public void update(final Observable<AgentData> source, AgentData data) throws Exception {
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
-                }
+            agentRemote.addDataObserver((final Observable<AgentData> source, AgentData data) -> {
+                openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
             agentRemote.init(config);
             agentRemote.activate();
@@ -72,9 +68,9 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, AgentConfig>
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(AgentConfig agentConfig) throws CouldNotPerformException {
+    private String generateItemId(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("agent")
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(agentConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(agentUnitConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
 }

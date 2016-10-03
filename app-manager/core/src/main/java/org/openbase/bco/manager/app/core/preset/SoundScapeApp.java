@@ -34,9 +34,9 @@ import org.openbase.jul.schedule.WatchDog;
 import rsb.Event;
 import rsb.Handler;
 import rsb.Scope;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.state.ActivationStateType;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -99,7 +99,7 @@ public class SoundScapeApp extends AbstractApp {
     }
 
     @Override
-    public void init(final AppConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             agentRegistryRemote.activate();

@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.LoggerFactory;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType.Scope;
 import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
@@ -62,10 +63,10 @@ public class GroupEntry {
     private static int maxIconSize = 0;
     private static int maxParentLocationsSize = 0;
 
-    public GroupEntry(final LocationConfig locationConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
-        this(generateGroupID(locationConfig), locationConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationConfig.getMetaConfig())), new ArrayList<>());
-        if (!locationConfig.getRoot()) {
-            this.parentLocations.add(generateParentGroupID(locationConfig, locationRegistryRemote));
+    public GroupEntry(final UnitConfig locationUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
+        this(generateGroupID(locationUnitConfig), locationUnitConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
+        if (!locationUnitConfig.getLocationConfig().getRoot()) {
+            this.parentLocations.add(generateParentGroupID(locationUnitConfig, locationRegistryRemote));
         }
         calculateGaps();
     }
@@ -177,7 +178,7 @@ public class GroupEntry {
         maxParentLocationsSize = 0;
     }
 
-    public static String generateParentGroupID(final LocationConfig childLocationConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
+    public static String generateParentGroupID(final UnitConfig childLocationConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
 
         try {
             return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
@@ -185,7 +186,6 @@ public class GroupEntry {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could location parent id via placement config. Outdated registry entry!", ex), logger);
             return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
         }
-
     }
 
     public static String generateGroupID(final PlacementConfig placementConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
@@ -202,16 +202,16 @@ public class GroupEntry {
     }
 
     public static String generateGroupID(final String locationId, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
-        LocationConfig locationConfig;
+        UnitConfig locationUnitConfig;
         try {
-            locationConfig = locationRegistryRemote.getLocationConfigById(locationId);
+            locationUnitConfig = locationRegistryRemote.getLocationConfigById(locationId);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate group id for LocationId[" + locationId + "]!", ex);
         }
-        return generateGroupID(locationConfig);
+        return generateGroupID(locationUnitConfig);
     }
 
-    public static String generateGroupID(final LocationConfig config) throws CouldNotPerformException {
+    public static String generateGroupID(final UnitConfig config) throws CouldNotPerformException {
         try {
             if (!config.hasScope()) {
                 throw new NotAvailableException("locationconfig.scope");

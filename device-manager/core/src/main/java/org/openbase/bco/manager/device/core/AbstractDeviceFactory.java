@@ -30,7 +30,7 @@ import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -42,42 +42,42 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
         super();
     }
 
-    public DeviceController newInstance(final DeviceConfig deviceConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
         try {
-            return newInstance(deviceConfig, deviceManager.getServiceFactory());
+            return newInstance(deviceUnitConfig, deviceManager.getServiceFactory());
         } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(Device.class, deviceConfig.getId(), ex);
+            throw new InstantiationException(Device.class, deviceUnitConfig.getId(), ex);
         }
     }
 
     @Override
-    public DeviceController newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException {
         try {
-            if (deviceConfig == null) {
+            if (deviceUnitConfig == null) {
                 throw new NotAvailableException("deviceConfig");
             }
 
-            if (!deviceConfig.hasId()) {
+            if (!deviceUnitConfig.hasId()) {
                 throw new NotAvailableException("deviceConfig.id");
             }
 
-            if (!deviceConfig.hasLabel()) {
+            if (!deviceUnitConfig.hasLabel()) {
                 throw new NotAvailableException("deviceConfig.label");
             }
 
-            if (!deviceConfig.hasPlacementConfig()) {
+            if (!deviceUnitConfig.hasPlacementConfig()) {
                 throw new NotAvailableException("deviceConfig.placement");
             }
 
-            if (!deviceConfig.getPlacementConfig().hasLocationId()) {
+            if (!deviceUnitConfig.getPlacementConfig().hasLocationId()) {
                 throw new NotAvailableException("deviceConfig.placement.locationId");
             }
 
             final GenericDeviceController genericDeviceController = new GenericDeviceController(serviceFactory);
-            genericDeviceController.init(deviceConfig);
+            genericDeviceController.init(deviceUnitConfig);
             return genericDeviceController;
         } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(Device.class, deviceConfig.getId(), ex);
+            throw new InstantiationException(Device.class, deviceUnitConfig.getId(), ex);
         }
     }
 }

@@ -25,14 +25,15 @@ package org.openbase.bco.manager.device.lib;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.homeautomation.unit.UnitConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface DeviceFactory extends Factory<DeviceController, DeviceConfig> {
+public interface DeviceFactory extends Factory<DeviceController, UnitConfig> {
 
-    public DeviceController newInstance(final DeviceConfig deviceConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
+    public DeviceController newInstance(final UnitConfigType.UnitConfig deviceUnitConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
 
 }

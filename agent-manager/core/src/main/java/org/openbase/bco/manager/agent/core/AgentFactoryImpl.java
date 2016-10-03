@@ -30,7 +30,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -54,13 +54,13 @@ public class AgentFactoryImpl implements AgentFactory {
     }
 
     @Override
-    public AgentController newInstance(final AgentConfig config) throws InstantiationException {
+    public AgentController newInstance(final UnitConfig config) throws InstantiationException {
         AgentController agent;
         try {
             if (config == null) {
                 throw new NotAvailableException("agentconfig");
             }
-            if (!config.hasAgentClassId()) {
+            if (!config.getAgentConfig().hasAgentClassId()) {
                 throw new NotAvailableException("agentype");
             }
             if (!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
@@ -76,10 +76,10 @@ public class AgentFactoryImpl implements AgentFactory {
         return agent;
     }
 
-    private String getAgentClass(final AgentConfigType.AgentConfig config) {
+    private String getAgentClass(final UnitConfig config) {
         return AbstractAgent.class.getPackage().getName() + "."
                 + "preset."
-                + config.getAgentClassId()
+                + config.getAgentConfig().getAgentClassId()
                 + "Agent";
     }
 }

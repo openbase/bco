@@ -36,8 +36,8 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.state.EnablingStateType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -51,7 +51,7 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
     private final AppFactory factory;
     private final ControllerRegistry<String, AppController> appRegistry;
     private final AppRegistryRemote appRegistryRemote;
-    private final EnableableEntryRegistrySynchronizer<String, AppController, AppConfig, AppConfig.Builder> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
     public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
@@ -62,10 +62,10 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, AppConfig, AppConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
 
                 @Override
-                public boolean enablingCondition(final AppConfig config) {
+                public boolean enablingCondition(final UnitConfig config) {
                     return config.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED;
                 }
             };

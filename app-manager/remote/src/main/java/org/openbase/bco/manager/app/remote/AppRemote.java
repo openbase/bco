@@ -28,15 +28,15 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppDataType.AppData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> implements App {
+public class AppRemote extends AbstractConfigurableRemote<AppData, UnitConfig> implements App {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
@@ -44,7 +44,7 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, AppConfig> im
     }
 
     public AppRemote() {
-        super(AppData.class, AppConfig.class);
+        super(AppData.class, UnitConfig.class);
     }
 
     @Override

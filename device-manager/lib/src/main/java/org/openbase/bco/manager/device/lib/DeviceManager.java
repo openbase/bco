@@ -30,7 +30,7 @@ import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.RegistryImpl;
-import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -42,7 +42,7 @@ public interface DeviceManager extends LocationRegistryProvider, DeviceRegistryP
 
     public UnitControllerRegistry getUnitControllerRegistry() throws NotAvailableException;
 
-    public boolean isSupported(final DeviceConfigType.DeviceConfig config) throws CouldNotPerformException;
+    public boolean isSupported(final UnitConfig config) throws CouldNotPerformException;
 
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 }

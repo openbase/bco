@@ -35,7 +35,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import rst.homeautomation.control.agent.AgentConfigType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.vision.HSBColorType.HSBColor;
 
 /**
@@ -143,7 +143,7 @@ public class AmbientColorAgent extends AbstractAgent {
     }
 
     @Override
-    public void init(final AgentConfigType.AgentConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             super.init(config);
 

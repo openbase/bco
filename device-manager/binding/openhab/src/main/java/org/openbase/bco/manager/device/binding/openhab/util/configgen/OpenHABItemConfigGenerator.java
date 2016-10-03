@@ -120,12 +120,12 @@ public class OpenHABItemConfigGenerator {
         try {
             // generate location groups
             GroupEntry groupEntry, rootEntry = null;
-            List<LocationConfig> locationConfigList = locationRegistryRemote.getData().getLocationConfigList();
-            for (LocationConfig locationConfig : locationConfigList) {
-                groupEntry = new GroupEntry(locationConfig, locationRegistryRemote);
-                groupEntryList.add(new GroupEntry(locationConfig, locationRegistryRemote));
+            List<UnitConfig> locationConfigList = locationRegistryRemote.getData().getLocationUnitConfigList();
+            for (final UnitConfig locationUnitConfig : locationConfigList) {
+                groupEntry = new GroupEntry(locationUnitConfig, locationRegistryRemote);
+                groupEntryList.add(new GroupEntry(locationUnitConfig, locationRegistryRemote));
 
-                if (locationConfig.getRoot()) {
+                if (locationUnitConfig.getLocationConfig().getRoot()) {
                     rootEntry = groupEntry;
                 }
             }
@@ -161,12 +161,14 @@ public class OpenHABItemConfigGenerator {
 
     private void generateItemEntries() throws CouldNotPerformException {
         try {
-            List<DeviceConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceConfigList();
+            List<UnitConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceUnitConfigList();
 
-            for (DeviceConfig deviceConfig : deviceConfigList) {
+            // TODO iterate over dal units instead over just device provided units 
+            sss
+            for (UnitConfig deviceUnitConfig : deviceConfigList) {
 
                 // load device class
-                DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId());
+                DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
 
                 // ignore non openhab items
                 if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
@@ -174,14 +176,17 @@ public class OpenHABItemConfigGenerator {
                 }
 
                 // ignore non installed items
-                if (deviceConfig.getInventoryState().getValue() != InventoryState.State.INSTALLED) {
+                if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryState.State.INSTALLED) {
                     continue;
                 }
-
-                for (UnitConfig unitConfig : deviceConfig.getUnitConfigList()) {
+                // TODO: resolve unit configs via unit registry
+                for (UnitConfig unitConfig : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+                    final UnitConfig unitConfig = ;
+                    
+                    
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
-                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceConfig, unitConfig, serviceConfig, locationRegistryRemote));
+                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig, unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
@@ -189,10 +194,10 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
-            for (LocationConfig locationConfig : locationRegistryRemote.getLocationConfigs()) {
+            for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
                 List<ServiceTemplate> serviceTemplatesOnLocation = new ArrayList<>();
                 for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
-                    if (locationConfig.getUnitIdList().contains(unitConfig.getId())) {
+                    if (locationUnitConfig.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
                         for (ServiceTemplate serviceTemplate : deviceRegistryRemote.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
                             if (!serviceTemplatesOnLocation.contains(serviceTemplate)) {
                                 serviceTemplatesOnLocation.add(serviceTemplate);
@@ -204,7 +209,7 @@ public class OpenHABItemConfigGenerator {
                     if (serviceTemplate.getType() == ServiceType.COLOR_STATE_SERVICE
                             || serviceTemplate.getType() == ServiceType.POWER_STATE_SERVICE
                             || serviceTemplate.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
-                        LocationItemEntry entry = new LocationItemEntry(locationConfig, serviceTemplate);
+                        LocationItemEntry entry = new LocationItemEntry(locationUnitConfig, serviceTemplate);
                         itemEntryList.add(entry);
                         logger.info("Added location entry [" + entry.buildStringRep() + "]");
                     }

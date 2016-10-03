@@ -30,18 +30,18 @@ import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentDataType;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public abstract class AbstractAgent extends AbstractExecutableController<AgentDataType.AgentData, AgentDataType.AgentData.Builder, AgentConfig> implements AgentController {
+public abstract class AbstractAgent extends AbstractExecutableController<AgentDataType.AgentData, AgentDataType.AgentData.Builder, UnitConfig> implements AgentController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
@@ -53,7 +53,7 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
     }
 
     @Override
-    public void init(final AgentConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] on scope [" + config.getScope() + "]");
     }

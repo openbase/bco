@@ -33,6 +33,7 @@ import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.StringProcessor;
+import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
@@ -44,7 +45,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ServiceItemEntry extends AbstractItemEntry {
 
@@ -59,21 +60,20 @@ public class ServiceItemEntry extends AbstractItemEntry {
 
     private final MetaConfigPool configPool;
 
-    public ServiceItemEntry(final DeviceClass deviceClass, final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
+    public ServiceItemEntry(final DeviceClass deviceClass, final MetaConfig unitHostMetaConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
         super();
         try {
-            LocationConfig unitLocationConfig = locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId());
+            UnitConfig locationUnitConfig = locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId());
 
             configPool = new MetaConfigPool();
             configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingConfig().getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
-            configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", unitLocationConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", locationUnitConfig.getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
-            configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", deviceConfig.getMetaConfig()));
+            configPool.register(new MetaConfigVariableProvider("DeviceMetaConfig", unitHostMetaConfig));
             configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
             configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
-            configPool.register(new ProtobufVariableProvider(deviceConfig));
-            configPool.register(new ProtobufVariableProvider(unitLocationConfig));
+            configPool.register(new ProtobufVariableProvider(locationUnitConfig));
             configPool.register(new ProtobufVariableProvider(unitConfig));
             configPool.register(new ProtobufVariableProvider(serviceConfig));
 
@@ -120,7 +120,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             }
 
             try {
-                itemHardwareConfig = generateItemHardwareConfig(deviceConfig, unitConfig, serviceConfig);
+                itemHardwareConfig = generateItemHardwareConfig(unitConfig, serviceConfig);
             } catch (CouldNotPerformException ex) {
                 throw new NotAvailableException("itemHardwareConfig", ex);
             }
@@ -131,7 +131,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
         }
     }
 
-    private String generateItemHardwareConfig(final DeviceConfig deviceConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
+    private String generateItemHardwareConfig(final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
             String config = "";
 

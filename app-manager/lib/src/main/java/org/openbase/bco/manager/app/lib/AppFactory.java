@@ -23,15 +23,15 @@ package org.openbase.bco.manager.app.lib;
  */
 
 import org.openbase.jul.pattern.Factory;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface AppFactory extends Factory<AppController, AppConfig> {
+public interface AppFactory extends Factory<AppController, UnitConfig> {
 
     @Override
-    public AppController newInstance(final AppConfig config) throws org.openbase.jul.exception.InstantiationException;
+    public AppController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
 
 }

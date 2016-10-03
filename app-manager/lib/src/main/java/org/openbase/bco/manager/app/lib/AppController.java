@@ -25,8 +25,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppDataType.AppData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -34,6 +34,6 @@ import rst.homeautomation.control.app.AppDataType.AppData;
  */
 public interface AppController extends Identifiable<String>, Enableable, App, MessageController<AppData, AppData.Builder> {
 
-    public void init(final AppConfig config) throws InitializationException, InterruptedException;
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
 }

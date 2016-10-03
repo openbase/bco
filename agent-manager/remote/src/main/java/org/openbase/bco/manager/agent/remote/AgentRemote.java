@@ -28,15 +28,15 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConfig> implements Agent {
+public class AgentRemote extends AbstractConfigurableRemote<AgentData, UnitConfig> implements Agent {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
@@ -44,11 +44,11 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, AgentConf
     }
 
     public AgentRemote() {
-        super(AgentData.class, AgentConfig.class);
+        super(AgentData.class, UnitConfig.class);
     }
 
     @Override
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
+    public Future<Void> setActivationState(final ActivationState activation) throws CouldNotPerformException {
         logger.info("Calling remote setActivationState to [" + activation + "] for agent");
         return RPCHelper.callRemoteMethod(activation, this, Void.class);
     }

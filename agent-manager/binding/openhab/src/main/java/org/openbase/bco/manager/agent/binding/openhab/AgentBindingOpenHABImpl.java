@@ -39,6 +39,7 @@ import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -52,7 +53,7 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     private final AgentRegistryRemote agentRegistryRemote;
     private final AgentRemoteFactoryImpl factory;
-    private final RegistrySynchronizer<String, AgentRemote, AgentConfig, AgentConfig.Builder> registrySynchronizer;
+    private final RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RegistryImpl<String, AgentRemote> registry;
     private final boolean hardwareSimulationMode;
 
@@ -63,10 +64,10 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
         factory = new AgentRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-        this.registrySynchronizer = new RegistrySynchronizer<String, AgentRemote, AgentConfig, AgentConfig.Builder>(registry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+        this.registrySynchronizer = new RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder>(registry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
 
             @Override
-            public boolean verifyConfig(final AgentConfig config) throws VerificationFailedException {
+            public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
                 return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
             }
         };

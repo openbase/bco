@@ -15,7 +15,7 @@ package org.openbase.bco.manager.agent.lib;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *  
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -24,15 +24,15 @@ package org.openbase.bco.manager.agent.lib;
 
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AgentFactory extends Factory<AgentController, AgentConfig> {
+public interface AgentFactory extends Factory<AgentController, UnitConfig> {
 
     @Override
-    public AgentController newInstance(final AgentConfig config) throws InstantiationException;
+    public AgentController newInstance(final UnitConfig config) throws InstantiationException;
 
 }

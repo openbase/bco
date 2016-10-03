@@ -25,8 +25,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.agent.AgentDataType.AgentData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -34,6 +34,6 @@ import rst.homeautomation.control.agent.AgentDataType.AgentData;
  */
 public interface AgentController extends Identifiable<String>, Enableable, Agent, MessageController<AgentData, AgentData.Builder> {
 
-    public void init(final AgentConfig config) throws InitializationException, InterruptedException;
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
 }

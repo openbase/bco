@@ -34,12 +34,13 @@ import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppDataType.AppData;
 import rst.homeautomation.state.ActivationStateType.ActivationState;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractApp extends AbstractExecutableController<AppData, AppData.Builder, AppConfig> implements AppController {
+public abstract class AbstractApp extends AbstractExecutableController<AppData, AppData.Builder, UnitConfig> implements AppController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
@@ -51,7 +52,7 @@ public abstract class AbstractApp extends AbstractExecutableController<AppData, 
     }
 
     @Override
-    public void init(final AppConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
     }

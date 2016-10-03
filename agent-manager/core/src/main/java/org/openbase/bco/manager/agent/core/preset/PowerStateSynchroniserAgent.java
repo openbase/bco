@@ -40,8 +40,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -154,7 +154,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     }
 
     @Override
-    public void init(AgentConfig config) throws InitializationException, InterruptedException {
+    public void init(UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             logger.debug("Creating PowerStateSynchroniserAgent[" + config.getLabel() + "]");

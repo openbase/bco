@@ -25,14 +25,14 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.control.agent.AgentConfigType;
-import rst.homeautomation.state.ActivationStateType;
+import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Agent extends Identifiable<String>, Configurable<String, AgentConfigType.AgentConfig> {
+public interface Agent extends Identifiable<String>, Configurable<String, UnitConfig> {
 
-    public Future<Void> setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
+    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException;
 }

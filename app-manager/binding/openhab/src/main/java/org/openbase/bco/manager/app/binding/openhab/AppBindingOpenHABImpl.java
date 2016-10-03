@@ -36,9 +36,9 @@ import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -51,7 +51,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     private final AppRegistryRemote appRegistryRemote;
     private final AppRemoteFactoryImpl factory;
-    private final RegistrySynchronizer<String, AppRemote, AppConfig, AppConfig.Builder> registrySynchronizer;
+    private final RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RegistryImpl<String, AppRemote> registry;
     private final boolean hardwareSimulationMode;
 
@@ -62,10 +62,10 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
         factory = new AppRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-        this.registrySynchronizer = new RegistrySynchronizer<String, AppRemote, AppConfig, AppConfig.Builder>(registry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
+        this.registrySynchronizer = new RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder>(registry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
 
             @Override
-            public boolean verifyConfig(final AppConfig config) throws VerificationFailedException {
+            public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
                 return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
             }
         };

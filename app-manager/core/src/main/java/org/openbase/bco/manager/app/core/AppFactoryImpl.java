@@ -30,7 +30,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -52,7 +52,7 @@ public class AppFactoryImpl implements AppFactory {
     }
 
     @Override
-    public AppController newInstance(final AppConfig config) throws org.openbase.jul.exception.InstantiationException {
+    public AppController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException {
         AppController app;
         try {
             if (config == null) {
@@ -70,10 +70,11 @@ public class AppFactoryImpl implements AppFactory {
         return app;
     }
 
-    private String getAppClass(final AppConfig config) {
+    // TODO relsolve app class via app class registry, id not vaild anymore.
+    private String getAppClass(final UnitConfig config) {
         return AbstractApp.class.getPackage().getName() + "."
                 + "preset."
-                + StringProcessor.transformUpperCaseToCamelCase(config.getAppClassId())
+                + StringProcessor.transformUpperCaseToCamelCase(config.getAppConfig().getAppClassId())
                 + "App";
     }
 }

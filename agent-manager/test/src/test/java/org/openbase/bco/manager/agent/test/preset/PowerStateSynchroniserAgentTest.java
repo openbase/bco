@@ -55,6 +55,7 @@ import rst.homeautomation.state.EnablingStateType.EnablingState;
 import rst.homeautomation.state.PowerStateType.PowerState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.spatial.PlacementConfigType;
 
 /**
  *
@@ -134,7 +135,7 @@ public class PowerStateSynchroniserAgentTest {
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
-        AgentConfig config = registerAgent();
+        UnitConfig config = registerAgent();
         agent = new AgentRemote();
         agent.init(config);
         agent.activate();
@@ -211,7 +212,7 @@ public class PowerStateSynchroniserAgentTest {
         agent.deactivate();
     }
 
-    private AgentConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
+    private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
         Entry.Builder source = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_KEY);
         Entry.Builder target1 = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_1");
         Entry.Builder target2 = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_2");
@@ -242,7 +243,8 @@ public class PowerStateSynchroniserAgentTest {
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        return agentRegistryRemote.registerAgentConfig(AgentConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setLocationId(locationRegistry.getRootLocationConfig().getId()).setMetaConfig(metaConfig)
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
+        return agentRegistryRemote.registerAgentConfig(UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setPlacementConfig(placementConfig).setMetaConfig(metaConfig)
                 .setEnablingState(enablingState).setAgentClassId("PowerStateSynchroniser").build()).get();
     }
 }

@@ -53,7 +53,7 @@ public class PersonLightProviderAgent extends AbstractAgent {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = new LocationRemote();
         CachedLocationRegistryRemote.waitForData();
-        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getLocationId()));
+        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getId()));
         locationRemote.activate();
 
         this.presenseDetector = new PresenseDetector();

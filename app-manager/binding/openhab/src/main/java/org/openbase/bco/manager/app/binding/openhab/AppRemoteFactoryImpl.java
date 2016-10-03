@@ -21,7 +21,6 @@ package org.openbase.bco.manager.app.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.app.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.bco.manager.app.remote.AppRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -35,12 +34,13 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.app.AppDataType.AppData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AppRemoteFactoryImpl implements Factory<AppRemote, AppConfig> {
+public class AppRemoteFactoryImpl implements Factory<AppRemote, UnitConfig> {
 
     private OpenHABRemote openHABRemote;
 
@@ -52,15 +52,11 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, AppConfig> {
     }
 
     @Override
-    public AppRemote newInstance(AppConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public AppRemote newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         AppRemote appRemote = new AppRemote();
         try {
-            appRemote.addDataObserver(new Observer<AppData>() {
-
-                @Override
-                public void update(final Observable<AppData> source, AppData data) throws Exception {
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
-                }
+            appRemote.addDataObserver((final Observable<AppData> source, AppData data) -> {
+                openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
             appRemote.init(config);
             appRemote.activate();
@@ -72,7 +68,7 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, AppConfig> {
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(AppConfig appConfig) throws CouldNotPerformException {
+    private String generateItemId(final UnitConfig appConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("app")
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(appConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);

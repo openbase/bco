@@ -41,9 +41,8 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.state.InventoryStateType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -65,7 +64,7 @@ public class DeviceManagerController implements DeviceManager {
     private final ControllerRegistry<String, DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
 
-    private final ActivatableEntryRegistrySynchronizer<String, DeviceController, DeviceConfig, DeviceConfig.Builder> deviceRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder> deviceRegistrySynchronizer;
 
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
@@ -85,22 +84,22 @@ public class DeviceManagerController implements DeviceManager {
             this.locationRegistryRemote = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
             this.deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
 
-            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, DeviceConfig, DeviceConfig.Builder>(deviceControllerRegistry, deviceRegistryRemote.getDeviceConfigRemoteRegistry(), deviceFactory) {
+            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, deviceRegistryRemote.getDeviceConfigRemoteRegistry(), deviceFactory) {
 
                 @Override
-                public boolean activationCondition(DeviceConfig config) {
+                public boolean activationCondition(UnitConfig config) {
                     return true;
                 }
 
                 @Override
-                public boolean verifyConfig(final DeviceConfig config) throws VerificationFailedException {
+                public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
                     try {
 
                         // verify device class.
                         try {
-                            deviceRegistryRemote.containsDeviceClassById(config.getDeviceClassId());
+                            deviceRegistryRemote.containsDeviceClassById(config.getDeviceConfig().getDeviceClassId());
                         } catch (CouldNotPerformException ex) {
-                            throw new VerificationFailedException("DeviceClass[" + config.getDeviceClassId() + "] of Device[" + config.getId() + "] is not supported yet!", ex);
+                            throw new VerificationFailedException("DeviceClass[" + config.getDeviceConfig().getDeviceClassId() + "] of Device[" + config.getId() + "] is not supported yet!", ex);
                         }
 
                         // verify device manager support.
@@ -109,7 +108,7 @@ public class DeviceManagerController implements DeviceManager {
                         }
 
                         // verify device state.
-                        if (config.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (config.getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
                             return false;
                         }
@@ -188,7 +187,7 @@ public class DeviceManagerController implements DeviceManager {
      * @throws CouldNotPerformException
      */
     @Override
-    public boolean isSupported(DeviceConfigType.DeviceConfig config) throws CouldNotPerformException {
+    public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
         return true;
     }
 
