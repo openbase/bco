@@ -75,8 +75,8 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
     public DeviceRegistryRemote() throws InstantiationException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
-            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER, this);
-            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, this);
+            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this, DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER);
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

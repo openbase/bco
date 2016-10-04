@@ -63,8 +63,8 @@ public class AgentRegistryRemote extends AbstractRegistryRemote<AgentRegistryDat
     public AgentRegistryRemote() throws InstantiationException {
         super(JPAgentRegistryScope.class, AgentRegistryData.class);
         try {
-            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, this);
-            agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER, this);
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+            agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this, AgentRegistryData.AGENT_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

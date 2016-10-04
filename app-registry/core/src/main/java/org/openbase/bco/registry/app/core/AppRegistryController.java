@@ -77,7 +77,7 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
         try {
             unitRegistryRemote = new UnitRegistryRemote();
             appClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AppClass.class, getBuilderSetup(), getDataFieldDescriptor(AppRegistryData.APP_CLASS_FIELD_NUMBER), new AppClassIdGenerator(), JPService.getProperty(JPAppClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

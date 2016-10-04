@@ -84,7 +84,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
         try {
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             unitRegistryRemote = new UnitRegistryRemote();
-            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

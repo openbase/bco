@@ -71,24 +71,48 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry, baseUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> baseUnitConfigRemoteRegistry;
+
+    ;
 
     public UnitRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
-            this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER, this);
-            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.unitConfigRemoteRegistry = new RemoteRegistry<>();
-            this.baseUnitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
+            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
+            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
+            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
+            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+            this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this,
+                    UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER
+            );
+            this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this,
+                    UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
+            );
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

@@ -59,7 +59,7 @@ public class SceneRegistryRemote extends AbstractRegistryRemote<SceneRegistryDat
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.class);
         try {
-            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, this);
+            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

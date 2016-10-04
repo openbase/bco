@@ -75,7 +75,7 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
         try {
             unitRegistryRemote = new UnitRegistryRemote();
             agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

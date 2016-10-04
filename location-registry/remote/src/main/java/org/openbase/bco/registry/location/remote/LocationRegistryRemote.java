@@ -73,8 +73,8 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
     public LocationRegistryRemote() throws InstantiationException {
         super(JPLocationRegistryScope.class, LocationRegistryData.class);
         try {
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, this);
-            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, this);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

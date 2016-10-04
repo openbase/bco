@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -146,6 +147,9 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         @Override
         public void update(Observable<M> source, M data) throws Exception {
             try {
+                if(data == null) {
+                    throw new NotAvailableException("RegistryData");
+                }
                 int entryCount;
                 List<M> entryList = new ArrayList<>();
                 for (final FieldDescriptor fieldDescriptor : fieldDescriptors) {

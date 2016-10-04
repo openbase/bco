@@ -54,7 +54,6 @@ public class AppRegistryRemote extends AbstractRegistryRemote<AppRegistryData> i
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
     }
 
@@ -64,8 +63,8 @@ public class AppRegistryRemote extends AbstractRegistryRemote<AppRegistryData> i
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPAppRegistryScope.class, AppRegistryData.class);
         try {
-            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, this);
-            appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(AppRegistryData.APP_CLASS_FIELD_NUMBER, this);
+            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+            appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this, AppRegistryData.APP_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

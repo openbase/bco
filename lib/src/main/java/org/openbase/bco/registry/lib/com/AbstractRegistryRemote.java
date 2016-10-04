@@ -112,6 +112,4 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
 
-    protected abstract void syncInternalRegistries() throws CouldNotPerformException;
-
 }

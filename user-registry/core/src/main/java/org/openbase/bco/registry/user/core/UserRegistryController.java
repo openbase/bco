@@ -66,21 +66,21 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     public UserRegistryController() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.newBuilder());
         this.unitRegistryRemote = new UnitRegistryRemote();
-        this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
-        this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+        this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+        this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
     }
 
     @Override
     protected void syncVirtualRegistryFields(final UserRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
         virtualDataBuilder.clearUserUnitConfig();
         virtualDataBuilder.addAllUserUnitConfig(realData.getUserUnitConfigList());
-        
+
         virtualDataBuilder.clearAuthorizationGroupUnitConfig();
         virtualDataBuilder.addAllAuthorizationGroupUnitConfig(realData.getAuthorizationGroupUnitConfigList());
 
         virtualDataBuilder.setUserUnitConfigRegistryConsistent(realData.getUserUnitConfigRegistryConsistent());
         virtualDataBuilder.setUserUnitConfigRegistryReadOnly(realData.getUserUnitConfigRegistryReadOnly());
-        
+
         virtualDataBuilder.setAuthorizationGroupUnitConfigRegistryConsistent(realData.getAuthorizationGroupUnitConfigRegistryConsistent());
         virtualDataBuilder.setAuthorizationGroupUnitConfigRegistryReadOnly(realData.getAuthorizationGroupUnitConfigRegistryReadOnly());
     }

@@ -64,8 +64,8 @@ public class UserRegistryRemote extends AbstractRegistryRemote<UserRegistryData>
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.class);
         try {
-            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER, this);
-            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER, this);
+            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

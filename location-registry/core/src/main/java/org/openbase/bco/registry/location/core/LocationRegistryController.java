@@ -74,8 +74,8 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(JPLocationRegistryScope.class, LocationRegistryData.newBuilder());
         unitRegistryRemote = new UnitRegistryRemote();
-        locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
-        connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+        locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+        connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
     }
 
     @Override

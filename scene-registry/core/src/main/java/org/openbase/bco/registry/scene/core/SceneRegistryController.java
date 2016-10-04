@@ -62,7 +62,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
     public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.newBuilder());
         unitRegistryRemote = new UnitRegistryRemote();
-        sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, unitRegistryRemote);
+        sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
     }
 
     @Override
