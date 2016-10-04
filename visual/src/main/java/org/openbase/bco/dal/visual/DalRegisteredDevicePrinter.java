@@ -32,8 +32,8 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -62,8 +62,8 @@ public class DalRegisteredDevicePrinter {
         for (DeviceClass deviceClass : deviceRemote.getDeviceClasses()) {
             deviceNumberByClassMap.put(deviceClass.getId(), 0);
         }
-        for (DeviceConfig deviceConfig : deviceRemote.getDeviceConfigs()) {
-            deviceNumberByClassMap.put(deviceConfig.getDeviceClassId(), deviceNumberByClassMap.get(deviceConfig.getDeviceClassId()) + 1);
+        for (UnitConfig deviceUnitConfig : deviceRemote.getDeviceConfigs()) {
+            deviceNumberByClassMap.put(deviceUnitConfig.getDeviceConfig().getDeviceClassId(), deviceNumberByClassMap.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()) + 1);
         }
 
         System.out.println(deviceRemote.getDeviceConfigs().size() + " Devices");

@@ -189,8 +189,8 @@ public class SelectorPanel extends javax.swing.JPanel {
             try {
                 ArrayList<LocationConfigHolder> locationConfigHolderList = new ArrayList<>();
                 locationConfigHolderList.add(ALL_LOCATION);
-                for (LocationConfig config : locationRegistryRemote.getLocationConfigs()) {
-                    locationConfigHolderList.add(new LocationConfigHolder(config));
+                for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
+                    locationConfigHolderList.add(new LocationConfigHolder(locationUnitConfig));
                 }
                 Collections.sort(locationConfigHolderList);
                 locationComboBox.setModel(new DefaultComboBoxModel(locationConfigHolderList.toArray()));
@@ -218,25 +218,23 @@ public class SelectorPanel extends javax.swing.JPanel {
                         for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                             // ignore non installed units
-                            if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                                 continue;
                             }
                             unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                         }
                     }
+                } else if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
+                    for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                    }
                 } else {
-                    if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
-                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                    for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
+                        // ignore non installed units
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                            continue;
                         }
-                    } else {
-                        for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
-                            // ignore non installed units
-                            if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                                continue;
-                            }
-                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
-                        }
+                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                     }
                 }
                 Collections.sort(unitConfigHolderList);
@@ -718,10 +716,10 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
 
-        private final LocationConfig config;
+        private final UnitConfig locationUnitConfig;
 
-        public LocationConfigHolder(LocationConfig config) {
-            this.config = config;
+        public LocationConfigHolder(UnitConfig locationUnitConfig) {
+            this.locationUnitConfig = locationUnitConfig;
         }
 
         @Override
@@ -729,15 +727,15 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "All";
             }
-            return config.getLabel();
+            return locationUnitConfig.getLabel();
         }
 
         public boolean isNotSpecified() {
-            return config == null;
+            return locationUnitConfig == null;
         }
 
-        public LocationConfig getConfig() {
-            return config;
+        public UnitConfig getConfig() {
+            return locationUnitConfig;
         }
 
         @Override
@@ -818,11 +816,11 @@ public class SelectorPanel extends javax.swing.JPanel {
     private static class UnitConfigHolder implements Comparable<UnitConfigHolder> {
 
         private final UnitConfig config;
-        private final LocationConfig location;
+        private final UnitConfig locationUnitConfig;
 
-        public UnitConfigHolder(final UnitConfig config, final LocationConfig location) {
+        public UnitConfigHolder(final UnitConfig config, final UnitConfig locationUnitConfig) {
             this.config = config;
-            this.location = location;
+            this.locationUnitConfig = locationUnitConfig;
         }
 
         @Override
@@ -832,7 +830,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             }
             return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
                     + "[" + config.getLabel() + "]"
-                    + " @ " + location.getLabel();
+                    + " @ " + locationUnitConfig.getLabel();
         }
 
         public boolean isNotSpecified() {
