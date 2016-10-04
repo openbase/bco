@@ -25,7 +25,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
@@ -41,6 +40,8 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.Serv
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
+import org.openbase.bco.registry.device.lib.DeviceRegistry;
+import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -52,9 +53,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
@@ -81,17 +79,19 @@ public class OpenHABItemConfigGenerator {
     private final SceneRegistryRemote sceneRegistryRemote;
     private final AgentRegistryRemote agentRegistryRemote;
     private final AppRegistryRemote appRegistryRemote;
+    private final DeviceRegistry deviceRegistry;
 
-    public OpenHABItemConfigGenerator(final UnitRegistry unitRegistry, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote, final AgentRegistryRemote agentRegistryRemote, final AppRegistryRemote appRegistryRemote) throws InstantiationException {
+    public OpenHABItemConfigGenerator(final DeviceRegistry deviceRegistry, final UnitRegistry unitRegistry, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote, final AgentRegistryRemote agentRegistryRemote, final AppRegistryRemote appRegistryRemote) throws InstantiationException {
         try {
             this.itemEntryList = new ArrayList<>();
             this.groupEntryList = new ArrayList<>();
             this.unitRegistry = unitRegistry;
+            this.deviceRegistry = deviceRegistry;
             this.locationRegistryRemote = locationRegistryRemote;
             this.sceneRegistryRemote = sceneRegistryRemote;
             this.agentRegistryRemote = agentRegistryRemote;
             this.appRegistryRemote = appRegistryRemote;
-        } catch (Exception ex) {
+        } catch (NullPointerException ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -99,7 +99,7 @@ public class OpenHABItemConfigGenerator {
     public void init() throws InitializationException, InterruptedException, CouldNotPerformException {
     }
 
-    public synchronized void generate() throws CouldNotPerformException {
+    public synchronized void generate() throws CouldNotPerformException, InterruptedException {
         logger.info("generate item config");
         try {
             itemEntryList.clear();
@@ -109,7 +109,7 @@ public class OpenHABItemConfigGenerator {
             generateGroupEntries();
             generateItemEntries();
             serializeToFile();
-        } catch (Exception ex) {
+        } catch (NullPointerException ex) {
             throw new CouldNotPerformException("Could not generate item config", ex);
         }
     }
@@ -157,15 +157,14 @@ public class OpenHABItemConfigGenerator {
 //        }
     }
 
-    private void generateItemEntries() throws CouldNotPerformException {
+    private void generateItemEntries() throws CouldNotPerformException, InterruptedException {
         try {
-            List<UnitConfig> unitConfigList = unitRegistry.getUnitConfigs(UnitType.);
-            // TODO iterate over dal units instead over just device provided units 
-            sss
-            for (UnitConfig deviceUnitConfig : unitConfigList) {
+            final List<UnitConfig> deviceUnitConfigList = unitRegistry.getUnitConfigs(UnitType.DEVICE);
+
+            for (UnitConfig deviceUnitConfig : deviceUnitConfigList) {
 
                 // load device class
-                DeviceClass deviceClass = unitRegistry.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                DeviceClass deviceClass = deviceRegistry.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
 
                 // ignore non openhab items
                 if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
@@ -176,13 +175,23 @@ public class OpenHABItemConfigGenerator {
                 if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryState.State.INSTALLED) {
                     continue;
                 }
-                // TODO: resolve unit configs via unit registry
-                for (UnitConfig unitConfig : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-                    final UnitConfig unitConfig = ;
 
-                    for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                final List<UnitConfig> dalUnitConfigList = new ArrayList<>();
+
+                for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+                    dalUnitConfigList.add(unitRegistry.getUnitConfigById(unitId));
+                }
+
+                for (final UnitConfig unitConfig : dalUnitConfigList) {
+
+                    // ignore disabled units
+                    if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
+                        continue;
+                    }
+
+                    for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
-                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig, unitConfig, serviceConfig, locationRegistryRemote));
+                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
@@ -212,42 +221,38 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
-            for (SceneConfig sceneConfig : sceneRegistryRemote.getSceneConfigs()) {
+            for (final UnitConfig sceneUnitConfig : sceneRegistryRemote.getSceneConfigs()) {
                 // Skip disabled scenes
-                if (sceneConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
-                    itemEntryList.add(new SceneItemEntry(sceneConfig, locationRegistryRemote));
+                if (sceneUnitConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
+                    itemEntryList.add(new SceneItemEntry(sceneUnitConfig, locationRegistryRemote));
                 }
             }
 
-            for (AgentConfig agentConfig : agentRegistryRemote.getAgentConfigs()) {
+            for (final UnitConfig agentUnitConfig : agentRegistryRemote.getAgentConfigs()) {
                 // Skip disabled agents
-                if (agentConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
-                    itemEntryList.add(new AgentItemEntry(agentConfig, locationRegistryRemote));
+                if (agentUnitConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
+                    itemEntryList.add(new AgentItemEntry(agentUnitConfig, locationRegistryRemote));
                 }
             }
 
-            for (AppConfig appConfig : appRegistryRemote.getAppConfigs()) {
+            for (UnitConfig appUnitConfig : appRegistryRemote.getAppConfigs()) {
                 // Skip disabled apps
-                if (appConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
-                    itemEntryList.add(new AppItemEntry(appConfig, locationRegistryRemote));
+                if (appUnitConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
+                    itemEntryList.add(new AppItemEntry(appUnitConfig, locationRegistryRemote));
                 }
             }
 
             // sort items by command type and label
-            Collections.sort(itemEntryList, new Comparator<AbstractItemEntry>() {
-
-                @Override
-                public int compare(AbstractItemEntry o1, AbstractItemEntry o2) {
-                    int typeComparation = o1.getCommandType().compareTo(o2.getCommandType());
-                    if (typeComparation != 0) {
-                        return typeComparation;
-                    } else {
-                        return o1.getLabel().compareTo(o2.getLabel());
-                    }
+            Collections.sort(itemEntryList, (AbstractItemEntry o1, AbstractItemEntry o2) -> {
+                int typeComparation = o1.getCommandType().compareTo(o2.getCommandType());
+                if (typeComparation != 0) {
+                    return typeComparation;
+                } else {
+                    return o1.getLabel().compareTo(o2.getLabel());
                 }
             });
 
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate item entries.", ex);
         }
     }

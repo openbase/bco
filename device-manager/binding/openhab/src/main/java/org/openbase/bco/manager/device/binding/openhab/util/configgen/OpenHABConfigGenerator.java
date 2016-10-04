@@ -41,12 +41,14 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
 import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
 import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
 import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
+import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
@@ -54,7 +56,7 @@ import rst.spatial.LocationRegistryDataType.LocationRegistryData;
  * does not belong to the device manager since it also generates entries for
  * scenes, agents etc
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABConfigGenerator {
 
@@ -64,6 +66,7 @@ public class OpenHABConfigGenerator {
 
     private final OpenHABItemConfigGenerator itemConfigGenerator;
     private final DeviceRegistryRemote deviceRegistryRemote;
+    private final UnitRegistryRemote unitRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
     private final SceneRegistryRemote sceneRegistryRemote;
     private final AgentRegistryRemote agentRegistryRemote;
@@ -77,7 +80,8 @@ public class OpenHABConfigGenerator {
             this.sceneRegistryRemote = new SceneRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
-            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, locationRegistryRemote, sceneRegistryRemote, agentRegistryRemote, appRegistryRemote);
+            this.unitRegistryRemote = new UnitRegistryRemote();
+            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, unitRegistryRemote, locationRegistryRemote, sceneRegistryRemote, agentRegistryRemote, appRegistryRemote);
             this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
                 @Override
@@ -105,13 +109,16 @@ public class OpenHABConfigGenerator {
         appRegistryRemote.init();
         appRegistryRemote.activate();
         itemConfigGenerator.init();
-        
+        unitRegistryRemote.init();
+        unitRegistryRemote.activate();
+
         deviceRegistryRemote.waitForData();
         locationRegistryRemote.waitForData();
         sceneRegistryRemote.waitForData();
         agentRegistryRemote.waitForData();
         appRegistryRemote.waitForData();
-        
+        unitRegistryRemote.waitForData();
+
         this.deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
             generate();
         });
@@ -127,13 +134,16 @@ public class OpenHABConfigGenerator {
         this.appRegistryRemote.addDataObserver((Observable<AppRegistryData> source, AppRegistryData data) -> {
             generate();
         });
+        this.unitRegistryRemote.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+            generate();
+        });
     }
 
     public void generate() {
         recurrenceGenerationFilter.trigger();
     }
 
-    private synchronized void internalGenerate() throws CouldNotPerformException {
+    private synchronized void internalGenerate() throws CouldNotPerformException, InterruptedException {
         try {
             try {
                 logger.info("generate ItemConfig[" + JPService.getProperty(JPOpenHABItemConfig.class).getValue() + "] ...");
@@ -154,6 +164,7 @@ public class OpenHABConfigGenerator {
         sceneRegistryRemote.shutdown();
         agentRegistryRemote.shutdown();
         appRegistryRemote.shutdown();
+        unitRegistryRemote.shutdown();
     }
 
     /**

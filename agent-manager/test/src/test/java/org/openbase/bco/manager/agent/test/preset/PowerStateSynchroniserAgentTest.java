@@ -244,7 +244,9 @@ public class PowerStateSynchroniserAgentTest {
                 .addEntry(targetBehaviour).build();
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
         PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
-        return agentRegistryRemote.registerAgentConfig(UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setPlacementConfig(placementConfig).setMetaConfig(metaConfig)
-                .setEnablingState(enablingState).setAgentClassId("PowerStateSynchroniser").build()).get();
+
+        UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
+        agentUnitConfig.getAgentConfigBuilder().setAgentClassId("PowerStateSynchroniser");
+        return agentRegistryRemote.registerAgentConfig(agentUnitConfig.build()).get();
     }
 }
