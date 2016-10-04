@@ -31,11 +31,13 @@ import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -66,17 +68,25 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> connectionUnitConfigRemoteRegistry;
-    private final UnitRegistryRemote unitRegistryRemote;
+    private UnitRegistry unitRegistry;
 
-    public LocationRegistryRemote() throws InstantiationException, InterruptedException {
+    public LocationRegistryRemote() throws InstantiationException {
         super(JPLocationRegistryScope.class, LocationRegistryData.class);
         try {
             this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER, this);
             this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER, this);
-            unitRegistryRemote = new UnitRegistryRemote();
-            unitRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
+        }
+    }
+
+    @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit();
+        try {
+            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
         }
     }
 
@@ -88,23 +98,8 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
      */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        unitRegistryRemote.activate();
+        CachedUnitRegistryRemote.waitForData();
         super.activate();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        try {
-            unitRegistryRemote.deactivate();
-        } finally {
-            super.deactivate();
-        }
     }
 
     /**
@@ -113,7 +108,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
     @Override
     public void shutdown() {
         try {
-            unitRegistryRemote.shutdown();
+            unitRegistry.shutdown();
         } finally {
             super.shutdown();
         }
@@ -178,7 +173,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigsByLabel(unitLabel).stream()
+        return unitRegistry.getUnitConfigsByLabel(unitLabel).stream()
                 .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -255,7 +250,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationId).getLocationConfig().getUnitIdList()) {
-            unitConfigList.add(unitRegistryRemote.getUnitConfigById(unitConfigId));
+            unitConfigList.add(unitRegistry.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
     }
@@ -289,8 +284,8 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
         for (String unitConfigId : getLocationConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
-                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type) || unitRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type) || unitRegistry.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -330,7 +325,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
         for (String unitConfigId : getLocationConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
-                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
+                unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
@@ -504,7 +499,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
     public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
-            unitConfigList.add(unitRegistryRemote.getUnitConfigById(unitConfigId));
+            unitConfigList.add(unitRegistry.getUnitConfigById(unitConfigId));
         }
         return unitConfigList;
     }
@@ -522,8 +517,8 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
-                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type) || unitRegistryRemote.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type) || unitRegistry.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -546,7 +541,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
         for (String unitConfigId : getConnectionConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
-                unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
+                unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceTemplate().getType().equals(type)) {
                         unitConfigList.add(unitConfig);

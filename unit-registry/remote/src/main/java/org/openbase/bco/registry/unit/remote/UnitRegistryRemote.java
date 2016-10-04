@@ -71,7 +71,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
-    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
+    private final RemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry, baseUnitConfigRemoteRegistry;
 
     public UnitRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
@@ -88,6 +88,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER, this);
             this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER, this);
             this.unitConfigRemoteRegistry = new RemoteRegistry<>();
+            this.baseUnitConfigRemoteRegistry = new RemoteRegistry<>();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -112,6 +113,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitConfigRemoteRegistry);
+        registerRemoteRegistry(baseUnitConfigRemoteRegistry);
+    }
+
+    @Override
+    protected void notifyDataUpdate(UnitRegistryData data) throws CouldNotPerformException {
+        super.notifyDataUpdate(data);
+
     }
 
     // todo: sync unitConfigRemoteRegistry
@@ -161,6 +169,10 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitConfigRemoteRegistry() {
         return unitConfigRemoteRegistry;
+    }
+
+    public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getBaseUnitConfigRemoteRegistry() {
+        return baseUnitConfigRemoteRegistry;
     }
 
     /**
@@ -227,6 +239,28 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
         validateData();
         return unitConfigRemoteRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException {
+        return dalUnitConfigRemoteRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException {
+        return baseUnitConfigRemoteRegistry.getMessages();
     }
 
     @Override

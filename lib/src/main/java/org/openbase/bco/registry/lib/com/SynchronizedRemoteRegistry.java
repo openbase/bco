@@ -21,8 +21,8 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     /**
      * The field descriptor which is used for the internal registry synchronization.
      */
-    private final Descriptors.FieldDescriptor fieldDescriptor;
+    private final FieldDescriptor[] fieldDescriptors;
 
     /**
      * The remote service to get informed about data updates.
@@ -66,13 +66,13 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     /**
      *
-     * @param protobufFieldNumber The field number to identify the descriptor field which is used for the internal registry synchronization.
      * @param remoteService The remote service to get informed about data updates.
+     * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final int protobufFieldNumber, final RSBRemoteService remoteService) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final RSBRemoteService remoteService, final int... protobufFieldNumbers) throws InstantiationException {
         try {
-            this.fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(protobufFieldNumber, remoteService.getDataClass());
+            this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
             this.remoteService = remoteService;
             this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
         } catch (CouldNotPerformException ex) {
@@ -82,34 +82,44 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     /**
      *
-     * @param fieldDescriptor The field descriptor which is used for the internal registry synchronization.
      * @param remoteService The remote service to get informed about data updates.
+     * @param fieldDescriptors The field descriptors which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final Descriptors.FieldDescriptor fieldDescriptor, final RSBRemoteService<M> remoteService) throws InstantiationException {
-        this.fieldDescriptor = fieldDescriptor;
+    public SynchronizedRemoteRegistry(final RSBRemoteService<M> remoteService, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+        this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
         this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
     }
 
     /**
      *
-     * @param fieldDescriptor The field descriptor which is used for the internal registry synchronization.
      * @param remoteService The remote service to get informed about data updates.
      * @param internalMap the internal map instance of this registry.
+     * @param fieldDescriptors The field descriptors which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(Descriptors.FieldDescriptor fieldDescriptor, RSBRemoteService<M> remoteService, Map<KEY, IdentifiableMessage<KEY, M, MB>> internalMap) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final RSBRemoteService<M> remoteService, final Map<KEY, IdentifiableMessage<KEY, M, MB>> internalMap, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
         super(internalMap);
-        this.fieldDescriptor = fieldDescriptor;
+        this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
         this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
     }
 
-    public Descriptors.FieldDescriptor getFieldDescriptor() {
-        return fieldDescriptor;
+    /**
+     * Method returns the list of field descriptors which are used to identify the protobuf field that are merged into the registry.
+     *
+     * @return
+     */
+    public FieldDescriptor[] getFieldDescriptors() {
+        return fieldDescriptors;
     }
 
+    /**
+     * Method returns the internal remote service which is used to detect external data changes.
+     *
+     * @return
+     */
     public RSBRemoteService<M> getRemoteService() {
         return remoteService;
     }
@@ -136,10 +146,13 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         @Override
         public void update(Observable<M> source, M data) throws Exception {
             try {
-                int entryCount = data.getRepeatedFieldCount(fieldDescriptor);
+                int entryCount;
                 List<M> entryList = new ArrayList<>();
-                for (int i = 0; i < entryCount; i++) {
-                    entryList.add((M) data.getRepeatedField(fieldDescriptor, i));
+                for (final FieldDescriptor fieldDescriptor : fieldDescriptors) {
+                    entryCount = data.getRepeatedFieldCount(fieldDescriptor);
+                    for (int i = 0; i < entryCount; i++) {
+                        entryList.add((M) data.getRepeatedField(fieldDescriptor, i));
+                    }
                 }
                 notifyRegistryUpdate(entryList);
             } catch (CouldNotPerformException | IndexOutOfBoundsException | ClassCastException | NullPointerException ex) {

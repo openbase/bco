@@ -28,11 +28,13 @@ import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -68,34 +70,32 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
 
     private final SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
+    private UnitRegistry unitRegistry;
 
-    private final UnitRegistryRemote unitRegistryRemote;
-
-    public DeviceRegistryRemote() throws InstantiationException, InterruptedException {
+    public DeviceRegistryRemote() throws InstantiationException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
             deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER, this);
             deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER, this);
-            unitRegistryRemote = new UnitRegistryRemote();
-            unitRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        unitRegistryRemote.activate();
-        super.activate();
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit();
+        try {
+            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
-    public void shutdown() {
-        try {
-            unitRegistryRemote.shutdown();
-        } finally {
-            super.shutdown();
-        }
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        CachedUnitRegistryRemote.waitForData();
+        super.activate();
     }
 
     @Override
@@ -138,7 +138,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException {
-        return unitRegistryRemote.getUnitTemplateById(unitTemplateId);
+        return unitRegistry.getUnitTemplateById(unitTemplateId);
     }
 
     /**
@@ -179,12 +179,12 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException, NotAvailableException {
-        return unitRegistryRemote.getUnitConfigById(unitConfigId);
+        return unitRegistry.getUnitConfigById(unitConfigId);
     }
 
     @Override
     public List<UnitConfig> getUnitConfigsByLabel(String unitConfigLabel) throws CouldNotPerformException, NotAvailableException {
-        return unitRegistryRemote.getUnitConfigsByLabel(unitConfigLabel);
+        return unitRegistry.getUnitConfigsByLabel(unitConfigLabel);
     }
 
     /**
@@ -196,7 +196,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return unitRegistryRemote.containsUnitTemplate(unitTemplate);
+        return unitRegistry.containsUnitTemplate(unitTemplate);
     }
 
     /**
@@ -208,7 +208,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean containsUnitTemplateById(String unitTemplateId) throws CouldNotPerformException {
-        return unitRegistryRemote.containsUnitTemplateById(unitTemplateId);
+        return unitRegistry.containsUnitTemplateById(unitTemplateId);
     }
 
     /**
@@ -262,7 +262,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return unitRegistryRemote.updateUnitTemplate(unitTemplate);
+        return unitRegistry.updateUnitTemplate(unitTemplate);
     }
 
     /**
@@ -364,7 +364,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
-        return unitRegistryRemote.getUnitConfigs();
+        return unitRegistry.getUnitConfigs();
     }
 
     /**
@@ -376,7 +376,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigs(type);
+        return unitRegistry.getUnitConfigs(type);
     }
 
     /**
@@ -425,7 +425,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException, NotAvailableException {
-        return unitRegistryRemote.getUnitTemplates();
+        return unitRegistry.getUnitTemplates();
     }
 
     /**
@@ -463,7 +463,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitTemplateByType(type);
+        return unitRegistry.getUnitTemplateByType(type);
     }
 
     /**
@@ -474,7 +474,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        return unitRegistryRemote.isUnitTemplateRegistryReadOnly();
+        return unitRegistry.isUnitTemplateRegistryReadOnly();
     }
 
     /**
@@ -526,7 +526,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Future<UnitConfig> registerUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.registerUnitConfig(groupConfig);
+        return unitRegistry.registerUnitConfig(groupConfig);
     }
 
     /**
@@ -538,7 +538,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean containsUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.containsUnitConfig(groupConfig);
+        return unitRegistry.containsUnitConfig(groupConfig);
     }
 
     /**
@@ -550,7 +550,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean containsUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        return unitRegistryRemote.containsUnitConfigById(groupConfigId);
+        return unitRegistry.containsUnitConfigById(groupConfigId);
     }
 
     /**
@@ -562,7 +562,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Future<UnitConfig> updateUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.updateUnitConfig(groupConfig);
+        return unitRegistry.updateUnitConfig(groupConfig);
     }
 
     /**
@@ -574,7 +574,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Future<UnitConfig> removeUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.removeUnitConfig(groupConfig);
+        return unitRegistry.removeUnitConfig(groupConfig);
     }
 
     /**
@@ -586,7 +586,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public UnitConfig getUnitGroupConfigById(String groupConfigId) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigById(groupConfigId);
+        return unitRegistry.getUnitConfigById(groupConfigId);
     }
 
     /**
@@ -597,7 +597,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitGroupConfigs();
+        return unitRegistry.getUnitGroupConfigs();
     }
 
     /**
@@ -609,7 +609,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitGroupConfigsbyUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitGroupConfigsByUnitConfig(unitConfig);
+        return unitRegistry.getUnitGroupConfigsByUnitConfig(unitConfig);
     }
 
     /**
@@ -621,7 +621,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitGroupConfigsByServiceTypes(List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitGroupConfigsByServiceTypes(serviceTypes);
+        return unitRegistry.getUnitGroupConfigsByServiceTypes(serviceTypes);
     }
 
     /**
@@ -633,7 +633,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitGroupConfigsByUnitType(UnitType type) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitGroupConfigsByUnitType(type);
+        return unitRegistry.getUnitGroupConfigsByUnitType(type);
     }
 
     /**
@@ -645,7 +645,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigsByUnitGroupConfig(groupConfig);
+        return unitRegistry.getUnitConfigsByUnitGroupConfig(groupConfig);
     }
 
     /**
@@ -656,7 +656,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException {
-        return unitRegistryRemote.isUnitGroupConfigRegistryReadOnly();
+        return unitRegistry.isUnitGroupConfigRegistryReadOnly();
     }
 
     /**
@@ -669,7 +669,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigsByUnitTypeAndServiceTypes(type, serviceTypes);
+        return unitRegistry.getUnitConfigsByUnitTypeAndServiceTypes(type, serviceTypes);
     }
 
     /**
@@ -681,7 +681,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public UnitConfig getUnitConfigByScope(final ScopeType.Scope scope) throws CouldNotPerformException {
-        return unitRegistryRemote.getUnitConfigByScope(scope);
+        return unitRegistry.getUnitConfigByScope(scope);
     }
 
     /**
@@ -693,7 +693,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public List<UnitType> getSubUnitTypesOfUnitType(UnitType type) throws CouldNotPerformException {
-        return unitRegistryRemote.getSubUnitTypesOfUnitType(type);
+        return unitRegistry.getSubUnitTypesOfUnitType(type);
     }
 
     /**
@@ -704,7 +704,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
-        return unitRegistryRemote.isUnitTemplateRegistryConsistent();
+        return unitRegistry.isUnitTemplateRegistryConsistent();
     }
 
     /**
@@ -747,6 +747,6 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
      */
     @Override
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
-        return unitRegistryRemote.isUnitGroupConfigRegistryConsistent();
+        return unitRegistry.isUnitGroupConfigRegistryConsistent();
     }
 }

@@ -21,7 +21,6 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +75,8 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
-        for (RemoteRegistry remoteRegistry : remoteRegistries) {
-            if(remoteRegistry instanceof SynchronizedRemoteRegistry) {
+        for (final RemoteRegistry remoteRegistry : remoteRegistries) {
+            if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
                 ((SynchronizedRemoteRegistry) remoteRegistry).activate();
             }
         }
@@ -86,8 +85,8 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
-        for (RemoteRegistry remoteRegistry : remoteRegistries) {
-            if(remoteRegistry instanceof SynchronizedRemoteRegistry) {
+        for (final RemoteRegistry remoteRegistry : remoteRegistries) {
+            if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
                 ((SynchronizedRemoteRegistry) remoteRegistry).deactivate();
             }
         }
@@ -99,9 +98,9 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     @Override
     public void shutdown() {
         try {
-            for (RemoteRegistry remoteRegistry : remoteRegistries) {
+            remoteRegistries.stream().forEach((remoteRegistry) -> {
                 remoteRegistry.shutdown();
-            }
+            });
         } finally {
             super.shutdown();
         }
@@ -112,5 +111,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     }
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
+
+    protected abstract void syncInternalRegistries() throws CouldNotPerformException;
 
 }

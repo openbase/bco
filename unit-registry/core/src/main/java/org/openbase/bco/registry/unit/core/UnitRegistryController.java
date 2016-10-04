@@ -175,12 +175,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     private final AppRegistryRemote appRegistryRemote;
     private final AgentRegistryRemote agentRegistryRemote;
 
-    private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList;
+    private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList, baseUnitConfigRegistryList;
 
     public UnitRegistryController() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.newBuilder());
         try {
             this.unitConfigRegistryList = new ArrayList();
+            this.baseUnitConfigRegistryList = new ArrayList();
+
             this.unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.dalUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPDalUnitConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.userUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -204,6 +206,16 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.unitConfigRegistryList.add(agentUnitConfigRegistry);
             this.unitConfigRegistryList.add(appUnitConfigRegistry);
 
+            this.baseUnitConfigRegistryList.add(userUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(deviceUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(unitGroupUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(locationUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(connectionUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(sceneUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(agentUnitConfigRegistry);
+            this.baseUnitConfigRegistryList.add(appUnitConfigRegistry);
+
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
@@ -216,6 +228,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     /**
      * {@inheritDoc}
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -243,9 +256,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
         registerRegistry(unitTemplateRegistry);
-        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+        unitConfigRegistryList.stream().forEach((registry) -> {
             registerRegistry(registry);
-        }
+        });
     }
 
     /**
@@ -496,7 +509,33 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException {
         ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
-        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
+        for (final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
+            unitConfigList.addAll(unitConfigRegistry.getMessages());
+        }
+        return unitConfigList;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException {
+        return dalUnitConfigRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException {
+        ArrayList<UnitConfig> unitConfigList = new ArrayList<>();
+        for (final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : baseUnitConfigRegistryList) {
             unitConfigList.addAll(unitConfigRegistry.getMessages());
         }
         return unitConfigList;
@@ -504,12 +543,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException {
-        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
-            if (unitConfigRegistry.isReadOnly()) {
-                return true;
-            }
-        }
-        return false;
+        return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isReadOnly()));
     }
 
     /**
@@ -520,12 +554,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     public Boolean isUnitConfigRegistryConsistent() throws CouldNotPerformException {
-        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitConfigRegistry : unitConfigRegistryList) {
-            if (unitConfigRegistry.isConsistent()) {
-                return true;
-            }
-        }
-        return false;
+        return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isConsistent()));
     }
 
     /**

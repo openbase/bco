@@ -103,6 +103,25 @@ public interface UnitRegistry extends Shutdownable {
 
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 
+    /**
+     * Method returns a list of all globally registered dal units.
+     * Dal units are all units introduced via the unit templates which are not base units.
+     * Base units are units of the following types: LOCATION, CONNECTION, SCENE, AGENT, APP, DEVICE, USER, AUTHORIZATION_GROUP, UNIT_GROUP
+     *
+     * @return a list of dal units.
+     * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
+     */
+    public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
+
+    /**
+     * Method returns a list of all globally registered base units.
+     * Base units are units of the following types: LOCATION, CONNECTION, SCENE, AGENT, APP, DEVICE, USER, AUTHORIZATION_GROUP, UNIT_GROUP
+     *
+     * @return a list of base units.
+     * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
+     */
+    public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
+
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
     public List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
@@ -137,7 +156,7 @@ public interface UnitRegistry extends Shutdownable {
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
-    
+
     public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigUtils.verifyUnitType(unitConfig, UnitType.UNIT_GROUP);
     }
