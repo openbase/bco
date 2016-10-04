@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.InitializationException;
@@ -41,11 +43,11 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.unit.SystemUnitDataType;
 import rst.homeautomation.unit.UnitConfigType;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -57,6 +59,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 public abstract class AbstractSystemUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements Identifiable<String>, UnitHost {
 
     private final Map<String, AbstractUnitController> unitMap;
+    private UnitRegistry unitRegistry;
 
     public AbstractSystemUnitController(final MB builder) throws InstantiationException {
         super(builder);
@@ -86,9 +89,18 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
     }
 
     @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit();
+        try {
+            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
-
         for (AbstractUnitController unit : unitMap.values()) {
             unit.activate();
         }
@@ -108,14 +120,21 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
         // dummy construct: For registering methods overwrite this method.
     }
 
-    public final void registerUnits(final Collection<UnitConfigType.UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+    public final void registerUnits(final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         for (UnitConfigType.UnitConfig unitConfig : unitConfigs) {
             registerUnit(unitConfig);
         }
     }
 
+    public final void registerUnitsById(final Collection<String> unitIds) throws CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData();
+        for (String unitId : unitIds) {
+            registerUnit(unitRegistry.getUnitConfigById(unitId));
+        }
+    }
+
     //TODO mpohling: implement unit factory instead!
-    public final void registerUnit(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InitializationException, InterruptedException {
+    public final void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InitializationException, InterruptedException {
         try {
             GeneratedMessage.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
 
