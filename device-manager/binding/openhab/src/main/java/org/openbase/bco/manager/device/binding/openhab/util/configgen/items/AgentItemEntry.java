@@ -21,13 +21,12 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -37,23 +36,23 @@ public class AgentItemEntry extends AbstractItemEntry {
 
     public static String AGENT_GROUP_LABEL = "Agents";
 
-    public AgentItemEntry(final AgentConfig agentConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
+    public AgentItemEntry(final UnitConfig agentUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
         super();
         try {
-            this.itemId = generateItemId(agentConfig);
+            this.itemId = generateItemId(agentUnitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = agentConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"bco.manager.agent:" + agentConfig.getId() + "\"";
+            this.label = agentUnitConfig.getLabel();
+            this.itemHardwareConfig = "rsb=\"bco.manager.agent:" + agentUnitConfig.getId() + "\"";
             groups.add(AGENT_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(agentConfig.getLocationId(), locationRegistryRemote));
+            groups.add(GroupEntry.generateGroupID(agentUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
 
-    private String generateItemId(AgentConfig agentConfig) throws CouldNotPerformException {
+    private String generateItemId(final UnitConfig agentConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Agent")
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(agentConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);

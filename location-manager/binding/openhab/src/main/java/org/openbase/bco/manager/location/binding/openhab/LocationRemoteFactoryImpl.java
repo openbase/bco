@@ -30,17 +30,16 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationDataType.LocationData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationRemoteFactoryImpl implements Factory<LocationRemote, LocationConfig> {
+public class LocationRemoteFactoryImpl implements Factory<LocationRemote, UnitConfig> {
 
     private OpenHABRemote openHABRemote;
 
@@ -52,19 +51,15 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
     }
 
     @Override
-    public LocationRemote newInstance(LocationConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public LocationRemote newInstance(final UnitConfig locationUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         LocationRemote locationRemote = new LocationRemote();
         try {
-            locationRemote.addDataObserver(new Observer<LocationData>() {
-
-                @Override
-                public void update(final Observable<LocationData> source, LocationData data) throws Exception {
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(config, ServiceType.COLOR_STATE_SERVICE)).build());
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(config, ServiceType.POWER_STATE_SERVICE)).build());
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(config, ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).build());
-                }
+            locationRemote.addDataObserver((final Observable<LocationData> source, LocationData data) -> {
+                openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(locationUnitConfig, ServiceType.COLOR_STATE_SERVICE)).build());
+                openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_STATE_SERVICE)).build());
+                openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).build());
             });
-            locationRemote.init(config);
+            locationRemote.init(locationUnitConfig);
             locationRemote.activate();
 
             return locationRemote;
@@ -74,11 +69,11 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, Locati
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(LocationConfig locationConfig, ServiceType serviceType) throws CouldNotPerformException {
+    private String generateItemId(UnitConfig locationUnitConfig, ServiceType serviceType) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Location")
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(serviceType.name())
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(locationConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(locationUnitConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
 }

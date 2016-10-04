@@ -36,9 +36,9 @@ import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.state.EnablingStateType.EnablingState;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -52,7 +52,7 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     private final SceneRegistryRemote sceneRegistryRemote;
     private final SceneRemoteFactoryImpl factory;
-    private final RegistrySynchronizer<String, SceneRemote, SceneConfig, SceneConfig.Builder> registrySynchronizer;
+    private final RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RegistryImpl<String, SceneRemote> registry;
     private final boolean hardwareSimulationMode;
 
@@ -63,10 +63,10 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
         factory = new SceneRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-        this.registrySynchronizer = new RegistrySynchronizer<String, SceneRemote, SceneConfig, SceneConfig.Builder>(registry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
+        this.registrySynchronizer = new RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder>(registry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
 
             @Override
-            public boolean verifyConfig(final SceneConfig config) throws VerificationFailedException {
+            public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
                 return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
             }
         };

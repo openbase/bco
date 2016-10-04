@@ -21,8 +21,6 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.jul.exception.NotAvailableException;
 
 /**
@@ -30,5 +28,6 @@ import org.openbase.jul.exception.NotAvailableException;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface DeviceFactoryProvider {
+
     public DeviceFactory getDeviceFactory() throws NotAvailableException;
 }

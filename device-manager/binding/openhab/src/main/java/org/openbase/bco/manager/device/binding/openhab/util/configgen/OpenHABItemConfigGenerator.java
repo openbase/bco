@@ -21,19 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.processing.StringProcessor;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -41,22 +28,34 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry.AGENT_GROUP_LABEL;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry.APP_GROUP_LABEL;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry.LOCATION_GROUP_LABEL;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry.SCENE_GROUP_LABEL;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
+import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
 import rst.homeautomation.control.app.AppConfigType.AppConfig;
 import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -64,11 +63,10 @@ import rst.homeautomation.state.EnablingStateType;
 import rst.homeautomation.state.InventoryStateType.InventoryState;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABItemConfigGenerator {
 
@@ -78,17 +76,17 @@ public class OpenHABItemConfigGenerator {
 
     private final List<AbstractItemEntry> itemEntryList;
     private final List<GroupEntry> groupEntryList;
-    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final UnitRegistry unitRegistry;
     private final LocationRegistryRemote locationRegistryRemote;
     private final SceneRegistryRemote sceneRegistryRemote;
     private final AgentRegistryRemote agentRegistryRemote;
     private final AppRegistryRemote appRegistryRemote;
 
-    public OpenHABItemConfigGenerator(final DeviceRegistryRemote deviceRegistryRemote, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote, final AgentRegistryRemote agentRegistryRemote, final AppRegistryRemote appRegistryRemote) throws InstantiationException {
+    public OpenHABItemConfigGenerator(final UnitRegistry unitRegistry, final LocationRegistryRemote locationRegistryRemote, final SceneRegistryRemote sceneRegistryRemote, final AgentRegistryRemote agentRegistryRemote, final AppRegistryRemote appRegistryRemote) throws InstantiationException {
         try {
             this.itemEntryList = new ArrayList<>();
             this.groupEntryList = new ArrayList<>();
-            this.deviceRegistryRemote = deviceRegistryRemote;
+            this.unitRegistry = unitRegistry;
             this.locationRegistryRemote = locationRegistryRemote;
             this.sceneRegistryRemote = sceneRegistryRemote;
             this.agentRegistryRemote = agentRegistryRemote;
@@ -161,14 +159,13 @@ public class OpenHABItemConfigGenerator {
 
     private void generateItemEntries() throws CouldNotPerformException {
         try {
-            List<UnitConfig> deviceConfigList = deviceRegistryRemote.getData().getDeviceUnitConfigList();
-
+            List<UnitConfig> unitConfigList = unitRegistry.getUnitConfigs(UnitType.);
             // TODO iterate over dal units instead over just device provided units 
             sss
-            for (UnitConfig deviceUnitConfig : deviceConfigList) {
+            for (UnitConfig deviceUnitConfig : unitConfigList) {
 
                 // load device class
-                DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                DeviceClass deviceClass = unitRegistry.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
 
                 // ignore non openhab items
                 if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
@@ -182,8 +179,7 @@ public class OpenHABItemConfigGenerator {
                 // TODO: resolve unit configs via unit registry
                 for (UnitConfig unitConfig : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
                     final UnitConfig unitConfig = ;
-                    
-                    
+
                     for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig, unitConfig, serviceConfig, locationRegistryRemote));
@@ -196,9 +192,9 @@ public class OpenHABItemConfigGenerator {
 
             for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
                 List<ServiceTemplate> serviceTemplatesOnLocation = new ArrayList<>();
-                for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
+                for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
                     if (locationUnitConfig.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
-                        for (ServiceTemplate serviceTemplate : deviceRegistryRemote.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
+                        for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
                             if (!serviceTemplatesOnLocation.contains(serviceTemplate)) {
                                 serviceTemplatesOnLocation.add(serviceTemplate);
                             }
@@ -281,7 +277,7 @@ public class OpenHABItemConfigGenerator {
             configAsString += System.lineSeparator();
 
             // TODO need to be tested!
-            FileUtils.writeStringToFile(configFile, configAsString, Charset.forName("UTF8") , false);
+            FileUtils.writeStringToFile(configFile, configAsString, Charset.forName("UTF8"), false);
 
             logger.info("ItemConfig[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {

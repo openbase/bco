@@ -36,8 +36,7 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.spatial.LocationConfigType;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
@@ -48,10 +47,10 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(LocationSelectorPanel.class);
 
-    private final ObservableImpl<LocationConfigHolder> locationConfigHolderObservable;
+    private final ObservableImpl<LocationUnitConfigHolder> locationConfigHolderObservable;
     private boolean enableAllLocation;
     private LocationRegistryRemote locationRegistryRemote;
-    private LocationConfigHolder selectedLocationConfigHolder;
+    private LocationUnitConfigHolder selectedLocationConfigHolder;
     private StatusPanel statusPanel;
     private boolean init = false;
 
@@ -105,11 +104,11 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         }
 
         if (locationComboBox.isEnabled()) {
-            if (!(locationComboBox.getSelectedItem() instanceof LocationConfigHolder)) {
+            if (!(locationComboBox.getSelectedItem() instanceof LocationUnitConfigHolder)) {
                 selectedLocationConfigHolder = ALL_LOCATION;
             } else {
                 try {
-                    selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+                    selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
                 } catch (Exception ex) {
                     if (enableAllLocation) {
                         selectedLocationConfigHolder = ALL_LOCATION;
@@ -124,12 +123,12 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         }
 
         try {
-            ArrayList<LocationConfigHolder> locationConfigHolderList = new ArrayList<>();
+            ArrayList<LocationUnitConfigHolder> locationConfigHolderList = new ArrayList<>();
             if (enableAllLocation) {
                 locationConfigHolderList.add(ALL_LOCATION);
             }
-            for (LocationConfig config : locationRegistryRemote.getLocationConfigs()) {
-                locationConfigHolderList.add(new LocationConfigHolder(config));
+            for (UnitConfig config : locationRegistryRemote.getLocationConfigs()) {
+                locationConfigHolderList.add(new LocationUnitConfigHolder(config));
             }
             Collections.sort(locationConfigHolderList);
             locationComboBox.setModel(new DefaultComboBoxModel(locationConfigHolderList.toArray()));
@@ -190,11 +189,11 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
         //no change id the same location has been selected
-        if (locationComboBox.getSelectedIndex() == -1 || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
+        if (locationComboBox.getSelectedIndex() == -1 || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationUnitConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
             return;
         }
 
-        selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+        selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
         try {
 //            logger.info("Notify observer with new location");
             locationConfigHolderObservable.notifyObservers(selectedLocationConfigHolder);
@@ -203,28 +202,27 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_locationComboBoxActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox locationComboBox;
     // End of variables declaration//GEN-END:variables
 
-    public void addObserver(Observer<LocationConfigHolder> observer) {
+    public void addObserver(Observer<LocationUnitConfigHolder> observer) {
         locationConfigHolderObservable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<LocationConfigHolder> observer) {
+    public void removeObserver(Observer<LocationUnitConfigHolder> observer) {
         locationConfigHolderObservable.removeObserver(observer);
     }
 
     public void updateSelection(String locationId) {
-        LocationConfigHolder select = null;
+        LocationUnitConfigHolder select = null;
         for (int i = 0; i < locationComboBox.getItemCount(); i++) {
-            if(!(locationComboBox.getItemAt(i) instanceof LocationConfigHolder)) {
+            if (!(locationComboBox.getItemAt(i) instanceof LocationUnitConfigHolder)) {
                 // combo box has not really been initalized yet
                 return;
             }
-            if (((LocationConfigHolder) locationComboBox.getItemAt(i)).getConfig().getId().equals(locationId)) {
-                select = (LocationConfigHolder) locationComboBox.getItemAt(i);
+            if (((LocationUnitConfigHolder) locationComboBox.getItemAt(i)).getConfig().getId().equals(locationId)) {
+                select = (LocationUnitConfigHolder) locationComboBox.getItemAt(i);
             }
         }
         if (select == null) {
@@ -233,13 +231,13 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         locationComboBox.setSelectedItem(select);
     }
 
-    public static final LocationConfigHolder ALL_LOCATION = new LocationConfigHolder(null);
+    public static final LocationUnitConfigHolder ALL_LOCATION = new LocationUnitConfigHolder(null);
 
-    public static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
+    public static class LocationUnitConfigHolder implements Comparable<LocationUnitConfigHolder> {
 
-        private final LocationConfigType.LocationConfig config;
+        private final UnitConfig config;
 
-        public LocationConfigHolder(LocationConfigType.LocationConfig config) {
+        public LocationUnitConfigHolder(final UnitConfig config) {
             this.config = config;
         }
 
@@ -255,12 +253,12 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
             return config == null;
         }
 
-        public LocationConfigType.LocationConfig getConfig() {
+        public UnitConfig getConfig() {
             return config;
         }
 
         @Override
-        public int compareTo(LocationConfigHolder o) {
+        public int compareTo(final LocationUnitConfigHolder o) {
             return toString().compareTo(o.toString());
         }
     }

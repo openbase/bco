@@ -21,7 +21,6 @@ package org.openbase.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.location.remote.ConnectionRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
@@ -29,28 +28,23 @@ import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.I
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.homeautomation.service.ServiceTemplateType;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.spatial.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionRemoteFactoryImpl implements Factory<ConnectionRemote, ConnectionConfig> {
+public class ConnectionRemoteFactoryImpl implements Factory<ConnectionRemote, UnitConfig> {
 
     @Override
-    public ConnectionRemote newInstance(ConnectionConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public ConnectionRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         ConnectionRemote connectionRemote = new ConnectionRemote();
         try {
-            connectionRemote.addDataObserver(new Observer<ConnectionData>() {
-
-                @Override
-                public void update(final Observable<ConnectionData> source, ConnectionData data) throws Exception {
-//                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
-                }
+            connectionRemote.addDataObserver((final Observable<ConnectionData> source, ConnectionData data) -> {
+                // openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
             connectionRemote.init(config);
             connectionRemote.activate();
@@ -60,8 +54,8 @@ public class ConnectionRemoteFactoryImpl implements Factory<ConnectionRemote, Co
             throw new org.openbase.jul.exception.InstantiationException(connectionRemote, ex);
         }
     }
-    
-    private String generateItemId(ConnectionConfig connectionConfig, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+
+    private String generateItemId(final UnitConfig connectionConfig, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Connection")
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(serviceType.name())

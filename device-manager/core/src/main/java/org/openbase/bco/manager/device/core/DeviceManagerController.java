@@ -22,12 +22,12 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
+import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;

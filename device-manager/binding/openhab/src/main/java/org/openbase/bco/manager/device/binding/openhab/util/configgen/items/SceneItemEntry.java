@@ -26,7 +26,7 @@ import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -36,25 +36,25 @@ public class SceneItemEntry extends AbstractItemEntry {
 
     public static String SCENE_GROUP_LABEL = "Scenes";
 
-    public SceneItemEntry(final SceneConfig sceneConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
+    public SceneItemEntry(final UnitConfig sceneUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
         super();
         try {
-            this.itemId = generateItemId(sceneConfig);
+            this.itemId = generateItemId(sceneUnitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = sceneConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + sceneConfig.getId() + "\"";
+            this.label = sceneUnitConfig.getLabel();
+            this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + sceneUnitConfig.getId() + "\"";
             groups.add(SCENE_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(sceneConfig.getLocationId(), locationRegistryRemote));
+            groups.add(GroupEntry.generateGroupID(sceneUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
 
-    private String generateItemId(SceneConfig sceneConfig) throws CouldNotPerformException {
+    private String generateItemId(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Scene")
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(sceneConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(sceneUnitConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
 }

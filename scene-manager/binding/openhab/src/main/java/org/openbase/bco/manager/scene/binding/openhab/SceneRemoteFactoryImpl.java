@@ -21,7 +21,6 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.scene.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.bco.manager.scene.remote.SceneRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -31,16 +30,15 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
 import rst.homeautomation.control.scene.SceneDataType.SceneData;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneRemoteFactoryImpl implements Factory<SceneRemote, SceneConfig> {
+public class SceneRemoteFactoryImpl implements Factory<SceneRemote, UnitConfig> {
 
     private OpenHABRemote openHABRemote;
 
@@ -52,15 +50,11 @@ public class SceneRemoteFactoryImpl implements Factory<SceneRemote, SceneConfig>
     }
 
     @Override
-    public SceneRemote newInstance(SceneConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public SceneRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         SceneRemote sceneRemote = new SceneRemote();
         try {
-            sceneRemote.addDataObserver(new Observer<SceneData>() {
-
-                @Override
-                public void update(final Observable<SceneData> source, SceneData data) throws Exception {
-                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
-                }
+            sceneRemote.addDataObserver((final Observable<SceneData> source, SceneData data) -> {
+                openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
             sceneRemote.init(config);
             sceneRemote.activate();
@@ -72,7 +66,7 @@ public class SceneRemoteFactoryImpl implements Factory<SceneRemote, SceneConfig>
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(SceneConfig sceneConfig) throws CouldNotPerformException {
+    private String generateItemId(UnitConfig sceneConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Scene")
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(sceneConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);

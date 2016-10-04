@@ -30,7 +30,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
@@ -70,7 +69,7 @@ public abstract class AbstractDeviceController extends AbstractSystemUnitControl
             super.init(config);
 
             try {
-                registerUnits(config.getDeviceConfig().getUnitIdList()); //todo: need to be resolved
+                registerUnitsById(config.getDeviceConfig().getUnitIdList());
 
                 for (UnitController unit : getUnits()) {
                     DeviceManagerController.getDeviceManager().getUnitControllerRegistry().register(unit);

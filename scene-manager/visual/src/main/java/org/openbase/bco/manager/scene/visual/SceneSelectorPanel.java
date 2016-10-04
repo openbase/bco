@@ -50,12 +50,11 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitTemplateType;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
-import rst.spatial.LocationConfigType.LocationConfig;
 import rst.spatial.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneSelectorPanel extends javax.swing.JPanel {
 
@@ -70,7 +69,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
     private StatusPanel statusPanel;
 
-    private LocationConfigHolder selectedLocationConfigHolder;
+    private LocationUnitConfigHolder selectedLocationConfigHolder;
     private UnitConfigHolder selectedUnitConfigHolder;
     private ServiceTypeHolder selectedServiceTypeHolder;
 
@@ -188,7 +187,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         logger.info("Update selectorPanel!");
         try {
             if (locationComboBox.getSelectedIndex() != -1) {
-                selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+                selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
             } else {
                 selectedLocationConfigHolder = ALL_LOCATION;
             }
@@ -223,10 +222,10 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         }
 
         try {
-            ArrayList<LocationConfigHolder> locationConfigHolderList = new ArrayList<>();
+            ArrayList<LocationUnitConfigHolder> locationConfigHolderList = new ArrayList<>();
             locationConfigHolderList.add(ALL_LOCATION);
-            for (LocationConfig config : locationRegistryRemote.getLocationConfigs()) {
-                locationConfigHolderList.add(new LocationConfigHolder(config));
+            for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
+                locationConfigHolderList.add(new LocationUnitConfigHolder(locationUnitConfig));
             }
             Collections.sort(locationConfigHolderList);
             locationComboBox.setModel(new DefaultComboBoxModel(locationConfigHolderList.toArray()));
@@ -254,7 +253,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -268,7 +267,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -746,15 +745,15 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox unitTypeComboBox;
     // End of variables declaration//GEN-END:variables
 
-    private final static LocationConfigHolder ALL_LOCATION = new LocationConfigHolder(null);
+    private final static LocationUnitConfigHolder ALL_LOCATION = new LocationUnitConfigHolder(null);
     private final UnitConfigHolder ALL_UNIT = new UnitConfigHolder(null);
     private final static ServiceTypeHolder ALL_Service = new ServiceTypeHolder(ServiceType.UNKNOWN);
 
-    public static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
+    public static class LocationUnitConfigHolder implements Comparable<LocationUnitConfigHolder> {
 
-        private LocationConfig config;
+        private final UnitConfig config;
 
-        public LocationConfigHolder(LocationConfig config) {
+        public LocationUnitConfigHolder(final UnitConfig config) {
             this.config = config;
         }
 
@@ -770,12 +769,12 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             return config == null;
         }
 
-        public LocationConfig getConfig() {
+        public UnitConfig getConfig() {
             return config;
         }
 
         @Override
-        public int compareTo(LocationConfigHolder o) {
+        public int compareTo(LocationUnitConfigHolder o) {
             return toString().compareTo(o.toString());
         }
     }

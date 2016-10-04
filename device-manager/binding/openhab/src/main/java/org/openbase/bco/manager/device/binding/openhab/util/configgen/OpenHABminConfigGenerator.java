@@ -21,13 +21,21 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import nu.xom.Document;
+import nu.xom.Element;
+import org.apache.commons.io.FileUtils;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.OPENHAB_BINDING_DEVICE_ID;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry.SERVICE_TEMPLATE_BINDING_TYPE;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABminZwaveConfig;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParser;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParsingException;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPPrefix;
@@ -38,22 +46,13 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.VariableProvider;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import nu.xom.Document;
-import nu.xom.Element;
-import org.apache.commons.io.FileUtils;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParsingException;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.state.InventoryStateType;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABminConfigGenerator {
 
@@ -94,29 +93,29 @@ public class OpenHABminConfigGenerator {
 
                 logger.info("update zwave entries of HABmin zwave DB[" + zwaveDb + "] ...");
 
-                List<DeviceConfigType.DeviceConfig> deviceConfigs = deviceRegistryRemote.getDeviceConfigs();
+                List<UnitConfig> deviceUnitConfigs = deviceRegistryRemote.getDeviceConfigs();
 
-                for (DeviceConfigType.DeviceConfig deviceConfig : deviceConfigs) {
+                for (UnitConfig deviceUnitConfig : deviceUnitConfigs) {
                     try {
 
                         // check openhab binding type
-                        if (!deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
+                        if (!deviceRegistryRemote.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
                             continue;
                         }
 
                         // check if zwave
-                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", deviceRegistryRemote.getDeviceClassById(deviceConfig.getDeviceClassId()).getBindingConfig().getMetaConfig());
+                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", deviceRegistryRemote.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getMetaConfig());
                         openhabBindingType = variableProvider.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
                         if (!"zwave".equals(openhabBindingType)) {
                             continue;
                         }
 
                         // check if installed
-                        if (deviceConfig.getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
                             continue;
                         }
 
-                        variableProvider = new MetaConfigVariableProvider("DeviceConfigVariableProvider", deviceConfig.getMetaConfig());
+                        variableProvider = new MetaConfigVariableProvider("DeviceConfigVariableProvider", deviceUnitConfig.getMetaConfig());
                         zwaveNodeID = variableProvider.getValue(OPENHAB_BINDING_DEVICE_ID);
                         zwaveNodeConfigFile = new File(zwaveDb, "node" + zwaveNodeID + ".xml");
 
@@ -125,10 +124,10 @@ public class OpenHABminConfigGenerator {
                             continue;
                         }
 
-                        updateZwaveNodeConfig(zwaveNodeConfigFile, deviceConfig);
-                        logger.info("Successful updated zwave Node[" + zwaveNodeID + "] of Device[" + deviceConfig.getLabel() + "].");
+                        updateZwaveNodeConfig(zwaveNodeConfigFile, deviceUnitConfig);
+                        logger.info("Successful updated zwave Node[" + zwaveNodeID + "] of Device[" + deviceUnitConfig.getLabel() + "].");
                     } catch (Exception ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update node entry for Device[" + deviceConfig.getLabel() + "]!", ex), logger, LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update node entry for Device[" + deviceUnitConfig.getLabel() + "]!", ex), logger, LogLevel.ERROR);
                     }
                 }
 
@@ -140,7 +139,7 @@ public class OpenHABminConfigGenerator {
         }
     }
 
-    public void updateZwaveNodeConfig(final File zwaveNodeConfigFile, final DeviceConfig deviceConfig) throws CouldNotPerformException {
+    public void updateZwaveNodeConfig(final File zwaveNodeConfigFile, final UnitConfig deviceDeviceConfig) throws CouldNotPerformException {
         try {
 
             // load
@@ -164,8 +163,8 @@ public class OpenHABminConfigGenerator {
             Element locationElement = new Element("location");
 
             // add values
-            nameElement.appendChild(deviceConfig.getLabel() + " " + locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getLabel());
-            locationElement.appendChild(locationRegistryRemote.getLocationConfigById(deviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + locationRegistryRemote.getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            locationElement.appendChild(locationRegistryRemote.getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
 
             // store back
             nodeElement.appendChild(nameElement);
@@ -179,7 +178,7 @@ public class OpenHABminConfigGenerator {
             }
 
         } catch (XMLParsingException | IOException | CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update zwave node config of Device[" + deviceConfig.getLabel() + "]!", ex);
+            throw new CouldNotPerformException("Could not update zwave node config of Device[" + deviceDeviceConfig.getLabel() + "]!", ex);
         }
     }
 

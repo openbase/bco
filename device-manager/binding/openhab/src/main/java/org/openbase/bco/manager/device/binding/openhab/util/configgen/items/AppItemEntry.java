@@ -21,13 +21,12 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -37,23 +36,23 @@ public class AppItemEntry extends AbstractItemEntry {
 
     public static String APP_GROUP_LABEL = "Apps";
 
-    public AppItemEntry(final AppConfig appConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
+    public AppItemEntry(final UnitConfig appUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
         super();
         try {
-            this.itemId = generateItemId(appConfig);
+            this.itemId = generateItemId(appUnitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = appConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"bco.manager.app:" + appConfig.getId() + "\"";
+            this.label = appUnitConfig.getLabel();
+            this.itemHardwareConfig = "rsb=\"bco.manager.app:" + appUnitConfig.getId() + "\"";
             groups.add(APP_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(appConfig.getLocationId(), locationRegistryRemote));
+            groups.add(GroupEntry.generateGroupID(appUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
 
-    private String generateItemId(AppConfig appConfig) throws CouldNotPerformException {
+    private String generateItemId(final UnitConfig appConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("App")
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(appConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);

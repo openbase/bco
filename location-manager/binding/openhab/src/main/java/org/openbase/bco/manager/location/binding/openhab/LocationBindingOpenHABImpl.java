@@ -48,8 +48,7 @@ import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -64,8 +63,8 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final LocationRegistryRemote locationRegistryRemote;
     private final LocationRemoteFactoryImpl locationRemoteFactory;
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
-    private final ActivatableEntryRegistrySynchronizer<String, LocationRemote, LocationConfig, LocationConfig.Builder> locationRegistrySynchronizer;
-    private final ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, ConnectionConfig, ConnectionConfig.Builder> connectionRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
+    private final ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
     private final RegistryImpl<String, LocationRemote> locationRegistry;
     private final RegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
@@ -78,17 +77,17 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         connectionRegistry = new RegistryImpl<>();
         locationRemoteFactory = new LocationRemoteFactoryImpl();
         connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-        this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, LocationConfig, LocationConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory) {
+        this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory) {
 
             @Override
-            public boolean activationCondition(LocationConfig config) {
+            public boolean activationCondition(UnitConfig config) {
                 return true;
             }
         };
-        this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, ConnectionConfig, ConnectionConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
+        this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
 
             @Override
-            public boolean activationCondition(ConnectionConfig config) {
+            public boolean activationCondition(UnitConfig config) {
                 return true;
             }
         };
