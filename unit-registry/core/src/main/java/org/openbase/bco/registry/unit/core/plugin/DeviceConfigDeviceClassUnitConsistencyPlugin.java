@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.consistency.device;
+package org.openbase.bco.registry.unit.core.plugin;
 
 /*
  * #%L
- * REM DeviceRegistryData Core
+ * BCO Registry Unit Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -24,43 +24,53 @@ package org.openbase.bco.registry.unit.core.consistency.device;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
-import rst.homeautomation.binding.BindingConfigType.BindingConfig;
+import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rst.homeautomation.binding.BindingConfigType;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateConfigType.ServiceTemplateConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import rst.homeautomation.device.DeviceConfigType;
+import rst.homeautomation.service.ServiceConfigType;
+import rst.homeautomation.service.ServiceTemplateConfigType;
+import rst.homeautomation.service.ServiceTemplateType;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.homeautomation.unit.UnitTemplateConfigType;
 import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
 
-    public DeviceConfigDeviceClassUnitConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
+    public DeviceConfigDeviceClassUnitConsistencyPlugin(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
         this.dalUnitRegistry = dalUnitRegistry;
+        this.deviceUnitRegistry = deviceUnitRegistry;
     }
 
     @Override
-    public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> config) throws InitializationException, InterruptedException {
+    }
+
+    @Override
+    public void afterRegister(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
         UnitConfig.Builder deviceUnitConfig = entry.getMessage().toBuilder();
-        DeviceConfig.Builder deviceConfig = deviceUnitConfig.getDeviceConfigBuilder();
+        DeviceConfigType.DeviceConfig.Builder deviceConfig = deviceUnitConfig.getDeviceConfigBuilder();
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceclass.id");
@@ -85,23 +95,24 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
         }
 
         // add all non existing units that have an according unitTemplateConfig in the deviceClass
-        for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+        for (UnitTemplateConfigType.UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
             if (!unitWithRelatedTemplateExists(unitConfigs, unitTemplateConfig)) {
-                List<ServiceConfig> serviceConfigs = new ArrayList<>();
-                for (ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
-                    ServiceConfig.Builder serviceConfig = ServiceConfig.newBuilder().setBindingConfig(BindingConfig.newBuilder().setBindingId(deviceClass.getBindingConfig().getBindingId()));
-                    serviceConfig.setServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplateConfig.getServiceType()));
+                List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+                for (ServiceTemplateConfigType.ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
+                    ServiceConfigType.ServiceConfig.Builder serviceConfig = ServiceConfigType.ServiceConfig.newBuilder().setBindingConfig(BindingConfigType.BindingConfig.newBuilder().setBindingId(deviceClass.getBindingConfig().getBindingId()));
+                    serviceConfig.setServiceTemplate(ServiceTemplateType.ServiceTemplate.newBuilder().setType(serviceTemplateConfig.getServiceType()));
                     serviceConfigs.add(serviceConfig.build());
                 }
 
                 UnitConfig dalUnitConfig = UnitConfig.newBuilder().setType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
-                deviceConfig.addUnitId(dalUnitRegistry.partialRegister(new IdentifiableMessage<>(dalUnitConfig, dalUnitRegistry.getIdGenerator())).getId());
+                dalUnitConfig = dalUnitRegistry.register(dalUnitConfig);
+                deviceConfig.addUnitId(dalUnitConfig.getId());
                 modification = true;
             }
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(deviceUnitConfig), this);
+            deviceUnitRegistry.update(deviceUnitConfig.build());
         }
     }
 

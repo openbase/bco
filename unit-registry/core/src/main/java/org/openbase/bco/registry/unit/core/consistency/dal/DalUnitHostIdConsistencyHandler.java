@@ -48,7 +48,7 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig dalUnitConfig = entry.getMessage();
 
-        if (dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
             throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");
         } else {
             // throws a could not perform exception if the unit host is not registered

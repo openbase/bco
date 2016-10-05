@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.device;
+package org.openbase.bco.registry.unit.core.consistency.dal;
 
 /*
  * #%L
@@ -35,6 +35,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.homeautomation.device.DeviceClassType.DeviceClass;
+import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
 import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
@@ -51,61 +52,63 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
 
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
 
     public OpenhabServiceConfigItemIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
         this.locationRegistry = locationRegistry;
-        this.dalUnitRegistry = dalUnitRegistry;
+        this.deviceRegistry = deviceRegistry;
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig deviceUnitConfig = entry.getMessage();
+        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        UnitConfig.Builder unitConfigClone = unitConfig.clone();
 
-        for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-            boolean modification = false;
-            UnitConfig.Builder unitConfig = dalUnitRegistry.getMessage(unitId).toBuilder();
-            UnitConfig.Builder unitConfigClone = unitConfig.clone();
-            unitConfig.clearServiceConfig();
-            for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
+        if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty()) {
+            throw new NotAvailableException("unitConfig.unitHostId");
+        }
+        DeviceConfig deviceConfig = deviceRegistry.getMessage(unitConfig.getUnitHostId()).getDeviceConfig();
+        DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
 
-                if (!serviceConfig.hasBindingConfig()) {
-                    continue;
+        boolean modification = false;
+        unitConfig.clearServiceConfig();
+        for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
+            if (!serviceConfig.hasBindingConfig()) {
+                continue;
+            }
+
+            if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
+                String itemId = generateItemName(entry.getMessage(), deviceClass.getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
+
+                MetaConfig metaConfig;
+
+                // check if meta config already exist, otherwise create one.
+                if (!serviceConfig.getBindingConfig().hasMetaConfig()) {
+                    serviceConfig.setBindingConfig(serviceConfig.getBindingConfig().toBuilder().setMetaConfig(MetaConfig.getDefaultInstance()));
+                    modification = true;
                 }
 
-                if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
-                    String itemId = generateItemName(entry.getMessage(), deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage().getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
+                metaConfig = serviceConfig.getBindingConfig().getMetaConfig();
 
-                    MetaConfig metaConfig;
-
-                    // check if meta config already exist, otherwise create one.
-                    if (!serviceConfig.getBindingConfig().hasMetaConfig()) {
-                        serviceConfig.setBindingConfig(serviceConfig.getBindingConfig().toBuilder().setMetaConfig(MetaConfig.getDefaultInstance()));
-                        modification = true;
-                    }
-
-                    metaConfig = serviceConfig.getBindingConfig().getMetaConfig();
-
-                    String configuredItemId = "";
-                    try {
-                        configuredItemId = MetaConfigProcessor.getValue(metaConfig, OPENHAB_BINDING_ITEM_ID);
-                    } catch (NotAvailableException ex) {
-                    }
-
-                    if (!configuredItemId.equals(itemId)) {
-                        metaConfig = MetaConfigProcessor.setValue(metaConfig, OPENHAB_BINDING_ITEM_ID, itemId);
-                        serviceConfig.setBindingConfig(serviceConfig.getBindingConfig().toBuilder().setMetaConfig(metaConfig));
-                        modification = true;
-                    }
+                String configuredItemId = "";
+                try {
+                    configuredItemId = MetaConfigProcessor.getValue(metaConfig, OPENHAB_BINDING_ITEM_ID);
+                } catch (NotAvailableException ex) {
                 }
-                unitConfig.addServiceConfig(serviceConfig);
+
+                if (!configuredItemId.equals(itemId)) {
+                    metaConfig = MetaConfigProcessor.setValue(metaConfig, OPENHAB_BINDING_ITEM_ID, itemId);
+                    serviceConfig.setBindingConfig(serviceConfig.getBindingConfig().toBuilder().setMetaConfig(metaConfig));
+                    modification = true;
+                }
             }
-            if (modification) {
-                dalUnitRegistry.update(unitConfig.build());
-            }
+            unitConfig.addServiceConfig(serviceConfig);
+        }
+        if (modification) {
+            throw new EntryModification(unitConfig.build(), this);
         }
     }
 

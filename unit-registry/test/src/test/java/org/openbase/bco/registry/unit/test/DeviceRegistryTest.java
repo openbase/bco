@@ -227,7 +227,11 @@ public class DeviceRegistryTest {
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.BATTERY).build();
         DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("F_MotionSensor", productNumber, company).toBuilder().addUnitTemplateConfig(unitTemplateConfig).build()).get();
         UnitConfig motionSensorConfig = getDeviceUnitConfig(deviceLabel, serialNumber, motionSensorClass);
-        motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig).get();
+//        motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig).get();
+        motionSensorConfig = unitRegistry.registerUnitConfig(motionSensorConfig).get();
+        System.out.println("Config:" + motionSensorConfig);
+//        motionSensorConfig = deviceRegistry.getDeviceConfigById(motionSensorConfig.getId());
+//        System.out.println("Config:" + motionSensorConfig);
 
         assertEquals("Device scope is not set properly", deviceScope, ScopeGenerator.generateStringRep(motionSensorConfig.getScope()));
         assertEquals("Device has not the correct number of units", 1, motionSensorConfig.getDeviceConfig().getUnitIdCount());
