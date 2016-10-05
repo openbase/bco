@@ -36,7 +36,7 @@ import rst.homeautomation.unit.UnitConfigType.UnitConfig;
  */
 public class UnitEnablingStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private static final EnablingState DEFAULT_ENABLING_STAT = EnablingState.newBuilder().setValue(EnablingState.State.DISABLED).build();
+    private static final EnablingState DEFAULT_ENABLING_STAT = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {

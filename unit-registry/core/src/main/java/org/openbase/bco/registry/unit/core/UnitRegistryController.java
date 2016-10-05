@@ -84,7 +84,7 @@ import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupScopeC
 import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupUnitTypeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.user.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.user.UserConfigUserNameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.dbconvert.DummyConverter;
+import org.openbase.bco.registry.unit.core.dbconvert.DeviceConfig_0_To_1_DBConverter;
 import org.openbase.bco.registry.unit.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishDalUnitTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishDeviceTransformationRegistryPlugin;
@@ -233,7 +233,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected Package getVersionConverterPackage() throws CouldNotPerformException {
-        return DummyConverter.class.getPackage();
+        return DeviceConfig_0_To_1_DBConverter.class.getPackage();
     }
 
     /**
