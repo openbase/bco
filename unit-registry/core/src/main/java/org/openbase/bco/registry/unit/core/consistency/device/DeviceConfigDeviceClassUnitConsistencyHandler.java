@@ -44,28 +44,28 @@ import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-    
+
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
-    
+
     public DeviceConfigDeviceClassUnitConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
         this.dalUnitRegistry = dalUnitRegistry;
     }
-    
+
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder deviceUnitConfig = entry.getMessage().toBuilder();
         DeviceConfig.Builder deviceConfig = deviceUnitConfig.getDeviceConfigBuilder();
-        
+
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceclass.id");
         }
-        
+
         boolean modification = false;
         DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
         List<UnitConfig> unitConfigs = new ArrayList<>();
@@ -93,22 +93,22 @@ public class DeviceConfigDeviceClassUnitConsistencyHandler extends AbstractProto
                     serviceConfig.setServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplateConfig.getServiceType()));
                     serviceConfigs.add(serviceConfig.build());
                 }
-                
+
                 UnitConfig dalUnitConfig = UnitConfig.newBuilder().setType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
-                deviceConfig.addUnitId(dalUnitRegistry.register(dalUnitConfig).getId());
+                deviceConfig.addUnitId(dalUnitRegistry.partialRegister(new IdentifiableMessage<>(dalUnitConfig, dalUnitRegistry.getIdGenerator())).getId());
                 modification = true;
             }
         }
-        
+
         if (modification) {
             throw new EntryModification(entry.setMessage(deviceUnitConfig), this);
         }
     }
-    
+
     private boolean unitWithRelatedTemplateExists(final List<UnitConfig> units, final UnitTemplateConfig unitTemplate) {
         return units.stream().anyMatch((unit) -> (unit.getUnitTemplateConfigId().equals(unitTemplate.getId())));
     }
-    
+
     private boolean templateForUnitExists(final List<UnitTemplateConfig> units, String id) {
         return units.stream().anyMatch((unit) -> (unit.getId().equals(id)));
     }
