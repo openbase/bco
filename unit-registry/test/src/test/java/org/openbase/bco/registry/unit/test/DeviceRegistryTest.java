@@ -33,6 +33,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.registry.agent.core.AgentRegistryController;
+import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
@@ -80,6 +82,9 @@ public class DeviceRegistryTest {
 
     private static DeviceRegistryController deviceRegistry;
     private static UnitRegistryController unitRegistry;
+    private static AppRegistryController appRegistry;
+    private static AgentRegistryController agentRegistry;
+
     private static DeviceClass.Builder deviceClass;
     private static DeviceConfig.Builder deviceConfig;
     private static UnitConfig.Builder deviceUnitConfig;
@@ -91,9 +96,13 @@ public class DeviceRegistryTest {
 
         deviceRegistry = new DeviceRegistryController();
         unitRegistry = new UnitRegistryController();
+        appRegistry = new AppRegistryController();
+        agentRegistry = new AgentRegistryController();
 
         deviceRegistry.init();
         unitRegistry.init();
+        appRegistry.init();
+        agentRegistry.init();
 
         Thread deviceRegistryThread = new Thread(new Runnable() {
 
@@ -119,11 +128,39 @@ public class DeviceRegistryTest {
             }
         });
 
+        Thread appRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    appRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+
+        Thread agentRegistryThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    agentRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, logger);
+                }
+            }
+        });
+
         deviceRegistryThread.start();
         unitRegistryThread.start();
+        appRegistryThread.start();
+        agentRegistryThread.start();
 
         deviceRegistryThread.join();
         unitRegistryThread.join();
+        appRegistryThread.join();
+        agentRegistryThread.join();
 
         deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
         deviceClass.setLabel("TestDeviceClassLabel");
@@ -143,44 +180,29 @@ public class DeviceRegistryTest {
 
     @AfterClass
     public static void tearDownClass() {
-//        if (deviceRegistryRemote != null) {
-//            deviceRegistryRemote.shutdown();
-//        }
         if (unitRegistry != null) {
             unitRegistry.shutdown();
         }
         if (deviceRegistry != null) {
             deviceRegistry.shutdown();
         }
+        if (appRegistry != null) {
+            appRegistry.shutdown();
+        }
+        if (agentRegistry != null) {
+            agentRegistry.shutdown();
+        }
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws CouldNotPerformException {
+        unitRegistry.getDalUnitConfigRegistry().clear();
+        unitRegistry.getDeviceUnitConfigRegistry().clear();
+        deviceRegistry.getDeviceClassRegistry().clear();
     }
 
     @After
     public void tearDown() {
-    }
-
-    /**
-     * Test of registerDeviceClass method, of class DeviceRegistryImpl.
-     */
-    @Test(timeout = 5000)
-    public void testRegisterDeviceClass() throws Exception {
-        System.out.println("registerDeviceClass");
-        deviceRegistry.registerDeviceClass(deviceClass.clone().build()).get();
-        assertTrue(deviceRegistry.containsDeviceClass(deviceClass.clone().build()));
-//		assertEquals(true, registry.getData().getDeviceClassesBuilderList().contains(deviceClass));
-    }
-
-    /**
-     * Test of registerDeviceConfig method, of class DeviceRegistryImpl.
-     */
-//    @Test(timeout = 5000)
-    public void testRegisterDeviceConfig() throws Exception {
-        System.out.println("registerDeviceConfig");
-        unitRegistry.registerUnitConfig(deviceUnitConfig.clone().build());
-        assertTrue(unitRegistry.containsUnitConfig(deviceUnitConfig.clone().build()));
     }
 
     /**
@@ -227,21 +249,19 @@ public class DeviceRegistryTest {
         String serialNumber = "112358";
         String company = "Company";
 
-        String deviceId = company + "_" + productNumber + "_" + serialNumber;
-
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("WithoutLabel", productNumber, company)).get();
         UnitConfig deviceWithoutLabel = getDeviceUnitConfig("", serialNumber, clazz);
         deviceWithoutLabel = deviceRegistry.registerDeviceConfig(deviceWithoutLabel).get();
 
-        assertEquals("The device label is not set as the id if it is empty!", deviceId, deviceWithoutLabel.getLabel());
+        assertEquals("The device label is not set as the id if it is empty!", deviceWithoutLabel.getId(), deviceWithoutLabel.getLabel());
     }
 
     /**
      * Test of testRegisterTwoDevicesWithSameLabel method, of class
      * DeviceRegistryImpl.
      */
-//    @Test(timeout = 5000)
     // TODO: fix that the consisteny handling will work after this
+    @Test(timeout = 5000)
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
         String serialNumber1 = "FIRST_DEV";
         String serialNumber2 = "BAD_DEV";
@@ -251,12 +271,12 @@ public class DeviceRegistryTest {
         UnitConfig deviceWithLabel1 = getDeviceUnitConfig(deviceLabel, serialNumber1, clazz);
         UnitConfig deviceWithLabel2 = getDeviceUnitConfig(deviceLabel, serialNumber2, clazz);
 
-        deviceRegistry.registerDeviceConfig(deviceWithLabel1);
+        deviceRegistry.registerDeviceConfig(deviceWithLabel1).get();
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            deviceRegistry.registerDeviceConfig(deviceWithLabel2);
+            deviceRegistry.registerDeviceConfig(deviceWithLabel2).get();
             fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             assertTrue(true);
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
@@ -496,7 +516,7 @@ public class DeviceRegistryTest {
 
     private UnitConfig getDeviceUnitConfig(String label, String serialNumber, DeviceClass clazz) {
         DeviceConfig tmpDeviceConfig = DeviceConfig.newBuilder().setDeviceClassId(clazz.getId()).setSerialNumber(serialNumber).setInventoryState(getDefaultInventoryState()).build();
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setLabel(label).setDeviceConfig(tmpDeviceConfig).build();
+        return UnitConfig.newBuilder().setType(UnitType.DEVICE).setPlacementConfig(getDefaultPlacement()).setLabel(label).setDeviceConfig(tmpDeviceConfig).build();
     }
 
     private DeviceClass getDeviceClass(String label, String productNumber, String company) {

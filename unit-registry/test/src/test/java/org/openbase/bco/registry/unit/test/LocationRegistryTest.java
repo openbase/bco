@@ -65,7 +65,6 @@ public class LocationRegistryTest {
     private static AppRegistryController appRegistry;
     private static AgentRegistryController agentRegistry;
 
-//    private static LocationRegistryRemote remote;
     public LocationRegistryTest() {
     }
 
@@ -78,6 +77,7 @@ public class LocationRegistryTest {
         deviceRegistry = new DeviceRegistryController();
         appRegistry = new AppRegistryController();
         agentRegistry = new AgentRegistryController();
+
         unitRegistry.init();
         deviceRegistry.init();
         appRegistry.init();
@@ -137,27 +137,28 @@ public class LocationRegistryTest {
         deviceRegistryThread.join();
         appRegistryThread.join();
         agentRegistryThread.join();
-
-//        remote = new LocationRegistryRemote();
-//        remote.init();
-//        remote.activate();
     }
 
     @AfterClass
     public static void tearDownClass() throws InterruptedException, CouldNotPerformException {
-//        remote.shutdown();
         if (unitRegistry != null) {
             unitRegistry.shutdown();
+        }
+        if (deviceRegistry != null) {
+            deviceRegistry.shutdown();
+        }
+        if (appRegistry != null) {
+            appRegistry.shutdown();
+        }
+        if (agentRegistry != null) {
+            agentRegistry.shutdown();
         }
     }
 
     @Before
     public void setUp() throws CouldNotPerformException {
-//        deviceRegistry.getUnitGroupRegistry().clear();
-//        deviceRegistry.getDeviceConfigRegistry().clear();
         unitRegistry.getConnectionUnitConfigRegistry().clear();
         unitRegistry.getLocationUnitConfigRegistry().clear();
-//        userRegistry.getUserRegistry().clear();
     }
 
     @After
