@@ -132,6 +132,7 @@ public class LocationRegistryTest {
         deviceRegistryThread.start();
         appRegistryThread.start();
         agentRegistryThread.start();
+
         unitRegistryThread.join();
         deviceRegistryThread.join();
         appRegistryThread.join();

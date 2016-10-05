@@ -147,7 +147,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         @Override
         public void update(Observable<M> source, M data) throws Exception {
             try {
-                if(data == null) {
+                if (data == null) {
                     throw new NotAvailableException("RegistryData");
                 }
                 int entryCount;

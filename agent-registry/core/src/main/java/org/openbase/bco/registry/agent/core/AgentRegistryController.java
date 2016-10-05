@@ -134,6 +134,11 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
     }
 
     @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(agentUnitConfigRemoteRegistry);
+    }
+
+    @Override
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, agentClassRegistry.isReadOnly());
         setDataField(AgentRegistryData.AGENT_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, agentClassRegistry.isConsistent());
@@ -287,10 +292,5 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
 
     public ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRegistry() {
         return agentClassRegistry;
-    }
-
-    @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
