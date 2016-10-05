@@ -37,6 +37,7 @@ import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
 import rst.homeautomation.unit.UnitConfigType.UnitConfig;
 import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -61,7 +62,7 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
 
         boolean modification = false;
-        UnitTemplate unitTemplate = unitTemplateRegistry.get(unitConfig.getType().toString()).getMessage();
+        UnitTemplate unitTemplate = getUnitTemplateByType(unitConfig.getType());
         for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
             if (!unitConfigContainsServiceType(unitConfig, serviceTemplate)) {
                 unitConfig.addServiceConfig(ServiceConfig.newBuilder().setServiceTemplate(serviceTemplate).setBindingConfig(BindingConfig.getDefaultInstance()));
@@ -84,5 +85,14 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
 
     private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceTemplate serviceTemplate) {
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().equals(serviceTemplate)));
+    }
+
+    private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {
+        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
+            if (unitTemplate.getType() == type) {
+                return unitTemplate;
+            }
+        }
+        throw new NotAvailableException("UnitTemplate with type[" + type + "]");
     }
 }

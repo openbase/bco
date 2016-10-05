@@ -219,7 +219,7 @@ public class LocationRegistryTest {
         System.out.println("TestChildConsistency");
         String label = "Test2Living";
         UnitConfig living = getLocationUnitBuilder().setLabel(label).build();
-        UnitConfig registeredLiving = unitRegistry.removeUnitConfig(living).get();
+        UnitConfig registeredLiving = unitRegistry.registerUnitConfig(living).get();
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getLocationConfig().getRoot());
         assertEquals("Label has not been set", label, registeredLiving.getLabel());
 
@@ -232,7 +232,7 @@ public class LocationRegistryTest {
         assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
 
         UnitConfig home = getLocationUnitBuilder().setLabel("Test2Home").build();
-        UnitConfig registeredHome = unitRegistry.removeUnitConfig(home).get();
+        UnitConfig registeredHome = unitRegistry.registerUnitConfig(home).get();
         registeredLivingBuilder = unitRegistry.getUnitConfigById(registeredRootLocationConfig.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredHome.getId());
         assertEquals("Parent was not updated!", registeredHome.getId(), unitRegistry.updateUnitConfig(registeredLivingBuilder.build()).get().getPlacementConfig().getLocationId());
@@ -367,7 +367,7 @@ public class LocationRegistryTest {
         assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
         assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
 
-        assertEquals("/rootzoneforconnectiontest/door/connection1/", ScopeGenerator.generateStringRep(connection1.getScope()));
+        assertEquals("/rootzoneforconnectiontest/connection/connection1/", ScopeGenerator.generateStringRep(connection1.getScope()));
         assertEquals(ScopeGenerator.generateConnectionScope(connection2, zone), connection2.getScope());
 
         ConnectionConfig connectionConfig3 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();

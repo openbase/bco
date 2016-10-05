@@ -66,6 +66,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
             super.init(JPService.getProperty(jpScopePropery).getValue());

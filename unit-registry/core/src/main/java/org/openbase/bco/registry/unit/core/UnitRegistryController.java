@@ -443,7 +443,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, isUnitConfigRegistryReadOnly());
         setDataField(UnitRegistryData.UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, isUnitConfigRegistryConsistent());
-        super.notifyChange();
     }
 
     @Override
@@ -483,12 +482,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException {
-        return dalUnitConfigRegistry.get(unitConfigId).getMessage();
+        for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
+            try {
+                return (UnitConfig) registry.getMessage(unitConfigId);
+            } catch (CouldNotPerformException ex) {
+                // ignore and throw a new exception if no registry contains the entry
+            }
+        }
+        throw new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]");
     }
 
     @Override
-    public Boolean containsUnitConfigById(final String sceneConfigId) throws CouldNotPerformException {
-        return dalUnitConfigRegistry.contains(sceneConfigId);
+    public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException {
+        for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
+            try {
+                return registry.contains(unitConfigId);
+            } catch (CouldNotPerformException ex) {
+                // ignore and throw a new exception if no registry contains the entry
+            }
+        }
+        throw new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]");
     }
 
     @Override
