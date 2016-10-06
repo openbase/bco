@@ -100,12 +100,12 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class MockRegistry {
-
+    
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MockRegistry.class);
-
+    
     public static final String USER_NAME = "uSeRnAmE";
     public static UnitConfig testUser;
-
+    
     public static final String COLORABLE_LIGHT_LABEL = "Ambient_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
     public static final String BRIGHTNESS_SENSOR_LABEL = "Brightness_Sensor_Unit_Test";
@@ -123,7 +123,7 @@ public class MockRegistry {
     public static final String TEMPERATURE_CONTROLLER_LABEL = "Temperature_Controller_Unit_Test";
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
-
+    
     private static DeviceRegistryLauncher deviceRegistryLauncher;
     private static LocationRegistryLauncher locationRegistryLauncher;
     private static AgentRegistryLauncher agentRegistryLauncher;
@@ -131,7 +131,7 @@ public class MockRegistry {
     private static SceneRegistryLauncher sceneRegistryLauncher;
     private static UserRegistryLauncher userRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
-
+    
     private static DeviceRegistry deviceRegistry;
     private static LocationRegistry locationRegistry;
     private static AgentRegistry agentRegistry;
@@ -139,11 +139,11 @@ public class MockRegistry {
     private static SceneRegistry sceneRegistry;
     private static UserRegistry userRegisty;
     private static UnitRegistry unitRegistry;
-
+    
     private static UnitConfig paradiseLocation;
-
+    
     public static final Map<UnitType, String> UNIT_TYPE_LABEL_MAP = new HashMap<>();
-
+    
     public enum MockServiceTemplate {
 
         // endings:
@@ -172,23 +172,23 @@ public class MockRegistry {
         TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
         TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
         TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER);
-
+        
         private final ServiceTemplate template;
-
+        
         MockServiceTemplate(ServiceType type, ServicePattern servicePattern) {
             ServiceTemplate.Builder templateBuilder = ServiceTemplate.newBuilder();
             templateBuilder.setType(type);
             templateBuilder.setPattern(servicePattern);
             this.template = templateBuilder.build();
         }
-
+        
         public ServiceTemplate getTemplate() {
             return template;
         }
     }
-
+    
     public enum MockUnitTemplate {
-
+        
         COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
         LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
         MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
@@ -205,9 +205,9 @@ public class MockRegistry {
         SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, SMOKE_SPS, SMOKE_ALARM_SPS),
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
         BATTERY(UnitType.BATTERY, BATTERY_SPS);
-
+        
         private final UnitTemplate template;
-
+        
         MockUnitTemplate(UnitTemplate.UnitType type, MockServiceTemplate... serviceTemplates) {
             UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
@@ -216,11 +216,11 @@ public class MockRegistry {
             }
             this.template = templateBuilder.build();
         }
-
+        
         public UnitTemplate getTemplate() {
             return template;
         }
-
+        
         public static UnitTemplate getTemplate(UnitType type) throws CouldNotPerformException {
             for (MockUnitTemplate templateType : values()) {
                 if (templateType.getTemplate().getType() == type) {
@@ -230,13 +230,32 @@ public class MockRegistry {
             throw new CouldNotPerformException("Could not find template for " + type + "!");
         }
     }
-
+    
     protected MockRegistry() throws InstantiationException {
+        if (UNIT_TYPE_LABEL_MAP.isEmpty()) {
+            UNIT_TYPE_LABEL_MAP.put(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.LIGHT, LIGHT_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.BUTTON, BUTTON_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMER, DIMMABLE_LIGHT_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.HANDLE, HANDLE_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_SWITCH, POWER_SWITCH_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.REED_CONTACT, REED_CONTACT_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.ROLLER_SHUTTER, ROLLER_SHUTTER_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.TAMPER_DETECTOR, TAMPER_DETECTOR_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.BATTERY, BATTERY_LABEL);
+        }
+        
         try {
             JPService.setupJUnitTestMode();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -249,7 +268,7 @@ public class MockRegistry {
                 }
             }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -262,7 +281,7 @@ public class MockRegistry {
                 }
             }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -275,7 +294,7 @@ public class MockRegistry {
                 }
             }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -292,9 +311,9 @@ public class MockRegistry {
                 task.get();
             }
             logger.info("Real registries started!");
-
+            
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -307,7 +326,7 @@ public class MockRegistry {
                 }
             }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -320,7 +339,7 @@ public class MockRegistry {
                 }
             }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -337,9 +356,9 @@ public class MockRegistry {
                 task.get();
             }
             logger.info("Virtual registries started!");
-
+            
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -349,10 +368,10 @@ public class MockRegistry {
                             String unitTemplateId = unitRegistry.getUnitTemplateByType(template.getTemplate().getType()).getId();
                             unitRegistry.updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
                         }
-
+                        
                         logger.info("Register user...");
                         registerUser();
-
+                        
                         logger.info("Register locations...");
                         registerLocations();
                         // TODO need to be implemented.
@@ -367,32 +386,13 @@ public class MockRegistry {
                     return null;
                 }
             }));
-
+            
             logger.info("Wait for unitTemplate updates; device, location and user registration...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
             logger.info("UnitTemplates updated and devices, locations and user registered!");
-
-            if (UNIT_TYPE_LABEL_MAP.isEmpty()) {
-                UNIT_TYPE_LABEL_MAP.put(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.LIGHT, LIGHT_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.BUTTON, BUTTON_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMER, DIMMABLE_LIGHT_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.HANDLE, HANDLE_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_SWITCH, POWER_SWITCH_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.REED_CONTACT, REED_CONTACT_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.ROLLER_SHUTTER, ROLLER_SHUTTER_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.TAMPER_DETECTOR, TAMPER_DETECTOR_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_CONTROLLER, TEMPERATURE_CONTROLLER_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL);
-                UNIT_TYPE_LABEL_MAP.put(UnitType.BATTERY, BATTERY_LABEL);
-            }
-
+            
             logger.info("Started app/agent/scene registries!");
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
@@ -401,7 +401,7 @@ public class MockRegistry {
             throw new InstantiationException(this, ex);
         }
     }
-
+    
     protected void shutdown() {
         deviceRegistryLauncher.shutdown();
         locationRegistryLauncher.shutdown();
@@ -412,7 +412,7 @@ public class MockRegistry {
         CachedDeviceRegistryRemote.shutdown();
         CachedLocationRegistryRemote.shutdown();
     }
-
+    
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
             LocationConfig defaultLocation = LocationConfig.getDefaultInstance();
@@ -421,7 +421,7 @@ public class MockRegistry {
             throw new CouldNotPerformException(ex);
         }
     }
-
+    
     private void registerUser() throws CouldNotPerformException, InterruptedException {
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
         UnitConfig userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build();
@@ -431,49 +431,61 @@ public class MockRegistry {
             throw new CouldNotPerformException(ex);
         }
     }
-
+    
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
             // ambient light
+            System.out.println("Device 1");
             DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass));
-
+            
+            Thread.sleep(1000);
+            System.out.println("Device 2");
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
-
+            
+            System.out.println("Device 3");
             // button
             DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
-
+            
+            System.out.println("Device 4");
             // dimmer
             DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
-
+            
+            System.out.println("Device 5");
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
-
+            
+            System.out.println("Device 6");
             // light
             DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
-
+            
+            System.out.println("Device 7");
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
-
+            
+            System.out.println("Device 8");
             // reedSwitch
             DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
-
+            
+            System.out.println("Device 9");
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
-
+            
+            System.out.println("Device 10");
             // smoke detector
             DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
-
+            
+            System.out.println("Device 11");
             // temperature controller
             DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
@@ -481,26 +493,26 @@ public class MockRegistry {
             throw new CouldNotPerformException(ex);
         }
     }
-
+    
     private static void updateUnitLabel(List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
         for (String unitId : unitIds) {
             UnitConfig tmp = unitRegistry.getUnitConfigById(unitId);
             unitRegistry.updateUnitConfig(tmp.toBuilder().setLabel(UNIT_TYPE_LABEL_MAP.get(tmp.getType())).build()).get();
         }
     }
-
+    
     private static void registerDeviceUnitConfig(UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
         UnitConfig tmp = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
         updateUnitLabel(tmp.getDeviceConfig().getUnitIdList());
     }
-
+    
     public static PlacementConfig getDefaultPlacement() {
         Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
         return PlacementConfig.newBuilder().setPosition(pose).setLocationId(getLocation().getId()).build();
     }
-
+    
     public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
         template.getServiceTemplateList().stream().forEach((serviceTemplate) -> {
@@ -509,12 +521,12 @@ public class MockRegistry {
         });
         return serviceConfigList;
     }
-
+    
     public static UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
         UnitTemplate template = MockUnitTemplate.getTemplate(type);
         return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToUnitHost(false).build();
     }
-
+    
     public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz) {
         DeviceConfig tmp = DeviceConfig.newBuilder()
                 .setSerialNumber(serialNumber)
@@ -528,7 +540,7 @@ public class MockRegistry {
                 .setType(UnitType.DEVICE)
                 .build();
     }
-
+    
     private static List<UnitTemplateConfig> getUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
         List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
         for (UnitTemplate.UnitType type : unitTypes) {
@@ -541,7 +553,7 @@ public class MockRegistry {
         }
         return unitTemplateConfigs;
     }
-
+    
     public static DeviceClass getDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
         for (UnitTemplate.UnitType type : types) {
@@ -550,13 +562,13 @@ public class MockRegistry {
         return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company)
                 .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(getUnitTemplateConfigs(unitTypeList)).build();
     }
-
+    
     public static BindingConfig getBindingConfig() {
         BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
         bindingConfigBuilder.setBindingId("OPENHAB");
         return bindingConfigBuilder.build();
     }
-
+    
     public static UnitConfig getLocation() {
         return paradiseLocation;
     }
