@@ -35,7 +35,7 @@ import rst.spatial.LocationConfigType.LocationConfig;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
@@ -58,6 +58,7 @@ public class LocationChildConsistencyHandler extends AbstractProtoBufRegistryCon
             if (!registry.contains(childLocationId)) {
                 List<String> childIds = new ArrayList<>(locationConfig.getChildIdList());
                 childIds.remove(childLocationId);
+                locationConfig.clearChildId();
                 locationConfig.addAllChildId(childIds);
                 throw new EntryModification("Child location removed because registered ChildLocation[" + childLocationId + "] for ParentLocation[" + locationUnitConfig.getId() + "] does not exists.", entry.setMessage(locationUnitConfig), this);
             }

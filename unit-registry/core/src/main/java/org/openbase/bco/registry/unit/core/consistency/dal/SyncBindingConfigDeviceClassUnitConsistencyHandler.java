@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
+package org.openbase.bco.registry.unit.core.consistency.dal;
 
 /*
  * #%L
@@ -44,56 +44,54 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
 public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry;
 
     public SyncBindingConfigDeviceClassUnitConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry) {
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
         this.deviceClassRegistry = deviceClassRegistry;
-        this.dalUnitRegistry = dalUnitRegistry;
+        this.deviceUnitRegistry = deviceUnitRegistry;
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig deviceUnitConfig = entry.getMessage();
-        DeviceConfig deviceConfig = deviceUnitConfig.getDeviceConfig();
+        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        UnitConfig.Builder unitConfigClone = unitConfig.clone();
 
-        for (String unitId : deviceConfig.getUnitIdList()) {
-            boolean modification = false;
-            UnitConfig.Builder unitConfig = dalUnitRegistry.getBuilder(unitId);
-            UnitConfig.Builder unitConfigClone = unitConfig.clone();
-            unitConfig.clearServiceConfig();
-            for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
+        if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty()) {
+            throw new NotAvailableException("unitConfig.unitHostId");
+        }
+        DeviceConfig deviceConfig = deviceUnitRegistry.getMessage(unitConfig.getUnitHostId()).getDeviceConfig();
 
-                if (!serviceConfig.hasBindingConfig()) {
-                    throw new NotAvailableException("serviceconfig.bindingserviceconfig");
-                }
+        if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
+            throw new NotAvailableException("deviceConfig.deviceClassId");
+        }
+        DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
 
-                BindingConfig bindingConfig = serviceConfig.getBindingConfig();
+        if (!deviceClass.hasBindingConfig() || !deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().isEmpty()) {
+            // nothing to sync
+            return;
+        }
 
-                if (!deviceConfig.hasDeviceClassId()) {
-                    throw new NotAvailableException("deviceclass");
-                }
-
-                DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
-                if (!deviceClass.hasBindingConfig()) {
-                    throw new NotAvailableException("deviceclass.bindingconfig");
-                }
-
-                if (!deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().equals("UNKNOWN")) {
-                    throw new NotAvailableException("deviceclass.bindingconfig.bindingid");
-                }
-
-                String bindingId = deviceClass.getBindingConfig().getBindingId();
-
-                if (!bindingConfig.hasBindingId() || !bindingConfig.getBindingId().equals(bindingId)) {
-                    serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build());
-                    modification = true;
-                }
-                unitConfig.addServiceConfig(serviceConfig);
+        boolean modification = false;
+        unitConfig.clearServiceConfig();
+        for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
+            BindingConfig bindingConfig;
+            if (!serviceConfig.hasBindingConfig()) {
+                bindingConfig = BindingConfig.getDefaultInstance();
+            } else {
+                bindingConfig = serviceConfig.getBindingConfig();
             }
-            if (modification) {
-                dalUnitRegistry.update(unitConfig.build());
+
+            String bindingId = deviceClass.getBindingConfig().getBindingId();
+
+            if (!bindingConfig.hasBindingId() || !bindingConfig.getBindingId().equals(bindingId)) {
+                serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build());
+                modification = true;
             }
+            unitConfig.addServiceConfig(serviceConfig);
+        }
+        if (modification) {
+            throw new EntryModification(entry.setMessage(unitConfig.build()), this);
         }
     }
 }

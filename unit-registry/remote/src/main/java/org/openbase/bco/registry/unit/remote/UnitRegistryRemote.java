@@ -143,7 +143,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     protected void notifyDataUpdate(UnitRegistryData data) throws CouldNotPerformException {
         super.notifyDataUpdate(data);
-
     }
 
     // todo: sync unitConfigRemoteRegistry

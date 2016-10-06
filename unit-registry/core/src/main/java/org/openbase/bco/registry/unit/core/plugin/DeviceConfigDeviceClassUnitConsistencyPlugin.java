@@ -24,7 +24,6 @@ package org.openbase.bco.registry.unit.core.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -64,11 +63,13 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> config) throws InitializationException, InterruptedException {
+    public void afterConsistencyCheck() throws CouldNotPerformException {
+        for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : getRegistry().getEntries()) {
+            updateUnitConfigs(entry);
+        }
     }
 
-    @Override
-    public void afterRegister(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
+    public void updateUnitConfigs(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
         UnitConfig.Builder deviceUnitConfig = entry.getMessage().toBuilder();
         DeviceConfigType.DeviceConfig.Builder deviceConfig = deviceUnitConfig.getDeviceConfigBuilder();
 

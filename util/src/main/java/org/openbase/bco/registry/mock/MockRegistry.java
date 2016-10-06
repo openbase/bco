@@ -67,6 +67,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -241,49 +242,12 @@ public class MockRegistry {
                     try {
                         unitRegistryLauncher = new UnitRegistryLauncher();
                         unitRegistry = unitRegistryLauncher.getUnitRegistry();
-                        registerUser();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
                     }
                     return null;
                 }
             }));
-
-            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    try {
-                        userRegistryLauncher = new UserRegistryLauncher();
-                        userRegisty = userRegistryLauncher.getUserRegistry();
-                        registerUser();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
-                    }
-                    return null;
-                }
-            }));
-
-            // wait for initialization
-            for (Future<Void> task : registryStartupTasks) {
-                task.get();
-            }
-            logger.info("User registry started!");
-
-            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    try {
-                        locationRegistryLauncher = new LocationRegistryLauncher();
-                        locationRegistry = locationRegistryLauncher.getLocationRegistry();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
-                    }
-                    return null;
-                }
-            }));
-
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
@@ -291,50 +255,12 @@ public class MockRegistry {
                     try {
                         deviceRegistryLauncher = new DeviceRegistryLauncher();
                         deviceRegistry = deviceRegistryLauncher.getDeviceRegistry();
-                        // load templates
-                        for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                            deviceRegistry.updateUnitTemplate(template.getTemplate()).get();
-                        }
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
                     }
                     return null;
                 }
             }));
-
-            // wait for initialization
-            for (Future<Void> task : registryStartupTasks) {
-                task.get();
-            }
-            logger.info("Location & Device registry started!");
-
-            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    try {
-                        logger.info("Register locations...");
-                        registerLocations();
-                        // TODO need to be implemented.
-                        // locationRegistry.waitForConsistency();
-                        logger.info("Register devices...");
-                        registerDevices();
-                        logger.info("Wait for consistency");
-                        deviceRegistry.waitForConsistency();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
-                    }
-                    return null;
-                }
-            }));
-
-            // wait for initialization
-            for (Future<Void> task : registryStartupTasks) {
-                logger.info("Wait for device & location registration...");
-                task.get();
-            }
-            logger.info("Devices & Location registered!");
-
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
@@ -361,6 +287,38 @@ public class MockRegistry {
                     return null;
                 }
             }));
+            logger.info("Starting all real registries: unit, device, agent, app ...");
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
+            logger.info("Real registries started!");
+
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        locationRegistryLauncher = new LocationRegistryLauncher();
+                        locationRegistry = locationRegistryLauncher.getLocationRegistry();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                    }
+                    return null;
+                }
+            }));
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        userRegistryLauncher = new UserRegistryLauncher();
+                        userRegisty = userRegistryLauncher.getUserRegistry();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                    }
+                    return null;
+                }
+            }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
                 @Override
@@ -374,11 +332,47 @@ public class MockRegistry {
                     return null;
                 }
             }));
-
-            // wait for initialization
+            logger.info("Waiting for purely virtual registries: location, user, scene ...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            logger.info("Virtual registries started!");
+
+            registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    try {
+                        logger.info("Update unitTemplates...");
+                        // load templates
+                        for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                            String unitTemplateId = unitRegistry.getUnitTemplateByType(template.getTemplate().getType()).getId();
+                            unitRegistry.updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
+                        }
+
+                        logger.info("Register user...");
+                        registerUser();
+
+                        logger.info("Register locations...");
+                        registerLocations();
+                        // TODO need to be implemented.
+                        // locationRegistry.waitForConsistency();
+                        logger.info("Register devices...");
+                        registerDevices();
+                        logger.info("Wait for consistency");
+                        deviceRegistry.waitForConsistency();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                    }
+                    return null;
+                }
+            }));
+
+            logger.info("Wait for unitTemplate updates; device, location and user registration...");
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
+            logger.info("UnitTemplates updated and devices, locations and user registered!");
 
             if (UNIT_TYPE_LABEL_MAP.isEmpty()) {
                 UNIT_TYPE_LABEL_MAP.put(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL);
@@ -403,7 +397,7 @@ public class MockRegistry {
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
             logger.info("Reinitialized remotes!");
-        } catch (Exception ex) {
+        } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -531,6 +525,7 @@ public class MockRegistry {
                 .setPlacementConfig(getDefaultPlacement())
                 .setLabel(label)
                 .setDeviceConfig(tmp)
+                .setType(UnitType.DEVICE)
                 .build();
     }
 
