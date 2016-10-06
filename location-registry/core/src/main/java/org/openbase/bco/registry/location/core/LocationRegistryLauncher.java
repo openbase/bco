@@ -81,7 +81,8 @@ public class LocationRegistryLauncher {
         try {
             locationRegistry = new LocationRegistryLauncher();
         } catch (InitializationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
+            return;
         }
 
         logger.info(APP_NAME + " successfully started.");

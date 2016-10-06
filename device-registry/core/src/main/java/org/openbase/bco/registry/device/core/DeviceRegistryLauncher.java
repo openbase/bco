@@ -95,7 +95,8 @@ public class DeviceRegistryLauncher {
         try {
             deviceRegistry = new DeviceRegistryLauncher();
         } catch (InitializationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
+            return;
         }
 
         ExceptionStack exceptionStack = null;
@@ -107,7 +108,8 @@ public class DeviceRegistryLauncher {
         try {
             MultiException.checkAndThrow(JPService.getApplicationName() + " started in fallback mode!", exceptionStack);
         } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            ExceptionPrinter.printHistory(ex, logger);
+            return;
         }
         logger.info(JPService.getApplicationName() + " successfully started.");
     }

@@ -81,7 +81,8 @@ public class UserRegistryLauncher {
         try {
             userRegistry = new UserRegistryLauncher();
         } catch (InitializationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
+            return;
         }
 
         logger.info(USER_REGISTRY_NAME + " successfully started.");

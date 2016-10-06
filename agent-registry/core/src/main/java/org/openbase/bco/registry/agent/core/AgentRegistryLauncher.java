@@ -92,7 +92,8 @@ public class AgentRegistryLauncher {
         try {
             agentRegistry = new AgentRegistryLauncher();
         } catch (InitializationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
+            return;
         }
 
         MultiException.ExceptionStack exceptionStack = null;
@@ -104,7 +105,8 @@ public class AgentRegistryLauncher {
         try {
             MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
         } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            ExceptionPrinter.printHistory(ex, logger);
+            return;
         }
         logger.info(APP_NAME + " successfully started.");
     }
