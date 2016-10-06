@@ -78,7 +78,6 @@ public class UserManagerLauncher {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
             return;
-            return;
 
         }
         logger.info(JPService.getApplicationName() + " successfully started.");
