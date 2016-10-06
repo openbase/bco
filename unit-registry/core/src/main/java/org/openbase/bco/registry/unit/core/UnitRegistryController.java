@@ -51,6 +51,7 @@ import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitLabelConsisten
 import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitLocationIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dal.OpenhabServiceConfigItemIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dal.SyncBindingConfigDeviceClassUnitConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dal.UnitBoundToHostConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dal.UnitTransformationFrameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigDeviceClassIdConsistencyHandler;
@@ -61,7 +62,6 @@ import org.openbase.bco.registry.unit.core.consistency.device.DeviceLocationIdCo
 import org.openbase.bco.registry.unit.core.consistency.device.DeviceOwnerConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.device.DeviceScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.device.DeviceTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.SyncBindingConfigDeviceClassUnitConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.location.ChildWithSameLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.location.LocationChildConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.location.LocationIdConsistencyHandler;
@@ -294,6 +294,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLocationIdConsistencyHandler(locationUnitConfigRegistry, deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitScopeConsistencyHandler(locationUnitConfigRegistry));
+        dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), locationUnitConfigRegistry, deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
@@ -306,7 +307,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceOwnerConsistencyHandler(userUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry));
 
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());

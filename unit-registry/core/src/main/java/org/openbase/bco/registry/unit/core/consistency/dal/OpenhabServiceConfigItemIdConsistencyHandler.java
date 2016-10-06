@@ -45,15 +45,15 @@ import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
+    
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
     public static final String OPENHAB_BINDING_ITEM_ID = "OPENHAB_BINDING_ITEM_ID";
-
+    
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
-
+    
     public OpenhabServiceConfigItemIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
@@ -61,28 +61,32 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
         this.locationRegistry = locationRegistry;
         this.deviceRegistry = deviceRegistry;
     }
-
+    
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         UnitConfig.Builder unitConfigClone = unitConfig.clone();
-
+        
         if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty()) {
             throw new NotAvailableException("unitConfig.unitHostId");
         }
         DeviceConfig deviceConfig = deviceRegistry.getMessage(unitConfig.getUnitHostId()).getDeviceConfig();
+        
+        if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
+            throw new NotAvailableException("deviceConfig.deviceClassId");
+        }
         DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
-
+        
         boolean modification = false;
         unitConfig.clearServiceConfig();
         for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
             if (!serviceConfig.hasBindingConfig()) {
                 continue;
             }
-
+            
             if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
                 String itemId = generateItemName(entry.getMessage(), deviceClass.getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
-
+                
                 MetaConfig metaConfig;
 
                 // check if meta config already exist, otherwise create one.
@@ -90,15 +94,15 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                     serviceConfig.setBindingConfig(serviceConfig.getBindingConfig().toBuilder().setMetaConfig(MetaConfig.getDefaultInstance()));
                     modification = true;
                 }
-
+                
                 metaConfig = serviceConfig.getBindingConfig().getMetaConfig();
-
+                
                 String configuredItemId = "";
                 try {
                     configuredItemId = MetaConfigProcessor.getValue(metaConfig, OPENHAB_BINDING_ITEM_ID);
                 } catch (NotAvailableException ex) {
                 }
-
+                
                 if (!configuredItemId.equals(itemId)) {
                     metaConfig = MetaConfigProcessor.setValue(metaConfig, OPENHAB_BINDING_ITEM_ID, itemId);
                     serviceConfig.setBindingConfig(serviceConfig.getBindingConfig().toBuilder().setMetaConfig(metaConfig));
@@ -108,23 +112,23 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
             unitConfig.addServiceConfig(serviceConfig);
         }
         if (modification) {
-            throw new EntryModification(unitConfig.build(), this);
+            throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
-
+    
     public static String generateItemName(final UnitConfig device, final String deviceClassLabel, final UnitConfig unit, final ServiceConfig service, final UnitConfig location) throws CouldNotPerformException {
         if (device == null) {
             throw new NotAvailableException("deviceconfig");
         }
-
+        
         if (unit == null) {
             throw new NotAvailableException("unitconfig");
         }
-
+        
         if (service == null) {
             throw new NotAvailableException("serviceconfig");
         }
-
+        
         return StringProcessor.transformToIdString(deviceClassLabel)
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(location.getScope(), ITEM_SUBSEGMENT_DELIMITER)

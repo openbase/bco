@@ -28,7 +28,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 
@@ -60,9 +59,10 @@ public class MockRegistryTest {
 
     /**
      * Test of MockRegistry creation.
+     *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testMockRegistryCreation() throws InstantiationException {
         System.out.println("testMockRegistryCreation");
         try {

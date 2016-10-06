@@ -46,7 +46,7 @@ public class UserConfigScopeConsistencyHandler extends AbstractProtoBufRegistryC
             throw new NotAvailableException("user.userName");
         }
 
-        ScopeType.Scope newScope = ScopeGenerator.generateSceneScope(userUnitConfig);
+        ScopeType.Scope newScope = ScopeGenerator.generateSceneScope(userUnitConfig.getUserConfig());
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(userUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
