@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.app.core.dbconvert;
+package org.openbase.bco.registry.agent.core.dbconvert;
 
 /*
  * #%L
- * BCO Registry App Core
+ * BCO Registry Unit Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -22,9 +22,10 @@ package org.openbase.bco.registry.app.core.dbconvert;
  * #L%
  */
 /**
+ * This is a dummy class used for the converter package detection.
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class DummyConverter {
+public class ConverterPackageIdentifier {
 
 }

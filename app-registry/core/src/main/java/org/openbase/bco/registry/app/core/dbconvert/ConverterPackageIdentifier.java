@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.agent.core.dbconvert;
+package org.openbase.bco.registry.app.core.dbconvert;
 
 /*
  * #%L
- * BCO Registry Agent Core
+ * BCO Registry Unit Core
  * %%
  * Copyright (C) 2014 - 2016 openbase.org
  * %%
@@ -21,11 +21,11 @@ package org.openbase.bco.registry.agent.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 /**
+ * This is a dummy class used for the converter package detection.
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class DummyConverter {
+public class ConverterPackageIdentifier {
 
 }

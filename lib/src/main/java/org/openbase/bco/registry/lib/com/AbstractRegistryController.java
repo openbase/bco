@@ -245,7 +245,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 versionConverterPackage = detectVersionConverterPackage();
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Skip version control activation for " + registry + "!", ex), logger, LogLevel.WARN);
-                return;
+                continue;
             }
             registry.activateVersionControl(versionConverterPackage);
         }
@@ -303,14 +303,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private Package detectVersionConverterPackage() throws CouldNotPerformException {
         Package converterPackage;
         try {
-            converterPackage = ClassLoader.getSystemClassLoader().loadClass(getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + ".package-info").getPackage();
+            converterPackage = Class.forName((getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + ".ConverterPackageIdentifier")).getPackage();
         } catch (ClassNotFoundException ex) {
-            throw new NotAvailableException("ConverterPackage[" + getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + "]");
+            throw new NotAvailableException("ConverterPackage[" + getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + ".ConverterPackageIdentifier" + "]", ex);
         }
-//        Package converterPackage = Package.getPackage(getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME);
-//        if (converterPackage == null) {
-//            
-//        }
         return converterPackage;
     }
 
