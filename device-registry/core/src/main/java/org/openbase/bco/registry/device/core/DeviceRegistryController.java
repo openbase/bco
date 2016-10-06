@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
-import org.openbase.bco.registry.device.core.dbconvert.DeviceClass_0_To_1_DBConverter;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
@@ -100,11 +99,6 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     protected void registerDependencies() throws CouldNotPerformException {
         deviceClassRegistry.registerDependency(unitRegistryRemote.getUnitTemplateRemoteRegistry());
 
-    }
-
-    @Override
-    protected Package getVersionConverterPackage() throws CouldNotPerformException {
-        return DeviceClass_0_To_1_DBConverter.class.getPackage();
     }
 
     @Override

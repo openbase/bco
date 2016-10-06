@@ -24,7 +24,6 @@ package org.openbase.bco.registry.app.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.app.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.generator.AppClassIdGenerator;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
@@ -81,11 +80,6 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    @Override
-    protected Package getVersionConverterPackage() throws CouldNotPerformException {
-        return DummyConverter.class.getPackage();
     }
 
     /**

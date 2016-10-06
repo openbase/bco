@@ -29,6 +29,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
@@ -41,6 +42,7 @@ import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.RegistryController;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
+import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONVERTER_PACKAGE_NAME;
 
 /**
  *
@@ -104,7 +106,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
 
             try {
-                activateVersionControl(getVersionConverterPackage());
+                activateVersionControl();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
@@ -236,12 +238,15 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
     }
 
-    private void activateVersionControl(final Package versionConverterPackage) throws CouldNotPerformException {
-        if (versionConverterPackage == null) {
-            logger.debug("Skip the activation of registry version control because no package was defined.");
-            return;
-        }
+    private void activateVersionControl() throws CouldNotPerformException {
+        Package versionConverterPackage;
         for (final ProtoBufFileSynchronizedRegistry registry : registries) {
+            try {
+                versionConverterPackage = detectVersionConverterPackage();
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Skip version control activation for " + registry + "!", ex), logger, LogLevel.WARN);
+                return;
+            }
             registry.activateVersionControl(versionConverterPackage);
         }
     }
@@ -295,7 +300,19 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         return registries;
     }
 
-    protected abstract Package getVersionConverterPackage() throws CouldNotPerformException;
+    private Package detectVersionConverterPackage() throws CouldNotPerformException {
+        Package converterPackage;
+        try {
+            converterPackage = ClassLoader.getSystemClassLoader().loadClass(getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + ".package-info").getPackage();
+        } catch (ClassNotFoundException ex) {
+            throw new NotAvailableException("ConverterPackage[" + getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + "]");
+        }
+//        Package converterPackage = Package.getPackage(getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME);
+//        if (converterPackage == null) {
+//            
+//        }
+        return converterPackage;
+    }
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
 

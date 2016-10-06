@@ -32,58 +32,57 @@ import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.agent.AgentLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.agent.AgentLocationConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.agent.AgentScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.app.AppLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.app.AppLocationConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.app.AppScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLocationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.appconfig.AppLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.appconfig.AppLocationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.appconfig.AppScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionLocationConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionTilesConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connection.ConnectionTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitEnablingStateConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitHostIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitLocationIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.DalUnitScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.OpenhabServiceConfigItemIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.UnitBoundToHostConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.UnitTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigDeviceClassIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceConfigLocationIdForInstalledDevicesConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceEnablingStateConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceLocationIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceOwnerConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.DeviceTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.device.SyncBindingConfigDeviceClassUnitConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.ChildWithSameLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationChildConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationLoopConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationParentConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationPlacementConfigConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationPositionConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.LocationUnitIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.RootConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.location.RootLocationExistencConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.scene.SceneLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.scene.SceneScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberExistsConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberListDuplicationConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupMemberListTypesConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.unitgroup.UnitGroupUnitTypeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.user.UserConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.user.UserConfigUserNameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.dbconvert.DeviceConfig_0_To_1_DBConverter;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLocationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTilesConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitEnablingStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitHostIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitLocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.OpenhabServiceConfigItemIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.UnitBoundToHostConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.UnitTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceConfigDeviceClassIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceConfigLocationIdForInstalledDevicesConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceEnablingStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceLocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceOwnerConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.SyncBindingConfigDeviceClassUnitConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.ChildWithSameLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationChildConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationLoopConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationParentConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationPlacementConfigConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationPositionConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationUnitIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.RootConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.locationconfig.RootLocationExistencConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberExistsConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListDuplicationConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListTypesConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupUnitTypeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.DeviceConfigDeviceClassUnitConsistencyPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishDalUnitTransformationRegistryPlugin;
@@ -223,17 +222,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         } catch (JPServiceException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected Package getVersionConverterPackage() throws CouldNotPerformException {
-        return DeviceConfig_0_To_1_DBConverter.class.getPackage();
     }
 
     /**

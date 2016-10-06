@@ -24,7 +24,6 @@ package org.openbase.bco.registry.agent.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.agent.core.dbconvert.DummyConverter;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.generator.AgentClassIdGenerator;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
@@ -79,11 +78,6 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    @Override
-    protected Package getVersionConverterPackage() throws CouldNotPerformException {
-        return DummyConverter.class.getPackage();
     }
 
     /**

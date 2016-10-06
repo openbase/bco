@@ -87,12 +87,6 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         // not needed for virtual registries.
     }
 
-    @Override
-    protected Package getVersionConverterPackage() throws CouldNotPerformException {
-        // not needed for virtual registries.
-        return null;
-    }
-
     protected abstract void syncVirtualRegistryFields(final MB virtualDataBuilder, final RM realData) throws CouldNotPerformException;
 
     class VirtualRegistrySynchronizer implements Observer<RM> {
