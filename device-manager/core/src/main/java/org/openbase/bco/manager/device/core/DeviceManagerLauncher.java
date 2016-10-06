@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.manager.device.lib.DeviceManager;
@@ -30,7 +29,6 @@ import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +41,7 @@ public class DeviceManagerLauncher {
     private static final Logger logger = LoggerFactory.getLogger(DeviceManagerLauncher.class);
 
     private DeviceManagerController deviceManagerController;
-    
+
     public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             logger.info("Launching device manager...");
@@ -84,7 +82,8 @@ public class DeviceManagerLauncher {
         try {
             new DeviceManagerLauncher().launch();
         } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
+            return;
         }
         logger.info(JPService.getApplicationName() + " successfully started.");
     }

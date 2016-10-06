@@ -29,7 +29,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABBinding;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.Logger;
@@ -41,11 +40,11 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class DeviceBindingOpenHABLauncher {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DeviceBindingOpenHABLauncher.class);
-    
+
     private DeviceBindingOpenHABImpl openHABBinding;
-    
+
     public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             openHABBinding = new DeviceBindingOpenHABImpl();
@@ -55,11 +54,11 @@ public class DeviceBindingOpenHABLauncher {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
-    
+
     public void shutdown() throws InterruptedException {
         openHABBinding.shutdown();
     }
-    
+
     public DeviceBindingOpenHABImpl getOpenHABBinding() {
         return openHABBinding;
     }
@@ -86,7 +85,8 @@ public class DeviceBindingOpenHABLauncher {
         try {
             new DeviceBindingOpenHABLauncher().launch();
         } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
+            return;
         }
         //logger.info("Activation took " + ControllerManager.activationTime / 1000.0f + "s.");
         logger.info("Method registration took " + AbstractUnitController.registerMethodTime / 1000.0f + "s.");
