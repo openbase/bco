@@ -39,6 +39,7 @@ import org.openbase.bco.registry.device.core.DeviceRegistryController;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -92,6 +93,7 @@ public class DeviceRegistryTest {
 //    private static DeviceRegistryRemote deviceRegistryRemote;
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
+        JPService.registerProperty(JPVerbose.class, true);
         JPService.setupJUnitTestMode();
 
         deviceRegistry = new DeviceRegistryController();
@@ -324,7 +326,7 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
