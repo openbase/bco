@@ -25,8 +25,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.BatteryStateType.BatteryState;
-import rst.homeautomation.unit.BatteryDataType.BatteryData;
+import rst.domotic.state.BatteryStateType.BatteryState;
+import rst.domotic.unit.dal.BatteryDataType.BatteryData;
 import org.openbase.bco.dal.lib.layer.unit.Battery;
 
 /**

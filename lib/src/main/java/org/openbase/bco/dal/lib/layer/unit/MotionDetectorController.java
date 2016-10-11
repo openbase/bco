@@ -26,8 +26,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.MotionStateType.MotionState;
-import rst.homeautomation.unit.MotionDetectorDataType.MotionDetectorData;
+import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import rst.timing.TimestampType;
 
 /**

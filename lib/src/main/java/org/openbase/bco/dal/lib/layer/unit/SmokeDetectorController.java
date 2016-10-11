@@ -28,9 +28,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.state.SmokeStateType.SmokeState;
-import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
+import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.SmokeStateType.SmokeState;
+import rst.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
  *

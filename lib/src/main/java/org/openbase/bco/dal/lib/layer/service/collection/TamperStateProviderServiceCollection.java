@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.TamperStateType.TamperState;
+import rst.domotic.state.TamperStateType.TamperState;
 
 /**
  *

@@ -27,7 +27,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
-import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.domotic.state.ColorStateType.ColorState;
 
 /**
  *

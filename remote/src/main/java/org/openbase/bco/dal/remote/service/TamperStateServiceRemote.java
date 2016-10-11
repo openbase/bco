@@ -27,8 +27,8 @@ import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderServic
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.TamperStateType.TamperState;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.TamperStateType.TamperState;
 import rst.timing.TimestampType.Timestamp;
 
 /**

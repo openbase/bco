@@ -6,9 +6,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.IntensityStateType.IntensityState;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.DimmerDataType.DimmerData;
+import rst.domotic.state.IntensityStateType.IntensityState;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.dal.DimmerDataType.DimmerData;
 import org.openbase.bco.dal.lib.layer.unit.Dimmer;
 
 /*

@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.TargetTemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  *

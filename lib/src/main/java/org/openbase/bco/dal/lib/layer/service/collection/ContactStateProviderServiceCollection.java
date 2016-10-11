@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.ContactStateType.ContactState;
+import rst.domotic.state.ContactStateType.ContactState;
 
 /**
  *

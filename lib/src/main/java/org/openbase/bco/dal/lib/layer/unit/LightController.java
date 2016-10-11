@@ -30,9 +30,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.LightDataType.LightData;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.dal.LightDataType.LightData;
+import rst.domotic.unit.UnitConfigType;
 
 /**
  *

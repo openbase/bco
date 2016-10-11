@@ -25,8 +25,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.TamperStateType.TamperState;
-import rst.homeautomation.unit.TamperDetectorDataType.TamperDetectorData;
+import rst.domotic.state.TamperStateType.TamperState;
+import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 
 /**

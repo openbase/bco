@@ -48,16 +48,16 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
-import rst.homeautomation.state.ColorStateType.ColorState;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.state.BlindStateType.BlindState;
-import rst.homeautomation.state.StandbyStateType.StandbyState;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

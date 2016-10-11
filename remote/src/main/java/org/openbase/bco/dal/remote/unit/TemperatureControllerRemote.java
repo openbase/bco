@@ -27,8 +27,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
-import rst.homeautomation.unit.TemperatureControllerDataType.TemperatureControllerData;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 
 /**

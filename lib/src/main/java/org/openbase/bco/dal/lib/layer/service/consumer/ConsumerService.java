@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotSupportedException;
-import rst.homeautomation.control.action.ActionConfigType;
+import rst.domotic.action.ActionConfigType;
 
 /**
  *

@@ -27,8 +27,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.TamperStateType.TamperState;
-import rst.homeautomation.unit.TamperDetectorDataType.TamperDetectorData;
+import rst.domotic.state.TamperStateType.TamperState;
+import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 import rst.timing.TimestampType;
 
 /**

@@ -30,7 +30,7 @@ import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
  *

@@ -30,9 +30,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.BlindStateType.BlindState;
-import rst.homeautomation.unit.RollerShutterDataType.RollerShutterData;
-import rst.homeautomation.unit.UnitConfigType;
+import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
+import rst.domotic.unit.UnitConfigType;
 
 /**
  *

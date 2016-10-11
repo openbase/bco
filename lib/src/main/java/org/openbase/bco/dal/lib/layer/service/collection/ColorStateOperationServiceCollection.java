@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import rst.homeautomation.state.ColorStateType.ColorState;
+import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
 

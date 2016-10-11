@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperation
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
  *

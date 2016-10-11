@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.ContactStateType.ContactState;
+import rst.domotic.state.ContactStateType.ContactState;
 
 /**
  *

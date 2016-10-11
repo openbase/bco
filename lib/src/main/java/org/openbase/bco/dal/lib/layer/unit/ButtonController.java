@@ -27,8 +27,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonDataType.ButtonData;
+import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.timing.TimestampType;
 
 /**

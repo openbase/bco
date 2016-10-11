@@ -33,14 +33,14 @@ import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.ConfigProvider;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.homeautomation.control.action.ActionAuthorityType;
-import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.control.action.ActionPriorityType;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionPriorityType;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

@@ -27,8 +27,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
-import rst.homeautomation.unit.BrightnessSensorDataType.BrightnessSensorData;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
 
 /**
  *

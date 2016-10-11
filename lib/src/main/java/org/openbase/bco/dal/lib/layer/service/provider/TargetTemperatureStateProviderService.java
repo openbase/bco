@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  *

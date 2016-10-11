@@ -27,8 +27,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.LightDataType.LightData;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.dal.LightDataType.LightData;
 import org.openbase.bco.dal.lib.layer.unit.Light;
 
 /**

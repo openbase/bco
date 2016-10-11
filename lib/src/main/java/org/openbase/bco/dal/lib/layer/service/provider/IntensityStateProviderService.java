@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.IntensityStateType.IntensityState;
+import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
  *

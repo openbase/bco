@@ -29,8 +29,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ContactStateType.ContactState;
-import rst.homeautomation.unit.ReedContactDataType.ReedContactData;
+import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**
  *

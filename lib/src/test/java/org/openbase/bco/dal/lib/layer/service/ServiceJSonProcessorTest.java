@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor.JavaTypeToProto;
-import rst.homeautomation.state.PowerStateType;
+import rst.domotic.state.PowerStateType;
 
 /**
  *

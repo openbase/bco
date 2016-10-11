@@ -29,8 +29,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
+import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
 /**
  *

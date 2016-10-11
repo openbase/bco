@@ -25,8 +25,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonDataType.ButtonData;
+import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import org.openbase.bco.dal.lib.layer.unit.Button;
 
 /**

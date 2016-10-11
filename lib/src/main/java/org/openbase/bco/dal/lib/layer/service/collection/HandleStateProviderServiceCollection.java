@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.HandleStateType.HandleState;
+import rst.domotic.state.HandleStateType.HandleState;
 
 /**
  *

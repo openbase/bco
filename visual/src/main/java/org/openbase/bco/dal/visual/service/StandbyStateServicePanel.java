@@ -29,7 +29,7 @@ import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.provider.StandbyStateProviderService;
-import rst.homeautomation.state.StandbyStateType.StandbyState;
+import rst.domotic.state.StandbyStateType.StandbyState;
 
 /**
  *

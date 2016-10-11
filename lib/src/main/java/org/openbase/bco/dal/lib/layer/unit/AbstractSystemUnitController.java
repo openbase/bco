@@ -46,8 +46,8 @@ import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.unit.UnitConfigType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -198,7 +198,7 @@ public abstract class AbstractSystemUnitController<M extends GeneratedMessage, M
         GeneratedMessage.Builder builder = null;
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
-            String unitMessageClassName = "rst.homeautomation.unit." + unitTypeName + "DataType$" + unitTypeName + "Data";
+            String unitMessageClassName = "rst.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
             Class messageClass;
             try {
                 messageClass = Class.forName(unitMessageClassName);

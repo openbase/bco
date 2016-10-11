@@ -29,7 +29,7 @@ import org.openbase.jul.processing.StringProcessor;
 import java.awt.Color;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerStateProviderService;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState;
 
 /**
  *

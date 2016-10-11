@@ -37,14 +37,14 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.state.BlindStateType.BlindState;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
-import rst.homeautomation.state.ColorStateType.ColorState;
-import rst.homeautomation.state.IntensityStateType;
-import rst.homeautomation.state.StandbyStateType;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.IntensityStateType;
+import rst.domotic.state.StandbyStateType;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  *

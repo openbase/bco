@@ -27,9 +27,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
-import rst.homeautomation.unit.TemperatureSensorDataType.TemperatureSensorData;
+import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  *

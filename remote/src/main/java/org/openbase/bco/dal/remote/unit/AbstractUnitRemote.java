@@ -38,11 +38,11 @@ import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
 import rsb.Scope;
-import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.control.scene.SceneConfigType;
-import rst.homeautomation.device.DeviceRegistryDataType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.unit.scene.SceneConfigType;
+import rst.domotic.registry.DeviceRegistryDataType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
 /**

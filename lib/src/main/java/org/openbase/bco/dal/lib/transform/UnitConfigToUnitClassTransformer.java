@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.transform;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

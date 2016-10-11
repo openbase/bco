@@ -32,9 +32,9 @@ import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderServic
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.MotionStateType;
-import rst.homeautomation.state.MotionStateType.MotionState;
-import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
+import rst.domotic.state.MotionStateType;
+import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**

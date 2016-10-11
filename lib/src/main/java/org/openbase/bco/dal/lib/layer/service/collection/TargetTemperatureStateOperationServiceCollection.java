@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOp
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalExecutionService;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  *

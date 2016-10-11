@@ -29,8 +29,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.HandleStateType.HandleState;
-import rst.homeautomation.unit.HandleDataType.HandleData;
+import rst.domotic.state.HandleStateType.HandleState;
+import rst.domotic.unit.dal.HandleDataType.HandleData;
 
 /**
  *

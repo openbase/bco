@@ -25,8 +25,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.homeautomation.unit.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
+import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 
 /**

@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import java.lang.reflect.Method;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType;
 
 /**
  *

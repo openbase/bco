@@ -25,9 +25,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.state.SmokeStateType.SmokeState;
-import rst.homeautomation.unit.SmokeDetectorDataType.SmokeDetectorData;
+import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.SmokeStateType.SmokeState;
+import rst.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 import org.openbase.bco.dal.lib.layer.unit.SmokeDetector;
 
 /**

@@ -40,11 +40,11 @@ import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
-import rst.homeautomation.control.action.ActionDataType.ActionData;
-import rst.homeautomation.control.action.ActionStateType;
-import rst.homeautomation.control.action.ActionStateType.ActionState;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionDataType.ActionData;
+import rst.domotic.state.ActionStateType;
+import rst.domotic.state.ActionStateType.ActionState;
 
 /**
  *
