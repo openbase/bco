@@ -42,8 +42,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
  *

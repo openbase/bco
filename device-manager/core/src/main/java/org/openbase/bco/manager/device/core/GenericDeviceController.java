@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
+import rst.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  *
@@ -40,7 +40,7 @@ import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
 public class GenericDeviceController extends AbstractDeviceController {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SystemUnitData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
     }
 
     private final ServiceFactory serviceFactory;

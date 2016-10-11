@@ -29,9 +29,9 @@ import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.homeautomation.openhab.OpenhabCommandType;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.binding.openhab.OpenhabCommandType;
+import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *

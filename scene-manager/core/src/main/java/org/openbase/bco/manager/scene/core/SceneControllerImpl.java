@@ -42,13 +42,13 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
-import rst.homeautomation.control.scene.SceneDataType.SceneData;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonDataType.ButtonData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.unit.dal.ButtonDataType.ButtonData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**

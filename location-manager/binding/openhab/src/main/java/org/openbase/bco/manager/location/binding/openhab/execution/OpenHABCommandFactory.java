@@ -29,15 +29,15 @@ import org.openbase.jul.extension.openhab.binding.transform.HSBColorTransformer;
 import org.openbase.jul.extension.openhab.binding.transform.PowerStateTransformer;
 import org.openbase.jul.extension.openhab.binding.transform.StopMoveStateTransformer;
 import org.openbase.jul.extension.openhab.binding.transform.UpDownStateTransformer;
-import rst.homeautomation.openhab.HSBType;
-import rst.homeautomation.openhab.OnOffHolderType;
-import rst.homeautomation.openhab.OpenhabCommandType;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
-import rst.homeautomation.openhab.PercentType;
-import rst.homeautomation.openhab.StopMoveHolderType;
-import rst.homeautomation.openhab.UpDownHolderType;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.state.BlindStateType.BlindState;
+import rst.domotic.binding.openhab.HSBType;
+import rst.domotic.binding.openhab.OnOffHolderType;
+import rst.domotic.binding.openhab.OpenhabCommandType;
+import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
+import rst.domotic.binding.openhab.PercentType;
+import rst.domotic.binding.openhab.StopMoveHolderType;
+import rst.domotic.binding.openhab.UpDownHolderType;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.BlindStateType.BlindState;
 import rst.vision.HSBColorType.HSBColor;
 
 /**

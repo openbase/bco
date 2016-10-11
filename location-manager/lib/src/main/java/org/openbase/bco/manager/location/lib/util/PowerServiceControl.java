@@ -31,9 +31,9 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

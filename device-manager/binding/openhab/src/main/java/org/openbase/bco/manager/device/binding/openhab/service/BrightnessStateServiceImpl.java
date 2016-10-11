@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
  *

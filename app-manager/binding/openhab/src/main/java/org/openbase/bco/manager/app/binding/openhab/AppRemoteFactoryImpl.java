@@ -32,9 +32,9 @@ import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
-import rst.homeautomation.control.app.AppDataType.AppData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppConfigType.AppConfig;
+import rst.domotic.unit.app.AppDataType.AppData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

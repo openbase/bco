@@ -32,11 +32,11 @@ import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserActivityType.UserActivity;
-import rst.authorization.UserDataType.UserData;
-import rst.authorization.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.unit.user.UserDataType.UserData;
+import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -115,9 +115,9 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     }
 
     @Override
-    public UserActivity getUserActivity() throws NotAvailableException {
+    public UserActivityState getUserActivityState() throws NotAvailableException {
         try {
-            return getData().getUserActivity();
+            return getData().getUserActivityState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -133,11 +133,11 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     }
 
     @Override
-    public Future<Void> setUserActivity(UserActivity userActivity) throws CouldNotPerformException {
+    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setUserActivity(userActivity);
+            dataBuilder.getInternalBuilder().setUserActivityState(UserActivityState);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not set user activity to [" + userActivity + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not set user activity to [" + UserActivityState + "] for " + this + "!", ex);
         }
         return null;
     }

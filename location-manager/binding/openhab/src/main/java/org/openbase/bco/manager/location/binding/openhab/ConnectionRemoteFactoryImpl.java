@@ -29,9 +29,9 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.ConnectionDataType.ConnectionData;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

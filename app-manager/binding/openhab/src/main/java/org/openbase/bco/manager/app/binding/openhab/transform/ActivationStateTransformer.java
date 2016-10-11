@@ -24,8 +24,8 @@ package org.openbase.bco.manager.app.binding.openhab.transform;
 
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
-import rst.homeautomation.openhab.OnOffHolderType;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.domotic.binding.openhab.OnOffHolderType;
+import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *

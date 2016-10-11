@@ -30,11 +30,11 @@ import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentDataType;
-import rst.homeautomation.control.agent.AgentDataType.AgentData;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.agent.AgentDataType;
+import rst.domotic.unit.agent.AgentDataType.AgentData;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

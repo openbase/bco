@@ -25,8 +25,8 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

@@ -31,7 +31,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
+import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

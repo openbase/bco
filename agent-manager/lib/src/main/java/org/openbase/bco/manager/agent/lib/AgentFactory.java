@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.lib;
 
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

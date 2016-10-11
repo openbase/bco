@@ -32,8 +32,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

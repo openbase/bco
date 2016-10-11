@@ -41,8 +41,8 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.InventoryStateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.InventoryStateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

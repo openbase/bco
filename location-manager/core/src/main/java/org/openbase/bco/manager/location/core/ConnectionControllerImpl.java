@@ -46,13 +46,13 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.state.HandleStateType.HandleState;
-import rst.homeautomation.state.ContactStateType.ContactState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.ConnectionDataType.ConnectionData;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.HandleStateType.HandleState;
+import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**

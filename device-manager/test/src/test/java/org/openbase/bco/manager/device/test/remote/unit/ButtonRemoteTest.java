@@ -44,7 +44,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.ButtonStateType.ButtonState;
+import rst.domotic.state.ButtonStateType.ButtonState;
 
 /**
  *

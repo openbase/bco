@@ -27,10 +27,10 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ContactStateType.ContactState;
-import rst.homeautomation.state.HandleStateType.HandleState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.ConnectionDataType.ConnectionData;
+import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.state.HandleStateType.HandleState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

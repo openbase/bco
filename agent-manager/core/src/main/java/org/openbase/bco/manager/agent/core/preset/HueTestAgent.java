@@ -32,7 +32,7 @@ package org.openbase.bco.manager.agent.core.preset;
 //import com.philips.lighting.model.PHBridge;
 //import org.openbase.jul.exception.CouldNotPerformException;
 //import java.util.List;
-//import rst.homeautomation.control.agent.AgentConfigType;
+//import rst.domotic.unit.agent.AgentConfigType;
 //
 ///**
 // *

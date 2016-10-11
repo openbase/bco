@@ -47,8 +47,8 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.VariableProvider;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.InventoryStateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.InventoryStateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

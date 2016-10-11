@@ -29,8 +29,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.agent.AgentConfigType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

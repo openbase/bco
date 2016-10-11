@@ -41,8 +41,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.AlarmStateType.AlarmState;
-import rst.homeautomation.state.SmokeStateType.SmokeState;
+import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.SmokeStateType.SmokeState;
 
 /**
  *

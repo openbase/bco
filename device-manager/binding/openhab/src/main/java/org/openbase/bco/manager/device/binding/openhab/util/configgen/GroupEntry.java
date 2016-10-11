@@ -37,9 +37,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType.Scope;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**

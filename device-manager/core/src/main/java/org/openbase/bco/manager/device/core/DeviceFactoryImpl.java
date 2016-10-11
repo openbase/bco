@@ -25,7 +25,7 @@ package org.openbase.bco.manager.device.core;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.InstantiationException;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

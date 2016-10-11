@@ -32,8 +32,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
-import rst.homeautomation.control.action.SnapshotType.Snapshot;
-import rst.homeautomation.state.MotionStateType.MotionState;
+import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.state.MotionStateType.MotionState;
 
 /**
  *

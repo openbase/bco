@@ -43,9 +43,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
-import rst.homeautomation.state.ColorStateType.ColorState;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.vision.HSBColorType.HSBColor;
 
 /**

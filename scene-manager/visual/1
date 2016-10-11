@@ -5,14 +5,14 @@
 [main] INFO org.openbase.bco.manager.device.binding.openhab.OpenHABBindingLauncher - Start openhabbinding...
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Perform registry sync...
 Mar 31, 2016 3:27:42 PM rsb.converter.DefaultConverterRepository addConverter
-WARNING: Converter with signature ConverterSignature [schema=.rst.homeautomation.state.PowerState, datatype=class rst.homeautomation.state.PowerStateType$PowerState] already registered in DefaultConverterRepository. Existing entry will be overwritten!
+WARNING: Converter with signature ConverterSignature [schema=.rst.domotic.state.PowerState, datatype=class rst.domotic.state.PowerStateType$PowerState] already registered in DefaultConverterRepository. Existing entry will be overwritten!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[BorrowdUnit-1] because it is currently not installed!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[SLampRight1] because it is currently not installed!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[SLamp1] because it is currently not installed!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[SLampLeft1] because it is currently not installed!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[PathwayButtons1] because it is currently not installed!
 Mar 31, 2016 3:27:44 PM rsb.converter.DefaultConverterRepository addConverter
-WARNING: Converter with signature ConverterSignature [schema=.rst.homeautomation.state.PowerState, datatype=class rst.homeautomation.state.PowerStateType$PowerState] already registered in DefaultConverterRepository. Existing entry will be overwritten!
+WARNING: Converter with signature ConverterSignature [schema=.rst.domotic.state.PowerState, datatype=class rst.domotic.state.PowerStateType$PowerState] already registered in DefaultConverterRepository. Existing entry will be overwritten!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp5] because it is currently not installed!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp1] because it is currently not installed!
 [main] INFO org.openbase.bco.manager.device.core.DeviceRegistrySynchronizer - Skip Device[LLamp3] because it is currently not installed!

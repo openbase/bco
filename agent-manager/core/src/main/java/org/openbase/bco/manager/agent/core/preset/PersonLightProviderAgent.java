@@ -29,9 +29,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
-import rst.homeautomation.state.MotionStateType.MotionState;
-import rst.homeautomation.state.MotionStateType.MotionStateOrBuilder;
-import rst.homeautomation.state.PowerStateType.PowerState;
+import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
+import rst.domotic.state.PowerStateType.PowerState;
 
 /**
  *

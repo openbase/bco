@@ -42,7 +42,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.BatteryStateType.BatteryState;
+import rst.domotic.state.BatteryStateType.BatteryState;
 
 /**
  *

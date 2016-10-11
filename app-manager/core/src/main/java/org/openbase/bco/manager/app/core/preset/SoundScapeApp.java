@@ -34,9 +34,9 @@ import org.openbase.jul.schedule.WatchDog;
 import rsb.Event;
 import rsb.Handler;
 import rsb.Scope;
-import rst.homeautomation.state.ActivationStateType;
+import rst.domotic.state.ActivationStateType;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

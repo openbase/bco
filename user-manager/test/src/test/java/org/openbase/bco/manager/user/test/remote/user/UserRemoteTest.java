@@ -39,10 +39,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
-import rst.authorization.UserActivityType.UserActivity;
-import rst.authorization.UserActivityType.UserActivity.Activity;
-import rst.authorization.UserPresenceStateType.UserPresenceState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.UserActivityStateType.UserActivityState.Activity;
+import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -110,13 +110,13 @@ public class UserRemoteTest {
     public void testSetUserValues() throws Exception {
         System.out.println("testSetUserValues");
 
-        UserActivity activity = UserActivity.newBuilder().setCurrentActivity(Activity.EATING).setLastActivity(Activity.COOKING).setNextActivity(Activity.RELAXING).build();;
+        UserActivityState activity = UserActivityState.newBuilder().setCurrentActivity(Activity.EATING).setLastActivity(Activity.COOKING).setNextActivity(Activity.RELAXING).build();;
         UserPresenceState presenceState = UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build();
 
-        userRemote.setUserActivity(activity).get();
+        userRemote.setUserActivityState(activity).get();
         userRemote.setUserPresenceState(presenceState).get();
 
-        assertEquals("UserActivity has not been set!", activity, userRemote.getUserActivity());
+        assertEquals("UserActivityState has not been set!", activity, userRemote.getUserActivityState());
         assertEquals("UserPresenceState has not been set!", presenceState, userRemote.getUserPresenceState());
     }
 }

@@ -14,8 +14,8 @@ import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateO
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.LocationDataType.LocationData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 
 /*
  * #%L

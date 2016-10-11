@@ -42,10 +42,10 @@ import rsb.Scope;
 import rsb.config.ParticipantConfig;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.state.ActivationStateType;
-import rst.homeautomation.state.ButtonStateType.ButtonState;
-import rst.homeautomation.unit.ButtonDataType.ButtonData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.ActivationStateType;
+import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.unit.dal.ButtonDataType.ButtonData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

@@ -35,10 +35,10 @@ import org.openbase.bco.dal.remote.unit.BrightnessSensorRemote;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.BrightnessStateType.BrightnessState;
-import rst.homeautomation.unit.BrightnessSensorDataType.BrightnessSensorData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 /**
  *

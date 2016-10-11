@@ -27,7 +27,7 @@ import java.util.List;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType;
 
 /**
  *

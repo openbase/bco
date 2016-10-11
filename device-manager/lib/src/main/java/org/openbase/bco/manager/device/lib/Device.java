@@ -27,7 +27,7 @@ import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

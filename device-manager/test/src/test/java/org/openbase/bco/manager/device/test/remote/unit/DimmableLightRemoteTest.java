@@ -41,8 +41,8 @@
 //import static org.junit.Assert.*;
 //import org.junit.Ignore;
 //import org.slf4j.LoggerFactory;
-//import rst.homeautomation.state.BrightnessStateType.BrightnessState;
-//import rst.homeautomation.state.PowerStateType.PowerState;
+//import rst.domotic.state.BrightnessStateType.BrightnessState;
+//import rst.domotic.state.PowerStateType.PowerState;
 //
 ///**
 // *

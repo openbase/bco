@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.state.IntensityStateType.IntensityState;
+import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
  *

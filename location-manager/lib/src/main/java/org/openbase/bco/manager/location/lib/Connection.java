@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderServi
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

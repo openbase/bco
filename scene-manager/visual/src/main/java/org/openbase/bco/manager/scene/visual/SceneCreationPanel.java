@@ -45,11 +45,11 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
-import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.state.EnablingStateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.EnablingStateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 public class SceneCreationPanel extends javax.swing.JPanel {
 

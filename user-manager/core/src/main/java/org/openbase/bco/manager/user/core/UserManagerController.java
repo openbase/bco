@@ -34,8 +34,8 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.EnablingStateType.EnablingState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

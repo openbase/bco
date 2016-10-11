@@ -28,7 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.jul.extension.openhab.binding.transform.HSBColorTransformer;
-import rst.homeautomation.openhab.HSBType.HSB;
+import rst.domotic.binding.openhab.HSBType.HSB;
 import rst.vision.HSBColorType.HSBColor;
 
 /**

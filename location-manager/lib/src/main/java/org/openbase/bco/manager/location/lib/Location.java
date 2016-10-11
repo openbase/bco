@@ -39,8 +39,8 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
-import rst.homeautomation.control.action.SnapshotType.Snapshot;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

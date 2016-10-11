@@ -49,12 +49,12 @@ import org.openbase.jul.exception.InstantiationException;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.state.EnablingStateType.EnablingState;
-import rst.homeautomation.state.PowerStateType.PowerState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.spatial.PlacementConfigType;
 
 /**

@@ -36,10 +36,10 @@ import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.homeautomation.state.EnablingStateType.EnablingState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
+import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
+import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

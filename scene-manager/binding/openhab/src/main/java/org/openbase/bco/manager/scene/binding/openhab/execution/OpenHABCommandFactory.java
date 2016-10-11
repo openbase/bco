@@ -24,10 +24,10 @@ package org.openbase.bco.manager.scene.binding.openhab.execution;
 import org.openbase.bco.manager.scene.binding.openhab.transform.ActivationStateTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.openhab.binding.execution.AbstractOpenHABCommandFactory;
-import rst.homeautomation.openhab.OnOffHolderType;
-import rst.homeautomation.openhab.OpenhabCommandType;
-import rst.homeautomation.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
+import rst.domotic.binding.openhab.OnOffHolderType;
+import rst.domotic.binding.openhab.OpenhabCommandType;
+import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand.CommandType;
+import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *

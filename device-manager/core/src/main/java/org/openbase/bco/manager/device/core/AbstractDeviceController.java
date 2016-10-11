@@ -30,17 +30,17 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.unit.SystemUnitDataType.SystemUnitData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceDataType.DeviceData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceController extends AbstractSystemUnitController<SystemUnitData, SystemUnitData.Builder, UnitConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractSystemUnitController<DeviceData, DeviceData.Builder, UnitConfig> implements DeviceController {
 
     public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
-        super(SystemUnitData.newBuilder());
+        super(DeviceData.newBuilder());
     }
 
     @Override

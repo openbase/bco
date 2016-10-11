@@ -43,10 +43,10 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.action.ActionAuthorityType.ActionAuthority;
-import rst.homeautomation.control.action.ActionConfigType.ActionConfig;
-import rst.homeautomation.control.action.ActionPriorityType.ActionPriority;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionPriorityType.ActionPriority;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *

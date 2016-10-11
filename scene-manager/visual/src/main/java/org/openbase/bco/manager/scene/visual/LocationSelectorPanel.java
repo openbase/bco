@@ -36,8 +36,8 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *

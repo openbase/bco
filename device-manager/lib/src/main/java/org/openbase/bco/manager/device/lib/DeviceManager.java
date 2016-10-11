@@ -30,7 +30,7 @@ import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.RegistryImpl;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

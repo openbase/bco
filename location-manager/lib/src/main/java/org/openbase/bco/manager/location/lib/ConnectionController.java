@@ -25,8 +25,8 @@ import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderSer
 import org.openbase.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.spatial.ConnectionDataType.ConnectionData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *

@@ -33,8 +33,8 @@ import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.agent.AgentDataType.AgentData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentDataType.AgentData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

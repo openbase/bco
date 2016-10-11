@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.lib;
  * #L%
  */
 import org.openbase.jul.pattern.Factory;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

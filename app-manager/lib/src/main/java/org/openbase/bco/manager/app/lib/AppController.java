@@ -25,8 +25,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.homeautomation.control.app.AppDataType.AppData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppDataType.AppData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

@@ -35,10 +35,10 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.openhab.OpenhabCommandType;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.binding.openhab.OpenhabCommandType;
+import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *

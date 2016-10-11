@@ -26,8 +26,8 @@ import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
-import rst.authorization.UserDataType.UserData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.user.UserDataType.UserData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

@@ -44,12 +44,12 @@ import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
-import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
-import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
-import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
+import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
+import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 
 /**
  * //TODO: openHAB config generator should maybe become a project on its on. It

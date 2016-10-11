@@ -29,12 +29,12 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.UserActivityType.UserActivity;
-import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserDataType.UserData;
-import rst.authorization.UserPresenceStateType.UserPresenceState;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.domotic.unit.user.UserDataType.UserData;
+import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -62,9 +62,9 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UnitConfig>
     }
 
     @Override
-    public UserActivity getUserActivity() throws NotAvailableException {
+    public UserActivityState getUserActivityState() throws NotAvailableException {
         try {
-            return getData().getUserActivity();
+            return getData().getUserActivityState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -80,8 +80,8 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UnitConfig>
     }
 
     @Override
-    public Future<Void> setUserActivity(UserActivity userActivity) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(userActivity, this, Void.class);
+    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(UserActivityState, this, Void.class);
     }
 
     @Override

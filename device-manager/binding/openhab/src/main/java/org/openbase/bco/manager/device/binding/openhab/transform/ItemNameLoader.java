@@ -25,7 +25,7 @@ import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import rst.homeautomation.service.ServiceConfigType;
+import rst.domotic.service.ServiceConfigType;
 
 /**
  *

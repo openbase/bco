@@ -25,8 +25,8 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Identifiable;
-import rst.authorization.UserActivityType.UserActivity;
-import rst.authorization.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 
 /**
  *
@@ -38,9 +38,9 @@ public interface User extends Identifiable<String> {
 
     public String getUserName() throws NotAvailableException;
 
-    public UserActivity getUserActivity() throws NotAvailableException;
+    public UserActivityState getUserActivityState() throws NotAvailableException;
 
-    public Future<Void> setUserActivity(UserActivity userActivity) throws CouldNotPerformException;
+    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException;
 
     public UserPresenceState getUserPresenceState() throws NotAvailableException;
 

@@ -31,8 +31,8 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.control.scene.SceneDataType.SceneData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

@@ -28,10 +28,10 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.action.ActionConfigType;
-import rst.homeautomation.control.scene.SceneDataType.SceneData;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

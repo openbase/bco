@@ -35,7 +35,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.state.MotionStateType;
+import rst.domotic.state.MotionStateType;
 
 /**
  *
