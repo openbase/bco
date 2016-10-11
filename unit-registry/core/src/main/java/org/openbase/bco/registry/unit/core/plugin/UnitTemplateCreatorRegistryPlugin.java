@@ -33,9 +33,9 @@ import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
 import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- * st
  *
- * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
 public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>> {
