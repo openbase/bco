@@ -45,13 +45,13 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
-import rst.spatial.LocationConfigType.LocationConfig;
-import rst.spatial.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *

@@ -31,16 +31,16 @@ import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.binding.BindingConfigType;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceTemplateConfigType;
-import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateConfigType;
-import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import rst.domotic.binding.BindingConfigType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType;
+import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceTemplateConfigType;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateConfigType;
+import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 
 /**
  *

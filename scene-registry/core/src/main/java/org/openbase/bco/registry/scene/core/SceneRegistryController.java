@@ -37,11 +37,11 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**

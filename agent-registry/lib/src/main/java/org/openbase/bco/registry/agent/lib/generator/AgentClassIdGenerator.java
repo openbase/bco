@@ -1,7 +1,7 @@
 package org.openbase.bco.registry.agent.lib.generator;
 
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
-import rst.homeautomation.control.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 
 /*
  * #%L

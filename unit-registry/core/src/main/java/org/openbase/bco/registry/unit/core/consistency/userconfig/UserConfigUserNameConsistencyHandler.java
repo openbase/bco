@@ -31,8 +31,8 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.authorization.UserConfigType.UserConfig;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

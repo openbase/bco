@@ -40,10 +40,10 @@ import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserRegistryDataType.UserRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.domotic.registry.UserRegistryDataType.UserRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

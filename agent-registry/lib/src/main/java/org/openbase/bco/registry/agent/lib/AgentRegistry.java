@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import rst.homeautomation.control.agent.AgentClassType.AgentClass;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

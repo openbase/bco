@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

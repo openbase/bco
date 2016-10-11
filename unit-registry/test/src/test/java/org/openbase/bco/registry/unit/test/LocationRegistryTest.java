@@ -46,10 +46,10 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
-import rst.spatial.ConnectionConfigType.ConnectionConfig;
-import rst.spatial.LocationConfigType.LocationConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**

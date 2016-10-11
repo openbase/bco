@@ -38,9 +38,9 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.pattern.Remote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.scene.SceneConfigType.SceneConfig;
-import rst.homeautomation.control.scene.SceneRegistryDataType.SceneRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

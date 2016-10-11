@@ -25,7 +25,7 @@ package org.openbase.bco.registry.unit.lib.generator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
+import rst.domotic.unit.app.AppConfigType.AppConfig;
 
 /**
  *

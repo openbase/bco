@@ -27,10 +27,10 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateType;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

@@ -26,8 +26,8 @@ import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
 import org.openbase.jul.storage.registry.version.DBVersionConverter;
-import rst.homeautomation.state.ActivationStateType.ActivationState;
-import rst.homeautomation.state.EnablingStateType.EnablingState;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.EnablingStateType.EnablingState;
 
 /**
  *

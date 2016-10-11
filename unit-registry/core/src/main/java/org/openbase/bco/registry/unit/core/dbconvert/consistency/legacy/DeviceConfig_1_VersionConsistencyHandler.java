@@ -30,7 +30,7 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractVersionConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 

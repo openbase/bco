@@ -25,7 +25,7 @@ import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
 import org.openbase.jul.storage.registry.version.DBVersionConverter;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

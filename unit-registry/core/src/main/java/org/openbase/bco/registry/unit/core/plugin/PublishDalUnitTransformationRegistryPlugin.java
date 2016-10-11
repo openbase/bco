@@ -40,8 +40,8 @@ import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerFactory;
 import rst.geometry.PoseType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *

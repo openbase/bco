@@ -38,12 +38,12 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.authorization.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.authorization.UserConfigType.UserConfig;
-import rst.authorization.UserRegistryDataType.UserRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.domotic.registry.UserRegistryDataType.UserRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**

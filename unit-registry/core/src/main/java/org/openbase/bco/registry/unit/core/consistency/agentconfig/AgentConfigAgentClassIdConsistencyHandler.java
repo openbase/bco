@@ -29,10 +29,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.homeautomation.control.agent.AgentClassType.AgentClass;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
+import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

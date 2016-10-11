@@ -29,9 +29,9 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

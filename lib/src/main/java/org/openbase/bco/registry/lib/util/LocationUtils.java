@@ -31,7 +31,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.spatial.PlacementConfigType;
 
 /**

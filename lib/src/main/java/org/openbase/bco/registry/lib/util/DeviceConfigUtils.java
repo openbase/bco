@@ -26,11 +26,11 @@ import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.homeautomation.device.DeviceClassType.DeviceClassOrBuilder;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitConfigType.UnitConfigOrBuilder;
-import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
+import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 /**
  * A collection of utils to manipulate or analyse unit device configs.

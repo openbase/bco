@@ -32,8 +32,8 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *

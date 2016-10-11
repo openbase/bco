@@ -39,10 +39,10 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.agent.AgentClassType.AgentClass;
-import rst.homeautomation.control.agent.AgentConfigType.AgentConfig;
-import rst.homeautomation.control.agent.AgentRegistryDataType.AgentRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
+import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

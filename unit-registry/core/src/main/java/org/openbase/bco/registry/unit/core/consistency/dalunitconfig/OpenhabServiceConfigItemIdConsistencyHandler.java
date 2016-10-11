@@ -34,11 +34,11 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import rst.configuration.MetaConfigType.MetaConfig;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *

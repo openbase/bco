@@ -41,11 +41,11 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.service.ServiceConfigType;
-import rst.homeautomation.service.ServiceTemplateType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
 /**

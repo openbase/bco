@@ -45,12 +45,12 @@ import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.app.AppClassType.AppClass;
-import rst.homeautomation.control.app.AppConfigType.AppConfig;
-import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.app.AppClassType.AppClass;
+import rst.domotic.unit.app.AppConfigType.AppConfig;
+import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**

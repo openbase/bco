@@ -37,7 +37,7 @@ import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerException;
 import rct.TransformerFactory;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 public class PublishConnectionTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 

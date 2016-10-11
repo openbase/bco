@@ -41,9 +41,9 @@ import static org.openbase.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIME
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.control.app.AppClassType.AppClass;
-import rst.homeautomation.control.app.AppRegistryDataType.AppRegistryData;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppClassType.AppClass;
+import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

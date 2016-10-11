@@ -30,10 +30,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.homeautomation.state.EnablingStateType.EnablingState;
-import rst.homeautomation.state.InventoryStateType.InventoryState;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.state.InventoryStateType.InventoryState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *

@@ -26,7 +26,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
 /**
  *

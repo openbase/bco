@@ -24,8 +24,8 @@ package org.openbase.bco.registry.app.lib;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.homeautomation.control.app.AppClassType.AppClass;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppClassType.AppClass;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

@@ -31,7 +31,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *

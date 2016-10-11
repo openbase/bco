@@ -46,16 +46,16 @@ import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.device.DeviceConfigType.DeviceConfig;
-import rst.homeautomation.device.DeviceRegistryDataType.DeviceRegistryData;
-import rst.homeautomation.service.ServiceConfigType.ServiceConfig;
-import rst.homeautomation.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitGroupConfigType.UnitGroupConfig;
-import rst.homeautomation.unit.UnitRegistryDataType.UnitRegistryData;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**

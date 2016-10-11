@@ -26,8 +26,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 

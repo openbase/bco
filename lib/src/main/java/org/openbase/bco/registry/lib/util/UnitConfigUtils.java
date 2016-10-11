@@ -23,8 +23,8 @@ package org.openbase.bco.registry.lib.util;
  */
 
 import org.openbase.jul.exception.VerificationFailedException;
-import rst.homeautomation.unit.UnitConfigType.UnitConfig;
-import rst.homeautomation.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *

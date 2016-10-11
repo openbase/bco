@@ -28,8 +28,8 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import java.util.Map;
 import java.util.TreeMap;
-import rst.homeautomation.device.DeviceClassType.DeviceClass;
-import rst.homeautomation.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 

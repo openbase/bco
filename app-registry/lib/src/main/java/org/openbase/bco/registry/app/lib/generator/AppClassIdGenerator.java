@@ -22,7 +22,7 @@ package org.openbase.bco.registry.app.lib.generator;
  * #L%
  */
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
-import rst.homeautomation.control.app.AppClassType.AppClass;
+import rst.domotic.unit.app.AppClassType.AppClass;
 
 /**
  *
