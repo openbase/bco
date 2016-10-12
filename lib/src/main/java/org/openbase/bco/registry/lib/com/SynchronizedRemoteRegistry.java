@@ -30,7 +30,6 @@ import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -38,8 +37,6 @@ import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.storage.registry.ConsistencyHandler;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
@@ -143,11 +140,6 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     @Override
     public boolean isActive() {
         return active;
-    }
-
-    @Override
-    public void registerConsistencyHandler(ConsistencyHandler<KEY, IdentifiableMessage<KEY, M, MB>, Map<KEY, IdentifiableMessage<KEY, M, MB>>, ProtoBufRegistry<KEY, M, MB>> consistencyHandler) throws CouldNotPerformException {
-        throw new NotSupportedException("remote registry cannot register consistency handler!", this);
     }
 
     @Override
