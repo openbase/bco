@@ -26,6 +26,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
+import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.DBVersionConverter;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -44,8 +46,14 @@ public class DeviceConfig_4_To_5_DBConverter implements DBVersionConverter {
     private static final String UNIT_CONFIG_FIELD = "unit_config";
     private static final String DEVICE_CONFIG_FIELD = "device_config";
 
+    private final UnitConfigIdGenerator idGenerator;
+
+    public DeviceConfig_4_To_5_DBConverter() {
+        this.idGenerator = new UnitConfigIdGenerator();
+    }
+
     @Override
-    public JsonObject upgrade(JsonObject deviceUnitConfig, final Map<File, JsonObject> dbSnapshot) {
+    public JsonObject upgrade(JsonObject deviceUnitConfig, final Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
         // move all fields special for devices into the deviceConfig
         JsonObject deviceConfig = new JsonObject();
         if (deviceUnitConfig.has(SERIAL_NUMBER_FIELD)) {
@@ -73,6 +81,10 @@ public class DeviceConfig_4_To_5_DBConverter implements DBVersionConverter {
 
         // add type
         deviceUnitConfig.addProperty(TYPE_FIELD, UnitType.DEVICE.name());
+
+        // replace the old id with a UUID
+        deviceUnitConfig.remove(ID_FIELD);
+        deviceUnitConfig.addProperty(ID_FIELD, idGenerator.generateId(null));
 
         return deviceUnitConfig;
     }
