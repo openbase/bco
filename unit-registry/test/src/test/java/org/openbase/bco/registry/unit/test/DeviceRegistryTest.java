@@ -48,15 +48,9 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.configuration.EntryType;
 import rst.configuration.MetaConfigType;
-import rst.geometry.PoseType;
-import rst.geometry.RotationType;
-import rst.geometry.TranslationType;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -67,6 +61,12 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.geometry.PoseType;
+import rst.geometry.RotationType;
+import rst.geometry.TranslationType;
 import rst.rsb.ScopeType;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
@@ -344,7 +344,7 @@ public class DeviceRegistryTest {
         assertTrue(clazz.getUnitTemplateConfigCount() == 2);
 
         UnitConfig config = deviceRegistry.registerDeviceConfig(getDeviceUnitConfig("DeviceConfigWhereUnitsShallBeSetViaConsistency", "randomSerial14972", clazz)).get();
-        assertEquals("Units in device config where not set according to the device classes unit templates", clazz.getUnitTemplateConfigCount(), config.getDeviceConfig().getUnitIdCount());
+        assertEquals("Units in device config were not set according to the device classes unit templates", clazz.getUnitTemplateConfigCount(), config.getDeviceConfig().getUnitIdCount());
         boolean containsLight = false;
         boolean containsHandlseSensor = false;
         List<UnitConfig> dalUnitConfig = new ArrayList<>();
