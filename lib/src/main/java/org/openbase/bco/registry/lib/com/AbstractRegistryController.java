@@ -163,14 +163,14 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     @Override
     public void shutdown() {
         super.shutdown();
-        registries.stream().forEach((registry) -> {
-            registry.shutdown();
-        });
         registryRemotes.stream().forEach((remote) -> {
             remote.shutdown();
         });
         remoteRegistries.stream().forEach((remoteRegistry) -> {
             remoteRegistry.shutdown();
+        });
+        registries.stream().forEach((registry) -> {
+            registry.shutdown();
         });
     }
 

@@ -30,8 +30,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
+import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.app.lib.AppRegistry;
+import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
@@ -62,10 +64,13 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TA
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TEMPERATURE_SPS;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
+import org.openbase.bco.registry.scene.remote.CachedSceneRegistryRemote;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
+import org.openbase.bco.registry.user.remote.CachedUserRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -403,15 +408,25 @@ public class MockRegistry {
     }
 
     protected void shutdown() {
-        deviceRegistryLauncher.shutdown();
         locationRegistryLauncher.shutdown();
-        agentRegistryLauncher.shutdown();
-        appRegistryLauncher.shutdown();
         sceneRegistryLauncher.shutdown();
         userRegistryLauncher.shutdown();
+
+        deviceRegistryLauncher.shutdown();
+        agentRegistryLauncher.shutdown();
+        appRegistryLauncher.shutdown();
+
         unitRegistryLauncher.shutdown();
-        CachedDeviceRegistryRemote.shutdown();
+
         CachedLocationRegistryRemote.shutdown();
+        CachedSceneRegistryRemote.shutdown();
+        CachedUserRegistryRemote.shutdown();
+
+        CachedDeviceRegistryRemote.shutdown();
+        CachedAgentRegistryRemote.shutdown();
+        CachedAppRegistryRemote.shutdown();
+
+        CachedUnitRegistryRemote.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
