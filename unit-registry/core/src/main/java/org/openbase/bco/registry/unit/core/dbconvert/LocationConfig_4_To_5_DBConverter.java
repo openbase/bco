@@ -25,12 +25,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import java.io.File;
 import java.util.Map;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  */
-public class LocationConfig_4_To_5_DBConverter implements DBVersionConverter {
+public class LocationConfig_4_To_5_DBConverter extends AbstractDBVersionConverter {
+
+    public LocationConfig_4_To_5_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject locationConfig, final Map<File, JsonObject> dbSnapshot) {

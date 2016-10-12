@@ -21,22 +21,26 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AuthorizationGroupConfig_0_To_1_DBConverter implements DBVersionConverter {
+public class AuthorizationGroupConfig_0_To_1_DBConverter extends AbstractDBVersionConverter {
 
     private static final String TYPE_FIELD = "type";
     private static final String MEMBER_ID_FIELD = "member_id";
     private static final String AUTHORIZATION_GROUP_CONFIG_FIELD = "authorization_group_config";
+
+    public AuthorizationGroupConfig_0_To_1_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject unitConfig, final Map<File, JsonObject> dbSnapshot) {

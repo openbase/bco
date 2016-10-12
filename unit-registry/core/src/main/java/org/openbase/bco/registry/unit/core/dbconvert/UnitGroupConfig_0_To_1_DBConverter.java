@@ -28,13 +28,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupConfig_0_To_1_DBConverter implements DBVersionConverter {
+public class UnitGroupConfig_0_To_1_DBConverter extends AbstractDBVersionConverter {
 
     private static final String UNIT_TYPE_FIELD = "unit_type";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
@@ -49,7 +50,8 @@ public class UnitGroupConfig_0_To_1_DBConverter implements DBVersionConverter {
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
 
-    public UnitGroupConfig_0_To_1_DBConverter() {
+    public UnitGroupConfig_0_To_1_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         unitTypeMap = new HashMap<>();
         unitTypeMap.put("AMBIENT_LIGHT", "COLORABLE_LIGHT");
         unitTypeMap.put("LIGHT", "LIGHT");

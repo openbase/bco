@@ -21,19 +21,23 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
 import java.io.File;
 import java.util.Map;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceConfig_0_To_1_DBConverter implements DBVersionConverter {
+public class DeviceConfig_0_To_1_DBConverter extends AbstractDBVersionConverter {
+
+    public DeviceConfig_0_To_1_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject deviceConfig, final Map<File, JsonObject> dbSnapshot) {
@@ -43,15 +47,14 @@ public class DeviceConfig_0_To_1_DBConverter implements DBVersionConverter {
         deviceConfig.remove("device_class");
         deviceConfig.addProperty("device_class_id", deviceClassID);
 
-
         // recover unit config
         JsonArray unitConfigs = deviceConfig.get("unit_config").getAsJsonArray();
         for (JsonElement unitConfigElement : unitConfigs) {
             JsonObject unitConfig = unitConfigElement.getAsJsonObject();
-            
+
             // remove service config
             unitConfig.remove("service_config");
-            
+
             // reconstruct unit type and remove template
             String unitType = unitConfig.get("template").getAsJsonObject().get("type").getAsString();
             unitConfig.remove("template");

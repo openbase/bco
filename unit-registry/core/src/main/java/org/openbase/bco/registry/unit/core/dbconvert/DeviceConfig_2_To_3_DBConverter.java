@@ -29,13 +29,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
+public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter {
 
     private static final String UNIT_CONFIG_FIELD = "unit_config";
     private static final String TYPE_FIELD = "type";
@@ -50,7 +51,8 @@ public class DeviceConfig_2_To_3_DBConverter implements DBVersionConverter {
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
 
-    public DeviceConfig_2_To_3_DBConverter() {
+    public DeviceConfig_2_To_3_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         unitTypeMap = new HashMap<>();
         unitTypeMap.put("AMBIENT_LIGHT", "COLORABLE_LIGHT");
         unitTypeMap.put("LIGHT", "LIGHT");

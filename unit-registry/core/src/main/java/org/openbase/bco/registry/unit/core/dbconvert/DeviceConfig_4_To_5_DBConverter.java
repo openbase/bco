@@ -34,7 +34,9 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.storage.registry.version.GlobalDbVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
+import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -44,7 +46,11 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceConfig_4_To_5_DBConverter implements GlobalDbVersionConverter {
+public class DeviceConfig_4_To_5_DBConverter extends AbstractGlobalDBVersionConverter {
+
+    private static final String DEVICE_CLASS_DB_ID = "device-class";
+    private static final String DAL_UNIT_CONFIG_DB_ID = "dal-unit-config";
+    private static final int DEVICE_CLASS_VERSION = 2;
 
     private static final String TYPE_FIELD = "type";
     private static final String ID_FIELD = "id";
@@ -65,13 +71,22 @@ public class DeviceConfig_4_To_5_DBConverter implements GlobalDbVersionConverter
     private final UnitConfigIdGenerator idGenerator;
     private final Map<String, String> deviceClassIdMap;
 
-    public DeviceConfig_4_To_5_DBConverter() {
+    public DeviceConfig_4_To_5_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         this.idGenerator = new UnitConfigIdGenerator();
         this.deviceClassIdMap = new HashMap<>();
     }
 
     @Override
-    public JsonObject upgrade(JsonObject deviceUnitConfig, Map<File, JsonObject> dbSnapshot, Map<String, Map<File, JsonObject>> globalDbSnapshots) throws CouldNotPerformException {
+    public JsonObject upgrade(JsonObject deviceUnitConfig, Map<File, JsonObject> dbSnapshot, Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
+        if (!globalDbSnapshots.get(DEVICE_CLASS_DB_ID).isEmpty()) {
+            for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DEVICE_CLASS_DB_ID).values()) {
+                if (entry.getVersion() != DEVICE_CLASS_VERSION) {
+                    throw new CouldNotPerformException("Could not upgrade DeviceConfig DB from to version 5! DeviceClass DB version 2 is needed for this upgrade!");
+                }
+            }
+        }
+
         // replace the old id with a UUID
         deviceUnitConfig.remove(ID_FIELD);
         deviceUnitConfig.addProperty(ID_FIELD, idGenerator.generateId(null));
@@ -100,7 +115,7 @@ public class DeviceConfig_4_To_5_DBConverter implements GlobalDbVersionConverter
 
                 try {
                     File dalUnitConfigDir = JPService.getProperty(JPDalUnitConfigDatabaseDirectory.class).getValue();
-                    globalDbSnapshots.get("dal-unit-config").put(new File(dalUnitConfigDir, unitConfig.get(ID_FIELD).getAsString()), unitConfig);
+                    globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).put(new File(dalUnitConfigDir, unitConfig.get(ID_FIELD).getAsString()), new DatabaseEntryDescriptor(unitConfig, getVersionControl()));
                 } catch (JPNotAvailableException ex) {
                     throw new CouldNotPerformException("Could not acces dal unit config database directory!", ex);
                 }
@@ -125,8 +140,8 @@ public class DeviceConfig_4_To_5_DBConverter implements GlobalDbVersionConverter
         // update the device class id to its new UUID and put it in the device config
         if (deviceClassIdMap.isEmpty()) {
             try {
-                for (JsonObject deviceClass : globalDbSnapshots.get("device-class").values()) {
-                    deviceClassIdMap.put(getOldDeviceClassId(deviceClass), deviceClass.get(ID_FIELD).getAsString());
+                for (DatabaseEntryDescriptor deviceClass : globalDbSnapshots.get(DEVICE_CLASS_DB_ID).values()) {
+                    deviceClassIdMap.put(getOldDeviceClassId(deviceClass.getEntry()), deviceClass.getEntry().get(ID_FIELD).getAsString());
                 }
             } catch (CouldNotPerformException ex) {
                 deviceClassIdMap.clear();

@@ -21,21 +21,25 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
 import java.io.File;
 import java.util.Map;
 import java.util.UUID;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationConfig_2_To_3_DBConverter implements DBVersionConverter {
+public class LocationConfig_2_To_3_DBConverter extends AbstractDBVersionConverter {
+
+    public LocationConfig_2_To_3_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject locationConfig, final Map<File, JsonObject> dbSnapshot) {

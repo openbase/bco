@@ -26,20 +26,25 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  * DBConverter renaming bound_to_system_unit to bound_to_unit_host and system_unit_id to unit_host_id.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceConfig_3_To_4_DBConverter implements DBVersionConverter {
+public class DeviceConfig_3_To_4_DBConverter extends AbstractDBVersionConverter {
 
     private static final String UNIT_CONFIG_FIELD = "unit_config";
     private static final String BOUND_TO_SYSTEM_UNIT_FIELD = "bound_to_system_unit";
     private static final String BOUND_TO_UNIT_HOST_FIELD = "bound_to_unit_host";
     private static final String SYSTEM_UNIT_ID = "system_unit_id";
     private static final String UNIT_HOST_ID = "unit_host_id";
+
+    public DeviceConfig_3_To_4_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject deviceConfig, final Map<File, JsonObject> dbSnapshot) {

@@ -29,13 +29,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
+public class UnitTemplate_0_To_1_DBConverter extends AbstractDBVersionConverter {
 
     private static final String PROVIDER_PATTERN = "PROVIDER";
     private static final String OPERATION_PATTERN = "OPERATION";
@@ -50,7 +51,8 @@ public class UnitTemplate_0_To_1_DBConverter implements DBVersionConverter {
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
 
-    public UnitTemplate_0_To_1_DBConverter() {
+    public UnitTemplate_0_To_1_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         unitTypeMap = new HashMap<>();
         unitTypeMap.put("AGENT", "AGENT");
         unitTypeMap.put("AMBIENT_LIGHT", "COLORABLE_LIGHT");

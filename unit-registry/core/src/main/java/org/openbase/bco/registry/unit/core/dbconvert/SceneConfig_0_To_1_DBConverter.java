@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,13 +28,14 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneConfig_0_To_1_DBConverter implements DBVersionConverter {
+public class SceneConfig_0_To_1_DBConverter extends AbstractDBVersionConverter {
 
     private static final String ACTION_CONFIG_FIELD = "action_config";
     private static final String SERVICE_HOLDER_FIELD = "service_holder";
@@ -45,7 +45,8 @@ public class SceneConfig_0_To_1_DBConverter implements DBVersionConverter {
 
     private final Map<String, String> serviceTypeMap;
 
-    public SceneConfig_0_To_1_DBConverter() {
+    public SceneConfig_0_To_1_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         serviceTypeMap = new HashMap<>();
         serviceTypeMap.put("BATTERY_PROVIDER", "BATTERY_STATE_SERVICE");
         serviceTypeMap.put("BRIGHTNESS_PROVIDER", "BRIGHTNESS_STATE_SERVICE");

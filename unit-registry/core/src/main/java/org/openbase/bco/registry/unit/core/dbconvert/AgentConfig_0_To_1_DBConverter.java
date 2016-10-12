@@ -21,11 +21,11 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 
@@ -33,7 +33,11 @@ import rst.domotic.state.EnablingStateType.EnablingState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AgentConfig_0_To_1_DBConverter implements DBVersionConverter {
+public class AgentConfig_0_To_1_DBConverter extends AbstractDBVersionConverter {
+
+    public AgentConfig_0_To_1_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject agentConfig, final Map<File, JsonObject> dbSnapshot) {

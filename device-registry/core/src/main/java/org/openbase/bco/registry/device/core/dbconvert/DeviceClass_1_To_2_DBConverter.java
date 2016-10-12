@@ -21,26 +21,27 @@ package org.openbase.bco.registry.device.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
 import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  * Converter which replaces the old DeviceClass IDs with UUIDs.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceClass_1_To_2_DBConverter implements DBVersionConverter {
+public class DeviceClass_1_To_2_DBConverter extends AbstractDBVersionConverter {
 
     private static final String ID_FIELD = "id";
 
     private final DeviceClassIdGenerator idGenerator;
 
-    public DeviceClass_1_To_2_DBConverter() {
+    public DeviceClass_1_To_2_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         idGenerator = new DeviceClassIdGenerator();
     }
 

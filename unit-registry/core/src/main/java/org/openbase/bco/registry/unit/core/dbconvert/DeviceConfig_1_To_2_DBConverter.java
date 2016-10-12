@@ -24,13 +24,18 @@ package org.openbase.bco.registry.unit.core.dbconvert;
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceConfig_1_To_2_DBConverter implements DBVersionConverter {
+public class DeviceConfig_1_To_2_DBConverter extends AbstractDBVersionConverter {
+
+    public DeviceConfig_1_To_2_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject deviceConfig, final Map<File, JsonObject> dbSnapshot) {

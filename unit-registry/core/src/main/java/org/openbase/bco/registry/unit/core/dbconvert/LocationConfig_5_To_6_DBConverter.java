@@ -21,18 +21,18 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationConfig_5_To_6_DBConverter implements DBVersionConverter {
+public class LocationConfig_5_To_6_DBConverter extends AbstractDBVersionConverter {
 
     private static final String TYPE_FIELD = "type";
     private static final String ROOT_FIELD = "root";
@@ -40,6 +40,10 @@ public class LocationConfig_5_To_6_DBConverter implements DBVersionConverter {
     private static final String UNIT_ID_FIELD = "unit_id";
     private static final String TILE_CONFIG_FIELD = "tile_config";
     private static final String LOCATION_CONFIG_FIELD = "location_config";
+
+    public LocationConfig_5_To_6_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
+    }
 
     @Override
     public JsonObject upgrade(JsonObject unitConfig, final Map<File, JsonObject> dbSnapshot) {

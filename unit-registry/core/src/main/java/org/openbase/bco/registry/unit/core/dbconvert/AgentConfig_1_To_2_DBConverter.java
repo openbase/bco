@@ -26,28 +26,30 @@ import java.io.File;
 import java.util.Map;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.DBVersionConverter;
+import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
+import org.openbase.jul.storage.registry.version.DBVersionControl;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AgentConfig_1_To_2_DBConverter implements DBVersionConverter {
-    
+public class AgentConfig_1_To_2_DBConverter extends AbstractDBVersionConverter {
+
     private static final String TYPE_FIELD = "type";
     private static final String ID_FIELD = "id";
     private static final String AGENT_CLASS_ID_FIELD = "agent_class_id";
     private static final String AGENT_CONFIG_FIELD = "agent_config";
     private static final String LOCATION_ID_FIELD = "location_id";
     private static final String PLACEMENT_CONFIG_FIELD = "placement_config";
-    
+
     private final UnitConfigIdGenerator idGenerator;
-    
-    public AgentConfig_1_To_2_DBConverter() {
+
+    public AgentConfig_1_To_2_DBConverter(DBVersionControl versionControl) {
+        super(versionControl);
         this.idGenerator = new UnitConfigIdGenerator();
     }
-    
+
     @Override
     public JsonObject upgrade(JsonObject agentUnitConfig, final Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
         // add type
@@ -68,11 +70,11 @@ public class AgentConfig_1_To_2_DBConverter implements DBVersionConverter {
             agentUnitConfig.remove(LOCATION_ID_FIELD);
             agentUnitConfig.add(PLACEMENT_CONFIG_FIELD, placementConfig);
         }
-        
+
         agentUnitConfig.remove(ID_FIELD);
         agentUnitConfig.addProperty(ID_FIELD, idGenerator.generateId(null));
-        
+
         return agentUnitConfig;
     }
-    
+
 }
