@@ -1,1 +1,1 @@
-# bco.registrx
+# bco.registry
