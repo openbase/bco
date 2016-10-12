@@ -21,13 +21,13 @@ package org.openbase.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 
@@ -62,14 +62,17 @@ public class MockRegistryTest {
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    @Test//(timeout = 10000)
-    public void testMockRegistryCreation() throws InstantiationException {
+    @Test(timeout = 30000)
+    public void testMockRegistryCreation() throws InstantiationException, InterruptedException {
         System.out.println("testMockRegistryCreation");
         try {
             System.out.println("start mock registry");
             MockRegistryHolder.newMockRegistry();
+
+//            Thread.sleep(5000);
             System.out.println("shutdown mock registry");
             MockRegistryHolder.shutdownMockRegistry();
+//            Thread.sleep(5000);
         } catch (org.openbase.jul.exception.InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
         }
