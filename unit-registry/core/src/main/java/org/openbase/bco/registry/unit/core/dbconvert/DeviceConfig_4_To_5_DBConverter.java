@@ -48,9 +48,10 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class DeviceConfig_4_To_5_DBConverter extends AbstractGlobalDBVersionConverter {
 
-    private static final String DEVICE_CLASS_DB_ID = "device-class";
-    private static final String DAL_UNIT_CONFIG_DB_ID = "dal-unit-config";
-    private static final int DEVICE_CLASS_VERSION = 2;
+    private static final String DEVICE_CLASS_DB_ID = "device-class-db";
+    private static final String DAL_UNIT_CONFIG_DB_ID = "dal-unit-config-db";
+    private static final int NECCESSARY_DEVICE_CLASS_VERSION = 2;
+    private static final int NECCESSARY_DAL_UNIT_CONFIG_VERSION = 0;
 
     private static final String TYPE_FIELD = "type";
     private static final String ID_FIELD = "id";
@@ -71,20 +72,38 @@ public class DeviceConfig_4_To_5_DBConverter extends AbstractGlobalDBVersionConv
     private final UnitConfigIdGenerator idGenerator;
     private final Map<String, String> deviceClassIdMap;
 
+    private int deviceClassDBVersion;
+    private int dalUnitConfigDBVersion;
+
     public DeviceConfig_4_To_5_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
         this.idGenerator = new UnitConfigIdGenerator();
         this.deviceClassIdMap = new HashMap<>();
+        this.deviceClassDBVersion = -1;
+        this.dalUnitConfigDBVersion = -1;
     }
 
     @Override
     public JsonObject upgrade(JsonObject deviceUnitConfig, Map<File, JsonObject> dbSnapshot, Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
-        if (!globalDbSnapshots.get(DEVICE_CLASS_DB_ID).isEmpty()) {
-            for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DEVICE_CLASS_DB_ID).values()) {
-                if (entry.getVersion() != DEVICE_CLASS_VERSION) {
-                    throw new CouldNotPerformException("Could not upgrade DeviceConfig DB from to version 5! DeviceClass DB version 2 is needed for this upgrade!");
+        if (deviceClassDBVersion != NECCESSARY_DEVICE_CLASS_VERSION) {
+            if (!globalDbSnapshots.get(DEVICE_CLASS_DB_ID).isEmpty()) {
+                for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DEVICE_CLASS_DB_ID).values()) {
+                    if (entry.getVersion() != NECCESSARY_DEVICE_CLASS_VERSION) {
+                        throw new CouldNotPerformException("Could not upgrade DeviceConfig DB from to version 5! DeviceClass DB version 2 is needed for this upgrade!");
+                    }
                 }
             }
+            deviceClassDBVersion = NECCESSARY_DEVICE_CLASS_VERSION;
+        }
+        if (dalUnitConfigDBVersion != NECCESSARY_DAL_UNIT_CONFIG_VERSION) {
+            if (!globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).isEmpty()) {
+                for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).values()) {
+                    if (entry.getVersion() != NECCESSARY_DAL_UNIT_CONFIG_VERSION) {
+                        throw new CouldNotPerformException("Could not upgrade DeviceConfig DB from to version 5! DalUnitConfig DB version 0 is needed for this upgrade!");
+                    }
+                }
+            }
+            dalUnitConfigDBVersion = NECCESSARY_DAL_UNIT_CONFIG_VERSION;
         }
 
         // replace the old id with a UUID
@@ -136,7 +155,6 @@ public class DeviceConfig_4_To_5_DBConverter extends AbstractGlobalDBVersionConv
             deviceUnitConfig.remove(INVENTORY_STATE_FIELD);
         }
 
-        //TODO:this step can only be executed if the ids in device classes have been updated which is the version update from 1 to 2
         // update the device class id to its new UUID and put it in the device config
         if (deviceClassIdMap.isEmpty()) {
             try {
