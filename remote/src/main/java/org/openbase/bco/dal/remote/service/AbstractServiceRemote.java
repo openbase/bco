@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -36,11 +35,14 @@ import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.ShutdownException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.iface.Activatable;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -58,7 +60,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <S> generic definition of the overall service type for this remote.
  * @param <ST> the corresponding state for the service type of this remote.
  */
-public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements Service, Activatable {
+public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements Service, Manageable<UnitConfig> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -75,12 +77,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         this.serviceType = serviceType;
         this.unitRemoteMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
-        this.dataObserver = new Observer() {
-
-            @Override
-            public void update(Observable source, Object data) throws Exception {
-                updateServiceState();
-            }
+        this.dataObserver = (Observer) (Observable source, Object data) -> {
+            updateServiceState();
         };
         serviceState = null;
     }
@@ -134,7 +132,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         dataObservable.removeObserver(observer);
     }
 
-    public void init(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    @Override
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             if (!verifyServiceCompatibility(config, serviceType)) {
                 throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config.getId(), this);
@@ -149,7 +148,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             unitRemoteMap.put(config.getId(), remote);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not init service unit.", ex);
+            throw new InitializationException(this, ex);
         }
     }
 
@@ -178,14 +177,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             } catch (CouldNotPerformException ex) {
                 exceptionStack = MultiException.push(remote, ex, exceptionStack);
             }
-            GlobalExecutionService.submit(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    remote.waitForData();
-                    remote.addDataObserver(dataObserver);
-                    return null;
-                }
+            GlobalExecutionService.submit(() -> {
+                remote.waitForData();
+                remote.addDataObserver(dataObserver);
+                return null;
             });
         }
         MultiException.checkAndThrow("Could not activate all service units!", exceptionStack);
@@ -203,6 +198,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             remote.removeDataObserver(dataObserver);
         }
         MultiException.checkAndThrow("Could not deactivate all service units!", exceptionStack);
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            deactivate();
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            ExceptionPrinter.printHistory(new ShutdownException(this, ex), logger);
+        }
     }
 
     @Override

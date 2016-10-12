@@ -30,19 +30,16 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.pattern.Observable;
 import rsb.Scope;
 import rst.domotic.action.ActionConfigType;
-import rst.domotic.unit.scene.SceneConfigType;
-import rst.domotic.registry.DeviceRegistryDataType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.scene.SceneConfigType;
 import rst.rsb.ScopeType;
 
 /**
@@ -176,7 +173,6 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 //            ExceptionPrinter.printHistory("Could not register unit config update service for " + this, ex, logger);
 //        }
 //    }
-
     /**
      * {@inheritDoc}
      *
