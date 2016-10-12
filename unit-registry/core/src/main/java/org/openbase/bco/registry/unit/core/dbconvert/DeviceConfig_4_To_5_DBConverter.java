@@ -34,6 +34,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.storage.file.filter.JSonFileFilter;
 import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
@@ -134,7 +135,7 @@ public class DeviceConfig_4_To_5_DBConverter extends AbstractGlobalDBVersionConv
 
                 try {
                     File dalUnitConfigDir = JPService.getProperty(JPDalUnitConfigDatabaseDirectory.class).getValue();
-                    globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).put(new File(dalUnitConfigDir, unitConfig.get(ID_FIELD).getAsString()), new DatabaseEntryDescriptor(unitConfig, getVersionControl()));
+                    globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).put(new File(dalUnitConfigDir, unitConfig.get(ID_FIELD).getAsString() + JSonFileFilter.FILE_SUFFIX), new DatabaseEntryDescriptor(unitConfig, getVersionControl()));
                 } catch (JPNotAvailableException ex) {
                     throw new CouldNotPerformException("Could not acces dal unit config database directory!", ex);
                 }
