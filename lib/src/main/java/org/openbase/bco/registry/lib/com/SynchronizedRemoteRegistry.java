@@ -144,12 +144,18 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     @Override
     public String getName() {
-        String fieldDescritorNames = "[";
-        for (int i = 0; i < fieldDescriptors.length; ++i) {
-            fieldDescritorNames += fieldDescriptors[i].getName() + ", ";
+        if (fieldDescriptors.length == 0) {
+            return getClass().getSimpleName() + "[" + remoteService.toString() + "]";
+        } else {
+            String fieldDescritorNames = "[";
+            fieldDescritorNames += fieldDescriptors[0].getName();
+            for (int i = 1; i < fieldDescriptors.length; ++i) {
+                fieldDescritorNames += ", " + fieldDescriptors[i].getName();
+            }
+            fieldDescritorNames += "]";
+
+            return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescritorNames;
         }
-        fieldDescritorNames += "]";
-        return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescritorNames;
     }
 
     class RemoteRegistrySynchronizer implements Observer<M> {

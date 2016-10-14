@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency.appconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -34,8 +33,8 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -54,7 +53,7 @@ public class AppLocationConsistencyHandler extends AbstractProtoBufRegistryConsi
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig app = entry.getMessage();
 
-        if (app.hasPlacementConfig() || !app.getPlacementConfig().hasLocationId() || app.getPlacementConfig().getLocationId().isEmpty()) {
+        if (!app.hasPlacementConfig() || !app.getPlacementConfig().hasLocationId() || app.getPlacementConfig().getLocationId().isEmpty()) {
             String rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
             PlacementConfig rootPlacement = PlacementConfig.newBuilder().setLocationId(rootLocationId).build();
             throw new EntryModification(entry.setMessage(app.toBuilder().setPlacementConfig(rootPlacement)), this);

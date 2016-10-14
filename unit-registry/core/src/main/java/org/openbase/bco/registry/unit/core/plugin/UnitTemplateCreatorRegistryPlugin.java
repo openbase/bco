@@ -28,7 +28,6 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -38,18 +37,17 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>> {
+public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> registry;
 
-    public UnitTemplateCreatorRegistryPlugin(ProtoBufFileSynchronizedRegistry<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
+    public UnitTemplateCreatorRegistryPlugin(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
         this.registry = unitTemplateRegistry;
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, UnitTemplateType.UnitTemplate, UnitTemplateType.UnitTemplate.Builder>> config) throws InitializationException, InterruptedException {
+    public void init(Registry<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> config) throws InitializationException, InterruptedException {
         try {
-            String templateId;
             UnitTemplate template;
 
             // create missing unit template
@@ -59,8 +57,7 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
                         continue;
                     }
                     template = UnitTemplate.newBuilder().setType(unitType).build();
-                    templateId = registry.getIdGenerator().generateId(template);
-                    if (!registry.contains(templateId)) {
+                    if (!containsUnitTemplateByType(unitType)) {
                         registry.register(template);
                     }
                 }
@@ -68,5 +65,14 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not init " + getClass().getSimpleName() + "!", ex);
         }
+    }
+
+    private boolean containsUnitTemplateByType(UnitType type) throws CouldNotPerformException {
+        for (UnitTemplate unitTemplate : registry.getMessages()) {
+            if (unitTemplate.getType() == type) {
+                return true;
+            }
+        }
+        return false;
     }
 }
