@@ -33,8 +33,8 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -53,7 +53,7 @@ public class AgentLocationConsistencyHandler extends AbstractProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig agent = entry.getMessage();
 
-        if (agent.hasPlacementConfig() || !agent.getPlacementConfig().hasLocationId() || agent.getPlacementConfig().getLocationId().isEmpty()) {
+        if (!agent.hasPlacementConfig() || !agent.getPlacementConfig().hasLocationId() || agent.getPlacementConfig().getLocationId().isEmpty()) {
             String rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
             PlacementConfig rootPlacement = PlacementConfig.newBuilder().setLocationId(rootLocationId).build();
             throw new EntryModification(entry.setMessage(agent.toBuilder().setPlacementConfig(rootPlacement)), this);
