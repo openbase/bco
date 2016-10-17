@@ -602,7 +602,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
     private void scopeCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeCancelButtonActionPerformed
 //        try {
-//            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigServiceTypeObservable.getLatestValue().getScope()));
+//            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigServiceTypeObservable.getValue().getScope()));
 //        } catch (CouldNotPerformException | NullPointerException ex) {
 //            scopeTextField.setText("");
 //        }
@@ -653,7 +653,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 //                    Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
 //                    UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setScope(scope).setType(detectUnitTypeOutOfScope(scope));
 //                    unitConfigObservable.notifyObservers(unitConfig.build());
-//                    scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
+//                    scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
 //                } catch (CouldNotPerformException ex) {
 //                    scopeTextField.setForeground(Color.RED);
 //                    statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
@@ -707,7 +707,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 //            validScope = false;
 //        }
 //        try {
-////            changes = !ScopeGenerator.generateStringRep(unitConfigServiceTypeObservable.getLatestValue().getScope()).equals(text);
+////            changes = !ScopeGenerator.generateStringRep(unitConfigServiceTypeObservable.getValue().getScope()).equals(text);
 //        } catch (NotAvailableException ex) {
 //            changes = !scopeTextField.getText().isEmpty();
 //        }

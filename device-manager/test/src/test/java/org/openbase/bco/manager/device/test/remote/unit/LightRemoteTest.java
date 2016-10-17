@@ -22,23 +22,23 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.LightController;
+import org.openbase.bco.dal.remote.unit.LightRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.LightRemote;
-import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import static org.junit.Assert.*;
-import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.PowerStateType.PowerState;
 
@@ -61,6 +61,7 @@ public class LightRemoteTest {
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        System.out.println("setUpClass thread: " + Thread.currentThread().getName());
         registry = MockRegistryHolder.newMockRegistry();
 
         deviceManagerLauncher = new DeviceManagerLauncher();
@@ -72,11 +73,14 @@ public class LightRemoteTest {
         lightRemote = new LightRemote();
         lightRemote.initByLabel(label);
         lightRemote.activate();
-        lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        System.out.println("#### wait for light remote...");
+        lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED, 30000);
+        System.out.println("#### successfull started!");
     }
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
+        System.out.println("#### tearDownClass");
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();
         }
@@ -84,6 +88,7 @@ public class LightRemoteTest {
             lightRemote.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
+        System.out.println("#### finished");
     }
 
     @Before

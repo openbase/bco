@@ -65,9 +65,6 @@ public class UnitGroupRemoteTest {
     private static UnitGroupRemote unitGroupRemote;
     private static final List<Unit> units = new ArrayList<>();
 
-    public UnitGroupRemoteTest() {
-    }
-
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
