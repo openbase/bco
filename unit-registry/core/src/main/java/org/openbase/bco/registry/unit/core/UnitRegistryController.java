@@ -84,6 +84,10 @@ import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroup
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.DeviceConfigDeviceClassUnitConsistencyPlugin;
+import org.openbase.bco.registry.unit.core.plugin.PublishConnectionTransformationRegistryPlugin;
+import org.openbase.bco.registry.unit.core.plugin.PublishDalUnitTransformationRegistryPlugin;
+import org.openbase.bco.registry.unit.core.plugin.PublishDeviceTransformationRegistryPlugin;
+import org.openbase.bco.registry.unit.core.plugin.PublishLocationTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
@@ -113,23 +117,23 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
-import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
-import rst.domotic.unit.app.AppConfigType.AppConfig;
-import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.rsb.ScopeType;
+import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
+import rst.domotic.unit.app.AppConfigType.AppConfig;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.rsb.ScopeType;
 
 /**
  *
@@ -331,12 +335,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-//        connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
-//        dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
-//        deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
+        // TODO: write unit config generic transfromation plugin and share instance. Publish transformations of unitGroupUnitConfigs as well.
+        connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
+        dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
         unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
-//        locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
+        locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
     }
 
     /**

@@ -27,7 +27,7 @@ import org.openbase.jul.schedule.SyncObject;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MockRegistryHolder {
 

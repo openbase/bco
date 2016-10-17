@@ -315,6 +315,7 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            registryStartupTasks.clear();
             logger.info("Real registries started!");
 
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
@@ -360,6 +361,7 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            registryStartupTasks.clear();
             logger.info("Virtual registries started!");
 
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
@@ -396,6 +398,7 @@ public class MockRegistry {
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
+            registryStartupTasks.clear();
             logger.info("UnitTemplates updated and devices, locations and user registered!");
 
             logger.info("Started app/agent/scene registries!");
@@ -450,58 +453,67 @@ public class MockRegistry {
 
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
+            System.out.println("registerDevices thread: " + Thread.currentThread().getName());
             // ambient light
-            System.out.println("Device 1");
+            System.out.println("Device 1 class");
             DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
+            System.out.println("Device 1 config");
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass));
 
             Thread.sleep(1000);
-            System.out.println("Device 2");
+            System.out.println("Device 2 class");
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
+            System.out.println("Device 2 config");
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
 
-            System.out.println("Device 3");
+            System.out.println("Device 3 class");
             // button
             DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
+            System.out.println("Device 3 config");
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
-            System.out.println("Device 4");
+            System.out.println("Device 4 class");
             // dimmer
             DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
+            System.out.println("Device 4 config");
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
-            System.out.println("Device 5");
+            System.out.println("Device 5 class");
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
+            System.out.println("Device 5 config");
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
 
-            System.out.println("Device 6");
+            System.out.println("Device 6 class");
             // light
             DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
+            System.out.println("Device 6 config");
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
-            System.out.println("Device 7");
+            System.out.println("Device 7 class");
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
+            System.out.println("Device 7 config");
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
-            System.out.println("Device 8");
+            System.out.println("Device 8 class");
             // reedSwitch
             DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
+            System.out.println("Device 8 config");
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
 
-            System.out.println("Device 9");
+            System.out.println("Device 9 class");
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
 
-            System.out.println("Device 10");
+            System.out.println("Device 10 class");
             // smoke detector
             DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
-            System.out.println("Device 11");
+            System.out.println("Device 11 class");
             // temperature controller
             DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
@@ -510,14 +522,14 @@ public class MockRegistry {
         }
     }
 
-    private static void updateUnitLabel(List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
+    private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
         for (String unitId : unitIds) {
             UnitConfig tmp = unitRegistry.getUnitConfigById(unitId);
             unitRegistry.updateUnitConfig(tmp.toBuilder().setLabel(UNIT_TYPE_LABEL_MAP.get(tmp.getType())).build()).get();
         }
     }
 
-    private static void registerDeviceUnitConfig(UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
+    private static void registerDeviceUnitConfig(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
         UnitConfig tmp = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
         updateUnitLabel(tmp.getDeviceConfig().getUnitIdList());
     }

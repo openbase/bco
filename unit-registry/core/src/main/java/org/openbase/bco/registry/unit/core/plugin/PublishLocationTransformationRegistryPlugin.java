@@ -81,7 +81,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
         publishtransformation(entry);
     }
 
-    private void publishtransformation(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
+    private synchronized void publishtransformation(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
         try {
             UnitConfig locationConfig = entry.getMessage();
 
