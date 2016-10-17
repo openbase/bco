@@ -50,10 +50,11 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
      * {@inheritDoc}
      * Computes the power state as on if at least one underlying service is on and else off.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected PowerState computeServiceState() throws CouldNotPerformException {
         PowerState.State powerStateValue = PowerState.State.OFF;
         for (PowerStateOperationService service : getPowerStateOperationServices()) {
             if (!((UnitRemote) service).isDataAvailable()) {
@@ -65,7 +66,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
             }
         }
 
-        serviceState = PowerState.newBuilder().setValue(powerStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return PowerState.newBuilder().setValue(powerStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

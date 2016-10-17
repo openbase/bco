@@ -22,24 +22,23 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.ArrayList;
-import org.openbase.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
+import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
 import org.openbase.bco.dal.remote.service.BrightnessStateServiceRemote;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
-import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
 import org.openbase.bco.dal.remote.service.StandbyStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
@@ -47,35 +46,36 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitConfig> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
+public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, UnitConfig> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
 
     private final Map<ServiceTemplate, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
     private final ServiceRemoteFactory serviceRemoteFactory;
 
     public UnitGroupRemote() throws InstantiationException {
-        //TODO: why is the group config used as data type? May we should use a configurable remote instead?
-        super(UnitConfig.class);
+        super(UnitGroupData.class, UnitConfig.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
     }
 
     @Override
-    public void notifyDataUpdate(UnitConfig data) throws CouldNotPerformException {
+    public void notifyDataUpdate(UnitGroupData data) throws CouldNotPerformException {
     }
 
     @Override
@@ -187,22 +187,27 @@ public class UnitGroupRemote extends AbstractIdentifiableRemote<UnitConfig> impl
         return serviceRemoteMap.values().stream().noneMatch((remote) -> (!remote.isActive()));
     }
 
-    public void init(UnitConfig unitGroupConfig) throws InstantiationException, InitializationException, InterruptedException, CouldNotPerformException {
-        CachedDeviceRegistryRemote.waitForData();
+    @Override
+    public void init(final UnitConfig unitGroupUnitConfig) throws InitializationException, InterruptedException {
+        try {
+            CachedDeviceRegistryRemote.waitForData();
 
-        List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (String unitConfigId : unitGroupConfig.getUnitGroupConfig().getMemberIdList()) {
-            unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
-        }
+            List<UnitConfig> unitConfigs = new ArrayList<>();
+            for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
+                unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
+            }
 
-        List<UnitConfig> unitConfigsByService = new ArrayList<>();
-        for (ServiceTemplate serviceTemplate : unitGroupConfig.getUnitGroupConfig().getServiceTemplateList()) {
-            unitConfigs.stream().filter((unitConfig) -> (unitHasService(unitConfig, serviceTemplate))).forEach((unitConfig) -> {
-                unitConfigsByService.add(unitConfig);
-            });
-            // create serviceRemoteByType and unitCOnfiglist
-            serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
-            unitConfigsByService.clear();
+            List<UnitConfig> unitConfigsByService = new ArrayList<>();
+            for (ServiceTemplate serviceTemplate : unitGroupUnitConfig.getUnitGroupConfig().getServiceTemplateList()) {
+                unitConfigs.stream().filter((unitConfig) -> (unitHasService(unitConfig, serviceTemplate))).forEach((unitConfig) -> {
+                    unitConfigsByService.add(unitConfig);
+                });
+                // create serviceRemoteByType and unitCOnfiglist
+                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
+                unitConfigsByService.clear();
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
         }
     }
 

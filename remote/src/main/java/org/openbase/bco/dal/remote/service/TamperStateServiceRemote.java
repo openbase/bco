@@ -51,10 +51,11 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
      * Computes the tamper state as tamper if at least one underlying service detects tamper and else no tamper.
      * Additionally the last detection timestamp as set as the latest of the underlying services.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected TamperState computeServiceState() throws CouldNotPerformException {
         TamperState.State tamperValue = TamperState.State.NO_TAMPER;
         long lastDetection = 0;
         for (TamperStateProviderService provider : getTamperStateProviderServices()) {
@@ -72,7 +73,7 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
             }
         }
 
-        serviceState = TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

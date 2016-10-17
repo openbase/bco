@@ -50,10 +50,11 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
      * {@inheritDoc}
      * Computes the standby state as running if at least one underlying service is running and else standby.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected StandbyState computeServiceState() throws CouldNotPerformException {
         StandbyState.State standbyValue = StandbyState.State.STANDBY;
         for (StandbyStateOperationService service : getStandbyStateOperationServices()) {
             if (!((UnitRemote) service).isDataAvailable()) {
@@ -65,7 +66,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
             }
         }
 
-        serviceState = StandbyState.newBuilder().setValue(standbyValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return StandbyState.newBuilder().setValue(standbyValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

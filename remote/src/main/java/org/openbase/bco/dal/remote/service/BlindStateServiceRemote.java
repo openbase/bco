@@ -50,10 +50,11 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
      * {@inheritDoc}
      * Computes the average opening ratio and the movement state which appears the most.
      *
+     * @return
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected BlindState computeServiceState() throws CouldNotPerformException {
         int serviceNumber = getBlindStateOperationServices().size(), stop = 0, down = 0, up = 0;
         float openingRatioAverage = 0;
         for (BlindStateOperationService service : getBlindStateOperationServices()) {
@@ -87,7 +88,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             mostOccurences = BlindState.MovementState.DOWN;
         }
 
-        serviceState = BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

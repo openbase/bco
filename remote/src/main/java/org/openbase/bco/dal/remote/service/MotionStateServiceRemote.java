@@ -51,10 +51,11 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
      * Computes the motion state as motion if at least one underlying services replies with motion and else no motion.
      * Additionally the last motion timestamp as set as the latest of the underlying services.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected MotionState computeServiceState() throws CouldNotPerformException {
         MotionState.State motionValue = MotionState.State.NO_MOTION;
         long lastMotion = 0;
         for (MotionStateProviderService provider : getMotionStateProviderServices()) {
@@ -72,7 +73,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
             }
         }
 
-        serviceState = MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

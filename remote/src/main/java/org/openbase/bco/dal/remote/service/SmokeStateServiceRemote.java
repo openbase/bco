@@ -51,10 +51,11 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
      * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
      * If no service detects smoke and at least one detects some smoke then that is set and else no smoke.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected SmokeState computeServiceState() throws CouldNotPerformException {
         boolean someSmoke = false;
         SmokeState.State smokeValue = SmokeState.State.NO_SMOKE;
         Collection<SmokeStateProviderService> smokeStateProviderServices = getSmokeStateProviderServices();
@@ -82,7 +83,7 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         }
         averageSmokeLevel /= amount;
 
-        serviceState = SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

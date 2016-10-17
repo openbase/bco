@@ -50,10 +50,11 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
      * {@inheritDoc}
      * Computes the average temperature value.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected TemperatureState computeServiceState() throws CouldNotPerformException {
         Double average = 0d;
         Collection<TemperatureStateProviderService> temperatureStateProviderServices = getTemperatureStateProviderServices();
         int amount = temperatureStateProviderServices.size();
@@ -67,7 +68,7 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         }
         average /= amount;
 
-        serviceState = TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

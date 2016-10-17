@@ -585,7 +585,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private void scopeCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeCancelButtonActionPerformed
         try {
-            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
+            scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
         } catch (CouldNotPerformException | NullPointerException ex) {
             scopeTextField.setText("");
         }
@@ -615,7 +615,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                         scopeTextField.setForeground(Color.BLACK);
                         Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
                         unitConfigObservable.notifyObservers(deviceRegistryRemote.getUnitConfigByScope(scope));
-                        scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()));
+                        scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
                     } catch (CouldNotPerformException ex) {
                         scopeTextField.setForeground(Color.RED);
                         statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
@@ -673,7 +673,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
 
         try {
-            changes = !ScopeGenerator.generateStringRep(unitConfigObservable.getLatestValue().getScope()).equals(text);
+            changes = !ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()).equals(text);
         } catch (NotAvailableException ex) {
             changes = !scopeTextField.getText().isEmpty();
         }

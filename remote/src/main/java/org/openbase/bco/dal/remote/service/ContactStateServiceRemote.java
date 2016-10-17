@@ -50,10 +50,11 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
      * {@inheritDoc}
      * Computes the contact state as open if at least one underlying service is open and else closed.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected ContactState computeServiceState() throws CouldNotPerformException {
         ContactState.State contactValue = ContactState.State.CLOSED;
         for (ContactStateProviderService provider : getContactStateProviderServices()) {
             if (!((UnitRemote) provider).isDataAvailable()) {
@@ -65,7 +66,7 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
             }
         }
 
-        serviceState = ContactState.newBuilder().setValue(contactValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return ContactState.newBuilder().setValue(contactValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

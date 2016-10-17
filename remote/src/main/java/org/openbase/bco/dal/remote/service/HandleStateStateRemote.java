@@ -49,10 +49,11 @@ public class HandleStateStateRemote extends AbstractServiceRemote<HandleStatePro
     /**
      * {@inheritDoc}
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected HandleState computeServiceState() throws CouldNotPerformException {
         // TODO: rethink position in handle state
         int position = 0;
         //boolean tilted = false;
@@ -63,12 +64,11 @@ public class HandleStateStateRemote extends AbstractServiceRemote<HandleStatePro
                 amount--;
                 continue;
             }
-
             position += provider.getHandleState().getPosition();
         }
 
         position /= amount;
-        serviceState = HandleState.newBuilder().setPosition(position).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return HandleState.newBuilder().setPosition(position).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
         /*for (HandleProviderService provider : getHandleStateProviderServices()) {
          if (provider.getHandle().getPosition() == HandleState.State.OPEN) {
          return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();

@@ -50,10 +50,11 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
      * {@inheritDoc}
      * Computes the average current and voltage and the sum of the consumption of the underlying services.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected PowerConsumptionState computeServiceState() throws CouldNotPerformException {
         double consumptionSum = 0;
         double averageCurrent = 0;
         double averageVoltage = 0;
@@ -72,7 +73,7 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
         averageCurrent = averageCurrent / amount;
         averageVoltage = averageVoltage / amount;
 
-        serviceState = PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

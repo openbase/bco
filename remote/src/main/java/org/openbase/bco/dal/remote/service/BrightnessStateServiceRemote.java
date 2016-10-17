@@ -50,10 +50,11 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
      * {@inheritDoc}
      * Computes the average brightness value.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected BrightnessState computeServiceState() throws CouldNotPerformException {
         int serviceNumber = getBrightnessStateOperationServices().size();
         Double average = 0d;
         for (BrightnessStateOperationService service : getBrightnessStateOperationServices()) {
@@ -64,7 +65,7 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
             average += service.getBrightnessState().getBrightness();
         }
         average /= serviceNumber;
-        serviceState = BrightnessState.newBuilder().setBrightness(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return BrightnessState.newBuilder().setBrightness(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

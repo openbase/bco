@@ -54,10 +54,11 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
      * {@inheritDoc}
      * Computes the average RGB color.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected ColorState computeServiceState() throws CouldNotPerformException {
         double averageRed = 0;
         double averageGreen = 0;
         double averageBlue = 0;
@@ -79,7 +80,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         averageBlue = averageBlue / amount;
 
         HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
-        serviceState = ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

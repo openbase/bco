@@ -50,10 +50,11 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
      * {@inheritDoc}
      * Computes the alarm state as alarm if at least one underlying service is on alarm and else no alarm.
      *
+     * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void computeServiceState() throws CouldNotPerformException {
+    protected AlarmState computeServiceState() throws CouldNotPerformException {
         AlarmState.State alarmValue = AlarmState.State.NO_ALARM;
         for (SmokeAlarmStateProviderService provider : getSmokeAlarmStateProviderServices()) {
             if (!((UnitRemote) provider).isDataAvailable()) {
@@ -64,7 +65,7 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
                 alarmValue = AlarmState.State.ALARM;
             }
         }
-        serviceState = AlarmState.newBuilder().setValue(alarmValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return AlarmState.newBuilder().setValue(alarmValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override

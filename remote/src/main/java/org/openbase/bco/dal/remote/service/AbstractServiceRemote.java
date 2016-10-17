@@ -68,7 +68,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<String, S> serviceMap;
     private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
-    protected ST serviceState;
+    private ST serviceState;
     private final Observer dataObserver;
     protected final ObservableImpl<ST> dataObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
@@ -86,9 +86,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     /**
      * Compute the service state of this service collection if an underlying service changes.
      *
+     * @return the computed server state is returned.
      * @throws CouldNotPerformException if an underlying service throws an exception
      */
-    protected abstract void computeServiceState() throws CouldNotPerformException;
+    protected abstract ST computeServiceState() throws CouldNotPerformException;
 
     /**
      * Compute the current service state and notify observer.
@@ -97,7 +98,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     private void updateServiceState() throws CouldNotPerformException {
         synchronized (syncObject) {
-            computeServiceState();
+            serviceState = computeServiceState();
         }
         dataObservable.notifyObservers(serviceState);
     }
@@ -109,7 +110,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     public ST getServiceState() throws NotAvailableException {
         if (serviceState == null) {
-            throw new NotAvailableException("servicestate");
+            throw new NotAvailableException("ServiceState");
         }
         return serviceState;
     }
@@ -173,15 +174,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         MultiException.ExceptionStack exceptionStack = null;
         for (UnitRemote remote : unitRemoteMap.values()) {
             try {
+                remote.addDataObserver(dataObserver);
                 remote.activate();
             } catch (CouldNotPerformException ex) {
                 exceptionStack = MultiException.push(remote, ex, exceptionStack);
             }
-            GlobalExecutionService.submit(() -> {
-                remote.waitForData();
-                remote.addDataObserver(dataObserver);
-                return null;
-            });
         }
         MultiException.checkAndThrow("Could not activate all service units!", exceptionStack);
     }
@@ -261,9 +258,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
     public void waitForData() throws CouldNotPerformException, InterruptedException {
-        for (UnitRemote unitRemote : getInternalUnits()) {
-            unitRemote.waitForData();
-        }
+        dataObservable.waitForValue();
     }
 
     /**
@@ -275,9 +270,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
     public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        for (UnitRemote unitRemote : getInternalUnits()) {
-            unitRemote.waitForData(timeout, timeUnit);
-        }
+        dataObservable.waitForValue(timeout, timeUnit);
     }
 
     /**
