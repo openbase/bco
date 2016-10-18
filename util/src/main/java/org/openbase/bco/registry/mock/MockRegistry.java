@@ -23,8 +23,10 @@ package org.openbase.bco.registry.mock;
  */
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -37,6 +39,7 @@ import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
@@ -76,7 +79,11 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
 import rst.domotic.service.ServiceConfigType;
@@ -144,6 +151,10 @@ public class MockRegistry {
     private static SceneRegistry sceneRegistry;
     private static UserRegistry userRegisty;
     private static UnitRegistry unitRegistry;
+
+    private final SyncObject LOCK;
+    private final Observer notifyChangeObserver;
+    private final DeviceRegistryRemote deviceRegistryRemote;
 
     private static UnitConfig paradiseLocation;
 
@@ -267,7 +278,7 @@ public class MockRegistry {
                         unitRegistryLauncher = new UnitRegistryLauncher();
                         unitRegistry = unitRegistryLauncher.getUnitRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -280,7 +291,7 @@ public class MockRegistry {
                         deviceRegistryLauncher = new DeviceRegistryLauncher();
                         deviceRegistry = deviceRegistryLauncher.getDeviceRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -293,7 +304,7 @@ public class MockRegistry {
                         agentRegistryLauncher = new AgentRegistryLauncher();
                         agentRegistry = agentRegistryLauncher.getAgentRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -306,7 +317,7 @@ public class MockRegistry {
                         appRegistryLauncher = new AppRegistryLauncher();
                         appRegistry = appRegistryLauncher.getAppRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -316,6 +327,7 @@ public class MockRegistry {
                 task.get();
             }
             registryStartupTasks.clear();
+
             logger.info("Real registries started!");
 
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
@@ -326,7 +338,7 @@ public class MockRegistry {
                         locationRegistryLauncher = new LocationRegistryLauncher();
                         locationRegistry = locationRegistryLauncher.getLocationRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -339,7 +351,7 @@ public class MockRegistry {
                         userRegistryLauncher = new UserRegistryLauncher();
                         userRegisty = userRegistryLauncher.getUserRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -352,7 +364,7 @@ public class MockRegistry {
                         sceneRegistryLauncher = new SceneRegistryLauncher();
                         sceneRegistry = sceneRegistryLauncher.getSceneRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
@@ -363,6 +375,22 @@ public class MockRegistry {
             }
             registryStartupTasks.clear();
             logger.info("Virtual registries started!");
+
+            CachedDeviceRegistryRemote.reinitialize();
+            CachedLocationRegistryRemote.reinitialize();
+            logger.info("Reinitialized remotes!");
+
+            deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
+            LOCK = new SyncObject("DeviceClassRemoteRegistryLock");
+            notifyChangeObserver = new Observer() {
+
+                @Override
+                public void update(Observable source, Object data) throws Exception {
+                    synchronized (LOCK) {
+                        LOCK.notifyAll();
+                    }
+                }
+            };
 
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
@@ -400,11 +428,6 @@ public class MockRegistry {
             }
             registryStartupTasks.clear();
             logger.info("UnitTemplates updated and devices, locations and user registered!");
-
-            logger.info("Started app/agent/scene registries!");
-            CachedDeviceRegistryRemote.reinitialize();
-            CachedLocationRegistryRemote.reinitialize();
-            logger.info("Reinitialized remotes!");
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -457,68 +480,108 @@ public class MockRegistry {
             // ambient light
             System.out.println("Device 1 class");
             DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
+            waitForDeviceClass(ambientLightClass);
+
             System.out.println("Device 1 config");
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass));
 
-            Thread.sleep(1000);
             System.out.println("Device 2 class");
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
+            waitForDeviceClass(motionSensorClass);
+
             System.out.println("Device 2 config");
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
 
             System.out.println("Device 3 class");
             // button
             DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
+            waitForDeviceClass(buttonClass);
+
             System.out.println("Device 3 config");
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
             System.out.println("Device 4 class");
             // dimmer
             DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
+            waitForDeviceClass(dimmerClass);
+
             System.out.println("Device 4 config");
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
             System.out.println("Device 5 class");
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
+            waitForDeviceClass(handleClass);
+
             System.out.println("Device 5 config");
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
 
             System.out.println("Device 6 class");
             // light
             DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
+            waitForDeviceClass(handleClass);
+
             System.out.println("Device 6 config");
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
             System.out.println("Device 7 class");
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
+            waitForDeviceClass(powerPlugClass);
+
             System.out.println("Device 7 config");
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
             System.out.println("Device 8 class");
             // reedSwitch
             DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
+            waitForDeviceClass(reedSwitchClass);
+
             System.out.println("Device 8 config");
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
 
             System.out.println("Device 9 class");
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
+            waitForDeviceClass(rollershutterClass);
+
+            System.out.println("Device 9 config");
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
 
             System.out.println("Device 10 class");
             // smoke detector
             DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
+            waitForDeviceClass(smokeDetector);
+
+            System.out.println("Device 10 config");
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
             System.out.println("Device 11 class");
             // temperature controller
             DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
+            waitForDeviceClass(temperatureControllerClass);
+            System.out.println("11 id: " + temperatureControllerClass.getId());
+
+            System.out.println("Device 11 config");
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
+        }
+    }
+
+    private void waitForDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
+        deviceRegistryRemote.addDataObserver(notifyChangeObserver);
+        synchronized (LOCK) {
+            try {
+                while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
+                    LOCK.wait();
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } finally {
+                deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
+            }
         }
     }
 
@@ -572,7 +635,7 @@ public class MockRegistry {
     private static List<UnitTemplateConfig> getUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
         List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
         for (UnitTemplate.UnitType type : unitTypes) {
-            List<ServiceTemplateConfig> serviceTemplateConfigs = new ArrayList<>();
+            Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
             for (ServiceTemplate serviceTemplate : MockUnitTemplate.getTemplate(type).getServiceTemplateList()) {
                 serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceTemplate.getType()).build());
             }
