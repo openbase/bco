@@ -21,7 +21,6 @@ package org.openbase.bco.dal.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
 import org.openbase.jps.core.JPService;
@@ -29,6 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,8 +73,8 @@ public class DalVisualRemote extends javax.swing.JFrame {
     private void loadImage() {
         try {
             setIconImage(new ImageIcon(ClassLoader.getSystemResource("dal-visual-remote.png")).getImage());
-        } catch(Exception ex) {
-            LOGGER.warn("Could not load app icon!", ex);
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load app icon!", ex), LOGGER, LogLevel.WARN);
         }
     }
 
@@ -156,7 +156,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | java.lang.InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            LOGGER.warn("Could not setup look and feel!", ex);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not setup look and feel!", ex), LOGGER, LogLevel.WARN);
         }
         //</editor-fold>
         //</editor-fold>

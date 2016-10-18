@@ -34,9 +34,9 @@ import rsb.Scope;
  * * @author nuc
  */
 public class RSBScopePanel extends javax.swing.JPanel {
-    
+
     protected final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private final ObservableImpl<Scope> observable;
 
     /**
@@ -46,15 +46,15 @@ public class RSBScopePanel extends javax.swing.JPanel {
         initComponents();
         observable = new ObservableImpl<>();
     }
-    
+
     public void addObserver(Observer<Scope> observer) {
         observable.addObserver(observer);
     }
-    
+
     public void removeObserver(Observer<Scope> observer) {
         observable.removeObserver(observer);
     }
-    
+
     public Scope getScope() {
         return new Scope(scopeTextField.getText());
     }
@@ -108,10 +108,10 @@ public class RSBScopePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void scopeTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeTextFieldActionPerformed
-        
+
         scopeTextField.setForeground(Color.BLUE);
         scopeTextField.setEnabled(false);
-        
+
         try {
             //        SwingWorker worker = new SwingWorker<Void, Void>() {
 //
@@ -122,7 +122,7 @@ public class RSBScopePanel extends javax.swing.JPanel {
 //                    scopeTextField.setForeground(Color.RED);
 //                    scopeTextField.setEnabled(true);
 //                } catch (MultiException ex) {
-//                    logger.error("Could not update scope!", ex);
+//                    ExceptionPrinter.printHistory("Could not update scope!", ex, logger);            
 //                }
 //                return null;
 //            }
@@ -158,9 +158,9 @@ public class RSBScopePanel extends javax.swing.JPanel {
             scopeTextField.setEnabled(true);
             ExceptionPrinter.printHistory(ex, logger);
         }
-        
+
     }//GEN-LAST:event_scopeTextFieldActionPerformed
-    
+
     private void scopeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_scopeTextFieldKeyTyped
         scopeTextField.setForeground(Color.BLUE);
     }//GEN-LAST:event_scopeTextFieldKeyTyped
