@@ -294,6 +294,7 @@ public class MockRegistry {
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
+//                    throw new CouldNotPerformException("Bad case!");
                 }
             }));
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
