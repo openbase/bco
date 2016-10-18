@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
@@ -75,7 +76,67 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
     }
 
     @Override
-    public void notifyDataUpdate(UnitGroupData data) throws CouldNotPerformException {
+    public void init(final UnitConfig unitGroupUnitConfig) throws InitializationException, InterruptedException {
+        try {
+            CachedDeviceRegistryRemote.waitForData();
+
+            List<UnitConfig> unitConfigs = new ArrayList<>();
+            for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
+                unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
+            }
+
+            List<UnitConfig> unitConfigsByService = new ArrayList<>();
+            for (ServiceTemplate serviceTemplate : unitGroupUnitConfig.getUnitGroupConfig().getServiceTemplateList()) {
+                unitConfigs.stream().filter((unitConfig) -> (unitHasService(unitConfig, serviceTemplate))).forEach((unitConfig) -> {
+                    unitConfigsByService.add(unitConfig);
+                });
+                // create serviceRemoteByType and unitCOnfiglist
+                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
+                unitConfigsByService.clear();
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+            remote.activate();
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return serviceRemoteMap.values().stream().noneMatch((remote) -> (!remote.isActive()));
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+            remote.deactivate();
+        }
+    }
+
+    @Override
+    public void waitForData(long timeout, TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        //todo reimplement with respect to given timeout.
+        try {
+            super.waitForData(timeout, timeUnit);
+            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+                remote.waitForData(timeout, timeUnit);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceData", ex);
+        }
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        super.waitForData();
+        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+            remote.waitForData();
+        }
     }
 
     @Override
@@ -165,49 +226,6 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
     private void testServiceAvailability(ServiceTemplate serviceTemplate) throws NotAvailableException {
         if (!serviceRemoteMap.containsKey(serviceTemplate)) {
             throw new NotAvailableException("groupConfig." + StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.toString()));
-        }
-    }
-
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.activate();
-        }
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.deactivate();
-        }
-    }
-
-    @Override
-    public boolean isActive() {
-        return serviceRemoteMap.values().stream().noneMatch((remote) -> (!remote.isActive()));
-    }
-
-    @Override
-    public void init(final UnitConfig unitGroupUnitConfig) throws InitializationException, InterruptedException {
-        try {
-            CachedDeviceRegistryRemote.waitForData();
-
-            List<UnitConfig> unitConfigs = new ArrayList<>();
-            for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-                unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
-            }
-
-            List<UnitConfig> unitConfigsByService = new ArrayList<>();
-            for (ServiceTemplate serviceTemplate : unitGroupUnitConfig.getUnitGroupConfig().getServiceTemplateList()) {
-                unitConfigs.stream().filter((unitConfig) -> (unitHasService(unitConfig, serviceTemplate))).forEach((unitConfig) -> {
-                    unitConfigsByService.add(unitConfig);
-                });
-                // create serviceRemoteByType and unitCOnfiglist
-                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
-                unitConfigsByService.clear();
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
         }
     }
 
