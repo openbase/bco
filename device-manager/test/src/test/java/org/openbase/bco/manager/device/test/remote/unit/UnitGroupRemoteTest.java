@@ -89,7 +89,7 @@ public class UnitGroupRemoteTest {
         logger.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitConfig.build());
         unitGroupRemote.activate();
-        Thread.sleep(3000);
+        unitGroupRemote.waitForData();
     }
 
     private static boolean allServiceTemplatesImplemented(UnitGroupConfig.Builder unitGroup, List<ServiceConfig> serviceConfigList) {
