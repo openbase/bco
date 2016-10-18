@@ -1129,4 +1129,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
+
+    public DeviceRegistryRemote getDeviceRegistryRemote() {
+        return deviceRegistryRemote;
+    }
 }

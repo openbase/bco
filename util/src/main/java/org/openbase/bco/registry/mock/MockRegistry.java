@@ -152,8 +152,6 @@ public class MockRegistry {
     private static UserRegistry userRegisty;
     private static UnitRegistry unitRegistry;
 
-    private final SyncObject LOCK;
-    private final Observer notifyChangeObserver;
     private final DeviceRegistryRemote deviceRegistryRemote;
 
     private static UnitConfig paradiseLocation;
@@ -381,17 +379,7 @@ public class MockRegistry {
             CachedLocationRegistryRemote.reinitialize();
             logger.info("Reinitialized remotes!");
 
-            deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
-            LOCK = new SyncObject("DeviceClassRemoteRegistryLock");
-            notifyChangeObserver = new Observer() {
-
-                @Override
-                public void update(Observable source, Object data) throws Exception {
-                    synchronized (LOCK) {
-                        LOCK.notifyAll();
-                    }
-                }
-            };
+            deviceRegistryRemote = unitRegistryLauncher.getUnitRegistry().getDeviceRegistryRemote();
 
             registryStartupTasks.add(GlobalExecutionService.submit(new Callable<Void>() {
 
@@ -430,6 +418,7 @@ public class MockRegistry {
             registryStartupTasks.clear();
             logger.info("UnitTemplates updated and devices, locations and user registered!");
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
+            shutdown();
             throw new InstantiationException(this, ex);
         }
     }
@@ -521,7 +510,7 @@ public class MockRegistry {
             System.out.println("Device 6 class");
             // light
             DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
-            waitForDeviceClass(handleClass);
+            waitForDeviceClass(lightClass);
 
             System.out.println("Device 6 config");
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
@@ -571,19 +560,30 @@ public class MockRegistry {
         }
     }
 
-    private void waitForDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        deviceRegistryRemote.addDataObserver(notifyChangeObserver);
+    private void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
+        final Observer notifyChangeObserver = new Observer() {
+
+            @Override
+            public void update(Observable source, Object data) throws Exception {
+                synchronized (LOCK) {
+                    LOCK.notifyAll();
+                }
+            }
+        };
         synchronized (LOCK) {
+            deviceRegistryRemote.addDataObserver(notifyChangeObserver);
             try {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
                     LOCK.wait();
                 }
+                System.out.println("Device class [" + deviceClass + "] registered in remote registry!");
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
-            } finally {
-                deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
             }
         }
+        deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
+
     }
 
     private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
