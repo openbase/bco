@@ -417,7 +417,7 @@ public class MockRegistry {
                         logger.info("Wait for consistency");
                         deviceRegistry.waitForConsistency();
                     } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, logger, org.openbase.jul.exception.printer.LogLevel.ERROR);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                     }
                     return null;
                 }
