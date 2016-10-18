@@ -62,7 +62,7 @@ public class MockRegistryTest {
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testMockRegistryCreation() throws InstantiationException, InterruptedException {
         System.out.println("testMockRegistryCreation");
         try {
