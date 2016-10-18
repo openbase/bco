@@ -36,8 +36,8 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -198,7 +198,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 //            logger.info("Notify observer with new location");
             locationConfigHolderObservable.notifyObservers(selectedLocationConfigHolder);
         } catch (MultiException ex) {
-            logger.warn("Could not notify observers about location config change!", ex);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers about location config change!", ex), logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_locationComboBoxActionPerformed
 

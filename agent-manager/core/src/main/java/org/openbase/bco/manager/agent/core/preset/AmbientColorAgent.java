@@ -34,6 +34,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.vision.HSBColorType.HSBColor;
@@ -180,7 +181,7 @@ public class AmbientColorAgent extends AbstractAgent {
                 i--;
                 logger.info("Found [" + i + "] color/s");
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-                logger.warn("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex), logger, LogLevel.WARN);
             }
 
             holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));

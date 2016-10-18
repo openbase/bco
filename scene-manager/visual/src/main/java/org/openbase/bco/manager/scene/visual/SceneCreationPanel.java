@@ -239,7 +239,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         try {
             observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
         } catch (MultiException ex) {
-            logger.warn("Could not notify observers!", ex);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers!", ex), logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_sceneSelectionComboBoxActionPerformed
 

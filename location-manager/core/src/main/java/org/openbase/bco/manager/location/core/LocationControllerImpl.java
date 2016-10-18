@@ -52,6 +52,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -78,7 +80,6 @@ import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
@@ -86,7 +87,7 @@ import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
- UnitConfig
+ * UnitConfig
  */
 public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, UnitConfig> implements LocationController {
 
@@ -455,7 +456,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 throw new CouldNotPerformException("Could not apply data change!", ex);
             }
         } catch (CouldNotPerformException ex) {
-            logger.warn("Could not get current status", ex);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get current status!", ex), logger, LogLevel.WARN);
         }
     }
 

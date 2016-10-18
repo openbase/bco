@@ -218,10 +218,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
             Method method = remote.getClass().getMethod("setPowerState", PowerState.class);
             method.invoke(remote, powerState);
         } catch (NoSuchMethodException ex) {
-            logger.error("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method", ex);
+            ExceptionPrinter.printHistory("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method!", ex, logger);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            logger.error("Could not invoke setPower method on remote [" + remote.getClass().getSimpleName() + "] with value [" + powerState + "]");
-            ExceptionPrinter.printHistory(ex, logger);
+            ExceptionPrinter.printHistory("Could not invoke setPower method on remote [" + remote.getClass().getSimpleName() + "] with value [" + powerState + "]", ex, logger);
         }
     }
 

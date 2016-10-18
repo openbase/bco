@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -39,9 +39,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
@@ -49,11 +52,10 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.HandleStateType.HandleState;
 import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.state.HandleStateType.HandleState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 
 /**
  *
@@ -229,7 +231,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 throw new CouldNotPerformException("Could not apply data change!", ex);
             }
         } catch (CouldNotPerformException ex) {
-            logger.warn("Could not get current status", ex);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get current status!", ex), logger, LogLevel.WARN);
         }
     }
 
