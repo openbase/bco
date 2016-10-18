@@ -70,15 +70,16 @@ public class MockRegistryTest {
         Stopwatch stopwatch = new Stopwatch();
         try {
             stopwatch.start();
-//            for (int i = 0; i < 50; ++i) {
-            System.out.println("start mock registry");
-            MockRegistryHolder.newMockRegistry();
-            System.out.println("shutdown mock registry");
-            MockRegistryHolder.shutdownMockRegistry();
-//            }
+            for (int i = 0; i < 50; ++i) {
+                System.out.println("start mock registry");
+                MockRegistryHolder.newMockRegistry();
+                System.out.println("shutdown mock registry");
+                MockRegistryHolder.shutdownMockRegistry();
+            }
             stopwatch.stop();
             System.out.println("Starting took on averages [" + stopwatch.getTime() / 1000 + "]");
-        } catch (org.openbase.jul.exception.InstantiationException ex) {
+        } catch (InstantiationException ex) {
+            MockRegistryHolder.shutdownMockRegistry();
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
         }
     }
