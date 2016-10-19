@@ -76,4 +76,10 @@ public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
             }
         }
     }
+
+    @Override
+    public void reset() {
+        agentMap.clear();
+        super.reset();
+    }
 }
