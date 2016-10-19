@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
@@ -112,11 +112,11 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     }
 
     private void verifyAuthorizationGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.AUTHORIZATION_GROUP);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.AUTHORIZATION_GROUP);
     }
 
     private void verifyUserUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.USER);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.USER);
     }
 
     @Override

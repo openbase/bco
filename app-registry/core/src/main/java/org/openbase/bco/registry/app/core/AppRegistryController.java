@@ -30,7 +30,7 @@ import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -155,7 +155,7 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
     }
 
     private void verifyAppUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.APP);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.APP);
     }
 
     @Override

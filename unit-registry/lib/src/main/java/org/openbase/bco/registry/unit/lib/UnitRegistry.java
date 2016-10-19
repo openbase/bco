@@ -23,7 +23,7 @@ package org.openbase.bco.registry.unit.lib;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Shutdownable;
@@ -158,7 +158,7 @@ public interface UnitRegistry extends Shutdownable {
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
     public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.UNIT_GROUP);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.UNIT_GROUP);
     }
 
     public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException;

@@ -31,7 +31,7 @@ import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -153,7 +153,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     }
 
     private void verifyDeviceUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.DEVICE);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.DEVICE);
     }
 
     /**

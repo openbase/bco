@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -95,7 +95,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
     }
 
     private void verifySceneUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.SCENE);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.SCENE);
     }
 
     @Override

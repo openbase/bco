@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.util.UnitConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -121,11 +121,11 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     }
 
     private void verifyLocationUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.LOCATION);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.LOCATION);
     }
 
     private void verifyConnectionUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
-        UnitConfigUtils.verifyUnitType(unitConfig, UnitType.CONNECTION);
+        UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.CONNECTION);
     }
 
     /**
