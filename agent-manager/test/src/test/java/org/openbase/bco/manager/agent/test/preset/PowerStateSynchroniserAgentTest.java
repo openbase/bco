@@ -93,6 +93,7 @@ public class PowerStateSynchroniserAgentTest {
         agentRegistryRemote = new AgentRegistryRemote();
         agentRegistryRemote.init();
         agentRegistryRemote.activate();
+        
 
         deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
         locationRegistry = CachedLocationRegistryRemote.getRegistry();
@@ -134,6 +135,7 @@ public class PowerStateSynchroniserAgentTest {
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
+        agentRegistryRemote.waitForData();
         UnitConfig config = registerAgent();
         agent = new AgentRemote();
         agent.init(config);
