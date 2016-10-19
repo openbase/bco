@@ -49,7 +49,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
-import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -245,7 +244,7 @@ public class PowerStateSynchroniserAgentTest {
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
         PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
 
-        UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
+        UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId("PowerStateSynchroniser");
         return agentRegistryRemote.registerAgentConfig(agentUnitConfig.build()).get();
     }

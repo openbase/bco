@@ -59,11 +59,11 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
  */
 public class UnitGroupRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UnitGroupRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemoteTest.class);
 
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static UnitGroupRemote unitGroupRemote;
-    private static final List<Unit> units = new ArrayList<>();
+    private static final List<Unit> unitList = new ArrayList<>();
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
@@ -78,18 +78,16 @@ public class UnitGroupRemoteTest {
         ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
         ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
-        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
-
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
             if (allServiceTemplatesImplemented(unitGroupConfig, unit.getConfig().getServiceConfigList())) {
-                units.add(unit);
+                unitList.add(unit);
                 unitGroupConfig.addMemberId(unit.getConfig().getId());
             }
         }
-        logger.info("Unit group [" + unitGroupConfig.build() + "]");
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
+        LOGGER.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitConfig.build());
         unitGroupRemote.activate();
-        unitGroupRemote.waitForData();
     }
 
     private static boolean allServiceTemplatesImplemented(UnitGroupConfig.Builder unitGroup, List<ServiceConfig> serviceConfigList) {
@@ -129,16 +127,17 @@ public class UnitGroupRemoteTest {
     @Test(timeout = 10000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
+        unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         unitGroupRemote.setPowerState(state).get();
 
-        for (Unit unit : units) {
+        for (Unit unit : unitList) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPowerState(state).get();
-        for (Unit unit : units) {
+        for (Unit unit : unitList) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
     }
@@ -151,6 +150,7 @@ public class UnitGroupRemoteTest {
     @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
+        unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPowerState(state).get();
         assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), unitGroupRemote.getPowerState().getValue());
@@ -164,6 +164,7 @@ public class UnitGroupRemoteTest {
     @Test(timeout = 10000)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
+        unitGroupRemote.waitForData();
         Double brightness = 75d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
         try {
