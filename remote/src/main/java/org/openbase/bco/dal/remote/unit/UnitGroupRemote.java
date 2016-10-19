@@ -46,7 +46,9 @@ import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -73,6 +75,7 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class, UnitConfig.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
+        // todo: reimplement as real remote with manager.
     }
 
     @Override
@@ -80,9 +83,21 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
         try {
             CachedDeviceRegistryRemote.waitForData();
 
+            if(!unitGroupUnitConfig.hasUnitGroupConfig()) {
+                throw new VerificationFailedException("Given unit config does not contain a unit group config!");
+            }
+            
+            if(unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().isEmpty()) {
+                throw new VerificationFailedException("UnitGroupConfig has no unit members!");
+            }
+            
             List<UnitConfig> unitConfigs = new ArrayList<>();
             for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
                 unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
+            }
+
+            if (unitConfigs.isEmpty()) {
+                throw new CouldNotPerformException("Could not resolve any unit members!");
             }
 
             List<UnitConfig> unitConfigsByService = new ArrayList<>();
@@ -101,8 +116,18 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.activate();
+        try {
+            MultiException.ExceptionStack exceptionStack = null;
+            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+                try {
+                    remote.activate();
+                } catch (CouldNotPerformException ex) {
+                    exceptionStack = MultiException.push(remote, ex, exceptionStack);
+                }
+            }
+            MultiException.checkAndThrow("Could not activate all internal service remotes!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not activate unit group remote!", ex);
         }
     }
 
@@ -120,7 +145,7 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
 
     @Override
     public void waitForData(long timeout, TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
-        //todo reimplement with respect to given timeout.
+        //todo reimplement with respect to the given timeout.
         try {
             super.waitForData(timeout, timeUnit);
             for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
@@ -133,7 +158,8 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
-        super.waitForData();
+        // super.waitForData();
+        // disabled because this is not yet a real remote!
         for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
             remote.waitForData();
         }

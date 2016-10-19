@@ -133,7 +133,7 @@ public class PowerStateServicePanel extends AbstractServicePanel<PowerStateProvi
     @Override
     protected void updateDynamicComponents() {
         try {
-            System.out.println("state: " + getProviderService().getPowerState().getValue().name());
+            logger.info("state: " + getProviderService().getPowerState().getValue().name());
             switch (getProviderService().getPowerState().getValue()) {
             case ON:
                 powerStatusLabel.setForeground(Color.BLACK);

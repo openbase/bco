@@ -107,7 +107,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
             };
             this.connectionStateObserver = (Observable<ConnectionState> source, ConnectionState connectionState) -> {
                 enableComponents(this, connectionState.equals(ConnectionState.CONNECTED));
-                System.out.println("enable: " + connectionState.equals(ConnectionState.CONNECTED));
+                logger.info("enable: " + connectionState.equals(ConnectionState.CONNECTED));
             };
 //            GlobalExecutionService.submit(() -> {
 //                while (!Thread.currentThread().isInterrupted()) {
