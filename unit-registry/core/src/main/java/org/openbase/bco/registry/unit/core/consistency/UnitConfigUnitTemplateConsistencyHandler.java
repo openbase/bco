@@ -47,7 +47,7 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
 
-    List<String> idList = new ArrayList();
+//    List<String> idList = new ArrayList();
 
     public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;

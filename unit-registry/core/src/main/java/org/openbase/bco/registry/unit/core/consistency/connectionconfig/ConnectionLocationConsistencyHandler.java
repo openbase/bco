@@ -67,12 +67,12 @@ public class ConnectionLocationConsistencyHandler extends AbstractProtoBufRegist
         // list containing the pathes from root to each location given by locationIds sorted by the lenght of the path, e.g.:
         //      home, apartment, hallway, entrance
         //      home, apartment, outdoor
-        List<List<UnitConfig>> pathesFromRootMap = new ArrayList<>();
+        final List<List<UnitConfig>> pathesFromRootMap = new ArrayList<>();
 
         // fill the list according to the description above
         for (String id : locationIds) {
             UnitConfig locationUnitConfig = locationUnitConfigRegistry.getMessage(id);
-            List<UnitConfig> pathFromRootList = new ArrayList<>();
+            final List<UnitConfig> pathFromRootList = new ArrayList<>();
             pathFromRootList.add(locationUnitConfig);
             while (!locationUnitConfig.getLocationConfig().getRoot()) {
                 locationUnitConfig = locationUnitConfigRegistry.getMessage(locationUnitConfig.getPlacementConfig().getLocationId());
