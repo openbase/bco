@@ -24,7 +24,7 @@ package org.openbase.bco.registry.app.core.dbconvert;
 /**
  * This is a dummy class used for the converter package detection.
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a> Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ConverterPackageIdentifier {
 
