@@ -66,7 +66,7 @@ public class RemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    //@Test(timeout = 10000)
     public void testRestartingDeviceRegistryRemotes() throws Exception {
         System.out.println("testRestartingDeviceRegistryRemotes");
         DeviceRegistryRemote deviceRemoteAlwaysOn = new DeviceRegistryRemote();
