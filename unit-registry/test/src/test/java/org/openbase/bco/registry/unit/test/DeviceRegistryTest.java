@@ -212,7 +212,7 @@ public class DeviceRegistryTest {
      * Test if the scope and the id of a device configuration and its units is
      * set when registered.
      */
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testRegisterDeviceConfigWithUnits() throws Exception {
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
@@ -242,7 +242,7 @@ public class DeviceRegistryTest {
      * Test of testRegiseredDeviceConfigWithoutLabel method, of class
      * DeviceRegistryImpl.
      */
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
         String productNumber = "KNHD-4321";
         String serialNumber = "112358";
@@ -260,7 +260,7 @@ public class DeviceRegistryTest {
      * DeviceRegistryImpl.
      */
     // TODO: fix that the consisteny handling will work after this
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
         String serialNumber1 = "FIRST_DEV";
         String serialNumber2 = "BAD_DEV";
@@ -282,7 +282,7 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
         ServiceTemplate batteryTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE).build();
         ServiceTemplate colorTemplate = ServiceTemplate.newBuilder().setType(ServiceType.COLOR_STATE_SERVICE).build();
@@ -324,7 +324,7 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
@@ -396,7 +396,7 @@ public class DeviceRegistryTest {
         unitRegistry.updateUnitTemplate(unitTemplate).get();
     }
 
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testBoundToDeviceConsistencyHandler() throws Exception {
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
@@ -434,7 +434,7 @@ public class DeviceRegistryTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testOwnerRemoval() throws Exception {
         UserConfig userConfig = UserConfig.newBuilder().setUserName("owner").setFirstName("Max").setLastName("Mustermann").build();
         UnitConfig owner = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(userConfig).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build()).get();
@@ -463,7 +463,7 @@ public class DeviceRegistryTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testLocationIdInInventoryState() throws Exception {
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("testLocationIdInInventoryState", "103721ggbdk12", "ServiceGMBH")).get();
         UnitConfig testLocationIdInInventoryStateDevice = getDeviceUnitConfig("testLocationIdInInventoryStateDevice", "103721ggbdk12", clazz);
@@ -481,7 +481,7 @@ public class DeviceRegistryTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 5000)
+//    //@Test(timeout = 5000)
 //    public void testSandbox() throws Exception {
 //        BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("SINACT").build();
 //        UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();
