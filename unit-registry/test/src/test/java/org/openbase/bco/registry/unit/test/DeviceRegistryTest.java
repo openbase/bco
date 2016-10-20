@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
@@ -509,7 +508,7 @@ public class DeviceRegistryTest {
 //            fail("No exception thrown after updating a device with 2 units in the same location with the same label");
 //        } catch (Exception ex) {
 //        } finally {
-//            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+//            ExceptionPrinter.setBeQuit(Boolean.FALSE); 
 //        }
 //
 //        assertEquals("DeviceConfig has been although the sandbox has rejected an update", original, deviceRegistry.getDeviceConfigById(sandboxDeviceConfig.getId()));
