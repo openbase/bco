@@ -43,6 +43,7 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
     private static final String UNIT_ID_FIELD = "unit_id";
     private static final String UNIT_CONFIG_FIELD = "unit_config";
     private static final String TYPE_FIELD = "type";
+    private static final String PATTERN_FIELD = "pattern";
     private static final String UNIT_TEMPLATE_CONFIG_ID_FIELD = "unit_template_config_id";
     private static final String SERVICE_CONFIG_FIELD = "service_config";
     private static final String BINDING_CONFIG_FIELD = "binding_config";
@@ -50,6 +51,7 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
     private static final String BINDING_ID_FIELD = "binding_id";
     private static final String BOUND_TO_SYSTEM_UNIT_FIELD = "bound_to_system_unit";
     private static final String BOUND_TO_DEVICE_FIELD = "bound_to_device";
+    private static final String SERVICE_TEMPLATE_FIELD = "service_template";
 
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
@@ -150,12 +152,6 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
                             serviceConfig.addProperty(UNIT_ID_FIELD, newId);
                         }
 
-                        System.out.println("ServiceTypeAsString: [" + serviceConfig.get(TYPE_FIELD).getAsString() + "]");
-                        System.out.println("New Type [" + serviceTypeMap.get(serviceConfig.get(TYPE_FIELD).getAsString()) + "]");
-                        String serviceType = serviceTypeMap.get(serviceConfig.get(TYPE_FIELD).getAsString());
-                        serviceConfig.remove(TYPE_FIELD);
-                        serviceConfig.addProperty(TYPE_FIELD, serviceType);
-
                         JsonObject bindingConfig = serviceConfig.getAsJsonObject(BINDING_SERVICE_CONFIG_FIELD);
                         if (bindingConfig != null) {
                             JsonPrimitive bindingType = bindingConfig.getAsJsonPrimitive(TYPE_FIELD);
@@ -168,7 +164,30 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
                             serviceConfig.add(BINDING_CONFIG_FIELD, bindingConfig);
                         }
 
+                        String oldServiceType = serviceConfig.get(TYPE_FIELD).getAsString();
+                        String serviceType = serviceTypeMap.get(oldServiceType);
+                        if (serviceType == null) {
+                            continue;
+                        }
+                        serviceConfig.remove(TYPE_FIELD);
+                        JsonObject serviceTemplate = new JsonObject();
+                        serviceTemplate.addProperty(TYPE_FIELD, serviceType);
+                        serviceTemplate.addProperty(PATTERN_FIELD, "PROVIDER");
+                        serviceConfig.add(SERVICE_TEMPLATE_FIELD, serviceTemplate);
                         newServiceConfigs.add(serviceConfig);
+
+                        if (oldServiceType.endsWith("SERVICE")) {
+                            JsonObject operationServiceConfig = new JsonObject();
+                            serviceConfig.entrySet().stream().forEach((entry) -> {
+                                operationServiceConfig.add(entry.getKey(), entry.getValue());
+                            });
+                            JsonObject operationServiceTemplate = new JsonObject();
+                            operationServiceTemplate.addProperty(TYPE_FIELD, serviceType);
+                            operationServiceTemplate.addProperty(PATTERN_FIELD, "OPERATION");
+                            operationServiceConfig.remove(SERVICE_TEMPLATE_FIELD);
+                            operationServiceConfig.add(SERVICE_TEMPLATE_FIELD, operationServiceTemplate);
+                            newServiceConfigs.add(operationServiceConfig);
+                        }
                     }
                     unitConfig.remove(SERVICE_CONFIG_FIELD);
                     unitConfig.add(SERVICE_CONFIG_FIELD, newServiceConfigs);

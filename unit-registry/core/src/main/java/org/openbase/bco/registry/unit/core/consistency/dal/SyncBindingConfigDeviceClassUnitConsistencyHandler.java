@@ -72,9 +72,6 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
             return;
         }
 
-        if (unitConfig.getLabel().equals("A7C1")) {
-            System.out.println("Before id sync [" + unitConfig.getServiceConfig(0).toString() + "]");
-        }
         boolean modification = false;
         unitConfig.clearServiceConfig();
         for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
@@ -94,9 +91,6 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
             unitConfig.addServiceConfig(serviceConfig);
         }
 
-        if (unitConfig.getLabel().equals("A7C1")) {
-            System.out.println("After id sync [" + unitConfig.getServiceConfig(0).toString() + "]");
-        }
         if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig.build()), this);
         }

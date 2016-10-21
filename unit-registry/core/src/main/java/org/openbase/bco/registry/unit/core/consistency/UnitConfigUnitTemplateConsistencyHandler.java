@@ -58,9 +58,6 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
             throw new NotAvailableException("unitConfig.type");
         }
 
-        if (unitConfig.getLabel().equals("A7C1")) {
-            System.out.println("Before unitTemplateConsitency [" + unitConfig.getServiceConfig(0).toString() + "]");
-        }
         boolean modification = false;
         UnitTemplate unitTemplate = getUnitTemplateByType(unitConfig.getType());
         for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
@@ -78,9 +75,6 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
             }
         }
 
-        if (unitConfig.getLabel().equals("A7C1")) {
-            System.out.println("After unitTemplateConsitency [" + unitConfig.getServiceConfig(0).toString() + "]");
-        }
         if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }

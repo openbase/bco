@@ -48,9 +48,6 @@ public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegis
             throw new NotAvailableException("unitconfig.id");
         }
 
-        if (unitConfig.getLabel().equals("A7C1")) {
-            System.out.println("Before unit id [" + unitConfig.getServiceConfig(0).toString() + "]");
-        }
         unitConfig.clearServiceConfig();
         for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
             if (!serviceConfig.hasUnitId() || serviceConfig.getUnitId().isEmpty() || !serviceConfig.getUnitId().equals(unitConfig.getId())) {
@@ -60,9 +57,6 @@ public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegis
             unitConfig.addServiceConfig(serviceConfig);
         }
 
-        if (unitConfig.getLabel().equals("A7C1")) {
-            System.out.println("After unit id [" + unitConfig.getServiceConfig(0).toString() + "]");
-        }
         if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
