@@ -86,13 +86,13 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
 
         // remove all units that do not have an according unitTemplateConfig in the deviceClass
         // has to be done after the id has been removed from the device config
-        List<UnitConfig> unitsToRemove = new ArrayList<>();
         deviceConfig.clearUnitId();
-        for (UnitConfig unitConfig : unitConfigs) {
+        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
             if (templateForUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
                 deviceConfig.addUnitId(unitConfig.getId());
             } else {
-                unitsToRemove.add(unitConfig);
+                dalUnitRegistry.remove(unitConfig);
+                unitConfigs.remove(unitConfig);
                 modification = true;
             }
         }
@@ -116,10 +116,6 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
 
         if (modification) {
             deviceUnitRegistry.update(deviceUnitConfig.build());
-        }
-
-        for (UnitConfig dalUnitConfig : unitsToRemove) {
-            dalUnitRegistry.remove(dalUnitConfig);
         }
     }
 

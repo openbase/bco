@@ -21,10 +21,9 @@ package org.openbase.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,7 +65,7 @@ public class RemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //@Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testRestartingDeviceRegistryRemotes() throws Exception {
         System.out.println("testRestartingDeviceRegistryRemotes");
         DeviceRegistryRemote deviceRemoteAlwaysOn = new DeviceRegistryRemote();
@@ -86,7 +85,7 @@ public class RemoteTest {
 
             assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", Remote.ConnectionState.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());
             deviceRemoteAlwaysOn.requestData().get();
-            
+
             deviceRemoteToggle.activate();
             deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         }

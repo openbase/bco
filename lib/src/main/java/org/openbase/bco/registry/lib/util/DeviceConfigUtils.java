@@ -26,16 +26,16 @@ import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
 
 /**
  * A collection of utils to manipulate or analyse unit device configs.
  *
- UnitConfig
+ * UnitConfig
  */
 public class DeviceConfigUtils {
 
@@ -49,6 +49,10 @@ public class DeviceConfigUtils {
 
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
         for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+            if (!dalUnitRegistry.contains(unitId)) {
+                continue;
+            }
+
             UnitConfig dalUnitConfig = dalUnitRegistry.getMessage(unitId);
             if (unitTypeList.contains(dalUnitConfig.getType())) {
                 return true;
