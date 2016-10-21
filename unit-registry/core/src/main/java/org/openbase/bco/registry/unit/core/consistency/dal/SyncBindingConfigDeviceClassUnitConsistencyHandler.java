@@ -31,11 +31,11 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
@@ -72,6 +72,9 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
             return;
         }
 
+        if (unitConfig.getLabel().equals("A7C1")) {
+            System.out.println("Before id sync [" + unitConfig.getServiceConfig(0).toString() + "]");
+        }
         boolean modification = false;
         unitConfig.clearServiceConfig();
         for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
@@ -89,6 +92,10 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
                 modification = true;
             }
             unitConfig.addServiceConfig(serviceConfig);
+        }
+
+        if (unitConfig.getLabel().equals("A7C1")) {
+            System.out.println("After id sync [" + unitConfig.getServiceConfig(0).toString() + "]");
         }
         if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig.build()), this);

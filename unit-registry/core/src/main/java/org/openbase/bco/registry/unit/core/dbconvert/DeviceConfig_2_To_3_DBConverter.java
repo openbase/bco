@@ -28,6 +28,7 @@ import com.google.gson.JsonPrimitive;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
@@ -38,6 +39,8 @@ import org.openbase.jul.storage.registry.version.DBVersionControl;
  */
 public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter {
 
+    private static final String ID_FIELD = "id";
+    private static final String UNIT_ID_FIELD = "unit_id";
     private static final String UNIT_CONFIG_FIELD = "unit_config";
     private static final String TYPE_FIELD = "type";
     private static final String UNIT_TEMPLATE_CONFIG_ID_FIELD = "unit_template_config_id";
@@ -50,6 +53,8 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
 
     private final Map<String, String> unitTypeMap;
     private final Map<String, String> serviceTypeMap;
+
+    private final UnitConfigIdGenerator idGenerator;
 
     public DeviceConfig_2_To_3_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
@@ -103,6 +108,8 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
         serviceTypeMap.put("SMOKE_STATE_PROVIDER", "SMOKE_STATE_SERVICE");
         serviceTypeMap.put("SMOKE_ALARM_STATE_PROVIDER", "SMOKE_ALARM_STATE_SERVICE");
         serviceTypeMap.put("TEMPERATURE_ALARM_STATE_PROVIDER", "TEMPERATURE_ALARM_STATE_SERVICE");
+
+        idGenerator = new UnitConfigIdGenerator();
     }
 
     @Override
@@ -112,6 +119,12 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
             JsonArray newUnitConfigs = new JsonArray();
             for (JsonElement unitConfigElem : unitConfigs) {
                 JsonObject unitConfig = unitConfigElem.getAsJsonObject();
+
+                String newId = idGenerator.generateId(null);
+                if (unitConfig.has(ID_FIELD)) {
+                    unitConfig.remove(ID_FIELD);
+                    unitConfig.addProperty(ID_FIELD, newId);
+                }
 
                 String oldType = unitConfig.get(TYPE_FIELD).getAsString();
                 String newType = unitTypeMap.get(oldType);
@@ -132,6 +145,13 @@ public class DeviceConfig_2_To_3_DBConverter extends AbstractDBVersionConverter 
                     for (JsonElement serviceConfigElem : serviceConfigs) {
                         JsonObject serviceConfig = serviceConfigElem.getAsJsonObject();
 
+                        if (serviceConfig.has(UNIT_ID_FIELD)) {
+                            serviceConfig.remove(UNIT_ID_FIELD);
+                            serviceConfig.addProperty(UNIT_ID_FIELD, newId);
+                        }
+
+                        System.out.println("ServiceTypeAsString: [" + serviceConfig.get(TYPE_FIELD).getAsString() + "]");
+                        System.out.println("New Type [" + serviceTypeMap.get(serviceConfig.get(TYPE_FIELD).getAsString()) + "]");
                         String serviceType = serviceTypeMap.get(serviceConfig.get(TYPE_FIELD).getAsString());
                         serviceConfig.remove(TYPE_FIELD);
                         serviceConfig.addProperty(TYPE_FIELD, serviceType);

@@ -21,8 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -32,10 +30,10 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -48,7 +46,6 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
 
 //    List<String> idList = new ArrayList();
-
     public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
@@ -61,6 +58,9 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
             throw new NotAvailableException("unitConfig.type");
         }
 
+        if (unitConfig.getLabel().equals("A7C1")) {
+            System.out.println("Before unitTemplateConsitency [" + unitConfig.getServiceConfig(0).toString() + "]");
+        }
         boolean modification = false;
         UnitTemplate unitTemplate = getUnitTemplateByType(unitConfig.getType());
         for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
@@ -78,6 +78,9 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
             }
         }
 
+        if (unitConfig.getLabel().equals("A7C1")) {
+            System.out.println("After unitTemplateConsitency [" + unitConfig.getServiceConfig(0).toString() + "]");
+        }
         if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
