@@ -32,6 +32,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
