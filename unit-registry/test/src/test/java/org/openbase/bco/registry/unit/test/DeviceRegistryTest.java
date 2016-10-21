@@ -458,7 +458,7 @@ public class DeviceRegistryTest {
         unitRegistry.removeUnitConfig(owner).get();
 
         assertTrue("The owner did not get removed!", !unitRegistry.containsUnitConfig(owner));
-        ownerRemovalDeviceConfig = deviceRegistry.getDeviceConfigById(ownerRemovalDeviceConfig.getId());
+        ownerRemovalDeviceConfig = unitRegistry.getUnitConfigById(ownerRemovalDeviceConfig.getId());
         while (!ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId().isEmpty()) {
             Thread.sleep(100);
             ownerRemovalDeviceConfig = deviceRegistry.getDeviceConfigById(ownerRemovalDeviceConfig.getId());
