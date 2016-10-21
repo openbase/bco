@@ -377,11 +377,11 @@ public class DeviceRegistryTest {
 
         System.out.println("Updating deviceClass...");
         clazz = deviceRegistry.updateDeviceClass(clazz.toBuilder().addUnitTemplateConfig(unitTemplateConfig3).build()).get();
-        config = deviceRegistry.getDeviceConfigById(config.getId());
+        config = unitRegistry.getUnitConfigById(config.getId());
         // the update is not synced immediatly to the device config, thus this waits and fails if the timeout is exceeded
         while (config.getDeviceConfig().getUnitIdCount() != clazz.getUnitTemplateConfigCount()) {
             Thread.sleep(100);
-            config = deviceRegistry.getDeviceConfigById(config.getId());
+            config = unitRegistry.getUnitConfigById(config.getId());
         }
         assertEquals("Unit configs and templates differ after the update of the device class", config.getDeviceConfig().getUnitIdCount(), clazz.getUnitTemplateConfigCount());
 

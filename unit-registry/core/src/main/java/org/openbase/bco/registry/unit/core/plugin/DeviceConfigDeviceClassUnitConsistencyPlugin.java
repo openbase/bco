@@ -32,15 +32,15 @@ import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceConfigType;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceTemplateConfigType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateConfigType;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType;
 
 /**
  *
@@ -85,12 +85,14 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
         }
 
         // remove all units that do not have an according unitTemplateConfig in the deviceClass
+        // has to be done after the id has been removed from the device config
+        List<UnitConfig> unitsToRemove = new ArrayList<>();
         deviceConfig.clearUnitId();
         for (UnitConfig unitConfig : unitConfigs) {
             if (templateForUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
                 deviceConfig.addUnitId(unitConfig.getId());
             } else {
-                dalUnitRegistry.remove(unitConfig);
+                unitsToRemove.add(unitConfig);
                 modification = true;
             }
         }
@@ -114,6 +116,10 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
 
         if (modification) {
             deviceUnitRegistry.update(deviceUnitConfig.build());
+        }
+
+        for (UnitConfig dalUnitConfig : unitsToRemove) {
+            dalUnitRegistry.remove(dalUnitConfig);
         }
     }
 
