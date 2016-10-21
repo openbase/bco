@@ -583,7 +583,6 @@ public class MockRegistry {
             }
         }
         deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
-
     }
 
     private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {

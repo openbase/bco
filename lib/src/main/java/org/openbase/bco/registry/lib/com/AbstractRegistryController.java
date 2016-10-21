@@ -263,9 +263,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
-        registries.stream().filter((registry) -> (messageClass.equals(registry.getMessageClass()))).forEach((registry) -> {
+        for (ProtoBufFileSynchronizedRegistry registry : registries) {
             registry.registerDependency(dependency);
-        });
+        }
     }
 
     protected void registerRegistryRemote(final RegistryRemote registry) {
