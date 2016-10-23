@@ -33,8 +33,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.rsb.ScopeType.Scope;
 
 /**
@@ -44,34 +46,36 @@ import rst.rsb.ScopeType.Scope;
 public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
+    private final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry;
     private final Map<String, UnitConfig> agentMap;
 
-    public AgentScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
+    public AgentScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry, final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry) {
         this.locationRegistry = locationRegistry;
+        this.agentClassRegistry = agentClassRegistry;
         this.agentMap = new TreeMap<>();
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig agent = entry.getMessage();
+        UnitConfig agentUnitConfig = entry.getMessage();
 
-        if (!agent.hasPlacementConfig()) {
+        if (!agentUnitConfig.hasPlacementConfig()) {
             throw new NotAvailableException("agent.placementConfig");
         }
 
-        if (!agent.getPlacementConfig().hasLocationId() || agent.getPlacementConfig().getLocationId().isEmpty()) {
+        if (!agentUnitConfig.getPlacementConfig().hasLocationId() || agentUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("agent.placementConfig.locationId");
         }
 
-        Scope newScope = ScopeGenerator.generateAgentScope(agent, locationRegistry.getMessage(agent.getPlacementConfig().getLocationId()));
+        Scope newScope = ScopeGenerator.generateAgentScope(agentUnitConfig, agentClassRegistry.get(agentUnitConfig.getAgentConfig().getAgentClassId()).getMessage(), locationRegistry.getMessage(agentUnitConfig.getPlacementConfig().getLocationId()));
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(agent.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeGenerator.generateStringRep(agentUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
             if (agentMap.containsKey(ScopeGenerator.generateStringRep(newScope))) {
-                throw new InvalidStateException("Two agents [" + agent + "][" + agentMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
+                throw new InvalidStateException("Two agents [" + agentUnitConfig + "][" + agentMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
             } else {
-                agentMap.put(ScopeGenerator.generateStringRep(newScope), agent);
-                entry.setMessage(agent.toBuilder().setScope(newScope));
+                agentMap.put(ScopeGenerator.generateStringRep(newScope), agentUnitConfig);
+                entry.setMessage(agentUnitConfig.toBuilder().setScope(newScope));
                 throw new EntryModification(entry, this);
             }
         }

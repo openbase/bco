@@ -46,7 +46,7 @@ public class AuthorizationGroupConfigScopeConsistencyHandler extends AbstractPro
             throw new NotAvailableException("user.label");
         }
 
-        ScopeType.Scope newScope = ScopeGenerator.generateSceneScope(authorizationGroupUnitConfig);
+        ScopeType.Scope newScope = ScopeGenerator.generateAuthorizationGroupScope(authorizationGroupUnitConfig);
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(authorizationGroupUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {

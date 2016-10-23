@@ -33,8 +33,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.rsb.ScopeType.Scope;
 
 /**
@@ -44,34 +46,36 @@ import rst.rsb.ScopeType.Scope;
 public class AppScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
+    private final Registry<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> agentClassRegistry;
     private final Map<String, UnitConfig> appMap;
 
-    public AppScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
+    public AppScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry, final Registry<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> agentClassRegistry) {
         this.locationRegistry = locationRegistry;
+        this.agentClassRegistry = agentClassRegistry;
         this.appMap = new TreeMap<>();
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig app = entry.getMessage();
+    public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+        UnitConfig appUnitConfig = entry.getMessage();
 
-        if (!app.hasPlacementConfig()) {
+        if (!appUnitConfig.hasPlacementConfig()) {
             throw new NotAvailableException("agent.placementConfig");
         }
 
-        if (!app.getPlacementConfig().hasLocationId() || app.getPlacementConfig().getLocationId().isEmpty()) {
+        if (!appUnitConfig.getPlacementConfig().hasLocationId() || appUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("app.placementConfig.locationId");
         }
 
-        Scope newScope = ScopeGenerator.generateAppScope(app, locationRegistry.getMessage(app.getPlacementConfig().getLocationId()));
+        Scope newScope = ScopeGenerator.generateAppScope(appUnitConfig, agentClassRegistry.get(appUnitConfig.getAppConfig().getAppClassId()).getMessage(), locationRegistry.getMessage(appUnitConfig.getPlacementConfig().getLocationId()));
 
         // verify and update scope
-        if (!ScopeGenerator.generateStringRep(app.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
+        if (!ScopeGenerator.generateStringRep(appUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
             if (appMap.containsKey(ScopeGenerator.generateStringRep(newScope))) {
-                throw new InvalidStateException("Two apps [" + app + "][" + appMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
+                throw new InvalidStateException("Two apps [" + appUnitConfig + "][" + appMap.get(ScopeGenerator.generateStringRep(newScope)) + "] are registered with the same label and location");
             } else {
-                appMap.put(ScopeGenerator.generateStringRep(newScope), app);
-                entry.setMessage(app.toBuilder().setScope(newScope));
+                appMap.put(ScopeGenerator.generateStringRep(newScope), appUnitConfig);
+                entry.setMessage(appUnitConfig.toBuilder().setScope(newScope));
                 throw new EntryModification(entry, this);
             }
         }
