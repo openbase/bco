@@ -78,7 +78,7 @@ public class RemoteTest {
         deviceRemoteToggle.activate();
         deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);
 
-        int testNumber = 100;
+        int testNumber = 1;
         for (int i = 0; i < testNumber; ++i) {
             deviceRemoteToggle.shutdown();
             deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.DISCONNECTED);

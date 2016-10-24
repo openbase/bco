@@ -67,7 +67,7 @@ public class MockRegistryTest {
     public void testMockRegistryCreation() throws InstantiationException, InterruptedException, CouldNotPerformException {
         System.out.println("testMockRegistryCreation");
         try {
-            for (int i = 0; i < 10; ++i) {
+            for (int i = 0; i < 1; ++i) {
                 System.out.println("start mock registry");
                 MockRegistryHolder.newMockRegistry();
                 System.out.println("shutdown mock registry");
