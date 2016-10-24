@@ -60,9 +60,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <connection>scm:git:git@github.com/openbase/bco.registry.git</connection>
-        <developerConnection>scm:git:git@github.com/openbase/bco.registry.git</developerConnection>
-        <url>git@github.com/openbase/bco.registry.git</url>
+        <connection>scm:git:https://github.com/openbase/bco.registry.git</connection>
+        <developerConnection>scm:git:https://github.com/openbase/bco.registry.git</developerConnection>
+        <url>https://github.com/openbase/bco.registry.git</url>
     </scm>
     
     <build>
