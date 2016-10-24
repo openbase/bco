@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.DefaultComboBoxModel;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -45,15 +45,14 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.InventoryStateType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 
 /**
  *
@@ -63,7 +62,8 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(SelectorPanel.class);
 
-    private final DeviceRegistryRemote deviceRegistryRemote;
+//    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final UnitRegistryRemote unitRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
 
     private UnitRemoteView remoteView;
@@ -90,7 +90,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             this.initComponents();
             this.setEnable(false);
             this.initDynamicComponents();
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
+            this.unitRegistryRemote = new UnitRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -113,24 +113,24 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     public void init() throws InitializationException, InterruptedException, CouldNotPerformException {
         statusPanel = StatusPanel.getInstance();
-        statusPanel.setStatus("Init device manager connection...", StatusPanel.StatusType.INFO, true);
-        deviceRegistryRemote.init();
-        statusPanel.setStatus("Init location manager connection...", StatusPanel.StatusType.INFO, true);
+        statusPanel.setStatus("Init unit registry connection...", StatusPanel.StatusType.INFO, true);
+        unitRegistryRemote.init();
+        statusPanel.setStatus("Init location registry connection...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.init();
 
-        statusPanel.setStatus("Connecting to device manager...", StatusPanel.StatusType.INFO, true);
-        deviceRegistryRemote.activate();
-        statusPanel.setStatus("Connecting to location manager...", StatusPanel.StatusType.INFO, true);
+        statusPanel.setStatus("Connecting to unit registry...", StatusPanel.StatusType.INFO, true);
+        unitRegistryRemote.activate();
+        statusPanel.setStatus("Connecting to location registry...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.activate();
 
-        statusPanel.setStatus("Wait for device registry data...", StatusPanel.StatusType.INFO, true);
-        deviceRegistryRemote.waitForData();
+        statusPanel.setStatus("Wait for unit registry data...", StatusPanel.StatusType.INFO, true);
+        unitRegistryRemote.waitForData();
         statusPanel.setStatus("Wait for location registry data...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.waitForData();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
-        deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
+        unitRegistryRemote.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
             updateDynamicComponents();
         });
 
@@ -163,6 +163,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     }
 
     private synchronized void updateDynamicComponents() {
+        MultiException.ExceptionStack exceptionStack = null;
 
         try {
             if (!init) {
@@ -212,29 +213,44 @@ public class SelectorPanel extends javax.swing.JPanel {
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
                         for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
-                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            try {
+                                unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            } catch (CouldNotPerformException ex) {
+                                exceptionStack = MultiException.push(this, ex, exceptionStack);
+                            }
                         }
                     } else {
-                        for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
-
-                            // ignore non installed units
-                            if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                                continue;
+                        for (UnitConfig config : unitRegistryRemote.getUnitConfigs()) {
+                            try {
+                                // ignore disabled units
+                                if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                                    continue;
+                                }
+                                unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            } catch (CouldNotPerformException ex) {
+                                exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
-                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                         }
                     }
                 } else if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
                     for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
-                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                        try {
+                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                        } catch (CouldNotPerformException ex) {
+                            exceptionStack = MultiException.push(this, ex, exceptionStack);
+                        }
                     }
                 } else {
-                    for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
-                        // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                            continue;
+                    for (UnitConfig config : unitRegistryRemote.getUnitConfigs(selectedUnitType)) {
+                        try {
+                            // ignore disabled units
+                            if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                                continue;
+                            }
+                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                        } catch (CouldNotPerformException ex) {
+                            exceptionStack = MultiException.push(this, ex, exceptionStack);
                         }
-                        unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                     }
                 }
                 Collections.sort(unitConfigHolderList);
@@ -250,8 +266,9 @@ public class SelectorPanel extends javax.swing.JPanel {
                 unitConfigComboBox.setEnabled(false);
                 throw ex;
             }
+            MultiException.checkAndThrow("Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update dynamic components!", ex), logger);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
         }
     }
 
@@ -614,7 +631,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     try {
                         scopeTextField.setForeground(Color.BLACK);
                         Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
-                        unitConfigObservable.notifyObservers(deviceRegistryRemote.getUnitConfigByScope(scope));
+                        unitConfigObservable.notifyObservers(unitRegistryRemote.getUnitConfigByScope(scope));
                         scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
                     } catch (CouldNotPerformException ex) {
                         scopeTextField.setForeground(Color.RED);
@@ -666,7 +683,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         try {
             Scope scope = ScopeTransformer.transform(new rsb.Scope(text));
             detectUnitTypeOutOfScope(scope);
-            deviceRegistryRemote.getUnitConfigByScope(scope);
+            unitRegistryRemote.getUnitConfigByScope(scope);
             validScope = true;
         } catch (CouldNotPerformException | IllegalArgumentException | NullPointerException ex) {
             validScope = false;
