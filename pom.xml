@@ -60,9 +60,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <connection>scm:git:git@github.com/openbase/bco.manager.gitt</connection>
-        <developerConnection>scm:git:git@github.com/openbase/bco.manager.git</developerConnection>
-        <url>git@github.com/openbase/bco.manager.git</url>
+        <connection>scm:git:https://github.com/openbase/bco.manager.gitt</connection>
+        <developerConnection>scm:git:https://github.com/openbase/bco.manager.git</developerConnection>
+        <url>https://github.com/openbase/bco.manager.git</url>
     </scm>
 
     <build>
