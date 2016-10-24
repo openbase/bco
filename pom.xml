@@ -60,9 +60,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <connection>scm:git:git@github.com/openbase/bco.dal.git</connection>
-        <developerConnection>scm:git:git@github.com/openbase/bco.dal.git</developerConnection>
-        <url>git@github.com/openbase/bco.dal.git</url>
+        <connection>scm:git:https://github.com/openbase/bco.dal.git</connection>
+        <developerConnection>scm:git:https://github.com/openbase/bco.dal.git</developerConnection>
+        <url>https://github.com/openbase/bco.dal.git</url>
     </scm>
     
     <build>
