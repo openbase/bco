@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
@@ -37,7 +36,6 @@ import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.agent.AgentConfigType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 

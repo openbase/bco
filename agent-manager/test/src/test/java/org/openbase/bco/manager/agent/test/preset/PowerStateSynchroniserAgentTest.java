@@ -143,6 +143,10 @@ public class PowerStateSynchroniserAgentTest {
         agent.requestData().get();
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
 
+        // It can take some time until the execute() method of the agent has finished
+        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
+        Thread.sleep(500);
+
         DimmerRemote dimmerRemote = new DimmerRemote();
         ColorableLightRemote ambientLightRemote = new ColorableLightRemote();
         PowerSwitchRemote powerPlugRemote = new PowerSwitchRemote();
