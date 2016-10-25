@@ -44,12 +44,12 @@ import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
-import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -286,5 +286,10 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
 
     public ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> getAgentClassRegistry() {
         return agentClassRegistry;
+    }
+
+    @Override
+    public AgentClass getAgentClassById(String agentClassId) throws CouldNotPerformException {
+        return agentClassRegistry.getMessage(agentClassId);
     }
 }

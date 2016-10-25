@@ -98,6 +98,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
@@ -135,6 +136,8 @@ public class MockRegistry {
     public static final String TEMPERATURE_CONTROLLER_LABEL = "Temperature_Controller_Unit_Test";
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
     private final String serialNumber = "1234-5678-9100";
+
+    public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
 
     private static DeviceRegistryLauncher deviceRegistryLauncher;
     private static LocationRegistryLauncher locationRegistryLauncher;
@@ -396,6 +399,9 @@ public class MockRegistry {
                         logger.info("Register user...");
                         registerUser();
 
+                        logger.info("Register agentClasses...");
+                        registerAgentClasses();
+
                         logger.info("Register locations...");
                         registerLocations();
                         // TODO need to be implemented.
@@ -416,7 +422,7 @@ public class MockRegistry {
                 task.get();
             }
             registryStartupTasks.clear();
-            logger.info("UnitTemplates updated and devices, locations and user registered!");
+            logger.info("UnitTemplates updated and devices, locations ,users and agentClasses registered!");
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             shutdown();
             throw new InstantiationException(this, ex);
@@ -459,6 +465,14 @@ public class MockRegistry {
         UnitConfig userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build();
         try {
             testUser = userRegisty.registerUserConfig(userUnitConfig).get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException(ex);
+        }
+    }
+
+    private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
+        try {
+            agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(POWER_STATE_SYNCHRONISER_AGENT_LABEL).build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }

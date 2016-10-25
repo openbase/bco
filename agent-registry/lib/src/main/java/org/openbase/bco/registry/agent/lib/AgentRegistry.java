@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 
 /**
  *
@@ -67,6 +67,8 @@ public interface AgentRegistry extends Shutdownable {
     public List<AgentClass> getAgentClasses() throws CouldNotPerformException;
 
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException;
+
+    public AgentClass getAgentClassById(final String agentClassId) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underling registry is marked as consistent.

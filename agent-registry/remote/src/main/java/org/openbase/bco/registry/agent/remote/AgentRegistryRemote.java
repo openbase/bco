@@ -39,10 +39,10 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
-import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
 import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
 
 /**
  *
@@ -265,5 +265,11 @@ public class AgentRegistryRemote extends AbstractRegistryRemote<AgentRegistryDat
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    @Override
+    public AgentClass getAgentClassById(String agentClassId) throws CouldNotPerformException {
+        validateData();
+        return agentClassRemoteRegistry.getMessage(agentClassId);
     }
 }
