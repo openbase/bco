@@ -24,12 +24,12 @@ package org.openbase.bco.manager.agent.core;
 import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
+import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.agent.AgentConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -66,7 +66,9 @@ public class AgentFactoryImpl implements AgentFactory {
             if (!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
                 throw new NotAvailableException("scope");
             }
-            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(config));
+            CachedAgentRegistryRemote.waitForData();
+            String agentClassLabel = CachedAgentRegistryRemote.getRegistry().getAgentClassById(config.getAgentConfig().getAgentClassId()).getLabel();
+            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentClassLabel));
             logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + config.getScope() + "]");
             agent = (AgentController) agentClass.newInstance();
             agent.init(config);
@@ -76,10 +78,10 @@ public class AgentFactoryImpl implements AgentFactory {
         return agent;
     }
 
-    private String getAgentClass(final UnitConfig config) {
+    private String getAgentClass(final String agentClassLabel) {
         return AbstractAgent.class.getPackage().getName() + "."
                 + "preset."
-                + config.getAgentConfig().getAgentClassId()
+                + agentClassLabel
                 + "Agent";
     }
 }

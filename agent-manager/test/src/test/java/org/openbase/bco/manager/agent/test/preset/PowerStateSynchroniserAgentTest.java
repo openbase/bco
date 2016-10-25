@@ -37,12 +37,14 @@ import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
 import org.openbase.bco.manager.agent.remote.AgentRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.agent.lib.AgentRegistry;
+import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -54,6 +56,7 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.spatial.PlacementConfigType;
 
 /**
@@ -71,8 +74,9 @@ public class PowerStateSynchroniserAgentTest {
     private static AgentRemote agent;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static AgentManagerLauncher agentManagerLauncher;
-    private static AgentRegistryRemote agentRegistryRemote;
-    private static DeviceRegistry deviceRegistry;
+
+    private static AgentRegistry agentRegistry;
+    private static UnitRegistry unitRegistry;
     private static LocationRegistry locationRegistry;
 
     public PowerStateSynchroniserAgentTest() {
@@ -90,12 +94,8 @@ public class PowerStateSynchroniserAgentTest {
         agentManagerLauncher = new AgentManagerLauncher();
         agentManagerLauncher.launch();
 
-        agentRegistryRemote = new AgentRegistryRemote();
-        agentRegistryRemote.init();
-        agentRegistryRemote.activate();
-        
-
-        deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
+        agentRegistry = CachedAgentRegistryRemote.getRegistry();
+        unitRegistry = CachedUnitRegistryRemote.getRegistry();
         locationRegistry = CachedLocationRegistryRemote.getRegistry();
 
         deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
@@ -110,8 +110,8 @@ public class PowerStateSynchroniserAgentTest {
         if (agentManagerLauncher != null) {
             agentManagerLauncher.shutdown();
         }
-        if (agentRegistryRemote != null) {
-            agentRegistryRemote.shutdown();
+        if (agentRegistry != null) {
+            agentRegistry.shutdown();
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -135,7 +135,7 @@ public class PowerStateSynchroniserAgentTest {
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
-        agentRegistryRemote.waitForData();
+        CachedAgentRegistryRemote.waitForData();
         UnitConfig config = registerAgent();
         agent = new AgentRemote();
         agent.init(config);
@@ -146,9 +146,9 @@ public class PowerStateSynchroniserAgentTest {
         DimmerRemote dimmerRemote = new DimmerRemote();
         ColorableLightRemote ambientLightRemote = new ColorableLightRemote();
         PowerSwitchRemote powerPlugRemote = new PowerSwitchRemote();
-        dimmerRemote.init(deviceRegistry.getUnitConfigById(sourceId));
-        ambientLightRemote.init(deviceRegistry.getUnitConfigById(targetId1));
-        powerPlugRemote.init(deviceRegistry.getUnitConfigById(targetId2));
+        dimmerRemote.init(unitRegistry.getUnitConfigById(sourceId));
+        ambientLightRemote.init(unitRegistry.getUnitConfigById(targetId1));
+        powerPlugRemote.init(unitRegistry.getUnitConfigById(targetId2));
         dimmerRemote.activate();
         ambientLightRemote.activate();
         powerPlugRemote.activate();
@@ -214,13 +214,14 @@ public class PowerStateSynchroniserAgentTest {
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
+        System.out.println("Register the PowerStateSynchroniserAgent...");
         Entry.Builder source = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_KEY);
         Entry.Builder target1 = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_1");
         Entry.Builder target2 = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_KEY + "_2");
         Entry.Builder sourceBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_BEHAVIOUR_KEY).setValue("OFF");
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 
-        for (UnitConfig unit : deviceRegistry.getUnitConfigs()) {
+        for (UnitConfig unit : unitRegistry.getUnitConfigs()) {
             if (unit.getType() == UnitType.DIMMER && source.getValue().isEmpty()) {
                 sourceId = unit.getId();
                 source.setValue(unit.getId());
@@ -246,8 +247,19 @@ public class PowerStateSynchroniserAgentTest {
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
         PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
 
+        String agentClassId = null;
+        for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
+            if (MockRegistry.POWER_STATE_SYNCHRONISER_AGENT_LABEL.equals(agentClass.getLabel())) {
+                agentClassId = agentClass.getId();
+            }
+        }
+        if (agentClassId == null) {
+            throw new CouldNotPerformException("Could not find id for AgentClass with label [" + MockRegistry.POWER_STATE_SYNCHRONISER_AGENT_LABEL + "]");
+        }
+        System.out.println("Foung agentClassId: [" + agentClassId + "]");
+
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
-        agentUnitConfig.getAgentConfigBuilder().setAgentClassId("PowerStateSynchroniser");
-        return agentRegistryRemote.registerAgentConfig(agentUnitConfig.build()).get();
+        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
+        return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
     }
 }
