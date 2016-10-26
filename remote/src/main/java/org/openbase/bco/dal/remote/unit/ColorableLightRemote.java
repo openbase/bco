@@ -22,19 +22,19 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
-import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 
 /**
  *
@@ -78,6 +78,10 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(powerState, this, Void.class);
+    }
+
+    public Future<Void> setPowerState(PowerState.State powerState) throws CouldNotPerformException {
+        return setPowerState(PowerState.newBuilder().setValue(powerState).build());
     }
 
     @Override
