@@ -25,7 +25,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry;
@@ -41,7 +43,6 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenH
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -53,7 +54,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -61,6 +61,7 @@ import rst.domotic.state.EnablingStateType;
 import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
  *
@@ -189,7 +190,17 @@ public class OpenHABItemConfigGenerator {
                         continue;
                     }
 
+                    Set<ServiceType> serviceTypeSet = new HashSet<>();
                     for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                        if (serviceConfig.getServiceTemplate().getPattern() == ServiceTemplate.ServicePattern.CONSUMER) {
+                            continue;
+                        }
+
+                        if (serviceTypeSet.contains(serviceConfig.getServiceTemplate().getType())) {
+                            continue;
+                        }
+
+                        serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
