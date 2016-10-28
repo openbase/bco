@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -68,7 +69,7 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
 
         for (int i = 0; i < unitConfig.getServiceConfigCount(); i++) {
-            if (!unitTemplate.getServiceTemplateList().contains(unitConfig.getServiceConfig(i).getServiceTemplate())) {
+            if (!serviceTemplateListContainsTemplate(unitTemplate.getServiceTemplateList(), unitConfig.getServiceConfig(i).getServiceTemplate())) {
                 unitConfig.removeServiceConfig(i);
                 i--;
                 modification = true;
@@ -80,8 +81,12 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
     }
 
+    private boolean serviceTemplateListContainsTemplate(List<ServiceTemplate> serviceTemplateList, ServiceTemplate serviceTemplate) {
+        return serviceTemplateList.stream().anyMatch((template) -> (template.getType() == serviceTemplate.getType() && template.getPattern() == serviceTemplate.getPattern()));
+    }
+
     private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceTemplate serviceTemplate) {
-        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().equals(serviceTemplate)));
+        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceTemplate()).anyMatch((template) -> (template.getType() == serviceTemplate.getType() && template.getPattern() == serviceTemplate.getPattern()));
     }
 
     private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {

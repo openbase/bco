@@ -21,6 +21,8 @@ package org.openbase.bco.registry.unit.core.consistency.dal;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -55,7 +57,6 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-        UnitConfig.Builder unitConfigClone = unitConfig.clone();
 
         if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty()) {
             throw new NotAvailableException("unitConfig.unitHostId");
@@ -73,8 +74,9 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
         }
 
         boolean modification = false;
+        List<ServiceConfig.Builder> serviceConfigList = new ArrayList<>(unitConfig.getServiceConfigBuilderList());
         unitConfig.clearServiceConfig();
-        for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
+        for (ServiceConfig.Builder serviceConfig : serviceConfigList) {
             BindingConfig bindingConfig;
             if (!serviceConfig.hasBindingConfig()) {
                 bindingConfig = BindingConfig.getDefaultInstance();
@@ -85,7 +87,7 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
             String bindingId = deviceClass.getBindingConfig().getBindingId();
 
             if (!bindingConfig.hasBindingId() || !bindingConfig.getBindingId().equals(bindingId)) {
-                serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build());
+                serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build()).build();
                 modification = true;
             }
             unitConfig.addServiceConfig(serviceConfig);
