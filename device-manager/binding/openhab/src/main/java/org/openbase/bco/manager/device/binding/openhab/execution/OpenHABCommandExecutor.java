@@ -35,7 +35,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABCommandExecutor {
 
