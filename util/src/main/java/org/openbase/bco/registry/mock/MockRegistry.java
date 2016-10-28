@@ -430,15 +430,33 @@ public class MockRegistry {
     }
 
     protected void shutdown() {
-        locationRegistryLauncher.shutdown();
-        sceneRegistryLauncher.shutdown();
-        userRegistryLauncher.shutdown();
+        if (locationRegistryLauncher != null) {
+            locationRegistryLauncher.shutdown();
+        }
 
-        deviceRegistryLauncher.shutdown();
-        agentRegistryLauncher.shutdown();
-        appRegistryLauncher.shutdown();
+        if (sceneRegistryLauncher != null) {
+            sceneRegistryLauncher.shutdown();
+        }
 
-        unitRegistryLauncher.shutdown();
+        if (userRegistryLauncher != null) {
+            userRegistryLauncher.shutdown();
+        }
+
+        if (deviceRegistryLauncher != null) {
+            deviceRegistryLauncher.shutdown();
+        }
+
+        if (agentRegistryLauncher != null) {
+            agentRegistryLauncher.shutdown();
+        }
+
+        if (appRegistryLauncher != null) {
+            appRegistryLauncher.shutdown();
+        }
+
+        if (unitRegistryLauncher != null) {
+            unitRegistryLauncher.shutdown();
+        }
 
         CachedLocationRegistryRemote.shutdown();
         CachedSceneRegistryRemote.shutdown();
