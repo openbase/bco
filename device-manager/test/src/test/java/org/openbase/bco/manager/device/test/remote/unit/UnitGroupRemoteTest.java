@@ -22,10 +22,11 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Before;
@@ -43,6 +44,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -78,27 +80,47 @@ public class UnitGroupRemoteTest {
         ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
         ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
+        assert !deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().isEmtpy();
         for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
-            if (allServiceTemplatesImplemented(unitGroupConfig, unit.getConfig().getServiceConfigList())) {
+            if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
                 unitList.add(unit);
                 unitGroupConfig.addMemberId(unit.getConfig().getId());
             }
         }
+        assert unitGroupConfig.getMemberIdList().size() > 0;
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
         LOGGER.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitConfig.build());
         unitGroupRemote.activate();
     }
 
-    private static boolean allServiceTemplatesImplemented(UnitGroupConfig.Builder unitGroup, List<ServiceConfig> serviceConfigList) {
-        List<ServiceTemplate> fromUnit = new ArrayList<>();
-        serviceConfigList.stream().forEach((serviceConfig) -> {
-            fromUnit.add(serviceConfig.getServiceTemplate());
+    private static boolean allServiceTemplatesImplementedByUnit(UnitGroupConfig.Builder unitGroup, final Unit unit) throws NotAvailableException {
+        List<ServiceConfig> unitServiceConfigList = unit.getConfig().getServiceConfigList();
+        Set<ServiceType> unitServiceTypeList = new HashSet<>();
+        unitServiceConfigList.stream().forEach((serviceConfig) -> {
+            unitServiceTypeList.add(serviceConfig.getServiceTemplate().getType());
         });
-        return unitGroup.getServiceTemplateList().stream().noneMatch((serviceTemplate) -> (!fromUnit.contains(serviceTemplate)));
+
+        boolean servicePatternValid;
+        for (ServiceTemplate serviceTemplate : unitGroup.getServiceTemplateList()) {
+            if (!unitServiceTypeList.contains(serviceTemplate.getType())) {
+                return false;
+            }
+
+            servicePatternValid = false;
+            for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
+                if (serviceConfig.getServiceTemplate().getPattern().equals(serviceTemplate.getPattern())) {
+                    servicePatternValid = true;
+                }
+            }
+
+            if (!servicePatternValid) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         if (deviceManagerLauncher != null) {
             deviceManagerLauncher.shutdown();

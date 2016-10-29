@@ -154,6 +154,7 @@ public class DeviceManagerController implements DeviceManager {
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        // TODO: avoid timeout slit!
         locationRegistryRemote.waitForData(timeout, timeUnit);
         deviceRegistryRemote.waitForData(timeout, timeUnit);
     }
