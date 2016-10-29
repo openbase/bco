@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.Before;
@@ -92,6 +93,18 @@ public class UnitGroupRemoteTest {
         LOGGER.info("Unit group [" + unitGroupConfig.build() + "]");
         unitGroupRemote.init(unitConfig.build());
         unitGroupRemote.activate();
+        unitGroupRemote.waitForData();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
+        if (deviceManagerLauncher != null) {
+            deviceManagerLauncher.shutdown();
+        }
+        if (unitGroupRemote != null) {
+            unitGroupRemote.shutdown();
+        }
+        MockRegistryHolder.shutdownMockRegistry();
     }
 
     private static boolean allServiceTemplatesImplementedByUnit(UnitGroupConfig.Builder unitGroup, final Unit unit) throws NotAvailableException {
@@ -119,16 +132,6 @@ public class UnitGroupRemoteTest {
             }
         }
         return true;
-    }
-
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
-        }
-        if (unitGroupRemote != null) {
-            unitGroupRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
