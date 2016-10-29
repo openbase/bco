@@ -609,7 +609,7 @@ public class MockRegistry {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
                     LOCK.wait();
                 }
-                System.out.println("Device class [" + deviceClass + "] registered in remote registry!");
+                System.out.println("Device class [" + deviceClass.getLabel() + "] registered in remote registry!");
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }

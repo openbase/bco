@@ -328,7 +328,6 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        logger.info("register DeviceClass[" + deviceClass + "]");
         return GlobalExecutionService.submit(() -> deviceClassRegistry.register(deviceClass));
     }
 
