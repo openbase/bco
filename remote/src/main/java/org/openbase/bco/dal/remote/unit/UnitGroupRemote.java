@@ -83,14 +83,14 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
         try {
             CachedDeviceRegistryRemote.waitForData();
 
-            if(!unitGroupUnitConfig.hasUnitGroupConfig()) {
+            if (!unitGroupUnitConfig.hasUnitGroupConfig()) {
                 throw new VerificationFailedException("Given unit config does not contain a unit group config!");
             }
-            
-            if(unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().isEmpty()) {
+
+            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().isEmpty()) {
                 throw new VerificationFailedException("UnitGroupConfig has no unit members!");
             }
-            
+
             List<UnitConfig> unitConfigs = new ArrayList<>();
             for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
                 unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
@@ -256,6 +256,9 @@ public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, U
     }
 
     private boolean unitHasService(UnitConfig unitConfig, ServiceTemplate serviceTemplate) {
-        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().equals(serviceTemplate)));
+        // todo: why does the bottom check not work anymore?
+        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType().equals(serviceTemplate.getType())
+                && serviceConfig.getServiceTemplate().getPattern().equals(serviceTemplate.getPattern())));
+        //return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().equals(serviceTemplate)));
     }
 }
