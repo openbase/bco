@@ -50,8 +50,8 @@ public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> imple
     public void notifyDataUpdate(PowerSwitchData data) {
     }
 
-    public void setPowerState(final PowerState.State value) throws CouldNotPerformException {
-        setPowerState(PowerState.newBuilder().setValue(value).build());
+    public Future<Void> setPowerState(final PowerState.State value) throws CouldNotPerformException {
+        return setPowerState(PowerState.newBuilder().setValue(value).build());
     }
 
     @Override

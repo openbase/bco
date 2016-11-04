@@ -24,8 +24,9 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -52,18 +53,18 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     private UnitTemplate template;
 
     //TODO: switch to unit registry if available
-    private DeviceRegistry deviceRegistry;
+    private UnitRegistry unitRegistry;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
         super(dataClass, UnitConfig.class);
     }
 
-    protected DeviceRegistry getDeviceRegistry() throws InterruptedException, CouldNotPerformException {
-        if (deviceRegistry == null) {
-            deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
-            CachedDeviceRegistryRemote.waitForData();
+    protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
+        if (unitRegistry == null) {
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            CachedUnitRegistryRemote.waitForData();
         }
-        return deviceRegistry;
+        return unitRegistry;
     }
 
     /**
@@ -76,7 +77,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
-            init(getDeviceRegistry().getUnitConfigById(id));
+            init(getUnitRegistry().getUnitConfigById(id));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -92,7 +93,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
-            List<UnitConfig> unitConfigList = getDeviceRegistry().getUnitConfigsByLabel(label);
+            List<UnitConfig> unitConfigList = getUnitRegistry().getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("Unit with Label[" + label + "]");
@@ -116,7 +117,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            init(getDeviceRegistry().getUnitConfigByScope(scope));
+            init(getUnitRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -195,7 +196,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         } catch (NotAvailableException ex) {
             // change check failed.
         }
-        template = getDeviceRegistry().getUnitTemplateByType(config.getType());
+        template = getUnitRegistry().getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
     }
 
