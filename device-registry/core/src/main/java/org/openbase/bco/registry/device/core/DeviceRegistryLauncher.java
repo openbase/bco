@@ -35,24 +35,35 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.AbstractLauncher;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryLauncher {
+public class DeviceRegistryLauncher extends AbstractLauncher{
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryLauncher.class);
-
-    private final DeviceRegistryController deviceRegistry;
-
-    public DeviceRegistryLauncher() throws InitializationException, InterruptedException {
+    private DeviceRegistryController deviceRegistry;
+    
+    @Override
+    public void loadProperties() {
+        JPService.registerProperty(JPDeviceRegistryScope.class);
+        JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPRecoverDB.class);
+        JPService.registerProperty(JPInitializeDB.class);
+        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
+        JPService.registerProperty(JPGitRegistryPlugin.class);
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+    }
+    
+    @Override
+    public boolean launch() throws CouldNotPerformException, InterruptedException {
         try {
             this.deviceRegistry = new DeviceRegistryController();
             this.deviceRegistry.init();
@@ -60,8 +71,23 @@ public class DeviceRegistryLauncher {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
+        
+        ExceptionStack exceptionStack = null;
 
+        if (!deviceRegistry.getDeviceClassRegistry().isConsistent()) {
+            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
+        }
+
+        try {
+            MultiException.checkAndThrow(JPService.getApplicationName() + " started in fallback mode!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
     public void shutdown() {
         if (deviceRegistry != null) {
             deviceRegistry.shutdown();
@@ -73,44 +99,6 @@ public class DeviceRegistryLauncher {
     }
 
     public static void main(String args[]) throws Throwable {
-
-        /* Setup JPService */
-        JPService.setApplicationName(DeviceRegistry.class);
-
-        logger.info("Start " + JPService.getApplicationName() + "...");
-
-        JPService.registerProperty(JPDeviceRegistryScope.class);
-        JPService.registerProperty(JPReadOnly.class);
-        JPService.registerProperty(JPForce.class);
-        JPService.registerProperty(JPDebugMode.class);
-        JPService.registerProperty(JPRecoverDB.class);
-        JPService.registerProperty(JPInitializeDB.class);
-        JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
-        JPService.registerProperty(JPGitRegistryPlugin.class);
-        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-
-        JPService.parseAndExitOnError(args);
-
-        DeviceRegistryLauncher deviceRegistry;
-        try {
-            deviceRegistry = new DeviceRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        ExceptionStack exceptionStack = null;
-
-        if (!deviceRegistry.getDeviceRegistry().getDeviceClassRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(JPService.getApplicationName() + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+        main(args, DeviceRegistry.class, DeviceRegistryLauncher.class);
     }
 }

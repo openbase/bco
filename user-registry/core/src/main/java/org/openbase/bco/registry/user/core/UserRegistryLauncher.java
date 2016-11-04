@@ -21,6 +21,7 @@ package org.openbase.bco.registry.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -28,32 +29,37 @@ import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.jul.pattern.AbstractLauncher;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRegistryLauncher {
+public class UserRegistryLauncher extends AbstractLauncher {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserRegistryLauncher.class);
+    private UserRegistryController userRegistry;
 
-    public static final String USER_REGISTRY_NAME = UserRegistryLauncher.class.getSimpleName();
+    @Override
+    public void loadProperties() {
+        JPService.registerProperty(JPUserRegistryScope.class);
+        JPService.registerProperty(JPReadOnly.class);
+        JPService.registerProperty(JPForce.class);
+        JPService.registerProperty(JPDebugMode.class);
+    }
 
-    private final UserRegistryController userRegistry;
-
-    public UserRegistryLauncher() throws InitializationException, InterruptedException {
+    @Override
+    public boolean launch() throws CouldNotPerformException, InterruptedException {
         try {
-            this.userRegistry = new UserRegistryController();
-            this.userRegistry.init();
-            this.userRegistry.activate();
+            userRegistry = new UserRegistryController();
+            userRegistry.init();
+            userRegistry.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+        return true;
     }
 
+    @Override
     public void shutdown() {
         if (userRegistry != null) {
             userRegistry.shutdown();
@@ -65,26 +71,6 @@ public class UserRegistryLauncher {
     }
 
     public static void main(String args[]) throws Throwable {
-        logger.info("Start " + USER_REGISTRY_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(USER_REGISTRY_NAME);
-
-        JPService.registerProperty(JPUserRegistryScope.class);
-        JPService.registerProperty(JPReadOnly.class);
-        JPService.registerProperty(JPForce.class);
-        JPService.registerProperty(JPDebugMode.class);
-
-        JPService.parseAndExitOnError(args);
-
-        UserRegistryLauncher userRegistry;
-        try {
-            userRegistry = new UserRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        logger.info(USER_REGISTRY_NAME + " successfully started.");
+        AbstractLauncher.main(args, UserRegistry.class, UserRegistryLauncher.class);
     }
 }

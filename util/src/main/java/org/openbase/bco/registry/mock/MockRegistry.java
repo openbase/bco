@@ -290,6 +290,7 @@ public class MockRegistry {
                 public Void call() throws Exception {
                     try {
                         deviceRegistryLauncher = new DeviceRegistryLauncher();
+                        deviceRegistryLauncher.launch();
                         deviceRegistry = deviceRegistryLauncher.getDeviceRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
@@ -351,6 +352,7 @@ public class MockRegistry {
                 public Void call() throws Exception {
                     try {
                         userRegistryLauncher = new UserRegistryLauncher();
+                        userRegistryLauncher.launch();
                         userRegisty = userRegistryLauncher.getUserRegistry();
                     } catch (CouldNotPerformException | InterruptedException ex) {
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);

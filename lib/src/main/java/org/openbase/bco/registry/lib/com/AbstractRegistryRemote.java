@@ -108,6 +108,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
 
     protected void registerRemoteRegistry(final RemoteRegistry registry) {
         remoteRegistries.add(registry);
+        registry.setRemote(this);
     }
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
