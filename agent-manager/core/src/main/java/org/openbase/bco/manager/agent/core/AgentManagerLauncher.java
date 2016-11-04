@@ -49,13 +49,14 @@ public class AgentManagerLauncher implements Launcher {
     }
 
     @Override
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public boolean launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             agentManagerController.init();
         } catch (CouldNotPerformException ex) {
             agentManagerController.shutdown();
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
+        return true;
     }
 
     @Override
@@ -87,5 +88,9 @@ public class AgentManagerLauncher implements Launcher {
             return;
         }
         logger.info(JPService.getApplicationName() + " successfully started.");
+    }
+
+    @Override
+    public void loadProperties() {
     }
 }
