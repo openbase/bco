@@ -53,7 +53,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
         try {
             logger.debug("create location transformation publisher");
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(UnitRegistryLauncher.APP_NAME);
+            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }

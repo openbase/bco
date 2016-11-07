@@ -21,8 +21,6 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,9 +37,9 @@ import rct.Transform;
 import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerFactory;
-import rst.geometry.PoseType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.geometry.PoseType;
 
 /**
  *
@@ -60,7 +58,7 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(JPService.getApplicationName());
+            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -98,6 +96,7 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
             }
 
             if (isTransformationPresent(unitConfig.getPlacementConfig().getPosition())) {
+                logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
                 Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
 
                 try {

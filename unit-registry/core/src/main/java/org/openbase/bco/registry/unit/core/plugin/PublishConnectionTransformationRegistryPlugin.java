@@ -53,7 +53,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(PublishConnectionTransformationRegistryPlugin.class.getSimpleName());
+            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }

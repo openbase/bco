@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -55,7 +54,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(JPService.getApplicationName());
+            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
