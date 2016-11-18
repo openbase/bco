@@ -21,8 +21,6 @@ package org.openbase.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.HandleStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -32,8 +30,7 @@ import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface ConnectionController extends Connection, MessageController<ConnectionData, ConnectionData.Builder>,
-        HandleStateProviderServiceCollection, ContactStateProviderServiceCollection {
+public interface ConnectionController extends Connection, MessageController<ConnectionData, ConnectionData.Builder> {
 
     public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }
