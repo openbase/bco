@@ -22,7 +22,7 @@ package org.openbase.bco.manager.user.remote;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.user.lib.User;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -34,13 +34,12 @@ import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.domotic.unit.user.UserDataType.UserData;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRemote extends AbstractConfigurableRemote<UserData, UnitConfig> implements User {
+public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -49,7 +48,7 @@ public class UserRemote extends AbstractConfigurableRemote<UserData, UnitConfig>
     }
 
     public UserRemote() {
-        super(UserData.class, UnitConfig.class);
+        super(UserData.class);
     }
 
     @Override

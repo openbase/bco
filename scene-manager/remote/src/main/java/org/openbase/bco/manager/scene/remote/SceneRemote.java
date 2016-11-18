@@ -22,7 +22,7 @@ package org.openbase.bco.manager.scene.remote;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.scene.lib.Scene;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -31,13 +31,12 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRemote extends AbstractConfigurableRemote<SceneData, UnitConfig> implements Scene {
+public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
@@ -45,9 +44,8 @@ public class SceneRemote extends AbstractConfigurableRemote<SceneData, UnitConfi
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
     }
 
-
     public SceneRemote() {
-        super(SceneData.class, UnitConfig.class);
+        super(SceneData.class);
     }
 
     public Future<Void> setActivationState(ActivationState.State activationState) throws CouldNotPerformException {

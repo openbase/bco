@@ -22,7 +22,7 @@ package org.openbase.bco.manager.app.remote;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.app.lib.App;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -30,13 +30,12 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.app.AppDataType.AppData;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AppRemote extends AbstractConfigurableRemote<AppData, UnitConfig> implements App {
+public class AppRemote extends AbstractUnitRemote<AppData> implements App {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
@@ -44,7 +43,7 @@ public class AppRemote extends AbstractConfigurableRemote<AppData, UnitConfig> i
     }
 
     public AppRemote() {
-        super(AppData.class, UnitConfig.class);
+        super(AppData.class);
     }
 
     @Override

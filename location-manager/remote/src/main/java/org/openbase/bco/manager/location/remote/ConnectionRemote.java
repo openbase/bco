@@ -21,22 +21,21 @@ package org.openbase.bco.manager.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.location.lib.Connection;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ContactStateType.ContactState;
 import rst.domotic.state.HandleStateType.HandleState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData, UnitConfig> implements Connection {
+public class ConnectionRemote extends AbstractUnitRemote<ConnectionData> implements Connection {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
@@ -45,7 +44,7 @@ public class ConnectionRemote extends AbstractConfigurableRemote<ConnectionData,
     }
 
     public ConnectionRemote() {
-        super(ConnectionData.class, UnitConfig.class);
+        super(ConnectionData.class);
     }
 
     @Override

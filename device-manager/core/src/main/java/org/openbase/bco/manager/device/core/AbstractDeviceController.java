@@ -21,7 +21,7 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.AbstractSystemUnitController;
+import org.openbase.bco.dal.lib.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -37,7 +37,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceController extends AbstractSystemUnitController<DeviceData, DeviceData.Builder, UnitConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder, UnitConfig> implements DeviceController {
 
     public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
         super(DeviceData.newBuilder());

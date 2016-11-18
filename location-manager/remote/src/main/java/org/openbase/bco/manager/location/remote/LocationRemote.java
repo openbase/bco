@@ -3,11 +3,11 @@ package org.openbase.bco.manager.location.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.location.lib.Location;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -55,7 +55,7 @@ import rst.vision.RGBColorType.RGBColor;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRemote extends AbstractConfigurableRemote<LocationData, UnitConfig> implements Location {
+public class LocationRemote extends AbstractUnitRemote<LocationData> implements Location {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
@@ -76,11 +76,7 @@ public class LocationRemote extends AbstractConfigurableRemote<LocationData, Uni
     }
 
     public LocationRemote() {
-        super(LocationData.class, UnitConfig.class);
-    }
-
-    @Override
-    public void notifyDataUpdate(LocationData data) throws CouldNotPerformException {
+        super(LocationData.class);
     }
 
     @Override

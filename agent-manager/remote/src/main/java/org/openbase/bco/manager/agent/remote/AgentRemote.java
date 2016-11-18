@@ -22,21 +22,20 @@ package org.openbase.bco.manager.agent.remote;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.agent.lib.Agent;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentRemote extends AbstractConfigurableRemote<AgentData, UnitConfig> implements Agent {
+public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
@@ -44,7 +43,7 @@ public class AgentRemote extends AbstractConfigurableRemote<AgentData, UnitConfi
     }
 
     public AgentRemote() {
-        super(AgentData.class, UnitConfig.class);
+        super(AgentData.class);
     }
 
     @Override
