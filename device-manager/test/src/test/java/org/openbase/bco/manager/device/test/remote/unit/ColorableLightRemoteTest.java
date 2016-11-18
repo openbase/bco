@@ -21,26 +21,26 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import java.awt.Color;
+import java.util.concurrent.TimeUnit;
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import java.awt.Color;
-import java.util.concurrent.TimeUnit;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -66,6 +66,7 @@ public class ColorableLightRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+        JPService.setupJUnitTestMode();
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
 //        JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SOCKET);
         registry = MockRegistryHolder.newMockRegistry();

@@ -70,6 +70,7 @@ public class UnitGroupRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+        JPService.setupJUnitTestMode();
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         MockRegistryHolder.newMockRegistry();
 

@@ -21,17 +21,18 @@ package org.openbase.bco.manager.scene.test.remote.scene;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openbase.bco.manager.scene.remote.SceneRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,8 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ButtonStateType.ButtonState;
-import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 
 /**
  *
@@ -60,6 +61,7 @@ public class SceneRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+        JPService.setupJUnitTestMode();
     }
 
     @AfterClass

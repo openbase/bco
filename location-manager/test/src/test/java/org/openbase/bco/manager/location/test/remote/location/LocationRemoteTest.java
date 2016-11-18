@@ -21,15 +21,16 @@ package org.openbase.bco.manager.location.test.remote.location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -45,6 +46,7 @@ public class LocationRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+        JPService.setupJUnitTestMode();
     }
 
     @AfterClass

@@ -22,24 +22,25 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.HandleController;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.HandleRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.layer.unit.HandleController;
+import org.openbase.bco.dal.remote.unit.HandleRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.HandleStateType.HandleState;
 
@@ -59,7 +60,8 @@ public class HandleRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
+        JPService.setupJUnitTestMode();
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockRegistryHolder.newMockRegistry();
 

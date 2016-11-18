@@ -35,6 +35,7 @@ import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -59,7 +60,8 @@ public class LightRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
+    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
+        JPService.setupJUnitTestMode();
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         System.out.println("setUpClass thread: " + Thread.currentThread().getName());
         registry = MockRegistryHolder.newMockRegistry();

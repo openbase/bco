@@ -23,23 +23,24 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.unit.SmokeDetectorController;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.remote.unit.SmokeDetectorRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Remote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.layer.unit.SmokeDetectorController;
+import org.openbase.bco.dal.remote.unit.SmokeDetectorRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.SmokeStateType.SmokeState;
@@ -49,34 +50,35 @@ import rst.domotic.state.SmokeStateType.SmokeState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SmokeDetectorRemoteTest {
-    
+
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SmokeDetectorRemoteTest.class);
-    
+
     private static SmokeDetectorRemote smokeDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
-    
+
     public SmokeDetectorRemoteTest() {
     }
-    
+
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, CouldNotPerformException, InterruptedException, ExecutionException {
+    public static void setUpClass() throws InstantiationException, CouldNotPerformException, InterruptedException, ExecutionException, JPServiceException {
+        JPService.setupJUnitTestMode();
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockRegistryHolder.newMockRegistry();
-        
+
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
         deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.SMOKE_DETECTOR_LABEL;
-        
+
         smokeDetectorRemote = new SmokeDetectorRemote();
         smokeDetectorRemote.initByLabel(label);
         smokeDetectorRemote.activate();
         smokeDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
         if (deviceManagerLauncher != null) {
@@ -87,17 +89,18 @@ public class SmokeDetectorRemoteTest {
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
 
     /**
      * Test of notifyUpdated method, of class SmokeDetectorRemote.
+     *
      * @throws java.lang.Exception
      */
     @Ignore
@@ -106,6 +109,7 @@ public class SmokeDetectorRemoteTest {
 
     /**
      * Test of getSmokeAlarmState method, of class SmokeDetectorRemote.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
@@ -119,6 +123,7 @@ public class SmokeDetectorRemoteTest {
 
     /**
      * Test of getSmokeState method, of class SmokeDetectorRemote.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
@@ -129,5 +134,5 @@ public class SmokeDetectorRemoteTest {
         smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState, smokeDetectorRemote.getSmokeState());
     }
-    
+
 }

@@ -61,6 +61,7 @@
 //
 //    @BeforeClass
 //    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException {
+//        JPService.setupJUnitTestMode();
 //        JPService.registerProperty(JPHardwareSimulationMode.class, true);
 //        MockRegistryHolder.newMockRegistry();
 //

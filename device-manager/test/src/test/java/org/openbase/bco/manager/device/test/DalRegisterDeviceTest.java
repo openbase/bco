@@ -21,21 +21,21 @@ package org.openbase.bco.manager.device.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DalRegisterDeviceTest {
 
@@ -46,7 +46,8 @@ public class DalRegisterDeviceTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, JPServiceException {
+    public static void setUpClass() throws InstantiationException, JPServiceException, JPServiceException {
+        JPService.setupJUnitTestMode();
         MockRegistryHolder.newMockRegistry();
     }
 
@@ -107,7 +108,6 @@ public class DalRegisterDeviceTest {
 //        remote.shutdown();
 //        instance.shutdown();
 //    }
-    
 //    @Test
 //    public void test() throws Exception {
 //        assertTrue(true);

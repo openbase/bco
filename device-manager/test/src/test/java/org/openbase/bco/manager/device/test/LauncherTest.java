@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -49,7 +50,8 @@ public class LauncherTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws org.openbase.jul.exception.InstantiationException, JPServiceException {
+    public static void setUpClass() throws org.openbase.jul.exception.InstantiationException, JPServiceException, JPServiceException {
+        JPService.setupJUnitTestMode();
         MockRegistryHolder.newMockRegistry();
     }
 

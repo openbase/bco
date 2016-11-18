@@ -23,10 +23,12 @@ package org.openbase.bco.manager.device.binding.openhab.transform;
  */
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.extension.openhab.binding.transform.HSBColorTransformer;
 import rst.domotic.binding.openhab.HSBType.HSB;
 import rst.vision.HSBColorType.HSBColor;
@@ -42,7 +44,8 @@ public class HSVColorTransformerTest {
     }
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws JPServiceException {
+        JPService.setupJUnitTestMode();
     }
 
     @AfterClass
