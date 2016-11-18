@@ -45,7 +45,7 @@ import org.openbase.bco.registry.unit.core.consistency.connectionconfig.Connecti
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTilesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dal.SyncBindingConfigDeviceClassUnitConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.SyncBindingConfigDeviceClassUnitConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitEnablingStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitHostIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitLabelConsistencyHandler;

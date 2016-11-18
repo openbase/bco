@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.dal;
+package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
 
 /*
  * #%L
