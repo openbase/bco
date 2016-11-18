@@ -34,30 +34,34 @@ import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.location.lib.Connection;
 import org.openbase.bco.manager.location.lib.ConnectionController;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.state.HandleStateType.HandleState;
+import rst.domotic.state.DoorStateType.DoorState;
+import rst.domotic.state.PassageStateType.PassageState;
+import rst.domotic.state.WindowStateType.WindowState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -67,21 +71,57 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DoorState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PassageState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(WindowState.getDefaultInstance()));
     }
+
+    /**
+     * Enumeration describing the relation between the position of a reed contact relative to a door.
+     */
+    public enum ContactDoorPosition {
+
+        /**
+         * If the reed contact is closed than the door is also closed.
+         */
+        DOOR_CLOSED(DoorState.State.CLOSED),
+        /**
+         * If the reed contact is closed then the door is open.
+         */
+        DOOR_OPEN(DoorState.State.OPEN),
+        /**
+         * If the reed contact is closed then the door is not fully closed nor fully open.
+         */
+        DOOR_IN_BETWEEN(DoorState.State.IN_BETWEEN);
+
+        private final DoorState.State correspondingDoorState;
+
+        private ContactDoorPosition(DoorState.State correspondingDoorState) {
+            this.correspondingDoorState = correspondingDoorState;
+        }
+
+        public DoorState.State getCorrespondingDoorState() {
+            return correspondingDoorState;
+        }
+    }
+
+    public static final ContactDoorPosition DEFAULT_CONTACT_DOOR_POSITION = ContactDoorPosition.DOOR_CLOSED;
 
     private final UnitRemoteFactory factory;
     private final Map<String, UnitRemote> unitRemoteMap;
-    private final Map<ServiceTemplateType.ServiceTemplate.ServiceType, Collection<? extends Service>> serviceMap;
+    private final Map<ServiceType, Collection<? extends Service>> serviceMap;
     private List<String> originalUnitIdList;
     private UnitRegistry unitRegistry;
+
+    private MetaConfigVariableProvider metaConfigContactDoorPositionProvider;
+    private final Map<String, ContactDoorPosition> contactDoorPositionMap;
 
     public ConnectionControllerImpl() throws InstantiationException {
         super(ConnectionData.newBuilder());
         this.factory = UnitRemoteFactoryImpl.getInstance();
         this.unitRemoteMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
+        this.contactDoorPositionMap = new HashMap<>();
     }
 
     private boolean isSupportedServiceType(final ServiceType serviceType) {
@@ -108,7 +148,8 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        HandleState handle = getHandleState();
+                        updateCurrentStatus();
+//                        HandleState handle = getHandleState();
                         // data has to be fused to build DOOR/WINDOW or PASSAGE States
                     }
                 });
@@ -119,10 +160,22 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
 
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
-                        ContactState contactState = getContactState();
-                        // data has to be fused to build DOOR/WINDOW or PASSAGE States
+                        updateCurrentStatus();
                     }
                 });
+
+                try {
+                    ContactDoorPosition contactDoorPosition;
+                    try {
+                        metaConfigContactDoorPositionProvider = new MetaConfigVariableProvider("bla", ((UnitConfig) unitRemote.getConfig()).getMetaConfig());
+                        contactDoorPosition = ContactDoorPosition.valueOf(metaConfigContactDoorPositionProvider.getValue("CONTACT_DOOR_POSITION"));
+                    } catch (NotAvailableException | IllegalArgumentException ex) {
+                        contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
+                    }
+                    contactDoorPositionMap.put((String) unitRemote.getId(), contactDoorPosition);
+                } catch (NotAvailableException ex) {
+                    ExceptionPrinter.printHistory("Id for unit with contactState not available!", ex, logger);
+                }
                 break;
         }
     }
@@ -194,7 +247,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             }
         }
         if (isActive()) {
-            getCurrentStatus();
+            updateCurrentStatus();
         }
         originalUnitIdList = config.getConnectionConfig().getUnitIdList();
         return super.applyConfigUpdate(config);
@@ -217,24 +270,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 addRemoteToServiceMap(serviceTemplate.getType(), unitRemote);
             }
         }
-        getCurrentStatus();
-    }
-
-    private void getCurrentStatus() {
-        try {
-            HandleState handleState = getHandleState();
-            ContactState contactState = getContactState();
-            try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-                //TODO: data fusion
-
-                //dataBuilder.getInternalBuilder().setHandleState(handleState);
-                //dataBuilder.getInternalBuilder().setReedSwitchState(reedSwitch);
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Could not apply data change!", ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get current status!", ex), logger, LogLevel.WARN);
-        }
+        updateCurrentStatus();
     }
 
     @Override
@@ -250,13 +286,119 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         return getConfig().getLabel();
     }
 
-    @Override
-    public Collection<HandleStateProviderService> getHandleStateProviderServices() {
-        return (Collection<HandleStateProviderService>) serviceMap.get(ServiceType.HANDLE_STATE_SERVICE);
+    private void updateCurrentStatus() {
+        try {
+            switch (getConnectionType()) {
+                case DOOR:
+                    updateDoorState();
+                    break;
+                case PASSAGE:
+                    updatePassageState();
+                    break;
+                case WINDOW:
+                    updateWindowState();
+                    break;
+                default:
+                    break;
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
+        }
+    }
+
+    private Collection<UnitRemote> getContactStateProviderServices() {
+        return (Collection<UnitRemote>) serviceMap.get(ServiceType.CONTACT_STATE_SERVICE);
+    }
+
+    private void updateDoorState() throws CouldNotPerformException {
+        DoorState.State doorState = null;
+        try {
+            for (UnitRemote contactStateProvider : getContactStateProviderServices()) {
+                if (((ContactStateProviderService) contactStateProvider).getContactState().getValue() == ContactState.State.CLOSED) {
+                    if (doorState == null) {
+                        doorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
+                    } else if (doorState != contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState()) {
+                        throw new CouldNotPerformException("Contradicting contact values for the door state!");
+                    }
+                }
+            }
+            if (doorState == null) {
+                return;
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update door state", ex);
+        }
+
+        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setDoorState(DoorState.newBuilder().setValue(doorState).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())));
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply brightness data change!", ex);
+        }
+    }
+
+    private void updateWindowState() throws CouldNotPerformException {
+
+    }
+
+    private void updatePassageState() throws CouldNotPerformException {
+
+    }
+
+    public ConnectionType getConnectionType() throws NotAvailableException {
+        if (!getConfig().getConnectionConfig().hasType()) {
+            throw new NotAvailableException("ConnectionConfig.Type");
+        }
+        return getConfig().getConnectionConfig().getType();
+    }
+
+    public void verifyConnectionState(ConnectionType connectionType) throws VerificationFailedException, NotAvailableException {
+        if (getConnectionType() != connectionType) {
+            throw new VerificationFailedException("ConnectionType verification failed. Connection [" + getConfig().getId() + "] has type [" + getConfig().getConnectionConfig().getType().name() + "] and not [" + connectionType.name() + "]");
+        }
     }
 
     @Override
-    public Collection<ContactStateProviderService> getContactStateProviderServices() {
-        return (Collection<ContactStateProviderService>) serviceMap.get(ServiceType.CONTACT_STATE_SERVICE);
+    public DoorState getDoorState() throws NotAvailableException {
+        try {
+            verifyConnectionState(ConnectionType.DOOR);
+        } catch (VerificationFailedException ex) {
+            throw new NotAvailableException("Connection verification shows no door state!", ex);
+        }
+
+        try {
+            return getData().getDoorState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("DoorState", ex);
+        }
+    }
+
+    @Override
+    public PassageState getPassageState() throws NotAvailableException {
+        try {
+            verifyConnectionState(ConnectionType.PASSAGE);
+        } catch (VerificationFailedException ex) {
+            throw new NotAvailableException("Connection verification shows no passage state!", ex);
+        }
+
+        try {
+            return getData().getPassageState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PassageState", ex);
+        }
+    }
+
+    @Override
+    public WindowState getWindowState() throws NotAvailableException {
+        try {
+            verifyConnectionState(ConnectionType.WINDOW);
+        } catch (VerificationFailedException ex) {
+            throw new NotAvailableException("Connection verification shows no window state!", ex);
+        }
+
+        try {
+            return getData().getWindowState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("WindowState", ex);
+        }
     }
 }

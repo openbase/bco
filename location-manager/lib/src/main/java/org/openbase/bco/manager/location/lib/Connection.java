@@ -21,8 +21,9 @@ package org.openbase.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.DoorStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PassageStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.WindowStateProviderService;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.provider.LabelProvider;
@@ -32,6 +33,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>, HandleStateProviderService, ContactStateProviderService {
+public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>,
+        DoorStateProviderService, PassageStateProviderService, WindowStateProviderService {
 
 }
