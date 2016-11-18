@@ -70,8 +70,8 @@ public class LocationRegistryTest {
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, JPServiceException, InterruptedException, CouldNotPerformException {
-        JPService.registerProperty(JPDebugMode.class, true);
         JPService.setupJUnitTestMode();
+        JPService.registerProperty(JPDebugMode.class, true);
 
         unitRegistry = new UnitRegistryController();
         deviceRegistry = new DeviceRegistryController();
